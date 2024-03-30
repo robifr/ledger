@@ -20,14 +20,11 @@
   <style name="AppTheme.Light" parent="Theme.Material3.Light">
     <!-- Branding. -->
     <item name="colorPrimary">@color/selector_primary</item>
-    <item name="colorOnPrimary">@color/selector_primary_textview</item>
     <item name="colorPrimaryContainer">@color/selector_primary</item>
-    <item name="colorOnPrimaryContainer">@color/selector_primary_textview</item>
     <item name="colorSecondary">@color/selector_secondary</item>
     <item name="colorOnSecondary">@color/selector_secondary_textview</item>
     <item name="colorSecondaryContainer">@color/blue_35</item>
-    <item name="colorSurface">@color/dark_white</item>
-    <item name="colorOnSurface">?android:textColor</item>
+    <item name="colorSurface">@color/surface</item>
 
     <!-- Background color. -->
     <item name="android:colorBackground">@color/white</item>
@@ -38,17 +35,23 @@
     <item name="actionMenuTextColor">?android:textColor</item> <!-- Menu item. -->
     <item name="colorControlNormal">?android:textColor</item>
 
-    <!-- Color of selectable stuff (switch, cursor on edit text, button, etc.) -->
-    <item name="colorAccent">@color/surface_selected</item> <!-- Foreground color. -->
-    <item name="colorControlActivated">@color/primary</item> <!-- Background color. -->
-
     <!-- Text style. -->
-    <item name="android:textColor">@color/selector_textview</item>
-    <item name="android:textColorHint">@color/text_disabled</item>
     <item name="android:textSize">@dimen/text_medium</item>
     <item name="android:textAllCaps">false</item>
     <item name="android:fontFamily">@font/roboto</item>
     <item name="textInputStyle">@style/TextInputLayout</item>
+
+    <!-- Active text and icon. -->
+    <item name="android:textColor">@color/selector_textview</item>
+    <item name="android:textColorHint">@color/text_disabled</item>
+    <item name="colorOnSurface">@color/text_enabled</item>
+    <item name="colorOnPrimaryContainer">@color/text_enabled</item>
+
+    <!-- Selected text and icon. -->
+    <item name="colorOnSecondaryContainer">@color/text_selected</item>
+
+    <!-- Inactive text and icon. -->
+    <item name="colorOnSurfaceVariant">@color/text_disabled</item>
 
     <!--
         Ripple color.
