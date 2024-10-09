@@ -20,6 +20,7 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.google.dagger.hilt.android)
   id(libs.plugins.jetbrains.kotlin.android.get().pluginId)
+  id(libs.plugins.google.devtools.ksp.get().pluginId)
   id(libs.plugins.jetbrains.kotlin.parcelize.get().pluginId)
 }
 
@@ -36,12 +37,10 @@ android {
     versionName = "1.1.0"
     multiDexEnabled = true
 
-    javaCompileOptions {
-      annotationProcessorOptions {
-        arguments["room.schemaLocation"] = "$projectDir/schemas"
-        arguments["room.incremental"] = "true"
-        arguments["room.expandProjection"] = "true"
-      }
+    ksp {
+      arg("room.schemaLocation", "${projectDir}/schemas")
+      arg("room.incremental", "true")
+      arg("room.expandProjection", "true")
     }
   }
 
@@ -94,10 +93,10 @@ dependencies {
   implementation(libs.google.android.material)
 
   implementation(libs.androidx.room.runtime)
-  annotationProcessor(libs.androidx.room.compiler)
+  ksp(libs.androidx.room.compiler)
 
   implementation(libs.google.dagger.hilt.android)
-  annotationProcessor(libs.google.dagger.hilt.android.compiler)
+  ksp(libs.google.dagger.hilt.android.compiler)
 
   implementation(libs.jetbrains.kotlin.stdlib)
   implementation(libs.jetbrains.kotlin.test)
