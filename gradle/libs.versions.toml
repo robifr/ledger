@@ -8,7 +8,8 @@ androidxRoom = "2.6.1"
 androidxWebkit = "1.11.0"
 hilt = "2.51.1"
 junit = "5.10.3"
-kotlin = "1.9.23"
+kotlin = "2.0.20"
+ksp = "2.0.20-1.0.24" # The initial version must correspond to the Kotlin version.
 leakcanary = "2.14"
 materialComponents = "1.12.0"
 mockito = "5.14.0"
@@ -41,6 +42,7 @@ android-application = { id = "com.android.application", version.ref = "androidGr
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 diffplug-spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 google-dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android" } # kotlin("android")
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 jetbrains-kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize" } # id("kotlin-parcelize")
