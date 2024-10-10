@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.util.livedata;
+package com.robifr.ledger.util
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
+import android.content.Context
+import android.widget.Toast
 
-@Deprecated
-public interface SafeLiveData<T> {
-  @NonNull
-  public T getValue();
+private var _singletonToast: Toast? = null
 
-  public void observe(@NonNull LifecycleOwner owner, @NonNull SafeObserver<? super T> observer);
-
-  public void observeForever(@NonNull SafeObserver<? super T> observer);
-
-  @NonNull
-  public LiveData<T> toLiveData();
+fun Toast.showSingle(context: Context, message: String, duration: Int = Toast.LENGTH_LONG) {
+  _singletonToast?.cancel()
+  _singletonToast = Toast.makeText(context, message, duration).apply { show() }
 }

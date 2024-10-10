@@ -22,6 +22,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import java.util.Objects;
 
+@Deprecated
 public class SafeMediatorLiveData<T> extends MediatorLiveData<T> implements SafeLiveData<T> {
   public SafeMediatorLiveData(@NonNull T value) {
     super(value);
