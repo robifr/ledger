@@ -22,6 +22,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import java.util.Objects;
 
+@Deprecated
 public class SafeMutableLiveData<T> extends MutableLiveData<T> implements SafeLiveData<T> {
   public SafeMutableLiveData(@NonNull T value) {
     super(value);
