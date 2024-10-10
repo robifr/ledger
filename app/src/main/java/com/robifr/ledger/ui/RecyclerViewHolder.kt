@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.util.livedata;
+package com.robifr.ledger.ui
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 
-@Deprecated
-public interface SafeLiveData<T> {
-  @NonNull
-  public T getValue();
-
-  public void observe(@NonNull LifecycleOwner owner, @NonNull SafeObserver<? super T> observer);
-
-  public void observeForever(@NonNull SafeObserver<? super T> observer);
-
-  @NonNull
-  public LiveData<T> toLiveData();
+abstract class RecyclerViewHolderKt(itemView: View) : RecyclerView.ViewHolder(itemView) {
+  abstract fun bind(itemIndex: Int = -1)
 }

@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.util.livedata;
+package com.robifr.ledger.util
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
+import android.content.Context
+import android.util.TypedValue
+import androidx.annotation.AttrRes
 
-@Deprecated
-public interface SafeLiveData<T> {
-  @NonNull
-  public T getValue();
-
-  public void observe(@NonNull LifecycleOwner owner, @NonNull SafeObserver<? super T> observer);
-
-  public void observeForever(@NonNull SafeObserver<? super T> observer);
-
-  @NonNull
-  public LiveData<T> toLiveData();
+fun Context.getColorAttr(@AttrRes id: Int): Int {
+  val typedValue: TypedValue = TypedValue()
+  theme.resolveAttribute(id, typedValue, true)
+  return getColor(typedValue.resourceId)
 }

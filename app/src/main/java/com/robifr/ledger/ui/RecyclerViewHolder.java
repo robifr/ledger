@@ -25,6 +25,7 @@ import java.util.Objects;
  * @param <I> Item to bind.
  * @param <A> Possible action.
  */
+@Deprecated
 public abstract class RecyclerViewHolder<I, A> extends RecyclerView.ViewHolder {
   @NonNull protected final A _action;
 

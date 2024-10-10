@@ -19,6 +19,7 @@ package com.robifr.ledger.util.livedata;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Observer;
 
+@Deprecated
 public interface SafeObserver<T> extends Observer<T> {
   @Override
   public void onChanged(@NonNull T value);

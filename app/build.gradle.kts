@@ -79,6 +79,9 @@ android {
     targetCompatibility = JavaVersion.VERSION_17
   }
 
+  // TODO: Remove after Kotlin migration.
+  kotlinOptions { freeCompilerArgs = listOf("-Xjvm-default=all") }
+
   kotlin { jvmToolchain(17) }
 
   testOptions { unitTests.isReturnDefaultValues = true }

@@ -14,21 +14,16 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.util.livedata;
+package com.robifr.ledger
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
+import android.app.Application
+import android.webkit.WebView
+import dagger.hilt.android.HiltAndroidApp
 
-@Deprecated
-public interface SafeLiveData<T> {
-  @NonNull
-  public T getValue();
-
-  public void observe(@NonNull LifecycleOwner owner, @NonNull SafeObserver<? super T> observer);
-
-  public void observeForever(@NonNull SafeObserver<? super T> observer);
-
-  @NonNull
-  public LiveData<T> toLiveData();
+@HiltAndroidApp
+class App : Application() {
+  override fun onCreate() {
+    super.onCreate()
+    WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+  }
 }

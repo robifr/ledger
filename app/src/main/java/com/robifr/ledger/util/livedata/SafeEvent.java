@@ -57,6 +57,7 @@ import java.util.function.Predicate;
  * {@code this._snackbar.setValue(new SafeEvent<>("Hello")); }
  * </pre>
  */
+@Deprecated
 public class SafeEvent<T> {
   @NonNull private final T _value;
   private boolean _isHandled = false;
