@@ -20,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.mockito.kotlin.OngoingStubbingKt.whenever;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
@@ -54,10 +54,10 @@ public class CurrencyFormatTest {
   @Test
   public void formatWithUnit() {
     final Context context = Mockito.mock(Context.class);
-    when(context.getString(R.string.symbol_thousand)).thenReturn("K");
-    when(context.getString(R.string.symbol_million)).thenReturn("M");
-    when(context.getString(R.string.symbol_billion)).thenReturn("B");
-    when(context.getString(R.string.symbol_trillion)).thenReturn("T");
+    whenever(context.getString(R.string.symbol_thousand)).thenReturn("K");
+    whenever(context.getString(R.string.symbol_million)).thenReturn("M");
+    whenever(context.getString(R.string.symbol_billion)).thenReturn("B");
+    whenever(context.getString(R.string.symbol_trillion)).thenReturn("T");
 
     assertAll( // spotless:off
         // Dozen and hundred.
