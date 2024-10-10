@@ -19,8 +19,8 @@ import com.android.build.gradle.internal.tasks.factory.dependsOn
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.google.dagger.hilt.android)
-  id(libs.plugins.jetbrains.kotlin.android.get().pluginId)
   id(libs.plugins.google.devtools.ksp.get().pluginId)
+  id(libs.plugins.jetbrains.kotlin.android.get().pluginId)
   id(libs.plugins.jetbrains.kotlin.parcelize.get().pluginId)
 }
 
@@ -102,8 +102,11 @@ dependencies {
   ksp(libs.google.dagger.hilt.android.compiler)
 
   implementation(libs.jetbrains.kotlin.stdlib)
-  implementation(libs.jetbrains.kotlin.test)
+  implementation(libs.jetbrains.kotlinx.coroutines.core)
 
+  testImplementation(libs.androidx.arch.core.testing)
+  testImplementation(libs.io.mockk)
+  testImplementation(libs.jetbrains.kotlinx.coroutines.test)
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.mockito.core)
 
