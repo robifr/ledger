@@ -14,21 +14,23 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.util.livedata;
+package com.robifr.ledger.ui
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.LifecycleOwner;
-import androidx.lifecycle.LiveData;
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 
-@Deprecated
-public interface SafeLiveData<T> {
-  @NonNull
-  public T getValue();
+/**
+ * @param [I] Item to bind.
+ * @param [A] Possible action.
+ */
+// TODO: Remove annotation after Kotlin migration.
+abstract class RecyclerViewHolder<I, A>(
+    itemView: View,
+    @JvmField @get:JvmName("_action") protected val _action: A
+) : RecyclerView.ViewHolder(itemView) {
+  @get:JvmName("action")
+  val action: A
+    get() = _action
 
-  public void observe(@NonNull LifecycleOwner owner, @NonNull SafeObserver<? super T> observer);
-
-  public void observeForever(@NonNull SafeObserver<? super T> observer);
-
-  @NonNull
-  public LiveData<T> toLiveData();
+  abstract fun bind(item: I)
 }

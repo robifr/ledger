@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger;
+package com.robifr.ledger.util
 
-import android.app.Application;
-import android.webkit.WebView;
-import dagger.hilt.android.HiltAndroidApp;
+object ClassPath {
+  fun simpleName(cls: Class<*>): String =
+      if (cls.enclosingClass != null) "${cls.enclosingClass.simpleName}.${cls.simpleName}"
+      else cls.simpleName
 
-@HiltAndroidApp
-public class App extends Application {
-  @Override
-  public void onCreate() {
-    super.onCreate();
-    WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
-  }
+  fun simpleName(e: Enum<*>): String = "${simpleName(e.javaClass)}.${e.name}"
+
+  fun fullName(cls: Class<*>): String =
+      if (cls.enclosingClass != null) "${cls.enclosingClass.name}.${cls.simpleName}" else cls.name
+
+  fun fullName(e: Enum<*>): String = "${fullName(e.javaClass)}.${e.name}"
 }

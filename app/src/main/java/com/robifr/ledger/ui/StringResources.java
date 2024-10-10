@@ -22,6 +22,7 @@ import androidx.annotation.PluralsRes;
 import androidx.annotation.StringRes;
 import java.util.Objects;
 
+@Deprecated
 public sealed interface StringResources permits StringResources.Strings, StringResources.Plurals {
   @NonNull
   public static String stringOf(@NonNull Context context, @NonNull StringResources resources) {
@@ -35,9 +36,11 @@ public sealed interface StringResources permits StringResources.Strings, StringR
     return context.getString(((Strings) resources).resId, ((Strings) resources).args);
   }
 
+  @Deprecated
   public static record Strings(@StringRes int resId, @NonNull Object... args)
       implements StringResources {}
 
+  @Deprecated
   public static record Plurals(@PluralsRes int resId, int quantity, @NonNull Object... args)
       implements StringResources {}
 }
