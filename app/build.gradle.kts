@@ -102,10 +102,11 @@ dependencies {
   ksp(libs.google.dagger.hilt.android.compiler)
 
   implementation(libs.jetbrains.kotlin.stdlib)
-  implementation(libs.jetbrains.kotlin.test)
 
+  testImplementation(libs.androidx.arch.core.testing)
+  testImplementation(libs.jetbrains.kotlinx.coroutines.test)
   testImplementation(libs.junit.jupiter)
-  testImplementation(libs.mockito.core)
+  testImplementation(libs.mockito.kotlin)
 
   debugImplementation(libs.squareup.leakcanary.android)
 }
