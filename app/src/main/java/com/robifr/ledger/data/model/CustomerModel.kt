@@ -22,7 +22,6 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.robifr.ledger.local.access.CustomerDao
-import com.robifr.ledger.util.Strings
 import java.math.BigDecimal
 import kotlinx.parcelize.Parcelize
 
@@ -39,29 +38,23 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 @Entity(tableName = "customer")
 data class CustomerModel(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long?,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long? = null,
     @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "balance") val balance: Long,
-    @Ignore val debt: BigDecimal
+    @ColumnInfo(name = "balance") val balance: Long = 0L,
+    @Ignore val debt: BigDecimal = 0.toBigDecimal()
 ) : Model, Parcelable {
   /** Reserved constructor to be used by Room upon querying. */
   constructor(id: Long, name: String, balance: Long) : this(id, name, balance, 0.toBigDecimal())
 
-  companion object {
-    @JvmStatic fun toBuilder(): NameBuild = NewBuilder()
+  @Ignore override fun modelId(): Long? = id
 
-    @JvmStatic
-    fun toBuilder(customer: CustomerModel): EditBuild =
-        EditBuilder()
-            .setId(customer.id)
-            .setName(customer.name)
-            .setBalance(customer.balance)
-            .setDebt(customer.debt)
-  }
+  @Ignore fun withId(id: Long?): CustomerModel = copy(id = id)
 
-  @Ignore override fun modelId(): Long? = this.id
+  @Ignore fun withName(name: String): CustomerModel = copy(name = name)
 
-  @Ignore override fun toString(): String = Strings.classToString(this)
+  @Ignore fun withBalance(balance: Long): CustomerModel = copy(balance = balance)
+
+  @Ignore fun withDebt(debt: BigDecimal): CustomerModel = copy(debt = debt)
 
   /**
    * Check whether balance is sufficient before making a payment. Where current customer belongs to
@@ -69,31 +62,32 @@ data class CustomerModel(
    */
   @Ignore
   fun isBalanceSufficient(oldQueue: QueueModel?, newQueue: QueueModel): Boolean {
-    if (this.id != newQueue.customer?.id) return false
-
-    val oldTotalPrice: BigDecimal = oldQueue?.grandTotalPrice() ?: BigDecimal.ZERO
+    if (id != newQueue.customer?.id) return false
+    val oldTotalPrice: BigDecimal = oldQueue?.grandTotalPrice() ?: 0.toBigDecimal()
     val originalBalance: BigDecimal =
         // Ensure customer is unchanged when they both exists.
         if (oldQueue?.customerId != null &&
-            oldQueue.customerId == this.id &&
+            oldQueue.customerId == id &&
             newQueue.customerId != null &&
-            newQueue.customerId == this.id)
-            this.balance.toBigDecimal() + oldTotalPrice
-        else this.balance.toBigDecimal()
-
-    return (originalBalance - newQueue.grandTotalPrice()).compareTo(BigDecimal.ZERO) >= 0
+            newQueue.customerId == id) {
+          balance.toBigDecimal() + oldTotalPrice
+        } else {
+          balance.toBigDecimal()
+        }
+    return (originalBalance - newQueue.grandTotalPrice()).compareTo(0.toBigDecimal()) >= 0
   }
 
   /** Calculate balance when customer is assigned to pay a queue. */
   @Ignore
-  fun balanceOnMadePayment(queue: QueueModel): Long {
-    return if (this.id == queue.customer?.id &&
-        queue.status == QueueModel.Status.COMPLETED &&
-        queue.paymentMethod == QueueModel.PaymentMethod.ACCOUNT_BALANCE &&
-        this.balance.toBigDecimal().compareTo(queue.grandTotalPrice()) >= 0)
-        (this.balance.toBigDecimal() - queue.grandTotalPrice()).toLong()
-    else this.balance
-  }
+  fun balanceOnMadePayment(queue: QueueModel): Long =
+      if (id == queue.customer?.id &&
+          queue.status == QueueModel.Status.COMPLETED &&
+          queue.paymentMethod == QueueModel.PaymentMethod.ACCOUNT_BALANCE &&
+          balance.toBigDecimal().compareTo(queue.grandTotalPrice()) >= 0) {
+        (balance.toBigDecimal() - queue.grandTotalPrice()).toLong()
+      } else {
+        balance
+      }
 
   /**
    * Calculate balance when the queue was changed. Where current customer belongs to the [newQueue].
@@ -102,9 +96,7 @@ data class CustomerModel(
   fun balanceOnUpdatedPayment(oldQueue: QueueModel, newQueue: QueueModel): Long {
     // WARNING: If I were you, I would just stay away from this method.
     //    It's critical to ensure the balance always correctly calculated.
-
-    if (this.id != newQueue.customer?.id) return this.balance
-
+    if (id != newQueue.customer?.id) return balance
     val isStatusCompleted: Boolean = newQueue.status == QueueModel.Status.COMPLETED
     val isPaymentCash: Boolean = newQueue.paymentMethod == QueueModel.PaymentMethod.CASH
     val isPaymentAccountBalance: Boolean =
@@ -120,7 +112,7 @@ data class CustomerModel(
     // Customer is SWITCHED when its from non-null to non-null ID only.
     // Don't accept for null to null nor null to non-null ID.
     val isCustomerSwitched: Boolean =
-        this.id != null && oldQueue.customerId != null && this.id != oldQueue.customerId
+        id != null && oldQueue.customerId != null && id != oldQueue.customerId
 
     // Deduct balance.
     if (isStatusCompleted && isPaymentAccountBalance) {
@@ -131,11 +123,10 @@ data class CustomerModel(
           isStatusWasCompleted &&
           isOldQueueHaveCustomer &&
           !isCustomerSwitched) {
-        return (this.balance.toBigDecimal() +
+        return (balance.toBigDecimal() +
                 oldQueue.grandTotalPrice() - // Revert balance from old queue to obtain old balance.
                 newQueue.grandTotalPrice()) // Then subtract to deduct it again with the new one.
             .toLong()
-
         // Case when status simply switched from uncompleted to completed
         // or when old payment is non account balance,
         // with the new queue payment method marked as account balance.
@@ -144,9 +135,8 @@ data class CustomerModel(
           !isOldQueueHaveCustomer ||
           !isStatusWasCompleted ||
           !isPaymentWasAccountBalance) {
-        return (this.balance.toBigDecimal() - newQueue.grandTotalPrice()).toLong()
+        return (balance.toBigDecimal() - newQueue.grandTotalPrice()).toLong()
       }
-
       // Revert balance.
     } else if (isOldQueueHaveCustomer &&
         isPaymentWasAccountBalance &&
@@ -156,29 +146,30 @@ data class CustomerModel(
         // while payment method still saved as account balance.
         // Or when payment simply switched to cash.
         ((isPaymentAccountBalance && !isStatusCompleted) || isPaymentCash)) {
-      return (this.balance.toBigDecimal() + oldQueue.grandTotalPrice()).toLong()
+      return (balance.toBigDecimal() + oldQueue.grandTotalPrice()).toLong()
     }
-
-    return this.balance
+    return balance
   }
 
   /** Calculate balance when going to revert the payment, like when deleting queue. */
   @Ignore
-  fun balanceOnRevertedPayment(queue: QueueModel): Long {
-    return if (this.id == queue.customer?.id &&
-        queue.status == QueueModel.Status.COMPLETED &&
-        queue.paymentMethod == QueueModel.PaymentMethod.ACCOUNT_BALANCE)
-        (this.balance.toBigDecimal() + queue.grandTotalPrice()).toLong()
-    else this.balance
-  }
+  fun balanceOnRevertedPayment(queue: QueueModel): Long =
+      if (id == queue.customer?.id &&
+          queue.status == QueueModel.Status.COMPLETED &&
+          queue.paymentMethod == QueueModel.PaymentMethod.ACCOUNT_BALANCE) {
+        (balance.toBigDecimal() + queue.grandTotalPrice()).toLong()
+      } else {
+        balance
+      }
 
   /** Calculate debt when customer is assigned to pay a queue. */
   @Ignore
-  fun debtOnMadePayment(queue: QueueModel): BigDecimal {
-    return if (this.id == queue.customer?.id && queue.status == QueueModel.Status.UNPAID)
-        this.debt - queue.grandTotalPrice()
-    else this.debt
-  }
+  fun debtOnMadePayment(queue: QueueModel): BigDecimal =
+      if (id == queue.customer?.id && queue.status == QueueModel.Status.UNPAID) {
+        debt - queue.grandTotalPrice()
+      } else {
+        debt
+      }
 
   /**
    * Calculate debt when the queue was changed. Where current customer belongs to the [newQueue].
@@ -188,94 +179,47 @@ data class CustomerModel(
     // WARNING: Although debt will always be calculated based on total price of unpaid queues.
     //    It does still important to calculate post-transaction debt for UI stuff.
     //    Just think twice before you do something here. You have been warned.
-
-    if (this.id != newQueue.customer?.id) return this.debt
-
+    if (id != newQueue.customer?.id) return debt
     val isStatusUnpaid: Boolean = newQueue.status == QueueModel.Status.UNPAID
     val isStatusWasUnpaid: Boolean = oldQueue.status == QueueModel.Status.UNPAID
     val isTotalPriceChanged: Boolean =
         oldQueue.grandTotalPrice().compareTo(newQueue.grandTotalPrice()) != 0
-
     // Customer is CHANGED when its from non-null to non-null or null to non-null ID.
     // Don't accept for null to null ID.
-    val isCustomerChanged: Boolean = this.id != null && this.id != oldQueue.customerId
+    val isCustomerChanged: Boolean = id != null && id != oldQueue.customerId
 
     // Revert debt when changing queue status from unpaid to others.
     if (!isStatusUnpaid && isStatusWasUnpaid && (!isCustomerChanged || isTotalPriceChanged)) {
-      return this.debt + oldQueue.grandTotalPrice()
-
+      return debt + oldQueue.grandTotalPrice()
       // Add more debt when changing queue status from others to unpaid.
     } else if (isStatusUnpaid && (!isStatusWasUnpaid || isCustomerChanged)) {
-      return this.debt - newQueue.grandTotalPrice()
-
+      return debt - newQueue.grandTotalPrice()
       // Add more debt when queue total price changed by
       // calculating difference between old and new total price.
     } else if (isStatusUnpaid && isTotalPriceChanged) {
-      return this.debt + oldQueue.grandTotalPrice() - newQueue.grandTotalPrice()
+      return debt + oldQueue.grandTotalPrice() - newQueue.grandTotalPrice()
     }
-
-    return this.debt
+    return debt
   }
 
   /** Calculate debt when going to revert the payment, like when deleting queue. */
   @Ignore
-  fun debtOnRevertedPayment(queue: QueueModel): BigDecimal {
-    return if (this.id == queue.customer?.id && queue.status == QueueModel.Status.UNPAID)
-        this.debt + queue.grandTotalPrice()
-    else this.debt
+  fun debtOnRevertedPayment(queue: QueueModel): BigDecimal =
+      if (id == queue.customer?.id && queue.status == QueueModel.Status.UNPAID) {
+        debt + queue.grandTotalPrice()
+      } else {
+        debt
+      }
+
+  companion object {
+    @JvmStatic fun toBuilder(): NameBuild = Builder()
   }
 
   interface NameBuild {
-    fun setName(name: String): NewBuild
+    fun withName(name: String): CustomerModel
   }
 
-  interface NewBuild {
-    fun setId(id: Long?): NewBuild
-
-    fun setBalance(balance: Long): NewBuild
-
-    fun setDebt(debt: BigDecimal): NewBuild
-
-    fun build(): CustomerModel
-  }
-
-  interface EditBuild : NewBuild {
-    override fun setId(id: Long?): EditBuild
-
-    override fun setBalance(balance: Long): EditBuild
-
-    override fun setDebt(debt: BigDecimal): EditBuild
-
-    fun setName(name: String): EditBuild
-  }
-
-  private abstract class Builder : NewBuild {
-    protected lateinit var _name: String
-    protected var _id: Long? = null
-    protected var _balance: Long = 0L
-    protected var _debt: BigDecimal = 0.toBigDecimal()
-
-    override fun build(): CustomerModel =
-        CustomerModel(this._id, this._name, this._balance, this._debt)
-  }
-
-  private class NewBuilder : Builder(), NameBuild {
-    override fun setName(name: String): NewBuild = this.apply { this._name = name }
-
-    override fun setId(id: Long?): NewBuild = this.apply { this._id = id }
-
-    override fun setBalance(balance: Long): NewBuild = this.apply { this._balance = balance }
-
-    override fun setDebt(debt: BigDecimal): NewBuild = this.apply { this._debt = debt }
-  }
-
-  private class EditBuilder : Builder(), EditBuild {
-    override fun setName(name: String): EditBuild = this.apply { this._name = name }
-
-    override fun setId(id: Long?): EditBuild = this.apply { this._id = id }
-
-    override fun setBalance(balance: Long): EditBuild = this.apply { this._balance = balance }
-
-    override fun setDebt(debt: BigDecimal): EditBuild = this.apply { this._debt = debt }
+  private class Builder : NameBuild {
+    override fun withName(name: String): CustomerModel = CustomerModel(name = name)
   }
 }

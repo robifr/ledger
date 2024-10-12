@@ -25,7 +25,6 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.robifr.ledger.local.ColumnConverter.BigDecimalConverter
-import com.robifr.ledger.util.Strings
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlinx.parcelize.Parcelize
@@ -62,36 +61,37 @@ import kotlinx.parcelize.Parcelize
                 onDelete = ForeignKey.SET_NULL)],
     indices = [Index(value = ["queue_id"]), Index(value = ["product_id"])])
 data class ProductOrderModel(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long?,
-    @ColumnInfo(name = "queue_id") val queueId: Long?,
-    @ColumnInfo(name = "product_id") val productId: Long?,
-    @ColumnInfo(name = "product_name") val productName: String?,
-    @ColumnInfo(name = "product_price") val productPrice: Long?,
-    @ColumnInfo(name = "quantity") val quantity: Double,
-    @ColumnInfo(name = "discount") val discount: Long,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long? = null,
+    @ColumnInfo(name = "queue_id") val queueId: Long? = null,
+    @ColumnInfo(name = "product_id") val productId: Long? = null,
+    @ColumnInfo(name = "product_name") val productName: String? = null,
+    @ColumnInfo(name = "product_price") val productPrice: Long? = null,
+    @ColumnInfo(name = "quantity") val quantity: Double = 0.0,
+    @ColumnInfo(name = "discount") val discount: Long = 0L,
     @field:TypeConverters(BigDecimalConverter::class)
     @ColumnInfo(name = "total_price")
-    val totalPrice: BigDecimal
+    val totalPrice: BigDecimal = calculateTotalPrice(productPrice, quantity, discount)
 ) : Model, Parcelable {
-  companion object {
-    @JvmStatic fun toBuilder(): NewBuild = NewBuilder()
+  @Ignore override fun modelId(): Long? = id
 
-    @JvmStatic
-    fun toBuilder(productOrder: ProductOrderModel): EditBuild =
-        EditBuilder()
-            .setId(productOrder.id)
-            .setQueueId(productOrder.queueId)
-            .setProductId(productOrder.productId)
-            .setProductName(productOrder.productName)
-            .setProductPrice(productOrder.productPrice)
-            .setQuantity(productOrder.quantity)
-            .setDiscount(productOrder.discount)
-            .setTotalPrice(productOrder.totalPrice)
-  }
+  @Ignore fun withId(id: Long?): ProductOrderModel = copy(id = id)
 
-  @Ignore override fun modelId(): Long? = this.id
+  @Ignore fun withQueueId(queueId: Long?): ProductOrderModel = copy(queueId = queueId)
 
-  @Ignore override fun toString(): String = Strings.classToString(this)
+  @Ignore fun withProductId(productId: Long?): ProductOrderModel = copy(productId = productId)
+
+  @Ignore
+  fun withProductName(productName: String?): ProductOrderModel = copy(productName = productName)
+
+  @Ignore
+  fun withProductPrice(productPrice: Long?): ProductOrderModel = copy(productPrice = productPrice)
+
+  @Ignore fun withQuantity(quantity: Double): ProductOrderModel = copy(quantity = quantity)
+
+  @Ignore fun withDiscount(discount: Long): ProductOrderModel = copy(discount = discount)
+
+  @Ignore
+  fun withTotalPrice(totalPrice: BigDecimal): ProductOrderModel = copy(totalPrice = totalPrice)
 
   /**
    * @return Referenced product associated with the current product order. [productId] will remains
@@ -100,141 +100,32 @@ data class ProductOrderModel(
    *   transaction history.
    */
   @Ignore
-  fun referencedProduct(): ProductModel? {
-    return this.productName?.let {
-      this.productPrice?.let { ProductModel(this.productId, this.productName, this.productPrice) }
-    }
-  }
+  fun referencedProduct(): ProductModel? =
+      productName?.let { productPrice?.let { ProductModel(productId, productName, productPrice) } }
 
   @Ignore
   fun discountPercent(): BigDecimal {
-    val totalPriceWithoutDiscount: BigDecimal = this.totalPrice + this.discount.toBigDecimal()
-
-    return if (totalPriceWithoutDiscount.compareTo(0.toBigDecimal()) == 0)
-        0.toBigDecimal() // Prevent zero division.
-    else
-        (this.discount.toBigDecimal() * 100.toBigDecimal())
-            .divide(totalPriceWithoutDiscount, 2, RoundingMode.UP)
-            .stripTrailingZeros()
-  }
-
-  @Ignore
-  fun calculateTotalPrice(): BigDecimal {
-    val totalPrice: BigDecimal =
-        this.productPrice
-            ?.toBigDecimal()
-            ?.multiply(this.quantity.toBigDecimal())
-            ?.subtract(this.discount.toBigDecimal()) ?: 0.toBigDecimal()
-    return maxOf(0.toBigDecimal(), totalPrice) // Disallow negative total price.
-  }
-
-  interface NewBuild {
-    fun setId(id: Long?): NewBuild
-
-    fun setQueueId(queueId: Long?): NewBuild
-
-    fun setProductId(productId: Long?): NewBuild
-
-    fun setProductName(productName: String?): NewBuild
-
-    fun setProductPrice(productPrice: Long?): NewBuild
-
-    fun setQuantity(quantity: Double): NewBuild
-
-    fun setDiscount(discount: Long): NewBuild
-
-    fun setTotalPrice(totalPrice: BigDecimal?): NewBuild
-
-    fun build(): ProductOrderModel
-  }
-
-  interface EditBuild : NewBuild {
-    override fun setId(id: Long?): EditBuild
-
-    override fun setQueueId(queueId: Long?): EditBuild
-
-    override fun setProductId(productId: Long?): EditBuild
-
-    override fun setProductName(productName: String?): EditBuild
-
-    override fun setProductPrice(productPrice: Long?): EditBuild
-
-    override fun setQuantity(quantity: Double): EditBuild
-
-    override fun setDiscount(discount: Long): EditBuild
-
-    override fun setTotalPrice(totalPrice: BigDecimal?): EditBuild
-  }
-
-  private abstract class Builder : NewBuild {
-    protected var _id: Long? = null
-    protected var _queueId: Long? = null
-    protected var _productId: Long? = null
-    protected var _productName: String? = null
-    protected var _productPrice: Long? = null
-    protected var _quantity: Double = 0.0
-    protected var _discount: Long = 0L
-    protected var _totalPrice: BigDecimal? = null
-
-    override fun build(): ProductOrderModel {
-      val productOrder: ProductOrderModel =
-          ProductOrderModel(
-              id = this._id,
-              queueId = this._queueId,
-              productId = this._productId,
-              productName = this._productName,
-              productPrice = this._productPrice,
-              quantity = this._quantity,
-              discount = this._discount,
-              totalPrice = 0.toBigDecimal())
-      // When total price isn't set, calculate it via `ProductOrderModel#calculateTotalPrice()`.
-      val totalPrice: BigDecimal = this._totalPrice ?: productOrder.calculateTotalPrice()
-
-      return productOrder.copy(totalPrice = totalPrice)
+    val totalPriceWithoutDiscount: BigDecimal = totalPrice + discount.toBigDecimal()
+    return if (totalPriceWithoutDiscount.compareTo(0.toBigDecimal()) == 0) {
+      0.toBigDecimal() // Prevent zero division.
+    } else {
+      (discount.toBigDecimal() * 100.toBigDecimal())
+          .divide(totalPriceWithoutDiscount, 2, RoundingMode.UP)
+          .stripTrailingZeros()
     }
   }
 
-  private class NewBuilder : Builder() {
-    override fun setId(id: Long?): NewBuild = this.apply { this._id = id }
+  companion object {
+    @JvmStatic fun toBuilder(): ProductOrderModel = ProductOrderModel()
 
-    override fun setQueueId(queueId: Long?): NewBuild = this.apply { this._queueId = queueId }
-
-    override fun setProductId(productId: Long?): NewBuild =
-        this.apply { this._productId = productId }
-
-    override fun setProductName(productName: String?): NewBuild =
-        this.apply { this._productName = productName }
-
-    override fun setProductPrice(productPrice: Long?): NewBuild =
-        this.apply { this._productPrice = productPrice }
-
-    override fun setQuantity(quantity: Double): NewBuild = this.apply { this._quantity = quantity }
-
-    override fun setDiscount(discount: Long): NewBuild = this.apply { this._discount = discount }
-
-    override fun setTotalPrice(totalPrice: BigDecimal?): NewBuild =
-        this.apply { this._totalPrice = totalPrice }
-  }
-
-  private class EditBuilder : Builder(), EditBuild {
-    override fun setId(id: Long?): EditBuild = this.apply { this._id = id }
-
-    override fun setQueueId(queueId: Long?): EditBuild = this.apply { this._queueId = queueId }
-
-    override fun setProductId(productId: Long?): EditBuild =
-        this.apply { this._productId = productId }
-
-    override fun setProductName(productName: String?): EditBuild =
-        this.apply { this._productName = productName }
-
-    override fun setProductPrice(productPrice: Long?): EditBuild =
-        this.apply { this._productPrice = productPrice }
-
-    override fun setQuantity(quantity: Double): EditBuild = this.apply { this._quantity = quantity }
-
-    override fun setDiscount(discount: Long): EditBuild = this.apply { this._discount = discount }
-
-    override fun setTotalPrice(totalPrice: BigDecimal?): EditBuild =
-        this.apply { this._totalPrice = totalPrice }
+    @JvmStatic
+    fun calculateTotalPrice(productPrice: Long?, quantity: Double, discount: Long): BigDecimal {
+      val totalPrice: BigDecimal =
+          productPrice
+              ?.toBigDecimal()
+              ?.multiply(quantity.toBigDecimal())
+              ?.subtract(discount.toBigDecimal()) ?: 0.toBigDecimal()
+      return maxOf(0.toBigDecimal(), totalPrice) // Disallow negative total price.
+    }
   }
 }

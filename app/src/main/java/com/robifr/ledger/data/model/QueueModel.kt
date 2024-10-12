@@ -28,7 +28,6 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.robifr.ledger.R
 import com.robifr.ledger.local.ColumnConverter.InstantConverter
-import com.robifr.ledger.util.Strings
 import java.math.BigDecimal
 import java.time.Instant
 import kotlinx.parcelize.Parcelize
@@ -57,14 +56,50 @@ import kotlinx.parcelize.Parcelize
                 onDelete = ForeignKey.SET_NULL)],
     indices = [Index(value = ["customer_id"])])
 data class QueueModel(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long?,
-    @ColumnInfo(name = "customer_id") val customerId: Long?,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long? = null,
+    @ColumnInfo(name = "customer_id") val customerId: Long? = null,
     @ColumnInfo(name = "status") val status: Status,
     @field:TypeConverters(InstantConverter::class) @ColumnInfo(name = "date") val date: Instant,
     @ColumnInfo(name = "payment_method") val paymentMethod: PaymentMethod,
-    @Ignore val customer: CustomerModel?,
-    @Ignore val productOrders: List<ProductOrderModel>
+    @Ignore val customer: CustomerModel? = null,
+    @Ignore val productOrders: List<ProductOrderModel> = listOf()
 ) : Model, Parcelable {
+  /** Reserved constructor to be used by Room upon querying. */
+  constructor(
+      id: Long?,
+      customerId: Long?,
+      status: Status,
+      date: Instant,
+      paymentMethod: PaymentMethod
+  ) : this(id, customerId, status, date, paymentMethod, null, listOf())
+
+  @Ignore override fun modelId(): Long? = id
+
+  @Ignore fun withId(id: Long?): QueueModel = copy(id = id)
+
+  @Ignore fun withCustomerId(customerId: Long?): QueueModel = copy(customerId = customerId)
+
+  @Ignore fun withStatus(status: Status): QueueModel = copy(status = status)
+
+  @Ignore fun withDate(date: Instant): QueueModel = copy(date = date)
+
+  @Ignore
+  fun withPaymentMethod(paymentMethod: PaymentMethod): QueueModel =
+      copy(paymentMethod = paymentMethod)
+
+  @Ignore fun withCustomer(customer: CustomerModel?): QueueModel = copy(customer = customer)
+
+  @Ignore
+  fun withProductOrders(productOrders: List<ProductOrderModel>): QueueModel =
+      copy(productOrders = productOrders)
+
+  @Ignore fun grandTotalPrice(): BigDecimal = productOrders.sumOf { it.totalPrice }
+
+  @Ignore fun totalDiscount(): BigDecimal = productOrders.sumOf { it.discount.toBigDecimal() }
+
+  companion object {
+    @JvmStatic fun toBuilder(): StatusBuild = Builder()
+  }
 
   enum class Status(
       @get:JvmName("resourceString") @StringRes val resourceString: Int,
@@ -82,135 +117,27 @@ data class QueueModel(
     ACCOUNT_BALANCE(R.string.enum_queuePaymentMethod_accountBalance)
   }
 
-  /** Reserved constructor to be used by Room upon querying. */
-  constructor(
-      id: Long?,
-      customerId: Long?,
-      status: Status,
-      date: Instant,
-      paymentMethod: PaymentMethod
-  ) : this(id, customerId, status, date, paymentMethod, null, ArrayList())
-
-  companion object {
-    @JvmStatic fun toBuilder(): StatusBuild = NewBuilder()
-
-    @JvmStatic
-    fun toBuilder(queue: QueueModel): EditBuild =
-        EditBuilder()
-            .setId(queue.id)
-            .setCustomerId(queue.customerId)
-            .setStatus(queue.status)
-            .setDate(queue.date)
-            .setPaymentMethod(queue.paymentMethod)
-            .setCustomer(queue.customer)
-            .setProductOrders(queue.productOrders)
-  }
-
-  @Ignore override fun modelId(): Long? = this.id
-
-  @Ignore override fun toString(): String = Strings.classToString(this)
-
-  @Ignore fun grandTotalPrice(): BigDecimal = this.productOrders.sumOf { it.totalPrice }
-
-  @Ignore fun totalDiscount(): BigDecimal = this.productOrders.sumOf { it.discount.toBigDecimal() }
-
   interface StatusBuild {
-    fun setStatus(status: Status): DateBuild
+    fun withStatus(status: Status): DateBuild
   }
 
   interface DateBuild {
-    fun setDate(date: Instant): PaymentMethodBuild
+    fun withDate(date: Instant): PaymentMethodBuild
   }
 
   interface PaymentMethodBuild {
-    fun setPaymentMethod(paymentMethod: PaymentMethod): NewBuild
+    fun withPaymentMethod(paymentMethod: PaymentMethod): QueueModel
   }
 
-  interface NewBuild {
-    fun setId(id: Long?): NewBuild
+  private class Builder : StatusBuild, DateBuild, PaymentMethodBuild {
+    private lateinit var _status: Status
+    private lateinit var _date: Instant
 
-    fun setCustomerId(customerId: Long?): NewBuild
+    override fun withStatus(status: Status): DateBuild = apply { _status = status }
 
-    fun setCustomer(customer: CustomerModel?): NewBuild
+    override fun withDate(date: Instant): PaymentMethodBuild = apply { _date = date }
 
-    fun setProductOrders(productOrders: List<ProductOrderModel>): NewBuild
-
-    fun build(): QueueModel
-  }
-
-  interface EditBuild : NewBuild {
-    override fun setId(id: Long?): EditBuild
-
-    override fun setCustomerId(customerId: Long?): EditBuild
-
-    override fun setCustomer(customer: CustomerModel?): EditBuild
-
-    override fun setProductOrders(productOrders: List<ProductOrderModel>): EditBuild
-
-    fun setStatus(status: Status): EditBuild
-
-    fun setDate(date: Instant): EditBuild
-
-    fun setPaymentMethod(paymentMethod: PaymentMethod): EditBuild
-  }
-
-  private abstract class Builder : NewBuild {
-    protected lateinit var _status: Status
-    protected lateinit var _date: Instant
-    protected lateinit var _paymentMethod: PaymentMethod
-    protected var _id: Long? = null
-    protected var _customerId: Long? = null
-    protected var _customer: CustomerModel? = null
-    protected var _productOrders: List<ProductOrderModel> = ArrayList()
-
-    override fun build(): QueueModel =
-        QueueModel(
-            id = this._id,
-            customerId = this._customerId,
-            status = this._status,
-            date = this._date,
-            paymentMethod = this._paymentMethod,
-            customer = this._customer,
-            productOrders = this._productOrders)
-  }
-
-  private class NewBuilder : Builder(), StatusBuild, DateBuild, PaymentMethodBuild {
-    override fun setStatus(status: Status): DateBuild = this.apply { this._status = status }
-
-    override fun setDate(date: Instant): PaymentMethodBuild = this.apply { this._date = date }
-
-    override fun setPaymentMethod(paymentMethod: PaymentMethod): NewBuild =
-        this.apply { this._paymentMethod = paymentMethod }
-
-    override fun setId(id: Long?): NewBuild = this.apply { this._id = id }
-
-    override fun setCustomerId(customerId: Long?): NewBuild =
-        this.apply { this._customerId = customerId }
-
-    override fun setCustomer(customer: CustomerModel?): NewBuild =
-        this.apply { this._customer = customer }
-
-    override fun setProductOrders(productOrders: List<ProductOrderModel>): NewBuild =
-        this.apply { this._productOrders = productOrders }
-  }
-
-  private class EditBuilder : Builder(), EditBuild {
-    override fun setStatus(status: Status): EditBuild = this.apply { this._status = status }
-
-    override fun setDate(date: Instant): EditBuild = this.apply { this._date = date }
-
-    override fun setPaymentMethod(paymentMethod: PaymentMethod): EditBuild =
-        this.apply { this._paymentMethod = paymentMethod }
-
-    override fun setId(id: Long?): EditBuild = this.apply { this._id = id }
-
-    override fun setCustomerId(customerId: Long?): EditBuild =
-        this.apply { this._customerId = customerId }
-
-    override fun setCustomer(customer: CustomerModel?): EditBuild =
-        this.apply { this._customer = customer }
-
-    override fun setProductOrders(productOrders: List<ProductOrderModel>): EditBuild =
-        this.apply { this._productOrders = productOrders }
+    override fun withPaymentMethod(paymentMethod: PaymentMethod): QueueModel =
+        QueueModel(status = _status, date = _date, paymentMethod = paymentMethod)
   }
 }
