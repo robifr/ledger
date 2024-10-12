@@ -24,5 +24,7 @@ sealed interface Model {
    * It's due to when updating a model with foreign-key set to zero — indicating the referenced row
    * was deleted — instead of null, the query will silently fail.
    */
-  fun modelId(): Long?
+  val id: Long?
+
+  @Deprecated("Replaced with id property") fun modelId(): Long? = id
 }

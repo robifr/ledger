@@ -17,12 +17,10 @@
 package com.robifr.ledger.data.model
 
 @JvmRecord
-data class CustomerBalanceInfo(val id: Long?, val balance: Long) : Info {
+data class CustomerBalanceInfo(override val id: Long?, val balance: Long) : Info {
   companion object {
     @JvmStatic
     fun withModel(customer: CustomerModel): CustomerBalanceInfo =
         CustomerBalanceInfo(customer.id, customer.balance)
   }
-
-  override fun modelId(): Long? = this.id
 }
