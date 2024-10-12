@@ -36,59 +36,51 @@ public class CustomerModelTest {
   @NonNull
   private final CustomerModel _customer =
       CustomerModel.toBuilder()
-          .setName("Amy")
-          .setId(1L)
-          .setBalance(10_000L)
-          .setDebt(BigDecimal.ZERO)
-          .build();
+          .withName("Amy")
+          .withId(1L)
+          .withBalance(10_000L)
+          .withDebt(BigDecimal.ZERO);
 
   @NonNull
   private final ProductOrderModel _order =
       ProductOrderModel.toBuilder()
-          .setId(1L)
-          .setQueueId(1L)
-          .setProductId(1L)
-          .setProductName("Apple")
-          .setProductPrice(1000L)
-          .setQuantity(1.0)
-          .setDiscount(0L)
-          .setTotalPrice(BigDecimal.valueOf(1000L))
-          .build();
+          .withId(1L)
+          .withQueueId(1L)
+          .withProductId(1L)
+          .withProductName("Apple")
+          .withProductPrice(1000L)
+          .withQuantity(1.0)
+          .withDiscount(0L)
+          .withTotalPrice(BigDecimal.valueOf(1000L));
 
   @NonNull
   private final QueueModel _queue =
       QueueModel.toBuilder()
-          .setStatus(QueueModel.Status.IN_QUEUE)
-          .setDate(Instant.now())
-          .setPaymentMethod(QueueModel.PaymentMethod.CASH)
-          .setId(1L)
-          .setCustomerId(1L)
-          .setCustomer(this._customer)
-          .setProductOrders(List.of(this._order))
-          .build();
+          .withStatus(QueueModel.Status.IN_QUEUE)
+          .withDate(Instant.now())
+          .withPaymentMethod(QueueModel.PaymentMethod.CASH)
+          .withId(1L)
+          .withCustomerId(1L)
+          .withCustomer(this._customer)
+          .withProductOrders(List.of(this._order));
 
   @Test
   public void balanceSufficient() {
-    final CustomerModel secondCustomer =
-        CustomerModel.toBuilder(this._customer).setId(2L).setName("Ben").build();
-    final CustomerModel noBalanceCustomer =
-        CustomerModel.toBuilder(this._customer).setBalance(0L).build();
+    final CustomerModel secondCustomer = this._customer.withId(2L).withName("Ben");
+    final CustomerModel noBalanceCustomer = this._customer.withBalance(0L);
 
     final QueueModel queue_noBalance_totalPriceLessThanOriginalBalance =
-        QueueModel.toBuilder(this._queue)
-            .setCustomer(noBalanceCustomer)
-            .setProductOrders(Collections.nCopies(9, this._order))
-            .build();
+        this._queue
+            .withCustomer(noBalanceCustomer)
+            .withProductOrders(Collections.nCopies(9, this._order));
     final QueueModel queue_noBalance_totalPriceEqualsOriginalBalance =
-        QueueModel.toBuilder(this._queue)
-            .setCustomer(noBalanceCustomer)
-            .setProductOrders(Collections.nCopies(10, this._order))
-            .build();
+        this._queue
+            .withCustomer(noBalanceCustomer)
+            .withProductOrders(Collections.nCopies(10, this._order));
     final QueueModel queue_noBalance_totalPriceMoreThanOriginalBalance =
-        QueueModel.toBuilder(this._queue)
-            .setCustomer(noBalanceCustomer)
-            .setProductOrders(Collections.nCopies(11, this._order))
-            .build();
+        this._queue
+            .withCustomer(noBalanceCustomer)
+            .withProductOrders(Collections.nCopies(11, this._order));
 
     assertAll( // spotless:off
         // Before payment is made. Ensure the actual shown balance — the one
@@ -108,50 +100,35 @@ public class CustomerModelTest {
   @Test
   public void balanceOnPayment() {
     final QueueModel completedQueue_accountBalance =
-        QueueModel.toBuilder(this._queue)
-            .setStatus(QueueModel.Status.COMPLETED)
-            .setPaymentMethod(QueueModel.PaymentMethod.ACCOUNT_BALANCE)
-            .build();
+        this._queue
+            .withStatus(QueueModel.Status.COMPLETED)
+            .withPaymentMethod(QueueModel.PaymentMethod.ACCOUNT_BALANCE);
     final QueueModel completedQueue_cash =
-        QueueModel.toBuilder(this._queue)
-            .setStatus(QueueModel.Status.COMPLETED)
-            .setPaymentMethod(QueueModel.PaymentMethod.CASH)
-            .build();
+        this._queue
+            .withStatus(QueueModel.Status.COMPLETED)
+            .withPaymentMethod(QueueModel.PaymentMethod.CASH);
     final QueueModel uncompletedQueue_accountBalance =
-        QueueModel.toBuilder(this._queue)
-            .setStatus(QueueModel.Status.IN_QUEUE)
-            .setPaymentMethod(QueueModel.PaymentMethod.ACCOUNT_BALANCE)
-            .build();
+        this._queue
+            .withStatus(QueueModel.Status.IN_QUEUE)
+            .withPaymentMethod(QueueModel.PaymentMethod.ACCOUNT_BALANCE);
     final QueueModel uncompletedQueue_cash =
-        QueueModel.toBuilder(this._queue)
-            .setStatus(QueueModel.Status.IN_QUEUE)
-            .setPaymentMethod(QueueModel.PaymentMethod.CASH)
-            .build();
+        this._queue
+            .withStatus(QueueModel.Status.IN_QUEUE)
+            .withPaymentMethod(QueueModel.PaymentMethod.CASH);
 
-    final CustomerModel lowBalanceCustomer =
-        CustomerModel.toBuilder(this._customer).setBalance(500L).build();
-    final CustomerModel secondCustomer =
-        CustomerModel.toBuilder(this._customer).setId(2L).setName("Ben").build();
+    final CustomerModel lowBalanceCustomer = this._customer.withBalance(500L);
+    final CustomerModel secondCustomer = this._customer.withId(2L).withName("Ben");
 
     final QueueModel completedQueue_accountBalance_noCustomer =
-        QueueModel.toBuilder(completedQueue_accountBalance)
-            .setCustomerId(null)
-            .setCustomer(null)
-            .build();
+        completedQueue_accountBalance.withCustomerId(null).withCustomer(null);
     final QueueModel completedQueue_accountBalance_secondCustomer =
-        QueueModel.toBuilder(completedQueue_accountBalance)
-            .setCustomerId(secondCustomer.id())
-            .setCustomer(secondCustomer)
-            .build();
-
+        completedQueue_accountBalance
+            .withCustomerId(secondCustomer.id())
+            .withCustomer(secondCustomer);
     final QueueModel completedQueue_accountBalance_doubleOrder =
-        QueueModel.toBuilder(completedQueue_accountBalance)
-            .setProductOrders(List.of(this._order, this._order))
-            .build();
+        completedQueue_accountBalance.withProductOrders(List.of(this._order, this._order));
     final QueueModel completedQueue_accountBalance_noOrder =
-        QueueModel.toBuilder(completedQueue_accountBalance)
-            .setProductOrders(Collections.emptyList())
-            .build();
+        completedQueue_accountBalance.withProductOrders(Collections.emptyList());
 
     assertAll( // spotless:off
         () -> assertEquals(9000L, this._customer.balanceOnMadePayment(completedQueue_accountBalance), "Deduct balance when queue completed with account balance"),
@@ -220,38 +197,22 @@ public class CustomerModelTest {
   public void debtOnPayment() {
     final List<QueueModel> notUnpaidQueues =
         List.of(
-            QueueModel.toBuilder(this._queue).setStatus(QueueModel.Status.IN_QUEUE).build(),
-            QueueModel.toBuilder(this._queue).setStatus(QueueModel.Status.IN_PROCESS).build(),
-            QueueModel.toBuilder(this._queue).setStatus(QueueModel.Status.COMPLETED).build());
-    final QueueModel unpaidQueue =
-        QueueModel.toBuilder(this._queue).setStatus(QueueModel.Status.UNPAID).build();
+            this._queue.withStatus(QueueModel.Status.IN_QUEUE),
+            this._queue.withStatus(QueueModel.Status.IN_PROCESS),
+            this._queue.withStatus(QueueModel.Status.COMPLETED));
+    final QueueModel unpaidQueue = this._queue.withStatus(QueueModel.Status.UNPAID);
+    final QueueModel unpaidQueue_noCustomer = unpaidQueue.withCustomerId(null).withCustomer(null);
 
-    final QueueModel unpaidQueue_noCustomer =
-        QueueModel.toBuilder(unpaidQueue).setCustomerId(null).setCustomer(null).build();
-
-    final CustomerModel secondCustomer =
-        CustomerModel.toBuilder(this._customer).setId(2L).setName("Ben").build();
+    final CustomerModel secondCustomer = this._customer.withId(2L).withName("Ben");
     final QueueModel unpaidQueue_secondCustomer =
-        QueueModel.toBuilder(unpaidQueue)
-            .setCustomerId(secondCustomer.id())
-            .setCustomer(secondCustomer)
-            .build();
+        unpaidQueue.withCustomerId(secondCustomer.id()).withCustomer(secondCustomer);
     final Function<QueueModel, QueueModel> notUnpaidQueue_secondCustomer =
         (notUnpaidQueue) ->
-            QueueModel.toBuilder(notUnpaidQueue)
-                .setCustomerId(secondCustomer.id())
-                .setCustomer(secondCustomer)
-                .build();
-
+            notUnpaidQueue.withCustomerId(secondCustomer.id()).withCustomer(secondCustomer);
     final QueueModel unpaidQueue_doubleOrder =
-        QueueModel.toBuilder(unpaidQueue)
-            .setProductOrders(List.of(this._order, this._order))
-            .build();
+        unpaidQueue.withProductOrders(List.of(this._order, this._order));
     final Function<QueueModel, QueueModel> notUnpaidQueue_doubleOrder =
-        (notUnpaidQueue) ->
-            QueueModel.toBuilder(notUnpaidQueue)
-                .setProductOrders(List.of(this._order, this._order))
-                .build();
+        (notUnpaidQueue) -> notUnpaidQueue.withProductOrders(List.of(this._order, this._order));
 
     assertAll( // spotless:off
         () -> assertEquals(BigDecimal.valueOf(-1000), this._customer.debtOnMadePayment(unpaidQueue), "Add debt when queue unpaid"),

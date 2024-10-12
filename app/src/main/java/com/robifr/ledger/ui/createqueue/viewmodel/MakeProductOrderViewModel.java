@@ -125,34 +125,48 @@ public class MakeProductOrderViewModel {
     }
 
     return ProductOrderModel.toBuilder()
-        .setId(id)
-        .setQueueId(queueId)
-        .setProductId(this._inputtedProduct.getValue().map(ProductModel::id).orElse(null))
-        .setProductName(this._inputtedProduct.getValue().map(ProductModel::name).orElse(null))
-        .setProductPrice(this._inputtedProduct.getValue().map(ProductModel::price).orElse(null))
-        .setTotalPrice(this._inputtedTotalPrice.getValue())
-        .setQuantity(quantity)
-        .setDiscount(discount)
-        .build();
+        .withId(id)
+        .withQueueId(queueId)
+        .withProductId(this._inputtedProduct.getValue().map(ProductModel::id).orElse(null))
+        .withProductName(this._inputtedProduct.getValue().map(ProductModel::name).orElse(null))
+        .withProductPrice(this._inputtedProduct.getValue().map(ProductModel::price).orElse(null))
+        .withTotalPrice(this._inputtedTotalPrice.getValue())
+        .withQuantity(quantity)
+        .withDiscount(discount);
   }
 
   public void onProductChanged(@Nullable ProductModel product) {
     this._inputtedProduct.setValue(Optional.ofNullable(product));
-    this.onTotalPriceChanged(this.inputtedProductOrder().calculateTotalPrice());
+    final ProductOrderModel inputtedProductOrder = this.inputtedProductOrder();
+    this.onTotalPriceChanged(
+        ProductOrderModel.calculateTotalPrice(
+            inputtedProductOrder.productPrice(),
+            inputtedProductOrder.quantity(),
+            inputtedProductOrder.discount()));
   }
 
   public void onQuantityTextChanged(@NonNull String quantity) {
     Objects.requireNonNull(quantity);
 
     this._inputtedQuantityText.setValue(quantity);
-    this.onTotalPriceChanged(this.inputtedProductOrder().calculateTotalPrice());
+    final ProductOrderModel inputtedProductOrder = this.inputtedProductOrder();
+    this.onTotalPriceChanged(
+        ProductOrderModel.calculateTotalPrice(
+            inputtedProductOrder.productPrice(),
+            inputtedProductOrder.quantity(),
+            inputtedProductOrder.discount()));
   }
 
   public void onDiscountTextChanged(@NonNull String discount) {
     Objects.requireNonNull(discount);
 
     this._inputtedDiscountText.setValue(discount);
-    this.onTotalPriceChanged(this.inputtedProductOrder().calculateTotalPrice());
+    final ProductOrderModel inputtedProductOrder = this.inputtedProductOrder();
+    this.onTotalPriceChanged(
+        ProductOrderModel.calculateTotalPrice(
+            inputtedProductOrder.productPrice(),
+            inputtedProductOrder.quantity(),
+            inputtedProductOrder.discount()));
   }
 
   public void onTotalPriceChanged(@NonNull BigDecimal totalPrice) {
