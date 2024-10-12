@@ -182,13 +182,12 @@ public class CreateQueueViewModel extends ViewModel {
   @NonNull
   public QueueModel inputtedQueue() {
     return QueueModel.toBuilder()
-        .setStatus(this._inputtedStatus.getValue())
-        .setDate(this._inputtedDate.getValue().toInstant())
-        .setPaymentMethod(this._inputtedPaymentMethod.getValue())
-        .setCustomerId(this._inputtedCustomer.getValue().map(CustomerModel::id).orElse(null))
-        .setCustomer(this._inputtedCustomer.getValue().orElse(null))
-        .setProductOrders(this._inputtedProductOrders.getValue())
-        .build();
+        .withStatus(this._inputtedStatus.getValue())
+        .withDate(this._inputtedDate.getValue().toInstant())
+        .withPaymentMethod(this._inputtedPaymentMethod.getValue())
+        .withCustomerId(this._inputtedCustomer.getValue().map(CustomerModel::id).orElse(null))
+        .withCustomer(this._inputtedCustomer.getValue().orElse(null))
+        .withProductOrders(this._inputtedProductOrders.getValue());
   }
 
   public void onCustomerChanged(@Nullable CustomerModel customer) {
@@ -311,10 +310,9 @@ public class CreateQueueViewModel extends ViewModel {
             .getValue()
             .map(
                 model ->
-                    CustomerModel.toBuilder(model)
-                        .setBalance(model.balanceOnMadePayment(this.inputtedQueue()))
-                        .setDebt(model.debtOnMadePayment(this.inputtedQueue()))
-                        .build())
+                    model
+                        .withBalance(model.balanceOnMadePayment(this.inputtedQueue()))
+                        .withDebt(model.debtOnMadePayment(this.inputtedQueue())))
             .orElse(null);
 
     this._temporalInputtedCustomer.setValue(Optional.ofNullable(customer));
