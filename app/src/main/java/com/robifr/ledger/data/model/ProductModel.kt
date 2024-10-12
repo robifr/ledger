@@ -21,7 +21,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
-import com.robifr.ledger.util.Strings
 import kotlinx.parcelize.Parcelize
 
 /**
@@ -34,63 +33,27 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 @Entity(tableName = "product")
 data class ProductModel(
-    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long?,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") val id: Long? = null,
     @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "price") val price: Long
+    @ColumnInfo(name = "price") val price: Long = 0L
 ) : Model, Parcelable {
+  @Ignore override fun modelId(): Long? = id
+
+  @Ignore fun withId(id: Long?): ProductModel = copy(id = id)
+
+  @Ignore fun withName(name: String): ProductModel = copy(name = name)
+
+  @Ignore fun withPrice(price: Long): ProductModel = copy(price = price)
+
   companion object {
-    @JvmStatic fun toBuilder(): NameBuild = NewBuilder()
-
-    @JvmStatic
-    fun toBuilder(product: ProductModel): EditBuild =
-        EditBuilder().setId(product.id).setName(product.name).setPrice(product.price)
+    @JvmStatic fun toBuilder(): NameBuild = Builder()
   }
-
-  @Ignore override fun modelId(): Long? = this.id
-
-  @Ignore override fun toString(): String = Strings.classToString(this)
 
   interface NameBuild {
-    fun setName(name: String): NewBuild
+    fun withName(name: String): ProductModel
   }
 
-  interface NewBuild {
-    fun setId(id: Long?): NewBuild
-
-    fun setPrice(price: Long): NewBuild
-
-    fun build(): ProductModel
-  }
-
-  interface EditBuild : NewBuild {
-    override fun setId(id: Long?): EditBuild
-
-    override fun setPrice(price: Long): EditBuild
-
-    fun setName(name: String): EditBuild
-  }
-
-  private abstract class Builder : NewBuild {
-    protected lateinit var _name: String
-    protected var _id: Long? = null
-    protected var _price: Long = 0L
-
-    override fun build(): ProductModel = ProductModel(this._id, this._name, this._price)
-  }
-
-  private class NewBuilder : Builder(), NameBuild {
-    override fun setName(name: String): NewBuild = this.apply { this._name = name }
-
-    override fun setId(id: Long?): NewBuild = this.apply { this._id = id }
-
-    override fun setPrice(price: Long): NewBuild = this.apply { this._price = price }
-  }
-
-  private class EditBuilder : Builder(), EditBuild {
-    override fun setName(name: String): EditBuild = this.apply { this._name = name }
-
-    override fun setId(id: Long?): EditBuild = this.apply { this._id = id }
-
-    override fun setPrice(price: Long): EditBuild = this.apply { this._price = price }
+  private class Builder : NameBuild {
+    override fun withName(name: String): ProductModel = ProductModel(name = name)
   }
 }
