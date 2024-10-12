@@ -224,8 +224,7 @@ public final class CustomerRepository
     final CompletableFuture<BigDecimal> countDebt =
         CompletableFuture.supplyAsync(() -> this._localDao.totalDebtById(customer.id()));
 
-    return countDebt.thenApplyAsync(
-        debt -> CustomerModel.toBuilder(customer).setDebt(debt).build());
+    return countDebt.thenApplyAsync(customer::withDebt);
   }
 
   /**

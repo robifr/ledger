@@ -81,7 +81,7 @@ public class EditQueueViewModel extends CreateQueueViewModel {
         this._initialQueueToEdit != null && this._initialQueueToEdit.id() != null
             ? this._initialQueueToEdit.id()
             : null;
-    return QueueModel.toBuilder(super.inputtedQueue()).setId(id).build();
+    return super.inputtedQueue().withId(id);
   }
 
   @Override
@@ -146,9 +146,8 @@ public class EditQueueViewModel extends CreateQueueViewModel {
                     this._initialQueueToEdit != null
                         && customer.balanceOnUpdatedPayment(
                                 this._initialQueueToEdit,
-                                QueueModel.toBuilder(inputtedQueue)
-                                    .setPaymentMethod(QueueModel.PaymentMethod.ACCOUNT_BALANCE)
-                                    .build())
+                                inputtedQueue.withPaymentMethod(
+                                    QueueModel.PaymentMethod.ACCOUNT_BALANCE))
                             >= 0L)
             .isPresent();
 
@@ -175,12 +174,11 @@ public class EditQueueViewModel extends CreateQueueViewModel {
             .filter(model -> this._initialQueueToEdit != null)
             .map(
                 model ->
-                    CustomerModel.toBuilder(model)
-                        .setBalance(
+                    model
+                        .withBalance(
                             model.balanceOnUpdatedPayment(this._initialQueueToEdit, inputtedQueue))
-                        .setDebt(
-                            model.debtOnUpdatedPayment(this._initialQueueToEdit, inputtedQueue))
-                        .build())
+                        .withDebt(
+                            model.debtOnUpdatedPayment(this._initialQueueToEdit, inputtedQueue)))
             .orElse(null);
 
     this._temporalInputtedCustomer.setValue(Optional.ofNullable(customer));

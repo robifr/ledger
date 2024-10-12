@@ -145,7 +145,7 @@ public final class QueueRepository
             (productOrders, queueId) -> {
               final List<ProductOrderModel> orders =
                   productOrders.stream()
-                      .map(order -> ProductOrderModel.toBuilder(order).setQueueId(queueId).build())
+                      .map(order -> order.withQueueId(queueId))
                       .collect(Collectors.toList());
               return this._productOrderRepository.add(orders);
             };
@@ -157,11 +157,9 @@ public final class QueueRepository
                 .thenComposeAsync(
                     selectedCustomer -> {
                       // Make customer pay the already inserted queue.
-                      final CustomerModel customer =
-                          CustomerModel.toBuilder(selectedCustomer)
-                              .setBalance(selectedCustomer.balanceOnMadePayment(insertedQueue))
-                              .build();
-                      return this._customerRepository.update(customer);
+                      return this._customerRepository.update(
+                          selectedCustomer.withBalance(
+                              selectedCustomer.balanceOnMadePayment(insertedQueue)));
                     });
 
     final CompletableFuture<Long> insert =
@@ -205,10 +203,8 @@ public final class QueueRepository
               new ArrayList<>(oldQueue.productOrders());
 
           for (ProductOrderModel productOrder : updatedQueue.productOrders()) {
-            final ProductOrderModel orderToUpsert =
-                ProductOrderModel.toBuilder(productOrder)
-                    .setQueueId(updatedQueue.id()) // In case they're newly created.
-                    .build();
+            // Set the queue ID, in case they're newly created.
+            final ProductOrderModel orderToUpsert = productOrder.withQueueId(updatedQueue.id());
 
             ordersToUpsert.add(orderToUpsert);
             // Remove product order with equal ID if they're exists inside `ordersToDelete`,
@@ -241,9 +237,8 @@ public final class QueueRepository
                           // Revert back old customer balance when different customer selected,
                           // even when the new one is null.
                           ? this._customerRepository.update(
-                              CustomerModel.toBuilder(oldCustomer)
-                                  .setBalance(oldCustomer.balanceOnRevertedPayment(oldQueue))
-                                  .build())
+                              oldCustomer.withBalance(
+                                  oldCustomer.balanceOnRevertedPayment(oldQueue)))
                           : CompletableFuture.completedFuture(0);
           final BiFunction<CustomerModel, CustomerModel, CompletableFuture<Integer>>
               updateNewCustomer =
@@ -251,11 +246,8 @@ public final class QueueRepository
                       updatedCustomer != null
                           // Update customer balance for newly selected customer.
                           ? this._customerRepository.update(
-                              CustomerModel.toBuilder(updatedCustomer)
-                                  .setBalance(
-                                      updatedCustomer.balanceOnUpdatedPayment(
-                                          oldQueue, updatedQueue))
-                                  .build())
+                              updatedCustomer.withBalance(
+                                  updatedCustomer.balanceOnUpdatedPayment(oldQueue, updatedQueue)))
                           : CompletableFuture.completedFuture(0);
 
           return selectUpdatedCustomer.thenAcceptAsync(
@@ -307,11 +299,8 @@ public final class QueueRepository
                 .thenComposeAsync(
                     customer -> {
                       // Revert back customer balance.
-                      final CustomerModel updatedCustomer =
-                          CustomerModel.toBuilder(customer)
-                              .setBalance(customer.balanceOnRevertedPayment(oldQueue))
-                              .build();
-                      return this._customerRepository.update(updatedCustomer);
+                      return this._customerRepository.update(
+                          customer.withBalance(customer.balanceOnRevertedPayment(oldQueue)));
                     });
 
     return this.selectById(queue.id())
@@ -359,10 +348,9 @@ public final class QueueRepository
     return CompletableFuture.allOf(selectCustomer, selectProductOrders)
         .thenApplyAsync(
             ignore ->
-                QueueModel.toBuilder(queue)
-                    .setCustomer(selectCustomer.join())
-                    .setProductOrders(selectProductOrders.join())
-                    .build());
+                queue
+                    .withCustomer(selectCustomer.join())
+                    .withProductOrders(selectProductOrders.join()));
   }
 
   /**
