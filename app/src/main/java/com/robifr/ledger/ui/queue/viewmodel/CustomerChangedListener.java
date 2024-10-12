@@ -54,10 +54,7 @@ class CustomerChangedListener implements ModelChangedListener<CustomerModel> {
                   // When customer updated, apply those changes into the queue model.
                   if (queue.customerId() != null && queue.customerId().equals(customer.id())) {
                     final QueueModel updatedQueue =
-                        QueueModel.toBuilder(queue)
-                            .setCustomerId(customer.id())
-                            .setCustomer(customer)
-                            .build();
+                        queue.withCustomerId(customer.id()).withCustomer(customer);
                     queues.set(i, updatedQueue);
                   }
                 }
@@ -84,8 +81,7 @@ class CustomerChangedListener implements ModelChangedListener<CustomerModel> {
 
                   // When customer deleted, remove them from the queue model.
                   if (queue.customerId() != null && queue.customerId().equals(customer.id())) {
-                    final QueueModel updatedQueue =
-                        QueueModel.toBuilder(queue).setCustomerId(null).setCustomer(null).build();
+                    final QueueModel updatedQueue = queue.withCustomerId(null).withCustomer(null);
                     queues.set(i, updatedQueue);
                   }
                 }
