@@ -15,7 +15,6 @@ ksp = "2.0.20-1.0.24" # The initial version must correspond to the Kotlin versio
 leakcanary = "2.14"
 materialComponents = "1.12.0"
 mockK = "1.13.13"
-mockito = "5.14.0"
 spotless = "6.25.0"
 # JavaScript assets
 d3 = "7.9.0"
@@ -39,7 +38,6 @@ jetbrains-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", versi
 jetbrains-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
-mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 squareup-leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
 
 [plugins]
