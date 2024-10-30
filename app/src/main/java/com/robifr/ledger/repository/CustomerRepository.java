@@ -17,6 +17,8 @@
 package com.robifr.ledger.repository;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.robifr.ledger.data.model.CustomerBalanceInfo;
@@ -76,28 +78,43 @@ public final class CustomerRepository
   public void notifyModelAdded(@NonNull List<CustomerModel> customers) {
     Objects.requireNonNull(customers);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelAdded(customers));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(listener -> listener.onModelAdded(customers)));
   }
 
   @Override
   public void notifyModelUpdated(@NonNull List<CustomerModel> customers) {
     Objects.requireNonNull(customers);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelUpdated(customers));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(
+                    listener -> listener.onModelUpdated(customers)));
   }
 
   @Override
   public void notifyModelDeleted(@NonNull List<CustomerModel> customers) {
     Objects.requireNonNull(customers);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelDeleted(customers));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(
+                    listener -> listener.onModelDeleted(customers)));
   }
 
   @Override
   public void notifyModelUpserted(@NonNull List<CustomerModel> customers) {
     Objects.requireNonNull(customers);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelUpserted(customers));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(
+                    listener -> listener.onModelUpserted(customers)));
   }
 
   @Override

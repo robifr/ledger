@@ -17,6 +17,8 @@
 package com.robifr.ledger.repository;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.robifr.ledger.data.model.CustomerModel;
@@ -82,28 +84,36 @@ public final class QueueRepository
   public void notifyModelAdded(@NonNull List<QueueModel> queues) {
     Objects.requireNonNull(queues);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelAdded(queues));
+    new Handler(Looper.getMainLooper())
+        .post(() -> this._modelChangedListeners.forEach(listener -> listener.onModelAdded(queues)));
   }
 
   @Override
   public void notifyModelUpdated(@NonNull List<QueueModel> queues) {
     Objects.requireNonNull(queues);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelUpdated(queues));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> this._modelChangedListeners.forEach(listener -> listener.onModelUpdated(queues)));
   }
 
   @Override
   public void notifyModelDeleted(@NonNull List<QueueModel> queues) {
     Objects.requireNonNull(queues);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelDeleted(queues));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> this._modelChangedListeners.forEach(listener -> listener.onModelDeleted(queues)));
   }
 
   @Override
   public void notifyModelUpserted(@NonNull List<QueueModel> queues) {
     Objects.requireNonNull(queues);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelUpserted(queues));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(listener -> listener.onModelUpserted(queues)));
   }
 
   @Override

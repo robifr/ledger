@@ -17,6 +17,8 @@
 package com.robifr.ledger.repository;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.robifr.ledger.data.model.ProductOrderModel;
@@ -74,28 +76,44 @@ public final class ProductOrderRepository
   public void notifyModelAdded(@NonNull List<ProductOrderModel> productOrders) {
     Objects.requireNonNull(productOrders);
 
-    this._modelChangedListeners.forEach(listeners -> listeners.onModelAdded(productOrders));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(
+                    listeners -> listeners.onModelAdded(productOrders)));
   }
 
   @Override
   public void notifyModelUpdated(@NonNull List<ProductOrderModel> productOrders) {
     Objects.requireNonNull(productOrders);
 
-    this._modelChangedListeners.forEach(listeners -> listeners.onModelUpdated(productOrders));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(
+                    listeners -> listeners.onModelUpdated(productOrders)));
   }
 
   @Override
   public void notifyModelDeleted(@NonNull List<ProductOrderModel> productOrders) {
     Objects.requireNonNull(productOrders);
 
-    this._modelChangedListeners.forEach(listeners -> listeners.onModelDeleted(productOrders));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(
+                    listeners -> listeners.onModelDeleted(productOrders)));
   }
 
   @Override
   public void notifyModelUpserted(@NonNull List<ProductOrderModel> productOrders) {
     Objects.requireNonNull(productOrders);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelUpserted(productOrders));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(
+                    listener -> listener.onModelUpserted(productOrders)));
   }
 
   @Override

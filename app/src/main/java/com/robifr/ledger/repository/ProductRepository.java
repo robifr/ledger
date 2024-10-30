@@ -17,6 +17,8 @@
 package com.robifr.ledger.repository;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.robifr.ledger.data.model.ProductModel;
@@ -72,28 +74,40 @@ public final class ProductRepository
   public void notifyModelAdded(@NonNull List<ProductModel> products) {
     Objects.requireNonNull(products);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelAdded(products));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () -> this._modelChangedListeners.forEach(listener -> listener.onModelAdded(products)));
   }
 
   @Override
   public void notifyModelUpdated(@NonNull List<ProductModel> products) {
     Objects.requireNonNull(products);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelUpdated(products));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(listener -> listener.onModelUpdated(products)));
   }
 
   @Override
   public void notifyModelDeleted(@NonNull List<ProductModel> products) {
     Objects.requireNonNull(products);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelDeleted(products));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(listener -> listener.onModelDeleted(products)));
   }
 
   @Override
   public void notifyModelUpserted(@NonNull List<ProductModel> products) {
     Objects.requireNonNull(products);
 
-    this._modelChangedListeners.forEach(listener -> listener.onModelUpserted(products));
+    new Handler(Looper.getMainLooper())
+        .post(
+            () ->
+                this._modelChangedListeners.forEach(
+                    listener -> listener.onModelUpserted(products)));
   }
 
   @Override

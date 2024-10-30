@@ -17,21 +17,16 @@
 package com.robifr.ledger.repository;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.WorkerThread;
 import com.robifr.ledger.data.model.Model;
 import java.util.List;
 
 public interface ModelChangedListener<M extends Model> {
-  @WorkerThread
   public void onModelAdded(@NonNull List<M> models);
 
-  @WorkerThread
   public void onModelUpdated(@NonNull List<M> models);
 
-  @WorkerThread
   public void onModelDeleted(@NonNull List<M> models);
 
-  @WorkerThread
   public void onModelUpserted(@NonNull List<M> models);
 
   public sealed interface Source<M extends Model>
