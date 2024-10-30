@@ -14,17 +14,10 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.data.display;
+package com.robifr.ledger.data.display
 
-import androidx.annotation.NonNull;
-import java.util.Objects;
-
-public record CustomerSortMethod(@NonNull SortBy sortBy, boolean isAscending) {
-  public CustomerSortMethod {
-    Objects.requireNonNull(sortBy);
-  }
-
-  public enum SortBy {
+data class CustomerSortMethod(val sortBy: SortBy, val isAscending: Boolean) {
+  enum class SortBy {
     NAME,
     BALANCE
   }
