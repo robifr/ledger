@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.customer;
+package com.robifr.ledger.ui.customer.viewmodel
 
-import androidx.annotation.NonNull;
-import com.robifr.ledger.data.model.CustomerModel;
-
-public interface CustomerAction {
-  public void onDeleteCustomer(@NonNull CustomerModel customer);
-}
+data class CustomerFilterState(
+    val formattedMinBalance: String,
+    val formattedMaxBalance: String,
+    val formattedMinDebt: String,
+    val formattedMaxDebt: String
+)

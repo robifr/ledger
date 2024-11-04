@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.customer;
+package com.robifr.ledger.ui.customer.viewmodel
 
-import androidx.annotation.NonNull;
-import com.robifr.ledger.data.model.CustomerModel;
-import java.util.List;
+import com.robifr.ledger.data.display.CustomerSortMethod
+import com.robifr.ledger.data.model.CustomerModel
 
-public interface CustomerListAction {
-  @NonNull
-  public List<CustomerModel> customers();
-
-  public int expandedCustomerIndex();
-
-  public void onExpandedCustomerIndexChanged(int index);
-}
+data class CustomerState(
+    val customers: List<CustomerModel>,
+    /** Currently expanded customer index from [customers]. -1 to represent none being expanded. */
+    val expandedCustomerIndex: Int,
+    val sortMethod: CustomerSortMethod
+)
