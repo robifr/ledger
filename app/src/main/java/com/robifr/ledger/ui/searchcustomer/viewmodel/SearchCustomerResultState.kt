@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.searchcustomer;
+package com.robifr.ledger.ui.searchcustomer.viewmodel
 
-public interface SearchCustomerAction {
-  public boolean isSelectionEnabled();
-}
+data class SearchCustomerResultState(val selectedCustomerId: Long?)
