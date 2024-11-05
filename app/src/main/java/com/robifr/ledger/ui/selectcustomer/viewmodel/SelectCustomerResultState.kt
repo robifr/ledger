@@ -14,16 +14,6 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.selectcustomer;
+package com.robifr.ledger.ui.selectcustomer.viewmodel
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.robifr.ledger.data.model.CustomerModel;
-import java.util.List;
-
-public interface SelectCustomerAction {
-  @NonNull
-  public List<Long> initialSelectedCustomerIds();
-
-  public void onCustomerSelected(@Nullable CustomerModel customer);
-}
+data class SelectCustomerResultState(val selectedCustomerId: Long?)
