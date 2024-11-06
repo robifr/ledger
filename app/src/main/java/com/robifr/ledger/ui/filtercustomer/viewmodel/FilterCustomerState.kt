@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.filtercustomer;
+package com.robifr.ledger.ui.filtercustomer.viewmodel
 
-import androidx.annotation.NonNull;
-import com.robifr.ledger.data.model.CustomerModel;
-import java.util.List;
+import com.robifr.ledger.data.model.CustomerModel
 
-public interface FilterCustomerAction {
-  @NonNull
-  public List<CustomerModel> filteredCustomers();
-
-  public void onFilteredCustomersChanged(@NonNull List<CustomerModel> customers);
-}
+data class FilterCustomerState(
+    val customers: List<CustomerModel>,
+    /** Currently expanded customer index from [customers]. -1 to represent none being expanded. */
+    val expandedCustomerIndex: Int,
+    val filteredCustomers: List<CustomerModel>
+)
