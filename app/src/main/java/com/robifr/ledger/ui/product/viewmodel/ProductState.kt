@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.product;
+package com.robifr.ledger.ui.product.viewmodel
 
-import androidx.annotation.NonNull;
-import com.robifr.ledger.data.model.ProductModel;
+import com.robifr.ledger.data.display.ProductSortMethod
+import com.robifr.ledger.data.model.ProductModel
 
-@Deprecated
-public interface ProductAction {
-  public void onDeleteProduct(@NonNull ProductModel product);
-}
+data class ProductState(
+    val products: List<ProductModel>,
+    /** Currently expanded product index from [products]. -1 to represent none being expanded. */
+    val expandedProductIndex: Int,
+    val sortMethod: ProductSortMethod
+)

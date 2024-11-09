@@ -28,6 +28,7 @@ import com.robifr.ledger.databinding.ProductCardDialogMenuBinding;
 import com.robifr.ledger.ui.editproduct.EditProductFragment;
 import java.util.Objects;
 
+@Deprecated
 public class ProductListMenu implements View.OnClickListener {
   @NonNull private final ProductListHolder<?> _holder;
   @NonNull private final ProductCardDialogMenuBinding _dialogBinding;

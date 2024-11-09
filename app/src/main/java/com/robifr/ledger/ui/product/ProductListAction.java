@@ -20,6 +20,7 @@ import androidx.annotation.NonNull;
 import com.robifr.ledger.data.model.ProductModel;
 import java.util.List;
 
+@Deprecated
 public interface ProductListAction {
   @NonNull
   public List<ProductModel> products();
