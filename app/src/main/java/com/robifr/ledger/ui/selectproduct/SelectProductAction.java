@@ -21,6 +21,7 @@ import androidx.annotation.Nullable;
 import com.robifr.ledger.data.model.ProductModel;
 import java.util.List;
 
+@Deprecated
 public interface SelectProductAction {
   @NonNull
   public List<Long> initialSelectedProductIds();

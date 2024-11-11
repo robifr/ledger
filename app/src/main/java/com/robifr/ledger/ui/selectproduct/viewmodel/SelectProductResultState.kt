@@ -14,11 +14,6 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.selectproduct;
+package com.robifr.ledger.ui.selectproduct.viewmodel
 
-@Deprecated
-public interface SelectedProductAction {
-  public boolean isSelectedProductExpanded();
-
-  public void onSelectedProductExpanded(boolean isExpanded);
-}
+data class SelectProductResultState(val selectedProductId: Long?)

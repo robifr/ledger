@@ -28,6 +28,7 @@ import com.robifr.ledger.ui.product.ProductListAction;
 import com.robifr.ledger.ui.selectproduct.SelectProductAction;
 import java.util.Objects;
 
+@Deprecated
 public class SelectProductListHolder<T extends ProductListAction & SelectProductAction>
     extends RecyclerViewHolder<ProductModel, T> implements View.OnClickListener {
   @NonNull private final ProductCardWideBinding _cardBinding;
