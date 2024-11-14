@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.product
+package com.robifr.ledger.components
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate

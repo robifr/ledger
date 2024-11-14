@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.searchproduct;
+package com.robifr.ledger.ui.searchproduct.viewmodel
 
-public interface SearchProductAction {
-  public boolean isSelectionEnabled();
-}
+data class SearchProductResultState(val selectedProductId: Long?)
