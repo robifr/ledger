@@ -29,6 +29,7 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAdjusters;
 import java.util.Objects;
 
+@Deprecated
 public record QueueDate(
     @NonNull Range range, @NonNull ZonedDateTime dateStart, @NonNull ZonedDateTime dateEnd) {
   public QueueDate {
@@ -58,6 +59,7 @@ public record QueueDate(
     return new QueueDate(Range.CUSTOM, dateStart, dateEnd);
   }
 
+  @Deprecated
   public enum Range {
     ALL_TIME(R.string.enum_queueDate_allTime),
     TODAY(R.string.enum_queueDate_today),
