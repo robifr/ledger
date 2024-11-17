@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.queue;
+package com.robifr.ledger.ui.queue.viewmodel
 
-import androidx.annotation.NonNull;
-import com.robifr.ledger.data.model.QueueModel;
-import java.util.List;
+import com.robifr.ledger.data.display.QueueDateKt
+import com.robifr.ledger.data.model.QueueModel
 
-public interface QueueListAction {
-  @NonNull
-  public List<QueueModel> queues();
-
-  public int expandedQueueIndex();
-
-  public void onExpandedQueueIndexChanged(int index);
-}
+data class QueueFilterState(
+    val isNullCustomerShown: Boolean,
+    val customerIds: List<Long>,
+    val date: QueueDateKt,
+    val status: Set<QueueModel.Status>,
+    val formattedMinTotalPrice: String,
+    val formattedMaxTotalPrice: String
+)

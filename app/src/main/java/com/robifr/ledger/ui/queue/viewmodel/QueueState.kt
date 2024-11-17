@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.queue;
+package com.robifr.ledger.ui.queue.viewmodel
 
-import androidx.annotation.NonNull;
-import com.robifr.ledger.data.model.QueueModel;
+import com.robifr.ledger.data.display.QueueSortMethod
+import com.robifr.ledger.data.model.QueueModel
 
-public interface QueueAction {
-  public void onDeleteQueue(@NonNull QueueModel queue);
-}
+data class QueueState(
+    val queues: List<QueueModel>,
+    /** Currently expanded queue index from [queues]. -1 to represent none being expanded. */
+    val expandedQueueIndex: Int,
+    val sortMethod: QueueSortMethod
+)
