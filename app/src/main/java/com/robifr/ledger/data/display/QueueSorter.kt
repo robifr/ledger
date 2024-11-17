@@ -22,7 +22,7 @@ import java.text.Collator
 import java.util.Locale
 
 class QueueSorter(
-    var sortMethod: QueueSortMethod = QueueSortMethod(QueueSortMethod.SortBy.CUSTOMER_NAME, true)
+    var sortMethod: QueueSortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, false)
 ) {
   fun sort(queues: List<QueueModel>): List<QueueModel> =
       when (sortMethod.sortBy) {
