@@ -11,7 +11,7 @@ hilt = "2.51.1"
 junit = "5.10.3"
 kotlin = "2.0.20"
 kotlinxCoroutines = "1.9.0"
-kover = "0.8.3"
+kotlinxKover = "0.8.3"
 ksp = "2.0.20-1.0.24" # The initial version must correspond to the Kotlin version.
 leakcanary = "2.14"
 materialComponents = "1.12.0"
@@ -49,4 +49,4 @@ google-dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.re
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android" }
 jetbrains-kotlin-plugin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize" }
-jetbrains-kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
+jetbrains-kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kotlinxKover" }
