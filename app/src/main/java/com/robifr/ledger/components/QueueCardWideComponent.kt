@@ -141,15 +141,15 @@ class QueueCardWideComponent(
   }
 
   private fun _setStatus(status: QueueModel.Status, isNormalCard: Boolean) {
-    val statusTextColor: Int = _context.getColor(status.resourceTextColor)
-    val statusBackground: Int = _context.getColor(status.resourceBackgroundColor)
+    val statusTextColor: Int = _context.getColor(status.textColorRes)
+    val statusBackground: Int = _context.getColor(status.backgroundColorRes)
     if (isNormalCard) {
-      _binding.normalCard.statusChip.setText(status.resourceString)
+      _binding.normalCard.statusChip.setText(status.stringRes)
       _binding.normalCard.statusChip.setTextColor(statusTextColor)
       _binding.normalCard.statusChip.chipBackgroundColor = ColorStateList.valueOf(statusBackground)
       _binding.normalCard.coloredSideline.setBackgroundColor(statusBackground)
     } else {
-      _binding.expandedCard.statusChip.setText(status.resourceString)
+      _binding.expandedCard.statusChip.setText(status.stringRes)
       _binding.expandedCard.statusChip.setTextColor(statusTextColor)
       _binding.expandedCard.statusChip.chipBackgroundColor =
           ColorStateList.valueOf(statusBackground)
@@ -158,7 +158,7 @@ class QueueCardWideComponent(
   }
 
   private fun _setPaymentMethod(paymentMethod: QueueModel.PaymentMethod) {
-    _binding.expandedCard.paymentMethod.setText(paymentMethod.resourceString)
+    _binding.expandedCard.paymentMethod.setText(paymentMethod.stringRes)
   }
 
   private fun _setTotalDiscount(totalDiscount: BigDecimal) {

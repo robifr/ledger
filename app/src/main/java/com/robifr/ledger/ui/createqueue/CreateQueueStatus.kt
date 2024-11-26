@@ -52,6 +52,6 @@ class CreateQueueStatus(private val _fragment: CreateQueueFragment) {
   }
 
   fun setInputtedStatus(status: QueueModel.Status) {
-    _fragment.fragmentBinding.status.setText(status.resourceString)
+    _fragment.fragmentBinding.status.setText(status.stringRes)
   }
 }

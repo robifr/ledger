@@ -135,15 +135,15 @@ class DashboardSummaryViewModel(private val _viewModel: DashboardViewModel) {
     val rawDataSummed: LinkedHashMap<Int, Int> =
         linkedMapOf<Int, Int>().apply {
           // The order is important to ensure that `UncompletedQueuesChartModel.colors` matches.
-          set(QueueModel.Status.IN_QUEUE.resourceString, 0)
-          set(QueueModel.Status.IN_PROCESS.resourceString, 0)
-          set(QueueModel.Status.UNPAID.resourceString, 0)
+          set(QueueModel.Status.IN_QUEUE.stringRes, 0)
+          set(QueueModel.Status.IN_PROCESS.stringRes, 0)
+          set(QueueModel.Status.UNPAID.stringRes, 0)
         }
     var oldestDate: ZonedDateTime? = null
     for (queue in _viewModel.uiState.safeValue.queues) {
       // Merge the data if the status is uncompleted.
-      if (rawDataSummed.containsKey(queue.status.resourceString)) {
-        rawDataSummed.merge(queue.status.resourceString, 1, Int::plus)
+      if (rawDataSummed.containsKey(queue.status.stringRes)) {
+        rawDataSummed.merge(queue.status.stringRes, 1, Int::plus)
         if (oldestDate == null || queue.date.isBefore(oldestDate.toInstant())) {
           oldestDate = queue.date.atZone(ZoneId.systemDefault())
         }
@@ -154,9 +154,9 @@ class DashboardSummaryViewModel(private val _viewModel: DashboardViewModel) {
             data = rawDataSummed.map { (key, value) -> ChartData.Single(key, value) },
             colors =
                 listOf(
-                    QueueModel.Status.IN_QUEUE.resourceBackgroundColor,
-                    QueueModel.Status.IN_PROCESS.resourceBackgroundColor,
-                    QueueModel.Status.UNPAID.resourceBackgroundColor),
+                    QueueModel.Status.IN_QUEUE.backgroundColorRes,
+                    QueueModel.Status.IN_PROCESS.backgroundColorRes,
+                    QueueModel.Status.UNPAID.backgroundColorRes),
             oldestDate = oldestDate))
   }
 

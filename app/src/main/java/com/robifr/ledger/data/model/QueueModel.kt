@@ -100,9 +100,9 @@ data class QueueModel(
   }
 
   enum class Status(
-      @StringRes val resourceString: Int,
-      @ColorRes val resourceBackgroundColor: Int,
-      @ColorRes val resourceTextColor: Int
+      @StringRes val stringRes: Int,
+      @ColorRes val backgroundColorRes: Int,
+      @ColorRes val textColorRes: Int
   ) {
     IN_QUEUE(R.string.enum_queueStatus_inQueue, R.color.light_yellow, R.color.dark_yellow),
     IN_PROCESS(R.string.enum_queueStatus_inProcess, R.color.light_blue, R.color.dark_blue),
@@ -110,7 +110,7 @@ data class QueueModel(
     COMPLETED(R.string.enum_queueStatus_completed, R.color.light_gray, R.color.darker_gray)
   }
 
-  enum class PaymentMethod(@StringRes val resourceString: Int) {
+  enum class PaymentMethod(@StringRes val stringRes: Int) {
     CASH(R.string.enum_queuePaymentMethod_cash),
     ACCOUNT_BALANCE(R.string.enum_queuePaymentMethod_accountBalance)
   }

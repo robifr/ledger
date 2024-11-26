@@ -33,11 +33,10 @@ data class TotalQueuesChartModel(
 
 /**
  * @param data The [ChartData.Single] contains:
- * - [key][ChartData.Single.key]: [resourceString][QueueModel.Status.resourceString] in
- *   [QueueModel.Status].
+ * - [key][ChartData.Single.key]: [stringRes][QueueModel.Status.stringRes] in [QueueModel.Status].
  * - [value][ChartData.Single.value]: Total count of queues with the corresponding status.
  *
- * @param colors The [resourceBackgroundColor][QueueModel.Status.resourceBackgroundColor] in
+ * @param colors The [backgroundColorRes][QueueModel.Status.backgroundColorRes] in
  *   [QueueModel.Status].
  * @param oldestDate Oldest date for ranged queue to be shown in the center of donut chart.
  * @see ChartBinding.renderDonutChart
