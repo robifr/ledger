@@ -19,11 +19,4 @@ package com.robifr.ledger.data.model
 @JvmRecord
 data class CustomerBalanceInfo(override val id: Long?, val balance: Long) : Info {
   constructor(customer: CustomerModel) : this(customer.id, customer.balance)
-
-  companion object {
-    @JvmStatic
-    @Deprecated("Use constructor")
-    fun withModel(customer: CustomerModel): CustomerBalanceInfo =
-        CustomerBalanceInfo(customer.id, customer.balance)
-  }
 }

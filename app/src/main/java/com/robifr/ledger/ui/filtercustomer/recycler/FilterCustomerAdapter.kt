@@ -20,12 +20,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.robifr.ledger.databinding.CustomerCardWideBinding
 import com.robifr.ledger.databinding.ListableListSelectedItemBinding
-import com.robifr.ledger.ui.RecyclerViewHolderKt
+import com.robifr.ledger.ui.RecyclerViewHolder
 import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 
 class FilterCustomerAdapter(private val _fragment: FilterCustomerFragment) :
-    RecyclerView.Adapter<RecyclerViewHolderKt>() {
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolderKt =
+    RecyclerView.Adapter<RecyclerViewHolder>() {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder =
       when (ViewType.entries.find { it.value == viewType }) {
         ViewType.HEADER ->
             FilterCustomerHeaderHolder(
@@ -54,7 +54,7 @@ class FilterCustomerAdapter(private val _fragment: FilterCustomerFragment) :
                     _fragment.filterCustomerViewModel::onExpandedCustomerIndexChanged)
       }
 
-  override fun onBindViewHolder(holder: RecyclerViewHolderKt, position: Int) {
+  override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
     when (holder) {
       is FilterCustomerHeaderHolder -> holder.bind()
       is FilterCustomerListHolder -> holder.bind(position - 1)

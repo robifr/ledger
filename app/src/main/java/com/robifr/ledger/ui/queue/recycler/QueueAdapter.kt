@@ -20,12 +20,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.robifr.ledger.databinding.ListableListTextBinding
 import com.robifr.ledger.databinding.QueueCardWideBinding
-import com.robifr.ledger.ui.RecyclerViewHolderKt
+import com.robifr.ledger.ui.RecyclerViewHolder
 import com.robifr.ledger.ui.queue.QueueFragment
 
 class QueueAdapter(private val _fragment: QueueFragment) :
-    RecyclerView.Adapter<RecyclerViewHolderKt>() {
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolderKt =
+    RecyclerView.Adapter<RecyclerViewHolder>() {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder =
       when (ViewType.entries.find { it.value == viewType }) {
         ViewType.HEADER ->
             QueueHeaderHolder(
@@ -45,7 +45,7 @@ class QueueAdapter(private val _fragment: QueueFragment) :
                     _fragment.queueViewModel::onExpandedQueueIndexChanged)
       }
 
-  override fun onBindViewHolder(holder: RecyclerViewHolderKt, position: Int) {
+  override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
     when (holder) {
       is QueueHeaderHolder -> holder.bind()
       is QueueListHolder -> holder.bind(position - 1)

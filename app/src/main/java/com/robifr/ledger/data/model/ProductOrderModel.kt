@@ -116,7 +116,6 @@ data class ProductOrderModel(
   companion object {
     @JvmStatic fun toBuilder(): ProductOrderModel = ProductOrderModel()
 
-    @JvmStatic
     fun calculateTotalPrice(productPrice: Long?, quantity: Double, discount: Long): BigDecimal {
       val totalPrice: BigDecimal =
           productPrice?.let {

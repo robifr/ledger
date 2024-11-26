@@ -20,12 +20,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.robifr.ledger.databinding.ListableListTextBinding
 import com.robifr.ledger.databinding.ProductCardWideBinding
-import com.robifr.ledger.ui.RecyclerViewHolderKt
+import com.robifr.ledger.ui.RecyclerViewHolder
 import com.robifr.ledger.ui.product.ProductFragment
 
 class ProductAdapter(private val _fragment: ProductFragment) :
-    RecyclerView.Adapter<RecyclerViewHolderKt>() {
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolderKt =
+    RecyclerView.Adapter<RecyclerViewHolder>() {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder =
       when (ViewType.entries.find { it.value == viewType }) {
         ViewType.HEADER ->
             ProductHeaderHolder(
@@ -45,7 +45,7 @@ class ProductAdapter(private val _fragment: ProductFragment) :
                     _fragment.productViewModel::onExpandedProductIndexChanged)
       }
 
-  override fun onBindViewHolder(holder: RecyclerViewHolderKt, position: Int) {
+  override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
     when (holder) {
       is ProductHeaderHolder -> holder.bind()
       is ProductListHolder -> holder.bind(position - 1)

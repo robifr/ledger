@@ -21,11 +21,4 @@ import java.math.BigDecimal
 @JvmRecord
 data class CustomerDebtInfo(override val id: Long?, val debt: BigDecimal) : Info {
   constructor(customer: CustomerModel) : this(customer.id, customer.debt)
-
-  companion object {
-    @JvmStatic
-    @Deprecated("Use constructor")
-    fun withModel(customer: CustomerModel): CustomerDebtInfo =
-        CustomerDebtInfo(customer.id, customer.debt)
-  }
 }

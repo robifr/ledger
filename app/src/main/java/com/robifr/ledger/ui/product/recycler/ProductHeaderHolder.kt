@@ -21,12 +21,12 @@ import androidx.core.text.HtmlCompat
 import com.robifr.ledger.R
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.databinding.ListableListTextBinding
-import com.robifr.ledger.ui.RecyclerViewHolderKt
+import com.robifr.ledger.ui.RecyclerViewHolder
 
 class ProductHeaderHolder(
     private val _textBinding: ListableListTextBinding,
     private val _products: () -> List<ProductModel>
-) : RecyclerViewHolderKt(_textBinding.root) {
+) : RecyclerViewHolder(_textBinding.root) {
   init {
     _textBinding.text.setTextSize(
         TypedValue.COMPLEX_UNIT_PX, itemView.context.resources.getDimension(R.dimen.text_small))

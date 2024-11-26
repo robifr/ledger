@@ -21,7 +21,7 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.robifr.ledger.util.CurrencyFormat;
-import com.robifr.ledger.util.Strings;
+import com.robifr.ledger.util.StringExtKt;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
@@ -99,7 +99,7 @@ public class CurrencyTextWatcher extends EditTextWatcher {
             newAmount, AppCompatDelegate.getApplicationLocales().toLanguageTags(), symbol);
     // Clear field when unformatted text doesn't have any digit on it.
     String newText =
-        Strings.countOccurrenceRegex(unformattedText, "\\d") == 0 ? "" : newTextFormatted;
+        StringExtKt.countOccurrenceRegex(unformattedText, "\\d") == 0 ? "" : newTextFormatted;
 
     // Don't use `BigDecimal#scale()` in order to get length of decimal place,
     // Cause there's a case like 1.1000 will be counted as 1
@@ -123,13 +123,13 @@ public class CurrencyTextWatcher extends EditTextWatcher {
         oldAmount.toBigInteger().compareTo(BigInteger.valueOf(0)) == 0;
     final boolean isDecimalPlaceLongerThanMax =
         unformattedTextDecimalPlace > CurrencyFormat.MAXIMUM_FRACTION_DIGITS;
-    final boolean isNewAmountDigitPlaceZero = Strings.countOccurrenceRegex(newText, "\\d") == 0;
-    final boolean isOldAmountDigitPlaceZero = Strings.countOccurrenceRegex(oldText, "\\d") == 0;
+    final boolean isNewAmountDigitPlaceZero = StringExtKt.countOccurrenceRegex(newText, "\\d") == 0;
+    final boolean isOldAmountDigitPlaceZero = StringExtKt.countOccurrenceRegex(oldText, "\\d") == 0;
 
     final boolean isInputtingComma =
         !this._isBackspaceClicked && this._changedTextAfter.equals(decimalSeparator);
     final boolean isInputtingMultipleComma =
-        isInputtingComma && Strings.countOccurrence(oldText, decimalSeparator) >= 1;
+        isInputtingComma && StringExtKt.countOccurrence(oldText, decimalSeparator) >= 1;
     final boolean isDeletingComma =
         this._isBackspaceClicked && this._changedTextBefore.equals(decimalSeparator);
     final boolean isEditingDecimalDigit =
@@ -139,17 +139,17 @@ public class CurrencyTextWatcher extends EditTextWatcher {
     final boolean isInputtingLeadingZero =
         this._changedTextAfter.equals("0")
             && (isOldAmountIntegerZero
-                || Strings.countOccurrenceRegex(this._unchangedTextLeft, "\\d") == 0)
+                || StringExtKt.countOccurrenceRegex(this._unchangedTextLeft, "\\d") == 0)
             && !isEditingDecimalDigit;
     final boolean isDeletingLeadingZero =
         this._changedTextBefore.equals("0")
             && (isOldAmountIntegerZero
-                || Strings.countOccurrenceRegex(this._unchangedTextLeft, "\\d") == 0)
+                || StringExtKt.countOccurrenceRegex(this._unchangedTextLeft, "\\d") == 0)
             && !isEditingDecimalDigit;
     final boolean isInputtingNegativeSign =
         !this._isBackspaceClicked && this._changedTextAfter.equals("-");
     final boolean isInputtingMultipleNegativeSign =
-        isInputtingNegativeSign && Strings.countOccurrence(oldText, "-") >= 1;
+        isInputtingNegativeSign && StringExtKt.countOccurrence(oldText, "-") >= 1;
     final boolean isDeletingSymbol =
         this._isBackspaceClicked && symbol.contains(this._changedTextBefore);
 
@@ -164,12 +164,13 @@ public class CurrencyTextWatcher extends EditTextWatcher {
         // already subtract the position itself (look at `cursorOffset` variable).
         newText.substring(0, Math.min(currentCursorPosition, newText.length()));
     final int unformattedTextDigitBeforeCursor =
-        Strings.countOccurrenceRegex(unformattedTextBeforeCursor, "\\d");
+        StringExtKt.countOccurrenceRegex(unformattedTextBeforeCursor, "\\d");
     final int unformattedTextGroupingBeforeCursor =
-        Strings.countOccurrence(unformattedTextBeforeCursor, groupingSeparator);
-    final int newTextDigitBeforeCursor = Strings.countOccurrenceRegex(newTextBeforeCursor, "\\d");
+        StringExtKt.countOccurrence(unformattedTextBeforeCursor, groupingSeparator);
+    final int newTextDigitBeforeCursor =
+        StringExtKt.countOccurrenceRegex(newTextBeforeCursor, "\\d");
     final int newTextGroupingBeforeCursor =
-        Strings.countOccurrence(newTextBeforeCursor, groupingSeparator);
+        StringExtKt.countOccurrence(newTextBeforeCursor, groupingSeparator);
 
     // Offsetting happen because of the new text BEFORE current cursor position being formatted
     // with added or removed grouping separator. We just need to compare occurrence
@@ -247,7 +248,7 @@ public class CurrencyTextWatcher extends EditTextWatcher {
               // When inputting comma as a suffix, it should be placed at the last digit of amount.
               // Cause some language uses suffix as their currency symbol.
               : newTextFormatted.substring(
-                  0, Strings.lastIndexOfRegex(newTextFormatted, "\\d") + 1);
+                  0, StringExtKt.lastIndexOfRegex(newTextFormatted, "\\d") + 1);
       final String newTextAfterComma =
           isDecimalPlaceLongerThanMax
               ? newTextFormatted

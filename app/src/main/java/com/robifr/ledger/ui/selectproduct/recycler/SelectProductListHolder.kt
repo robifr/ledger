@@ -23,7 +23,7 @@ import com.robifr.ledger.R
 import com.robifr.ledger.components.ProductCardWideComponent
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.databinding.ProductCardWideBinding
-import com.robifr.ledger.ui.RecyclerViewHolderKt
+import com.robifr.ledger.ui.RecyclerViewHolder
 
 class SelectProductListHolder(
     private val _cardBinding: ProductCardWideBinding,
@@ -32,7 +32,7 @@ class SelectProductListHolder(
     private val _onProductSelected: (ProductModel) -> Unit,
     private val _expandedProductIndex: () -> Int,
     private val _onExpandedProductIndexChanged: (Int) -> Unit
-) : RecyclerViewHolderKt(_cardBinding.root), View.OnClickListener {
+) : RecyclerViewHolder(_cardBinding.root), View.OnClickListener {
   private var _productIndex: Int = -1
   private val _card: ProductCardWideComponent =
       ProductCardWideComponent(itemView.context, _cardBinding)

@@ -20,12 +20,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.robifr.ledger.databinding.ListableListSelectedItemBinding
 import com.robifr.ledger.databinding.ProductCardWideBinding
-import com.robifr.ledger.ui.RecyclerViewHolderKt
+import com.robifr.ledger.ui.RecyclerViewHolder
 import com.robifr.ledger.ui.selectproduct.SelectProductFragment
 
 class SelectProductAdapter(private val _fragment: SelectProductFragment) :
-    RecyclerView.Adapter<RecyclerViewHolderKt>() {
-  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolderKt {
+    RecyclerView.Adapter<RecyclerViewHolder>() {
+  override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder {
     return when (ViewType.entries.find { it.value == viewType }) {
       ViewType.HEADER ->
           SelectProductHeaderHolder(
@@ -57,7 +57,7 @@ class SelectProductAdapter(private val _fragment: SelectProductFragment) :
     }
   }
 
-  override fun onBindViewHolder(holder: RecyclerViewHolderKt, position: Int) {
+  override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
     when (holder) {
       is SelectProductHeaderHolder -> holder.bind()
       is SelectProductListHolder -> holder.bind(position - 1)

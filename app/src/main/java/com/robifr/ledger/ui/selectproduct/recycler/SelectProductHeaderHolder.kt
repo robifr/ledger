@@ -26,14 +26,14 @@ import com.robifr.ledger.components.ProductCardWideComponent
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.databinding.ListableListSelectedItemBinding
 import com.robifr.ledger.databinding.ProductCardWideBinding
-import com.robifr.ledger.ui.RecyclerViewHolderKt
+import com.robifr.ledger.ui.RecyclerViewHolder
 
 class SelectProductHeaderHolder(
     private val _selectedItemBinding: ListableListSelectedItemBinding,
     private val _initialSelectedProduct: () -> ProductModel?,
     private val _isSelectedProductPreviewExpanded: () -> Boolean,
     private val _onSelectedProductPreviewExpanded: (Boolean) -> Unit
-) : RecyclerViewHolderKt(_selectedItemBinding.root), View.OnClickListener {
+) : RecyclerViewHolder(_selectedItemBinding.root), View.OnClickListener {
   private val _selectedCardBinding: ProductCardWideBinding =
       ProductCardWideBinding.inflate(
           LayoutInflater.from(itemView.context), _selectedItemBinding.selectedItemContainer, false)

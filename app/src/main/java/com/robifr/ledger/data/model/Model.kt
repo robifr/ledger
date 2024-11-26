@@ -25,6 +25,4 @@ sealed interface Model {
    * was deleted — instead of null, the query will silently fail.
    */
   val id: Long?
-
-  @Deprecated("Replaced with id property") fun modelId(): Long? = id
 }

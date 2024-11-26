@@ -61,7 +61,4 @@ interface FragmentResultKey {
   val key: String
     get() =
         if (this is Enum<*>) ClassPath.fullName(this as Enum<*>) else ClassPath.fullName(javaClass)
-
-  // TODO: Remove annotations after Kotlin migration.
-  @Deprecated("Use its property access for Kotlin") fun key(): String = key
 }

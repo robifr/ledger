@@ -19,6 +19,6 @@ package com.robifr.ledger.ui
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 
-abstract class RecyclerViewHolderKt(itemView: View) : RecyclerView.ViewHolder(itemView) {
+abstract class RecyclerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
   abstract fun bind(itemIndex: Int = -1)
 }

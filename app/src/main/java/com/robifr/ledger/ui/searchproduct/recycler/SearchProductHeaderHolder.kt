@@ -20,12 +20,12 @@ import androidx.core.text.HtmlCompat
 import com.robifr.ledger.R
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.databinding.ListableListTextBinding
-import com.robifr.ledger.ui.RecyclerViewHolderKt
+import com.robifr.ledger.ui.RecyclerViewHolder
 
 class SearchProductHeaderHolder(
     private val _textBinding: ListableListTextBinding,
     private val _products: () -> List<ProductModel>
-) : RecyclerViewHolderKt(_textBinding.root) {
+) : RecyclerViewHolder(_textBinding.root) {
   override fun bind(itemIndex: Int) {
     _textBinding.text.text =
         HtmlCompat.fromHtml(
