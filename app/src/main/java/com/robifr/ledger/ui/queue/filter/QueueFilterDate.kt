@@ -24,7 +24,7 @@ import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.robifr.ledger.R
-import com.robifr.ledger.data.display.QueueDateKt
+import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.display.QueueFilters
 import com.robifr.ledger.databinding.QueueDialogFilterBinding
 import com.robifr.ledger.ui.queue.QueueFragment
@@ -48,7 +48,7 @@ class QueueFilterDate(
               date?.first?.let { startDate ->
                 date.second?.let { endDate ->
                   _fragment.queueViewModel.filterView.onDateChanged(
-                      QueueDateKt(
+                      QueueDate(
                           Instant.ofEpochMilli(startDate).atZone(ZoneId.systemDefault()),
                           Instant.ofEpochMilli(endDate).atZone(ZoneId.systemDefault())))
                 }
@@ -69,29 +69,29 @@ class QueueFilterDate(
     for (id in checkedIds) {
       group.findViewById<View>(id)?.tag?.let {
         _fragment.queueViewModel.filterView.onDateChanged(
-            QueueDateKt(QueueDateKt.Range.valueOf(it.toString())))
+            QueueDate(QueueDate.Range.valueOf(it.toString())))
       }
       break // Chip group should only be allowed to select single chip at time.
     }
   }
 
   /** @param date [QueueFilters.filteredDate] */
-  fun setFilteredDate(date: QueueDateKt) {
+  fun setFilteredDate(date: QueueDate) {
     // Remove listener to prevent unintended updates to both view model and the chip itself
-    // when manually set the date, like `QueueDate.Range#CUSTOM`.
+    // when manually set the date, like `QueueDate.Range.CUSTOM`.
     _dialogBinding.filterDate.chipGroup.setOnCheckedStateChangeListener(null)
     _dialogBinding.filterDate.chipGroup.findViewWithTag<Chip>(date.range.toString())?.isChecked =
         true
     _dialogBinding.filterDate.chipGroup.setOnCheckedStateChangeListener(this)
     _dialogBinding.filterDate.chipGroup
-        .findViewWithTag<Chip>(QueueDateKt.Range.CUSTOM.toString())
+        .findViewWithTag<Chip>(QueueDate.Range.CUSTOM.toString())
         ?.apply {
           val format: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy")
           // Hide custom range chip when it's not being selected, and show otherwise.
-          isVisible = date.range == QueueDateKt.Range.CUSTOM
+          isVisible = date.range == QueueDate.Range.CUSTOM
           text =
               _fragment.getString(
-                  QueueDateKt.Range.CUSTOM.stringRes,
+                  QueueDate.Range.CUSTOM.stringRes,
                   date.dateStart.format(format),
                   date.dateEnd.format(format))
         }

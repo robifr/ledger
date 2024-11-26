@@ -14,18 +14,13 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.dashboard.viewmodel;
+package com.robifr.ledger.ui.dashboard.viewmodel
 
-import androidx.annotation.NonNull;
-import com.robifr.ledger.data.model.Info;
-import com.robifr.ledger.data.model.Model;
-import java.util.List;
-import java.util.function.Function;
+import com.robifr.ledger.ui.dashboard.DashboardRevenue
+import java.math.BigDecimal
 
-interface InfoUpdaterFunction<M extends Model, I extends Info> {
-  @NonNull
-  public List<I> apply(
-      @NonNull List<M> models,
-      @NonNull List<I> oldInfo,
-      @NonNull Function<M, I> modelToInfoConverter);
-}
+data class DashboardRevenueState(
+    val displayedChart: DashboardRevenue.OverviewType,
+    val receivedIncome: BigDecimal,
+    val projectedIncome: BigDecimal
+)

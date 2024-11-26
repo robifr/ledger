@@ -36,5 +36,5 @@ data class QueueFilters(
     val isNullCustomerShown: Boolean,
     val filteredStatus: Set<QueueModel.Status>,
     val filteredTotalPrice: Pair<BigDecimal?, BigDecimal?>,
-    val filteredDate: QueueDateKt
+    val filteredDate: QueueDate
 )

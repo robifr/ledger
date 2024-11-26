@@ -27,7 +27,7 @@ class QueueFilterer(
             isNullCustomerShown = true,
             filteredStatus = QueueModel.Status.entries.toSet(),
             filteredTotalPrice = null to null,
-            filteredDate = QueueDateKt(QueueDateKt.Range.ALL_TIME))
+            filteredDate = QueueDate(QueueDate.Range.ALL_TIME))
 ) {
   fun filter(queues: List<QueueModel>): List<QueueModel> =
       queues.filter {

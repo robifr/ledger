@@ -14,16 +14,9 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.queue.viewmodel
+package com.robifr.ledger.ui.dashboard.viewmodel
 
 import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.model.QueueModel
 
-data class QueueFilterState(
-    val isNullCustomerShown: Boolean,
-    val customerIds: List<Long>,
-    val date: QueueDate,
-    val status: Set<QueueModel.Status>,
-    val formattedMinTotalPrice: String,
-    val formattedMaxTotalPrice: String
-)
+data class DashboardState(val date: QueueDate, val queues: List<QueueModel>)

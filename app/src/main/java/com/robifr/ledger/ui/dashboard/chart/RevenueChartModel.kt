@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.queue.viewmodel
+package com.robifr.ledger.ui.dashboard.chart
 
-import com.robifr.ledger.data.display.QueueDate
-import com.robifr.ledger.data.model.QueueModel
+import androidx.annotation.ColorRes
+import com.robifr.ledger.assetbinding.chart.ChartBinding
+import com.robifr.ledger.assetbinding.chart.ChartData
+import com.robifr.ledger.ui.dashboard.DashboardRevenue
 
-data class QueueFilterState(
-    val isNullCustomerShown: Boolean,
-    val customerIds: List<Long>,
-    val date: QueueDate,
-    val status: Set<QueueModel.Status>,
-    val formattedMinTotalPrice: String,
-    val formattedMaxTotalPrice: String
+/** @see ChartBinding.renderStackedBarChart */
+data class RevenueChartModel(
+    val xAxisDomain: List<String>,
+    val yAxisDomain: List<String>,
+    val data: List<ChartData.Multiple<String, Double, String>>,
+    @ColorRes val colors: List<Int>,
+    val groupInOrder: Set<DashboardRevenue.OverviewType>
 )

@@ -18,7 +18,7 @@ package com.robifr.ledger.ui.queue.viewmodel
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.viewModelScope
-import com.robifr.ledger.data.display.QueueDateKt
+import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.display.QueueFilterer
 import com.robifr.ledger.data.display.QueueFilters
 import com.robifr.ledger.data.model.QueueModel
@@ -58,7 +58,7 @@ class QueueFilterViewModel(
     _uiState.setValue(_uiState.safeValue.copy(isNullCustomerShown = isShown))
   }
 
-  fun onDateChanged(date: QueueDateKt) {
+  fun onDateChanged(date: QueueDate) {
     _uiState.setValue(_uiState.safeValue.copy(date = date))
   }
 

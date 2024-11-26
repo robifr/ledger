@@ -26,7 +26,7 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoField
 import java.time.temporal.TemporalAdjusters
 
-data class QueueDateKt(val range: Range, val dateStart: ZonedDateTime, val dateEnd: ZonedDateTime) {
+data class QueueDate(val range: Range, val dateStart: ZonedDateTime, val dateEnd: ZonedDateTime) {
   constructor(
       dateStart: ZonedDateTime,
       dateEnd: ZonedDateTime

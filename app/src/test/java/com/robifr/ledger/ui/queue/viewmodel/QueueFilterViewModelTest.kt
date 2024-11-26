@@ -19,7 +19,7 @@ package com.robifr.ledger.ui.queue.viewmodel
 import android.os.Environment
 import com.robifr.ledger.InstantTaskExecutorExtension
 import com.robifr.ledger.MainCoroutineExtension
-import com.robifr.ledger.data.display.QueueDateKt
+import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.display.QueueSortMethod
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
@@ -130,7 +130,7 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   fun `on state changed`() {
     _viewModel.onNullCustomerShown(false)
     _viewModel.onCustomerIdsChanged(listOf(111L))
-    _viewModel.onDateChanged(QueueDateKt(QueueDateKt.Range.TODAY))
+    _viewModel.onDateChanged(QueueDate(QueueDate.Range.TODAY))
     _viewModel.onStatusChanged(setOf(QueueModel.Status.UNPAID))
     _viewModel.onMinTotalPriceTextChanged("$0")
     _viewModel.onMaxTotalPriceTextChanged("$100")
@@ -138,7 +138,7 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
         QueueFilterState(
             isNullCustomerShown = false,
             customerIds = listOf(111L),
-            date = QueueDateKt(QueueDateKt.Range.TODAY),
+            date = QueueDate(QueueDate.Range.TODAY),
             status = setOf(QueueModel.Status.UNPAID),
             formattedMinTotalPrice = "$0",
             formattedMaxTotalPrice = "$100"),
