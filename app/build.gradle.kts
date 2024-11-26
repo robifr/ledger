@@ -23,6 +23,7 @@ plugins {
   id(libs.plugins.google.devtools.ksp.get().pluginId)
   id(libs.plugins.jetbrains.kotlin.android.get().pluginId)
   id(libs.plugins.jetbrains.kotlin.plugin.parcelize.get().pluginId)
+  id(libs.plugins.jetbrains.kotlinx.kover.get().pluginId)
 }
 
 android {
@@ -108,6 +109,13 @@ dependencies {
   testImplementation(libs.junit.jupiter)
 
   debugImplementation(libs.squareup.leakcanary.android)
+}
+
+kover {
+  reports.filters.excludes {
+    packages("**.databinding", "dagger.hilt.*", "hilt_aggregated_deps")
+    classes("**.R.class", "**.R\$*.class", "**.BuildConfig", "**.*_*")
+  }
 }
 
 tasks.withType<Test> {
