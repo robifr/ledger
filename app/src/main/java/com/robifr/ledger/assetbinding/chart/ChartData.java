@@ -25,51 +25,41 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public interface ChartData {
+public sealed interface ChartData {
   @NonNull
-  public default JSONObject toJson() {
+  default JSONObject toJson() {
     final JSONObject json = new JSONObject();
-    final Field[] fields = this.getClass().getDeclaredFields();
-
-    for (Field field : fields) {
+    for (Field field : getClass().getDeclaredFields()) {
       // Although fields in record class are public,
       // it's still required to provide private field to be accessible.
       field.setAccessible(true);
-
       try {
         final Object fieldValue = field.get(this);
-
         if (fieldValue == null) {
           json.put(field.getName(), JSONObject.NULL);
-
         } else if (fieldValue.getClass().isArray()) {
           json.put(field.getName(), new JSONArray(fieldValue));
-
         } else if (fieldValue instanceof Collection<?> collection) {
           json.put(field.getName(), new JSONArray(collection));
-
         } else {
           json.put(field.getName(), fieldValue);
         }
-
       } catch (IllegalAccessException | JSONException e) {
         throw new RuntimeException(e);
       }
     }
-
     return json;
   }
 
-  public static record Single<K, V>(@NonNull @Keep K key, @NonNull @Keep V value)
-      implements ChartData {
+  record Single<K, V>(@NonNull @Keep K key, @NonNull @Keep V value) implements ChartData {
     public Single {
       Objects.requireNonNull(key);
       Objects.requireNonNull(value);
     }
   }
 
-  public static record Multiple<K, V, G>(
-      @NonNull @Keep K key, @NonNull @Keep V value, @NonNull @Keep G group) implements ChartData {
+  record Multiple<K, V, G>(@NonNull @Keep K key, @NonNull @Keep V value, @NonNull @Keep G group)
+      implements ChartData {
     public Multiple {
       Objects.requireNonNull(key);
       Objects.requireNonNull(value);
