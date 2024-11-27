@@ -88,7 +88,7 @@ class FilterCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
     assertEquals(
         listOf(secondCustomer, thirdCustomer, firstCustomer),
         _viewModel.uiState.safeValue.customers,
-        "Sort customers based from its name")
+        "Sort customers based on their name")
   }
 
   @ParameterizedTest
@@ -126,6 +126,6 @@ class FilterCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
         FilterCustomerResultState(
             if (isAnyCustomerFiltered) listOfNotNull(_firstCustomer.id) else listOf()),
         _viewModel.resultState.value,
-        "Update result state based from the selected customer")
+        "Update result state based on the selected customer")
   }
 }
