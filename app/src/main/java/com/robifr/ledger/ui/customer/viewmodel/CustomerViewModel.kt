@@ -27,6 +27,7 @@ import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.PluralResource
+import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
@@ -64,6 +65,10 @@ constructor(
   val uiState: SafeLiveData<CustomerState>
     get() = _uiState
 
+  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
+  val recyclerAdapterState: LiveData<RecyclerAdapterState>
+    get() = _recyclerAdapterState
+
   val filterView: CustomerFilterViewModel = CustomerFilterViewModel(this, _dispatcher)
 
   init {
@@ -78,9 +83,13 @@ constructor(
 
   fun onCustomersChanged(customers: List<CustomerModel>) {
     _uiState.setValue(_uiState.safeValue.copy(customers = _sorter.sort(customers)))
+    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
   }
 
   fun onExpandedCustomerIndexChanged(index: Int) {
+    // Update both previous and current expanded product. +1 offset because header holder.
+    _recyclerAdapterState.setValue(
+        RecyclerAdapterState.ItemChanged(_uiState.safeValue.expandedCustomerIndex + 1, index + 1))
     _uiState.setValue(
         _uiState.safeValue.copy(
             expandedCustomerIndex =

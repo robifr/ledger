@@ -22,22 +22,19 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
-import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ListableFragmentBinding
+import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 import com.robifr.ledger.ui.queue.filter.QueueFilter
 import com.robifr.ledger.ui.queue.recycler.QueueAdapter
-import com.robifr.ledger.ui.queue.recycler.QueueListHolder
 import com.robifr.ledger.ui.queue.viewmodel.QueueFilterState
-import com.robifr.ledger.ui.queue.viewmodel.QueueState
 import com.robifr.ledger.ui.queue.viewmodel.QueueViewModel
 import com.robifr.ledger.util.getColorAttr
 import dagger.hilt.android.AndroidEntryPoint
@@ -78,7 +75,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
     queueViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
-    queueViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
+    queueViewModel.recyclerAdapterState.observe(viewLifecycleOwner, ::_onRecyclerAdapterState)
     queueViewModel.filterView.uiState.observe(viewLifecycleOwner, ::_onFilterState)
   }
 
@@ -112,18 +109,11 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         .show()
   }
 
-  private fun _onUiState(state: QueueState) {
-    _adapter.notifyDataSetChanged()
-    for (view in fragmentBinding.recyclerView.children) {
-      val viewHolder: RecyclerView.ViewHolder =
-          fragmentBinding.recyclerView.getChildViewHolder(view)
-      if (viewHolder is QueueListHolder) {
-        viewHolder.setCardExpanded(
-            state.expandedQueueIndex != -1 &&
-                // +1 offset because header holder.
-                fragmentBinding.recyclerView.getChildAdapterPosition(view) ==
-                    state.expandedQueueIndex + 1)
-      }
+  private fun _onRecyclerAdapterState(state: RecyclerAdapterState) {
+    when (state) {
+      is RecyclerAdapterState.DataSetChanged -> _adapter.notifyDataSetChanged()
+      is RecyclerAdapterState.ItemChanged ->
+          state.indexes.forEach { _adapter.notifyItemChanged(it) }
     }
   }
 

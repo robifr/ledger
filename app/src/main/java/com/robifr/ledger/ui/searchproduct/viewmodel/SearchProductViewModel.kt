@@ -26,6 +26,7 @@ import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.ui.PluralResource
+import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
@@ -78,6 +79,10 @@ constructor(
   val uiState: SafeLiveData<SearchProductState>
     get() = _uiState
 
+  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
+  val recyclerAdapterState: LiveData<RecyclerAdapterState>
+    get() = _recyclerAdapterState
+
   private val _resultState: SingleLiveEvent<SearchProductResultState> = SingleLiveEvent()
   val resultState: LiveData<SearchProductResultState>
     get() = _resultState
@@ -98,11 +103,15 @@ constructor(
           delay(300L)
           _productRepository.search(query).await().let { products: List<ProductModel> ->
             _uiState.postValue(_uiState.safeValue.copy(query = query, products = products))
+            _recyclerAdapterState.postValue(RecyclerAdapterState.DataSetChanged)
           }
         }
   }
 
   fun onExpandedProductIndexChanged(index: Int) {
+    // Update both previous and current expanded product. +1 offset because header holder.
+    _recyclerAdapterState.setValue(
+        RecyclerAdapterState.ItemChanged(_uiState.safeValue.expandedProductIndex + 1, index + 1))
     _uiState.setValue(
         _uiState.safeValue.copy(
             expandedProductIndex =
@@ -129,5 +138,6 @@ constructor(
 
   private fun _onProductsChanged(products: List<ProductModel>) {
     _uiState.setValue(_uiState.safeValue.copy(products = products))
+    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
   }
 }

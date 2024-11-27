@@ -54,9 +54,8 @@ class FilterCustomerListHolder(
     _customerIndex = itemIndex
     _card.reset()
     _card.setNormalCardCustomer(_customers()[_customerIndex])
-    // Prevent reused view holder card from being expanded or checked.
     _card.setCardChecked(_filteredCustomers().contains(_customers()[_customerIndex]))
-    setCardExpanded(
+    _setCardExpanded(
         _expandedCustomerIndex() != -1 &&
             _customers()[_customerIndex] == _customers()[_expandedCustomerIndex()])
   }
@@ -67,7 +66,7 @@ class FilterCustomerListHolder(
     }
   }
 
-  fun setCardExpanded(isExpanded: Boolean) {
+  private fun _setCardExpanded(isExpanded: Boolean) {
     _card.setCardExpanded(isExpanded)
     // Only fill the view when it's shown on screen.
     if (isExpanded) _card.setExpandedCardCustomer(_customers()[_customerIndex])

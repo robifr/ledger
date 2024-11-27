@@ -25,6 +25,7 @@ import com.robifr.ledger.data.display.CustomerSorter
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
+import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
@@ -60,6 +61,10 @@ constructor(
   val uiState: SafeLiveData<FilterCustomerState>
     get() = _uiState
 
+  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
+  val recyclerAdapterState: LiveData<RecyclerAdapterState>
+    get() = _recyclerAdapterState
+
   private val _resultState: SingleLiveEvent<FilterCustomerResultState> = SingleLiveEvent()
   val resultState: LiveData<FilterCustomerResultState>
     get() = _resultState
@@ -69,16 +74,30 @@ constructor(
     _loadAllCustomers()
   }
 
-  fun onCustomerCheckedChanged(vararg customer: CustomerModel) {
+  fun onCustomerCheckedChanged(vararg customers: CustomerModel) {
     _uiState.setValue(
         _uiState.safeValue.copy(
             filteredCustomers =
                 _uiState.safeValue.filteredCustomers.toMutableList().apply {
-                  customer.forEach { if (!contains(it)) add(it) else remove(it) }
+                  customers.forEach { if (!contains(it)) add(it) else remove(it) }
                 }))
+    _recyclerAdapterState.setValue(
+        RecyclerAdapterState.ItemChanged(
+            0, // Index 0 to update header holder.
+            *customers
+                .mapNotNull { checkedCustomer ->
+                  _uiState.safeValue.customers
+                      .indexOfFirst { it.id == checkedCustomer.id }
+                      .takeIf { it != -1 }
+                      ?.let { it + 1 } // +1 offset because header holder.
+                }
+                .toIntArray()))
   }
 
   fun onExpandedCustomerIndexChanged(index: Int) {
+    // Update both previous and current expanded product. +1 offset because header holder.
+    _recyclerAdapterState.setValue(
+        RecyclerAdapterState.ItemChanged(_uiState.safeValue.expandedCustomerIndex + 1, index + 1))
     _uiState.setValue(
         _uiState.safeValue.copy(
             expandedCustomerIndex =
@@ -93,6 +112,7 @@ constructor(
 
   private fun _onCustomersChanged(customers: List<CustomerModel>) {
     _uiState.setValue(_uiState.safeValue.copy(customers = _sorter.sort(customers)))
+    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
   }
 
   private suspend fun _selectAllCustomers(): List<CustomerModel> =

@@ -43,13 +43,12 @@ class ProductListHolder(
     _productIndex = itemIndex
     _card.reset()
     _card.setNormalCardProduct(_products()[_productIndex])
-    // Prevent reused view holder card from being expanded.
-    setCardExpanded(
+    _setCardExpanded(
         _expandedProductIndex() != -1 &&
             _products()[_productIndex] == _products()[_expandedProductIndex()])
   }
 
-  fun setCardExpanded(isExpanded: Boolean) {
+  private fun _setCardExpanded(isExpanded: Boolean) {
     _card.setCardExpanded(isExpanded)
     // Only fill the view when it's shown on screen.
     if (isExpanded) _card.setExpandedCardProduct(_products()[_productIndex])

@@ -31,6 +31,7 @@ import com.robifr.ledger.ui.RecyclerViewHolder
 class SelectCustomerHeaderHolder(
     private val _selectedItemBinding: ListableListSelectedItemBinding,
     private val _initialSelectedCustomer: () -> CustomerModel?,
+    private val _selectedItemDescription: () -> String?,
     private val _isSelectedCustomerPreviewExpanded: () -> Boolean,
     private val _onSelectedCustomerPreviewExpanded: (Boolean) -> Unit
 ) : RecyclerViewHolder(_selectedItemBinding.root), View.OnClickListener {
@@ -60,11 +61,13 @@ class SelectCustomerHeaderHolder(
     _selectedCard.reset()
     _selectedItemBinding.selectedItemTitle.isVisible = _initialSelectedCustomer() != null
     _selectedItemBinding.selectedItemContainer.isVisible = _initialSelectedCustomer() != null
+    _selectedItemBinding.selectedItemDescription.text = _selectedItemDescription()
+    _selectedItemBinding.selectedItemDescription.isVisible = _selectedItemDescription() != null
     _initialSelectedCustomer()?.let {
       _selectedCard.setNormalCardCustomer(it)
       _selectedCard.setExpandedCardCustomer(it)
       _selectedCard.setCardChecked(true)
-      setCardExpanded(_isSelectedCustomerPreviewExpanded())
+      _selectedCard.setCardExpanded(_isSelectedCustomerPreviewExpanded())
     }
   }
 
@@ -75,14 +78,5 @@ class SelectCustomerHeaderHolder(
         _onSelectedCustomerPreviewExpanded(!isExpanded)
       }
     }
-  }
-
-  fun setCardExpanded(isExpanded: Boolean) {
-    _selectedCard.setCardExpanded(isExpanded)
-  }
-
-  fun setSelectedItemDescription(text: String?, isVisible: Boolean) {
-    _selectedItemBinding.selectedItemDescription.text = text
-    _selectedItemBinding.selectedItemDescription.isVisible = isVisible
   }
 }

@@ -42,12 +42,11 @@ class QueueListHolder(
     _queueIndex = itemIndex
     _card.reset()
     _card.setNormalCardQueue(_queues()[_queueIndex])
-    // Prevent reused view holder card from being expanded.
-    setCardExpanded(
+    _setCardExpanded(
         _expandedQueueIndex() != -1 && _queues()[_queueIndex] == _queues()[_expandedQueueIndex()])
   }
 
-  fun setCardExpanded(isExpanded: Boolean) {
+  private fun _setCardExpanded(isExpanded: Boolean) {
     _card.setCardExpanded(isExpanded)
     // Only fill the view when it's shown on screen.
     if (isExpanded) _card.setExpandedCardQueue(_queues()[_queueIndex])

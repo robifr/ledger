@@ -26,6 +26,7 @@ import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.ProductRepository
+import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
@@ -70,6 +71,10 @@ constructor(
   val uiState: SafeLiveData<SelectProductState>
     get() = _uiState
 
+  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
+  val recyclerAdapterState: LiveData<RecyclerAdapterState>
+    get() = _recyclerAdapterState
+
   private val _resultState: SingleLiveEvent<SelectProductResultState> = SingleLiveEvent()
   val resultState: LiveData<SelectProductResultState>
     get() = _resultState
@@ -86,9 +91,13 @@ constructor(
 
   fun onSelectedProductPreviewExpanded(isExpanded: Boolean) {
     _uiState.setValue(_uiState.safeValue.copy(isSelectedProductPreviewExpanded = isExpanded))
+    _recyclerAdapterState.setValue(RecyclerAdapterState.ItemChanged(0)) // Update header holder.
   }
 
   fun onExpandedProductIndexChanged(index: Int) {
+    // Update both previous and current expanded product. +1 offset because header holder.
+    _recyclerAdapterState.setValue(
+        RecyclerAdapterState.ItemChanged(_uiState.safeValue.expandedProductIndex + 1, index + 1))
     _uiState.setValue(
         _uiState.safeValue.copy(
             expandedProductIndex =
@@ -101,10 +110,13 @@ constructor(
 
   private fun _onProductsChanged(products: List<ProductModel>) {
     _uiState.setValue(_uiState.safeValue.copy(products = _sorter.sort(products)))
+    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
   }
 
   private fun _onSelectedProductOnDatabaseChanged(product: ProductModel?) {
     _uiState.setValue(_uiState.safeValue.copy(selectedProductOnDatabase = product))
+    // Update `selectedItemDescription` in header holder.
+    _recyclerAdapterState.setValue(RecyclerAdapterState.ItemChanged(0))
   }
 
   private suspend fun _selectAllProducts(): List<ProductModel> =

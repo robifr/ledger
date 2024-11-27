@@ -17,16 +17,14 @@
 package com.robifr.ledger.ui.selectcustomer.recycler
 
 import android.view.ViewGroup
-import com.robifr.ledger.data.model.CustomerModel
+import androidx.recyclerview.widget.RecyclerView
 import com.robifr.ledger.databinding.CustomerCardWideBinding
 import com.robifr.ledger.databinding.ListableListSelectedItemBinding
-import com.robifr.ledger.ui.RecyclerAdapter
 import com.robifr.ledger.ui.RecyclerViewHolder
 import com.robifr.ledger.ui.selectcustomer.SelectCustomerFragment
 
 class SelectCustomerAdapter(private val _fragment: SelectCustomerFragment) :
-    RecyclerAdapter<CustomerModel, RecyclerViewHolder>(
-        _itemToCompare = { CustomerModel::id }, _contentToCompare = { CustomerModel::hashCode }) {
+    RecyclerView.Adapter<RecyclerViewHolder>() {
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder {
     return when (ViewType.entries.find { it.value == viewType }) {
       ViewType.HEADER ->
@@ -35,6 +33,10 @@ class SelectCustomerAdapter(private val _fragment: SelectCustomerFragment) :
                   ListableListSelectedItemBinding.inflate(_fragment.layoutInflater, parent, false),
               _initialSelectedCustomer = {
                 _fragment.selectCustomerViewModel.uiState.safeValue.initialSelectedCustomer
+              },
+              _selectedItemDescription = {
+                _fragment.selectCustomerViewModel.uiState.safeValue.selectedItemDescriptionStringRes
+                    ?.let { _fragment.getString(it) }
               },
               _isSelectedCustomerPreviewExpanded = {
                 _fragment.selectCustomerViewModel.uiState.safeValue

@@ -37,11 +37,18 @@ data class SelectCustomerState(
     // feature.
     get() =
         // The original customer in the database was deleted.
-        if (initialSelectedCustomer != null && selectedCustomerOnDatabase == null) {
+        if (initialSelectedCustomer != null &&
+            selectedCustomerOnDatabase == null &&
+            // Don't show text when the product isn't set yet,
+            // preventing initial text from flashing.
+            customers.isNotEmpty()) {
           R.string.selectCustomer_originalCustomerDeleted
           // The original customer in the database was edited.
         } else if (initialSelectedCustomer != null &&
-            initialSelectedCustomer != selectedCustomerOnDatabase) {
+            initialSelectedCustomer != selectedCustomerOnDatabase &&
+            // Don't show text when the product isn't set yet,
+            // preventing initial text from flashing.
+            customers.isNotEmpty()) {
           R.string.selectCustomer_originalCustomerChanged
           // It’s the same unchanged customer.
         } else {

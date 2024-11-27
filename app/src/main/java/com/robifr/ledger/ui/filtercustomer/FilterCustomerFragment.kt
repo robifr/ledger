@@ -23,23 +23,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
-import androidx.core.view.children
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.databinding.ListableFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.filtercustomer.recycler.FilterCustomerAdapter
-import com.robifr.ledger.ui.filtercustomer.recycler.FilterCustomerListHolder
 import com.robifr.ledger.ui.filtercustomer.viewmodel.FilterCustomerResultState
-import com.robifr.ledger.ui.filtercustomer.viewmodel.FilterCustomerState
 import com.robifr.ledger.ui.filtercustomer.viewmodel.FilterCustomerViewModel
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import com.robifr.ledger.util.getColorAttr
@@ -83,7 +80,8 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
     filterCustomerViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
     filterCustomerViewModel.resultState.observe(viewLifecycleOwner, ::_onResultState)
-    filterCustomerViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
+    filterCustomerViewModel.recyclerAdapterState.observe(
+        viewLifecycleOwner, ::_onRecyclerAdapterState)
   }
 
   override fun onStart() {
@@ -142,18 +140,11 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     finish()
   }
 
-  private fun _onUiState(state: FilterCustomerState) {
-    _adapter.notifyDiffedItemChanged(state.customers)
-    for (view in fragmentBinding.recyclerView.children) {
-      val viewHolder: RecyclerView.ViewHolder =
-          fragmentBinding.recyclerView.getChildViewHolder(view)
-      if (viewHolder is FilterCustomerListHolder) {
-        viewHolder.setCardExpanded(
-            state.expandedCustomerIndex != -1 &&
-                // +1 offset because header holder.
-                fragmentBinding.recyclerView.getChildAdapterPosition(view) ==
-                    state.expandedCustomerIndex + 1)
-      }
+  private fun _onRecyclerAdapterState(state: RecyclerAdapterState) {
+    when (state) {
+      is RecyclerAdapterState.DataSetChanged -> _adapter.notifyDataSetChanged()
+      is RecyclerAdapterState.ItemChanged ->
+          state.indexes.forEach { _adapter.notifyItemChanged(it) }
     }
   }
 

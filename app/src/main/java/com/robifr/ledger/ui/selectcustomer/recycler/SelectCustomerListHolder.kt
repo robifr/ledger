@@ -52,7 +52,6 @@ class SelectCustomerListHolder(
     _customerIndex = itemIndex
     _card.reset()
     _card.setNormalCardCustomer(_customers()[_customerIndex])
-    // Prevent reused view holder card from being expanded or checked.
     _card.setCardChecked(_initialSelectedCustomerIds().contains(_customers()[_customerIndex].id))
     setCardExpanded(
         _expandedCustomerIndex() != -1 &&

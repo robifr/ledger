@@ -17,18 +17,16 @@
 package com.robifr.ledger.ui.searchcustomer.recycler
 
 import android.view.ViewGroup
-import com.robifr.ledger.data.model.CustomerModel
+import androidx.recyclerview.widget.RecyclerView
 import com.robifr.ledger.databinding.CustomerCardWideBinding
 import com.robifr.ledger.databinding.ListableListTextBinding
-import com.robifr.ledger.ui.RecyclerAdapter
 import com.robifr.ledger.ui.RecyclerViewHolder
 import com.robifr.ledger.ui.customer.recycler.CustomerListHolder
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import com.robifr.ledger.ui.selectcustomer.recycler.SelectCustomerListHolder
 
 class SearchCustomerAdapter(private val _fragment: SearchCustomerFragment) :
-    RecyclerAdapter<CustomerModel, RecyclerViewHolder>(
-        _itemToCompare = { CustomerModel::id }, _contentToCompare = { CustomerModel::hashCode }) {
+    RecyclerView.Adapter<RecyclerViewHolder>() {
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder =
       when (ViewType.entries.find { it.value == viewType }) {
         ViewType.HEADER ->

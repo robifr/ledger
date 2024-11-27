@@ -23,25 +23,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
-import androidx.core.view.children
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ListableFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SnackbarState
-import com.robifr.ledger.ui.customer.recycler.CustomerListHolder
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import com.robifr.ledger.ui.selectcustomer.recycler.SelectCustomerAdapter
-import com.robifr.ledger.ui.selectcustomer.recycler.SelectCustomerHeaderHolder
-import com.robifr.ledger.ui.selectcustomer.recycler.SelectCustomerListHolder
 import com.robifr.ledger.ui.selectcustomer.viewmodel.SelectCustomerResultState
-import com.robifr.ledger.ui.selectcustomer.viewmodel.SelectCustomerState
 import com.robifr.ledger.ui.selectcustomer.viewmodel.SelectCustomerViewModel
 import com.robifr.ledger.util.getColorAttr
 import dagger.hilt.android.AndroidEntryPoint
@@ -84,7 +79,8 @@ class SelectCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
     selectCustomerViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
     selectCustomerViewModel.resultState.observe(viewLifecycleOwner, ::_onResultState)
-    selectCustomerViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
+    selectCustomerViewModel.recyclerAdapterState.observe(
+        viewLifecycleOwner, ::_onRecyclerAdapterState)
   }
 
   override fun onStart() {
@@ -139,29 +135,11 @@ class SelectCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     finish()
   }
 
-  private fun _onUiState(state: SelectCustomerState) {
-    _adapter.notifyDiffedItemChanged(state.customers)
-    fragmentBinding.recyclerView.findViewHolderForLayoutPosition(0)?.let { viewHolder ->
-      if (viewHolder is SelectCustomerHeaderHolder) {
-        viewHolder.setCardExpanded(state.isSelectedCustomerPreviewExpanded)
-        viewHolder.setSelectedItemDescription(
-            state.selectedItemDescriptionStringRes?.let { requireContext().getString(it) },
-            state.selectedItemDescriptionStringRes != null)
-      }
-    }
-
-    for (view in fragmentBinding.recyclerView.children) {
-      val viewHolder: RecyclerView.ViewHolder =
-          fragmentBinding.recyclerView.getChildViewHolder(view)
-      val isCardExpanded: Boolean =
-          state.expandedCustomerIndex != -1 &&
-              // +1 offset because header holder.
-              fragmentBinding.recyclerView.getChildAdapterPosition(view) ==
-                  state.expandedCustomerIndex + 1
-      when (viewHolder) {
-        is CustomerListHolder -> viewHolder.setCardExpanded(isCardExpanded)
-        is SelectCustomerListHolder -> viewHolder.setCardExpanded(isCardExpanded)
-      }
+  private fun _onRecyclerAdapterState(state: RecyclerAdapterState) {
+    when (state) {
+      is RecyclerAdapterState.DataSetChanged -> _adapter.notifyDataSetChanged()
+      is RecyclerAdapterState.ItemChanged ->
+          state.indexes.forEach { _adapter.notifyItemChanged(it) }
     }
   }
 

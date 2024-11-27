@@ -26,6 +26,7 @@ import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ModelSyncListener
+import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
@@ -70,6 +71,10 @@ constructor(
   val uiState: SafeLiveData<SelectCustomerState>
     get() = _uiState
 
+  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
+  val recyclerAdapterState: LiveData<RecyclerAdapterState>
+    get() = _recyclerAdapterState
+
   private val _resultState: SingleLiveEvent<SelectCustomerResultState> = SingleLiveEvent()
   val resultState: LiveData<SelectCustomerResultState>
     get() = _resultState
@@ -86,9 +91,13 @@ constructor(
 
   fun onSelectedCustomerPreviewExpanded(isExpanded: Boolean) {
     _uiState.setValue(_uiState.safeValue.copy(isSelectedCustomerPreviewExpanded = isExpanded))
+    _recyclerAdapterState.setValue(RecyclerAdapterState.ItemChanged(0)) // Update header holder.
   }
 
   fun onExpandedCustomerIndexChanged(index: Int) {
+    // Update both previous and current expanded product. +1 offset because header holder.
+    _recyclerAdapterState.setValue(
+        RecyclerAdapterState.ItemChanged(_uiState.safeValue.expandedCustomerIndex + 1, index + 1))
     _uiState.setValue(
         _uiState.safeValue.copy(
             expandedCustomerIndex =
@@ -101,10 +110,13 @@ constructor(
 
   private fun _onCustomersChanged(customers: List<CustomerModel>) {
     _uiState.setValue(_uiState.safeValue.copy(customers = _sorter.sort(customers)))
+    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
   }
 
   private fun _onSelectedCustomerOnDatabaseChanged(customer: CustomerModel?) {
     _uiState.setValue(_uiState.safeValue.copy(selectedCustomerOnDatabase = customer))
+    // Update `selectedItemDescription` in header holder.
+    _recyclerAdapterState.setValue(RecyclerAdapterState.ItemChanged(0))
   }
 
   private suspend fun _selectAllCustomers(): List<CustomerModel> =

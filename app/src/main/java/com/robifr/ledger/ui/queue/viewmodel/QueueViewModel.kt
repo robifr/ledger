@@ -29,6 +29,7 @@ import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.QueueRepository
 import com.robifr.ledger.ui.PluralResource
+import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
@@ -70,6 +71,10 @@ constructor(
   val uiState: SafeLiveData<QueueState>
     get() = _uiState
 
+  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
+  val recyclerAdapterState: LiveData<RecyclerAdapterState>
+    get() = _recyclerAdapterState
+
   val filterView: QueueFilterViewModel = QueueFilterViewModel(this, _dispatcher)
 
   init {
@@ -86,9 +91,13 @@ constructor(
 
   fun onQueuesChanged(queues: List<QueueModel>) {
     _uiState.setValue(_uiState.safeValue.copy(queues = _sorter.sort(queues)))
+    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
   }
 
   fun onExpandedQueueIndexChanged(index: Int) {
+    // Update both previous and current expanded product. +1 offset because header holder.
+    _recyclerAdapterState.setValue(
+        RecyclerAdapterState.ItemChanged(_uiState.safeValue.expandedQueueIndex + 1, index + 1))
     _uiState.setValue(
         _uiState.safeValue.copy(
             expandedQueueIndex = if (_uiState.safeValue.expandedQueueIndex != index) index else -1))

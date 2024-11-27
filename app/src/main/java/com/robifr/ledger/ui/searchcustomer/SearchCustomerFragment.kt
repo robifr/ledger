@@ -22,24 +22,21 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
-import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.SearchableFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SnackbarState
-import com.robifr.ledger.ui.customer.recycler.CustomerListHolder
 import com.robifr.ledger.ui.searchcustomer.recycler.SearchCustomerAdapter
 import com.robifr.ledger.ui.searchcustomer.viewmodel.SearchCustomerResultState
 import com.robifr.ledger.ui.searchcustomer.viewmodel.SearchCustomerState
 import com.robifr.ledger.ui.searchcustomer.viewmodel.SearchCustomerViewModel
-import com.robifr.ledger.ui.selectcustomer.recycler.SelectCustomerListHolder
 import com.robifr.ledger.util.getColorAttr
 import com.robifr.ledger.util.hideKeyboard
 import com.robifr.ledger.util.showKeyboard
@@ -84,6 +81,8 @@ class SearchCustomerFragment : Fragment(), SearchView.OnQueryTextListener {
     searchCustomerViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
     searchCustomerViewModel.resultState.observe(viewLifecycleOwner, ::_onResultState)
     searchCustomerViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
+    searchCustomerViewModel.recyclerAdapterState.observe(
+        viewLifecycleOwner, ::_onRecyclerAdapterState)
 
     if (searchCustomerViewModel.uiState.safeValue.initialQuery.isNotEmpty()) {
       fragmentBinding.searchView.setQuery(
@@ -129,19 +128,13 @@ class SearchCustomerFragment : Fragment(), SearchView.OnQueryTextListener {
     fragmentBinding.horizontalListContainer.isVisible = state.isNoResultFoundIllustrationVisible
     fragmentBinding.noResultsImage.root.isVisible = state.isNoResultFoundIllustrationVisible
     fragmentBinding.recyclerView.isVisible = state.isRecyclerViewVisible
-    _adapter.notifyDiffedItemChanged(state.customers)
-    for (view in fragmentBinding.recyclerView.children) {
-      val viewHolder: RecyclerView.ViewHolder =
-          fragmentBinding.recyclerView.getChildViewHolder(view)
-      val isCardExpanded: Boolean =
-          state.expandedCustomerIndex != -1 &&
-              // +1 offset because header holder.
-              fragmentBinding.recyclerView.getChildAdapterPosition(view) ==
-                  state.expandedCustomerIndex + 1
-      when (viewHolder) {
-        is CustomerListHolder -> viewHolder.setCardExpanded(isCardExpanded)
-        is SelectCustomerListHolder -> viewHolder.setCardExpanded(isCardExpanded)
-      }
+  }
+
+  private fun _onRecyclerAdapterState(state: RecyclerAdapterState) {
+    when (state) {
+      is RecyclerAdapterState.DataSetChanged -> _adapter.notifyDataSetChanged()
+      is RecyclerAdapterState.ItemChanged ->
+          state.indexes.forEach { _adapter.notifyItemChanged(it) }
     }
   }
 

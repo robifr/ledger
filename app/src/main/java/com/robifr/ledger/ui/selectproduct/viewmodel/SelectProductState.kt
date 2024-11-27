@@ -32,11 +32,18 @@ data class SelectProductState(
   val selectedItemDescriptionStringRes: Int?
     get() =
         // The original product in the database was deleted.
-        if (initialSelectedProduct != null && selectedProductOnDatabase == null) {
+        if (initialSelectedProduct != null &&
+            selectedProductOnDatabase == null &&
+            // Don't show text when the product isn't set yet,
+            // preventing initial text from flashing.
+            products.isNotEmpty()) {
           R.string.selectProduct_originalProductDeleted
           // The original product in the database was edited.
         } else if (initialSelectedProduct != null &&
-            initialSelectedProduct != selectedProductOnDatabase) {
+            initialSelectedProduct != selectedProductOnDatabase &&
+            // Don't show text when the product isn't set yet,
+            // preventing initial text from flashing.
+            products.isNotEmpty()) {
           R.string.selectProduct_originalProductChanged
           // It’s the same unchanged product.
         } else {

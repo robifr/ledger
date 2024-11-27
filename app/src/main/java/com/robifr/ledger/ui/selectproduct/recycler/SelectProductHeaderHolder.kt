@@ -31,6 +31,7 @@ import com.robifr.ledger.ui.RecyclerViewHolder
 class SelectProductHeaderHolder(
     private val _selectedItemBinding: ListableListSelectedItemBinding,
     private val _initialSelectedProduct: () -> ProductModel?,
+    private val _selectedItemDescription: () -> String?,
     private val _isSelectedProductPreviewExpanded: () -> Boolean,
     private val _onSelectedProductPreviewExpanded: (Boolean) -> Unit
 ) : RecyclerViewHolder(_selectedItemBinding.root), View.OnClickListener {
@@ -60,11 +61,13 @@ class SelectProductHeaderHolder(
     _selectedCard.reset()
     _selectedItemBinding.selectedItemTitle.isVisible = _initialSelectedProduct() != null
     _selectedItemBinding.selectedItemContainer.isVisible = _initialSelectedProduct() != null
+    _selectedItemBinding.selectedItemDescription.text = _selectedItemDescription()
+    _selectedItemBinding.selectedItemDescription.isVisible = _selectedItemDescription() != null
     _initialSelectedProduct()?.let {
       _selectedCard.setNormalCardProduct(it)
       _selectedCard.setExpandedCardProduct(it)
       _selectedCard.setCardChecked(true)
-      setCardExpanded(_isSelectedProductPreviewExpanded())
+      _selectedCard.setCardExpanded(_isSelectedProductPreviewExpanded())
     }
   }
 
@@ -75,14 +78,5 @@ class SelectProductHeaderHolder(
         _onSelectedProductPreviewExpanded(!isExpanded)
       }
     }
-  }
-
-  fun setCardExpanded(isExpanded: Boolean) {
-    _selectedCard.setCardExpanded(isExpanded)
-  }
-
-  fun setSelectedItemDescription(text: String?, isVisible: Boolean) {
-    _selectedItemBinding.selectedItemDescription.text = text
-    _selectedItemBinding.selectedItemDescription.isVisible = isVisible
   }
 }
