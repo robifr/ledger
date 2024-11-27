@@ -18,6 +18,6 @@
     android:shape="rectangle">
   <solid android:color="@color/white" />
   <size
-      android:width="24dp"
-      android:height="24dp" />
+      android:width="512dp"
+      android:height="512dp" />
 </shape>
