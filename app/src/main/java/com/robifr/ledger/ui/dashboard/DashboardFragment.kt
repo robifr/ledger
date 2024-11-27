@@ -106,9 +106,8 @@ class DashboardFragment : Fragment() {
     _summaryOverview.setTotalActiveCustomers(state.totalActiveCustomers)
     _summaryOverview.setTotalProductsSold(state.totalProductsSold)
     when (state.displayedChart) {
-      DashboardSummary.OverviewType.ACTIVE_CUSTOMERS -> {
-        _summaryOverview.displayMostActiveCustomersList(state.mostActiveCustomers)
-      }
+      DashboardSummary.OverviewType.ACTIVE_CUSTOMERS ->
+          _summaryOverview.displayMostActiveCustomersList(state.mostActiveCustomers)
       DashboardSummary.OverviewType.PRODUCTS_SOLD ->
           _summaryOverview.displayMostProductsSoldList(state.mostProductsSold)
       // The rest of the enum is a web view, which is handled via `_onSummaryChartModel()`.
