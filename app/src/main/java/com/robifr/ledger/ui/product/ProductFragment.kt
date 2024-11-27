@@ -103,7 +103,7 @@ class ProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onUiState(state: ProductState) {
-    _adapter.notifyDataSetChanged()
+    _adapter.notifyDiffedItemChanged(state.products)
     for (view in fragmentBinding.recyclerView.children) {
       val viewHolder: RecyclerView.ViewHolder =
           fragmentBinding.recyclerView.getChildViewHolder(view)

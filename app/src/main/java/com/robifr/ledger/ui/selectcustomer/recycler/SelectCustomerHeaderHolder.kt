@@ -73,15 +73,6 @@ class SelectCustomerHeaderHolder(
       R.id.expandButton -> {
         val isExpanded: Boolean = _selectedCardBinding.expandedCard.root.isVisible
         _onSelectedCustomerPreviewExpanded(!isExpanded)
-        // Display ripple effect. The effect is gone due to the clicked view
-        // set to gone when the card expand/collapse.
-        if (isExpanded) {
-          _selectedCardBinding.normalCard.expandButton.isPressed = true
-          _selectedCardBinding.normalCard.expandButton.isPressed = false
-        } else {
-          _selectedCardBinding.expandedCard.expandButton.isPressed = true
-          _selectedCardBinding.expandedCard.expandButton.isPressed = false
-        }
       }
     }
   }

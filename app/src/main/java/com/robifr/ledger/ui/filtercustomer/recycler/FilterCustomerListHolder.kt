@@ -63,18 +63,7 @@ class FilterCustomerListHolder(
 
   override fun onClick(view: View?) {
     when (view?.id) {
-      R.id.expandButton -> {
-        _onExpandedCustomerIndexChanged(_customerIndex)
-        // Display ripple effect. The effect is gone due to the clicked view
-        // set to gone when the card expand/collapse.
-        if (_cardBinding.expandedCard.root.isVisible) {
-          _cardBinding.normalCard.expandButton.isPressed = true
-          _cardBinding.normalCard.expandButton.isPressed = false
-        } else {
-          _cardBinding.expandedCard.expandButton.isPressed = true
-          _cardBinding.expandedCard.expandButton.isPressed = false
-        }
-      }
+      R.id.expandButton -> _onExpandedCustomerIndexChanged(_customerIndex)
     }
   }
 

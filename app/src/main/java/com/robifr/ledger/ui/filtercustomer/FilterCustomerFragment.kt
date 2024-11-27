@@ -143,7 +143,7 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onUiState(state: FilterCustomerState) {
-    _adapter.notifyDataSetChanged()
+    _adapter.notifyDiffedItemChanged(state.customers)
     for (view in fragmentBinding.recyclerView.children) {
       val viewHolder: RecyclerView.ViewHolder =
           fragmentBinding.recyclerView.getChildViewHolder(view)

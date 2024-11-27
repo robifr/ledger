@@ -17,14 +17,16 @@
 package com.robifr.ledger.ui.filtercustomer.recycler
 
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
+import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.databinding.CustomerCardWideBinding
 import com.robifr.ledger.databinding.ListableListSelectedItemBinding
+import com.robifr.ledger.ui.RecyclerAdapter
 import com.robifr.ledger.ui.RecyclerViewHolder
 import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 
 class FilterCustomerAdapter(private val _fragment: FilterCustomerFragment) :
-    RecyclerView.Adapter<RecyclerViewHolder>() {
+    RecyclerAdapter<CustomerModel, RecyclerViewHolder>(
+        _itemToCompare = { CustomerModel::id }, _contentToCompare = { CustomerModel::hashCode }) {
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder =
       when (ViewType.entries.find { it.value == viewType }) {
         ViewType.HEADER ->

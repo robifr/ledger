@@ -138,7 +138,7 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onUiState(state: SelectProductState) {
-    _adapter.notifyDataSetChanged()
+    _adapter.notifyDiffedItemChanged(state.products)
     fragmentBinding.recyclerView.findViewHolderForLayoutPosition(0)?.let { viewHolder ->
       if (viewHolder is SelectProductHeaderHolder) {
         viewHolder.setCardExpanded(state.isSelectedProductPreviewExpanded)

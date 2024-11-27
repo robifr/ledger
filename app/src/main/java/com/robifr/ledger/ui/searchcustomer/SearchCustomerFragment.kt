@@ -129,7 +129,7 @@ class SearchCustomerFragment : Fragment(), SearchView.OnQueryTextListener {
     fragmentBinding.horizontalListContainer.isVisible = state.isNoResultFoundIllustrationVisible
     fragmentBinding.noResultsImage.root.isVisible = state.isNoResultFoundIllustrationVisible
     fragmentBinding.recyclerView.isVisible = state.isRecyclerViewVisible
-    _adapter.notifyDataSetChanged()
+    _adapter.notifyDiffedItemChanged(state.customers)
     for (view in fragmentBinding.recyclerView.children) {
       val viewHolder: RecyclerView.ViewHolder =
           fragmentBinding.recyclerView.getChildViewHolder(view)

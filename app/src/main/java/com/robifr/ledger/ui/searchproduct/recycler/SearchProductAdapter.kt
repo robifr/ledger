@@ -17,16 +17,18 @@
 package com.robifr.ledger.ui.searchproduct.recycler
 
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
+import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.databinding.ListableListTextBinding
 import com.robifr.ledger.databinding.ProductCardWideBinding
+import com.robifr.ledger.ui.RecyclerAdapter
 import com.robifr.ledger.ui.RecyclerViewHolder
 import com.robifr.ledger.ui.product.recycler.ProductListHolder
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
 import com.robifr.ledger.ui.selectproduct.recycler.SelectProductListHolder
 
 class SearchProductAdapter(private val _fragment: SearchProductFragment) :
-    RecyclerView.Adapter<RecyclerViewHolder>() {
+    RecyclerAdapter<ProductModel, RecyclerViewHolder>(
+        _itemToCompare = { ProductModel::id }, _contentToCompare = { ProductModel::hashCode }) {
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerViewHolder =
       when (ViewType.entries.find { it.value == viewType }) {
         ViewType.HEADER ->
