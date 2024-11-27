@@ -115,7 +115,8 @@ class CustomerModelTest {
     })
   }
 
-  private fun `_balance on made payment with valid status and payment methods cases`(): Array<Any> =
+  private fun `_balance on made payment with valid status and payment methods cases`():
+      Array<Array<Any>> =
       arrayOf(
           arrayOf(_uncompletedQueueWithCash, 500L),
           arrayOf(_uncompletedQueueWithAccountBalance, 500L),
@@ -216,7 +217,7 @@ class CustomerModelTest {
    * [_balance on updated payment with valid status and payment methods cases] where the balance
    * changes.
    */
-  private fun `_balance on updated payment with different customer cases`(): Array<Any> =
+  private fun `_balance on updated payment with different customer cases`(): Array<Array<Any>> =
       arrayOf(
           // spotless:off
           // Customer is equal to the one in the new queue.
@@ -276,7 +277,8 @@ class CustomerModelTest {
         "Correctly calculate balance even when it seems impossible")
   }
 
-  private fun `_balance on updated payment with different grand total price cases`(): Array<Any> =
+  private fun `_balance on updated payment with different grand total price cases`():
+      Array<Array<Any>> =
       arrayOf(
           // Grand total price in the new queue is greater than in the old queue.
           arrayOf(_uncompletedQueueWithCash, 200, 300L),
@@ -342,7 +344,7 @@ class CustomerModelTest {
         "Keep debt when customer differs with the one in queue")
   }
 
-  private fun `_debt on updated payment with valid status cases`(): Array<Any> =
+  private fun `_debt on updated payment with valid status cases`(): Array<Array<Any>> =
       arrayOf(
           arrayOf(_queue, _queue, 0),
           arrayOf(_queue, _unpaidQueue, -100),
@@ -362,7 +364,7 @@ class CustomerModelTest {
         "Correctly calculate debt when payment is updated")
   }
 
-  private fun `_debt on updated payment with different customer cases`(): Array<Any> =
+  private fun `_debt on updated payment with different customer cases`(): Array<Array<Any>> =
       arrayOf(
           // Customer is equal to the one in the new queue.
           arrayOf(_queue, _queue, true, 0),
@@ -412,7 +414,8 @@ class CustomerModelTest {
         "Correctly calculate debt when the old queue has unpaid status and no customer")
   }
 
-  private fun `_debt on updated payment with different grand total price cases`(): Array<Any> =
+  private fun `_debt on updated payment with different grand total price cases`():
+      Array<Array<Any>> =
       arrayOf(
           // Grand total price in the new queue is greater than in the old queue.
           arrayOf(_queue, _queue, 200, 0),

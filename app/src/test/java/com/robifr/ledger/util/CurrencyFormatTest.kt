@@ -38,7 +38,7 @@ class CurrencyFormatTest {
   private val _japan = "ja-JP"
   private val _amount: BigDecimal = 10_000.50.toBigDecimal()
 
-  private fun `_format currency cases`(): Array<Any> =
+  private fun `_format currency cases`(): Array<Array<Any>> =
       arrayOf(
           arrayOf(_us, "$10,000.5"),
           arrayOf(_uk, "£10,000.5"),
@@ -65,7 +65,7 @@ class CurrencyFormatTest {
         "Correctly parse amount with locale ${languageTag}")
   }
 
-  private fun `_format currency unit with different digits`(): Array<Any> =
+  private fun `_format currency unit with different digits`(): Array<Array<Any>> =
       arrayOf(
           // Dozen and hundred.
           arrayOf(0.toBigDecimal(), "$0"),
@@ -146,7 +146,7 @@ class CurrencyFormatTest {
     })
   }
 
-  private fun `_is symbol position at start cases`(): Array<Any> =
+  private fun `_is symbol position at start cases`(): Array<Array<Any>> =
       arrayOf(
           arrayOf(_us, true),
           arrayOf(_uk, true),

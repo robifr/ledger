@@ -159,7 +159,8 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
         "Apply filter to the queues while retaining the sorted list")
   }
 
-  private fun `_on dialog closed with unbounded grand total price range cases`(): Array<Any> =
+  private fun `_on dialog closed with unbounded grand total price range cases`():
+      Array<Array<Any>> =
       arrayOf(
           arrayOf("", "", listOf(_firstQueue, _secondQueue, _thirdQueue)),
           arrayOf("$200", "", listOf(_secondQueue, _thirdQueue)),
@@ -187,7 +188,8 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
         "Include any queue whose grand total price falls within the unbounded range")
   }
 
-  private fun `_on dialog closed with queue excluded from previous filter cases`(): Array<Any> =
+  private fun `_on dialog closed with queue excluded from previous filter cases`():
+      Array<Array<Any>> =
       arrayOf(
           // `_firstQueue` was previously excluded.
           arrayOf("$200", "", "", "", listOf(_firstQueue, _secondQueue, _thirdQueue)),

@@ -93,7 +93,7 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
         "Apply filter to the customers while retaining the sorted list")
   }
 
-  private fun `_on dialog closed with unbounded balance range cases`(): Array<Any> =
+  private fun `_on dialog closed with unbounded balance range cases`(): Array<Array<Any>> =
       arrayOf(
           arrayOf("", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
           arrayOf("$100", "", listOf(_secondCustomer, _thirdCustomer)),
@@ -121,7 +121,7 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
         "Include any customer whose balance falls within the unbounded range")
   }
 
-  private fun `_on dialog closed with unbounded debt range cases`(): Array<Any> =
+  private fun `_on dialog closed with unbounded debt range cases`(): Array<Array<Any>> =
       arrayOf(
           arrayOf("", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
           arrayOf("-$100", "", listOf(_firstCustomer, _secondCustomer)),
@@ -151,7 +151,8 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
         "Include any customer whose debt falls within the unbounded range")
   }
 
-  private fun `_on dialog closed with customer excluded from previous filter cases`(): Array<Any> =
+  private fun `_on dialog closed with customer excluded from previous filter cases`():
+      Array<Array<Any>> =
       arrayOf(
           // `_firstCustomer` was previously excluded.
           arrayOf("$100", "", "", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),

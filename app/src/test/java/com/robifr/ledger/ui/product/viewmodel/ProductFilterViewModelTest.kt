@@ -84,7 +84,7 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
         "Apply filter to the products while retaining the sorted list")
   }
 
-  private fun `_on dialog closed with unbounded price range cases`(): Array<Any> =
+  private fun `_on dialog closed with unbounded price range cases`(): Array<Array<Any>> =
       arrayOf(
           arrayOf("", "", listOf(_firstProduct, _secondProduct, _thirdProduct)),
           arrayOf("$200", "", listOf(_secondProduct, _thirdProduct)),
@@ -112,7 +112,8 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
         "Include any product whose price falls within the unbounded range")
   }
 
-  private fun `_on dialog closed with product excluded from previous filter cases`(): Array<Any> =
+  private fun `_on dialog closed with product excluded from previous filter cases`():
+      Array<Array<Any>> =
       arrayOf(
           // `_firstProduct` was previously excluded.
           arrayOf("$200", "", "", "", listOf(_firstProduct, _secondProduct, _thirdProduct)),
