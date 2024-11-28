@@ -18,6 +18,7 @@ package com.robifr.ledger.data.display
 
 import androidx.annotation.StringRes
 import com.robifr.ledger.R
+import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -44,31 +45,31 @@ data class QueueDate(val range: Range, val dateStart: ZonedDateTime, val dateEnd
    */
   enum class Range(
       @StringRes val stringRes: Int,
-      val dateStart: () -> ZonedDateTime,
-      val dateEnd: () -> ZonedDateTime
+      val dateStart: (Clock) -> ZonedDateTime,
+      val dateEnd: (Clock) -> ZonedDateTime
   ) {
     ALL_TIME(
         R.string.enum_queueDate_allTime,
         { Instant.EPOCH.atZone(ZoneId.systemDefault()) },
-        { LocalDate.now().atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()) }),
+        { LocalDate.now(it).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()) }),
     TODAY(
         R.string.enum_queueDate_today,
-        { LocalDate.now().atStartOfDay(ZoneId.systemDefault()) },
-        { LocalDate.now().atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()) }),
+        { LocalDate.now(it).atStartOfDay(ZoneId.systemDefault()) },
+        { LocalDate.now(it).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()) }),
     YESTERDAY(
         R.string.enum_queueDate_yesterday,
-        { LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()) },
-        { LocalDate.now().minusDays(1).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()) }),
+        { LocalDate.now(it).minusDays(1).atStartOfDay(ZoneId.systemDefault()) },
+        { LocalDate.now(it).minusDays(1).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()) }),
     THIS_WEEK(
         R.string.enum_queueDate_thisWeek,
         {
-          LocalDate.now()
+          LocalDate.now(it)
               .with(ChronoField.DAY_OF_WEEK, 1)
               .atStartOfDay()
               .atZone(ZoneId.systemDefault())
         },
         {
-          LocalDate.now()
+          LocalDate.now(it)
               .with(ChronoField.DAY_OF_WEEK, 7)
               .atTime(LocalTime.MAX)
               .atZone(ZoneId.systemDefault())
@@ -76,12 +77,12 @@ data class QueueDate(val range: Range, val dateStart: ZonedDateTime, val dateEnd
     THIS_MONTH(
         R.string.enum_queueDate_thisMonth,
         {
-          LocalDate.now()
+          LocalDate.now(it)
               .with(TemporalAdjusters.firstDayOfMonth())
               .atStartOfDay(ZoneId.systemDefault())
         },
         {
-          LocalDate.now()
+          LocalDate.now(it)
               .with(TemporalAdjusters.lastDayOfMonth())
               .atTime(LocalTime.MAX)
               .atZone(ZoneId.systemDefault())
@@ -89,12 +90,12 @@ data class QueueDate(val range: Range, val dateStart: ZonedDateTime, val dateEnd
     THIS_YEAR(
         R.string.enum_queueDate_thisYear,
         {
-          LocalDate.now()
+          LocalDate.now(it)
               .with(TemporalAdjusters.firstDayOfYear())
               .atStartOfDay(ZoneId.systemDefault())
         },
         {
-          LocalDate.now()
+          LocalDate.now(it)
               .with(TemporalAdjusters.lastDayOfYear())
               .atTime(LocalTime.MAX)
               .atZone(ZoneId.systemDefault())
@@ -102,6 +103,10 @@ data class QueueDate(val range: Range, val dateStart: ZonedDateTime, val dateEnd
     CUSTOM(
         R.string.enum_queueDate_custom,
         { Instant.EPOCH.atZone(ZoneId.systemDefault()) },
-        { Instant.EPOCH.atZone(ZoneId.systemDefault()) })
+        { Instant.EPOCH.atZone(ZoneId.systemDefault()) });
+
+    fun dateStart(): ZonedDateTime = dateStart(Clock.systemDefaultZone())
+
+    fun dateEnd(): ZonedDateTime = dateEnd(Clock.systemDefaultZone())
   }
 }
