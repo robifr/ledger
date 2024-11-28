@@ -191,17 +191,17 @@ class QueueCardWideComponent(
       // Displaying customer data on the product orders detail.
       _productOrderBinding.customerBalanceTitle.text =
           _context.getString(R.string.queue_card_x_balance, croppedCustomerName)
-      _productOrderBinding.customerBalanceTitle.isVisible = true
+      _productOrderBinding.customerBalanceTitle.isVisible = customer != null
       _productOrderBinding.customerBalance.text =
           customer?.let {
             CurrencyFormat.format(
                 it.balance.toBigDecimal(),
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
           }
-      _productOrderBinding.customerBalance.isVisible = true
+      _productOrderBinding.customerBalance.isVisible = customer != null
       _productOrderBinding.customerDebtTitle.text =
           _context.getString(R.string.queue_card_x_debt, croppedCustomerName)
-      _productOrderBinding.customerDebtTitle.isVisible = true
+      _productOrderBinding.customerDebtTitle.isVisible = customer != null
       _productOrderBinding.customerDebt.text =
           customer?.let {
             CurrencyFormat.format(
@@ -213,7 +213,7 @@ class QueueCardWideComponent(
           } else {
             _context.getColor(R.color.text_enabled)
           })
-      _productOrderBinding.customerDebt.isVisible = true
+      _productOrderBinding.customerDebt.isVisible = customer != null
     }
   }
 
