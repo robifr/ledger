@@ -142,10 +142,6 @@
   <string name="dashboard_balance_note">*\u0020\u0020 Date filters have no effect on this balance overview.</string>
   <string name="dashboard_totalBalance">Total balance</string>
   <string name="dashboard_totalDebt">Total debt</string>
-  <!-- Snackbar. -->
-  <string name="dashboard_fetchAllQueueError" translatable="false">@string/queue_fetchAllQueueError</string>
-  <string name="dashboard_fetchAllCustomerError" translatable="false">@string/customer_fetchAllCustomerError</string>
-  <string name="dashboard_fetchAllProductError" translatable="false">@string/product_fetchAllProductError</string>
 
   <!-- Queue fragment. -->
   <plurals name="queue_displaying_n_queue">
@@ -184,7 +180,6 @@
   <string name="queue_cardMenu_delete" translatable="false">@string/action_delete</string>
   <!-- Snackbar. -->
   <string name="queue_deleteQueueError">Error! Failed to delete queue</string>
-  <string name="queue_fetchAllQueueError">Error! Unable to retrieve all queues</string>
   <plurals name="queue_deleted_n_queue">
     <item quantity="one">Deleted %d queue</item>
     <item quantity="other">Deleted %d queues</item>
@@ -212,7 +207,6 @@
   <string name="customer_cardMenu_delete" translatable="false">@string/action_delete</string>
   <!-- Snackbar. -->
   <string name="customer_deleteCustomerError">Error! Failed to delete customer</string>
-  <string name="customer_fetchAllCustomerError">Error! Unable to retrieve all customers</string>
   <plurals name="customer_deleted_n_customer" translatable="false">
     <item quantity="one">@string/_customer_deleted_n_customer_one</item>
     <item quantity="other">@string/_customer_deleted_n_customer_other</item>
@@ -240,7 +234,6 @@
   <string name="product_cardMenu_delete" translatable="false">@string/action_delete</string>
   <!-- Snackbar. -->
   <string name="product_deleteProductError">Error! Failed to delete product</string>
-  <string name="product_fetchAllProductError">Error! Unable to retrieve all products</string>
   <plurals name="product_deleted_n_product" translatable="false">
     <item quantity="one">@string/_product_deleted_n_product_one</item>
     <item quantity="other">@string/_product_deleted_n_product_other</item>
@@ -343,8 +336,6 @@
   <string name="selectCustomer_allCustomers">All customers</string>
   <string name="selectCustomer_originalCustomerChanged">Originally selected customer was changed</string>
   <string name="selectCustomer_originalCustomerDeleted">Originally selected customer was deleted</string>
-  <!-- Snackbar. -->
-  <string name="selectCustomer_fetchAllCustomerError" translatable="false">@string/customer_fetchAllCustomerError</string>
 
   <!-- Select product fragment. -->
   <string name="selectProduct">Select product</string>
@@ -353,15 +344,11 @@
   <string name="selectProduct_allProducts">All products</string>
   <string name="selectProduct_originalProductChanged">Originally selected product was changed</string>
   <string name="selectProduct_originalProductDeleted">Originally selected product was deleted</string>
-  <!-- Snackbar. -->
-  <string name="selectProduct_fetchAllProductError" translatable="false">@string/product_fetchAllProductError</string>
 
   <!-- Filter customer fragment. -->
   <string name="filterCustomer">Filter customer</string>
   <string name="filterCustomer_filteredCustomers">Filtered customers</string>
   <string name="filterCustomer_allCustomers">All customers</string>
-  <!-- Snackbar. -->
-  <string name="filterCustomer_fetchAllCustomerError" translatable="false">@string/customer_fetchAllCustomerError</string>
 
   <!-- Search fragment. -->
   <string name="searchCustomersAndProducts">Search customers &amp; products</string>

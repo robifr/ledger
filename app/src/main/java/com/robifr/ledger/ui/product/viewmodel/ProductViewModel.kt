@@ -144,12 +144,7 @@ constructor(
   }
 
   internal suspend fun _selectAllProducts(): List<ProductModel> =
-      _productRepository.selectAll().await().also { products: List<ProductModel> ->
-        if (products.isEmpty()) {
-          _snackbarState.postValue(
-              SnackbarState(StringResource(R.string.product_fetchAllProductError)))
-        }
-      }
+      _productRepository.selectAll().await()
 
   private fun _loadAllProducts() {
     viewModelScope.launch(_dispatcher) {

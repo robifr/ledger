@@ -142,10 +142,6 @@
   <string name="dashboard_balance_note">*\u0020\u0020 Filter tanggal tidak berpengaruh pada ikhtisar saldo ini.</string>
   <string name="dashboard_totalBalance">Saldo total</string>
   <string name="dashboard_totalDebt">Hutang total</string>
-  <!-- Snackbar. -->
-  <string name="dashboard_fetchAllQueueError" translatable="false">@string/queue_fetchAllQueueError</string>
-  <string name="dashboard_fetchAllCustomerError" translatable="false">@string/customer_fetchAllCustomerError</string>
-  <string name="dashboard_fetchAllProductError" translatable="false">@string/product_fetchAllProductError</string>
 
   <!-- Queue fragment. -->
   <plurals name="queue_displaying_n_queue">
@@ -184,7 +180,6 @@
   <string name="queue_cardMenu_delete" translatable="false">@string/action_delete</string>
   <!-- Snackbar. -->
   <string name="queue_deleteQueueError">Kesalahan! Gagal menghapus antrean</string>
-  <string name="queue_fetchAllQueueError">Kesalahan! Tidak dapat memuat seluruh antrean</string>
   <plurals name="queue_deleted_n_queue">
     <item quantity="one">Menghapus %d antrean</item>
     <item quantity="other">Menghapus %d antrean</item>
@@ -212,7 +207,6 @@
   <string name="customer_cardMenu_delete" translatable="false">@string/action_delete</string>
   <!-- Snackbar. -->
   <string name="customer_deleteCustomerError">Kesalahan! Gagal menghapus pelanggan</string>
-  <string name="customer_fetchAllCustomerError">Kesalahan! Tidak dapat memuat semua pelanggan</string>
   <plurals name="customer_deleted_n_customer" translatable="false">
     <item quantity="one">@string/_customer_deleted_n_customer_one</item>
     <item quantity="other">@string/_customer_deleted_n_customer_other</item>
@@ -240,7 +234,6 @@
   <string name="product_cardMenu_delete" translatable="false">@string/action_delete</string>
   <!-- Snackbar. -->
   <string name="product_deleteProductError">Kesalahan! Gagal menghapus produk</string>
-  <string name="product_fetchAllProductError">Kesalahan! Tidak dapat memuat seluruh produk</string>
   <plurals name="product_deleted_n_product" translatable="false">
     <item quantity="one">@string/_product_deleted_n_product_one</item>
     <item quantity="other">@string/_product_deleted_n_product_other</item>
@@ -343,8 +336,6 @@
   <string name="selectCustomer_allCustomers">Semua pelanggan</string>
   <string name="selectCustomer_originalCustomerChanged">Pelanggan yang awalnya dipilih telah diubah</string>
   <string name="selectCustomer_originalCustomerDeleted">Pelanggan yang awalnya dipilih telah dihapus</string>
-  <!-- Snackbar. -->
-  <string name="selectCustomer_fetchAllCustomerError" translatable="false">@string/customer_fetchAllCustomerError</string>
 
   <!-- Select product fragment. -->
   <string name="selectProduct">Pilih produk</string>
@@ -353,15 +344,11 @@
   <string name="selectProduct_allProducts">Semua produk</string>
   <string name="selectProduct_originalProductChanged">Produk yang awalnya dipilih telah diubah</string>
   <string name="selectProduct_originalProductDeleted">Produk yang awalnya dipilih telah dihapus</string>
-  <!-- Snackbar. -->
-  <string name="selectProduct_fetchAllProductError" translatable="false">@string/product_fetchAllProductError</string>
 
   <!-- Filter customer fragment. -->
   <string name="filterCustomer">Filter pelanggan</string>
   <string name="filterCustomer_filteredCustomers">Pelanggan difilter</string>
   <string name="filterCustomer_allCustomers">Semua pelanggan</string>
-  <!-- Snackbar. -->
-  <string name="filterCustomer_fetchAllCustomerError" translatable="false">@string/customer_fetchAllCustomerError</string>
 
   <!-- Search fragment. -->
   <string name="searchCustomersAndProducts">Cari pelanggan &amp; produk</string>

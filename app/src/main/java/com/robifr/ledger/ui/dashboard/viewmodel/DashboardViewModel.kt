@@ -19,7 +19,6 @@ package com.robifr.ledger.ui.dashboard.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.robifr.ledger.R
 import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
@@ -34,7 +33,6 @@ import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
-import com.robifr.ledger.ui.StringResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZonedDateTime
 import javax.inject.Inject
@@ -121,32 +119,13 @@ constructor(
   private suspend fun _selectAllQueuesInRange(
       startDate: ZonedDateTime,
       endDate: ZonedDateTime
-  ): List<QueueModel> =
-      _queueRepository.selectAllInRange(startDate, endDate).await().also { queues: List<QueueModel>
-        ->
-        if (queues.isEmpty()) {
-          _snackbarState.postValue(
-              SnackbarState(StringResource(R.string.dashboard_fetchAllQueueError)))
-        }
-      }
+  ): List<QueueModel> = _queueRepository.selectAllInRange(startDate, endDate).await()
 
   private suspend fun _selectAllCustomersWithBalance(): List<CustomerBalanceInfo> =
-      _customerRepository.selectAllInfoWithBalance().await().also {
-          customers: List<CustomerBalanceInfo> ->
-        if (customers.isEmpty()) {
-          _snackbarState.postValue(
-              SnackbarState(StringResource(R.string.dashboard_fetchAllCustomerError)))
-        }
-      }
+      _customerRepository.selectAllInfoWithBalance().await()
 
   private suspend fun _selectAllCustomersWithDebt(): List<CustomerDebtInfo> =
-      _customerRepository.selectAllInfoWithDebt().await().also { customers: List<CustomerDebtInfo>
-        ->
-        if (customers.isEmpty()) {
-          _snackbarState.postValue(
-              SnackbarState(StringResource(R.string.dashboard_fetchAllCustomerError)))
-        }
-      }
+      _customerRepository.selectAllInfoWithDebt().await()
 
   private fun _loadAllQueuesInRange(date: QueueDate) {
     viewModelScope.launch(_dispatcher) {

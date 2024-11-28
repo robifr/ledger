@@ -20,7 +20,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.robifr.ledger.R
 import com.robifr.ledger.data.display.ProductSorter
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.di.IoDispatcher
@@ -31,7 +30,6 @@ import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
-import com.robifr.ledger.ui.StringResource
 import com.robifr.ledger.ui.selectproduct.SelectProductFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -123,12 +121,7 @@ constructor(
   }
 
   private suspend fun _selectAllProducts(): List<ProductModel> =
-      _productRepository.selectAll().await().also { products: List<ProductModel> ->
-        if (products.isEmpty()) {
-          _snackbarState.postValue(
-              SnackbarState(StringResource(R.string.selectProduct_fetchAllProductError)))
-        }
-      }
+      _productRepository.selectAll().await()
 
   private fun _loadAllProducts() {
     viewModelScope.launch(_dispatcher) {

@@ -20,7 +20,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.robifr.ledger.R
 import com.robifr.ledger.data.display.CustomerSorter
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.di.IoDispatcher
@@ -30,7 +29,6 @@ import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
-import com.robifr.ledger.ui.StringResource
 import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -119,12 +117,7 @@ constructor(
   }
 
   private suspend fun _selectAllCustomers(): List<CustomerModel> =
-      _customerRepository.selectAll().await().also { customers: List<CustomerModel> ->
-        if (customers.isEmpty()) {
-          _snackbarState.postValue(
-              SnackbarState(StringResource(R.string.filterCustomer_fetchAllCustomerError)))
-        }
-      }
+      _customerRepository.selectAll().await()
 
   private fun _loadAllCustomers() {
     viewModelScope.launch(_dispatcher) {

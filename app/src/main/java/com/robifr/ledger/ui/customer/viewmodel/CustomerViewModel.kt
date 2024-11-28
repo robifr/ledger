@@ -144,12 +144,7 @@ constructor(
   }
 
   internal suspend fun _selectAllCustomers(): List<CustomerModel> =
-      _customerRepository.selectAll().await().also { customers: List<CustomerModel> ->
-        if (customers.isEmpty()) {
-          _snackbarState.postValue(
-              SnackbarState(StringResource(R.string.customer_fetchAllCustomerError)))
-        }
-      }
+      _customerRepository.selectAll().await()
 
   private fun _loadAllCustomers() {
     viewModelScope.launch(_dispatcher) {

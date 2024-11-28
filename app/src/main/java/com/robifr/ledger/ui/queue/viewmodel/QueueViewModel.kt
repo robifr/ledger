@@ -150,12 +150,7 @@ constructor(
     }
   }
 
-  internal suspend fun _selectAllQueues(): List<QueueModel> =
-      _queueRepository.selectAll().await().also { queues: List<QueueModel> ->
-        if (queues.isEmpty()) {
-          _snackbarState.postValue(SnackbarState(StringResource(R.string.queue_fetchAllQueueError)))
-        }
-      }
+  internal suspend fun _selectAllQueues(): List<QueueModel> = _queueRepository.selectAll().await()
 
   private fun _loadAllQueues() {
     viewModelScope.launch(_dispatcher) {
