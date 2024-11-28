@@ -89,7 +89,10 @@ constructor(
   fun onExpandedCustomerIndexChanged(index: Int) {
     // Update both previous and current expanded product. +1 offset because header holder.
     _recyclerAdapterState.setValue(
-        RecyclerAdapterState.ItemChanged(_uiState.safeValue.expandedCustomerIndex + 1, index + 1))
+        RecyclerAdapterState.ItemChanged(
+            listOfNotNull(
+                _uiState.safeValue.expandedCustomerIndex.takeIf { it != -1 }?.let { it + 1 },
+                index + 1)))
     _uiState.setValue(
         _uiState.safeValue.copy(
             expandedCustomerIndex =
