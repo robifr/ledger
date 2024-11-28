@@ -34,22 +34,7 @@ import java.time.ZoneId
 class DashboardDate(private val _fragment: DashboardFragment) {
   private val _dialogBinding: DashboardDialogDateBinding =
       DashboardDialogDateBinding.inflate(_fragment.layoutInflater).apply {
-        // Remove listener to prevent callback being called during `clearCheck()`.
-        radioGroup.setOnCheckedChangeListener(null)
-        radioGroup.clearCheck()
-        radioGroup.setOnCheckedChangeListener { group: RadioGroup?, radioId ->
-          group?.findViewById<RadioButton>(radioId)?.tag?.let {
-            _fragment.dashboardViewModel.onDateChanged(
-                QueueDate(QueueDate.Range.valueOf(it.toString())))
-          }
-          _dialog.dismiss()
-        }
         customButton.setOnClickListener {
-          // Custom range uses classic button. They aren't supposed to get selected.
-          val dateRange: QueueDate.Range = _fragment.dashboardViewModel.uiState.safeValue.date.range
-          if (dateRange != QueueDate.Range.CUSTOM) {
-            radioGroup.findViewWithTag<View>(dateRange.toString())?.id?.let { radioGroup.check(it) }
-          }
           _customDatePickerDialog.show(
               _fragment.requireActivity().supportFragmentManager,
               ClassPath.simpleName(DashboardDate::class.java))
@@ -81,6 +66,27 @@ class DashboardDate(private val _fragment: DashboardFragment) {
           }
 
   init {
-    _fragment.fragmentBinding.dateChip.setOnClickListener { _dialog.show() }
+    _fragment.fragmentBinding.dateChip.setOnClickListener {
+      // Remove listener to prevent callback being called during `check()` and `clearCheck()`.
+      _dialogBinding.radioGroup.setOnCheckedChangeListener(null)
+      // Custom range uses classic button. They aren't supposed to get selected.
+      val dateRange: QueueDate.Range = _fragment.dashboardViewModel.uiState.safeValue.date.range
+      if (dateRange != QueueDate.Range.CUSTOM) {
+        _dialogBinding.radioGroup.findViewWithTag<View>(dateRange.toString())?.id?.let {
+          _dialogBinding.radioGroup.check(it)
+        }
+      } else {
+        // When the custom range get selected (button), all the other radios have to be unchecked.
+        _dialogBinding.radioGroup.clearCheck()
+      }
+      _dialogBinding.radioGroup.setOnCheckedChangeListener { group: RadioGroup?, radioId ->
+        group?.findViewById<RadioButton>(radioId)?.tag?.let {
+          _fragment.dashboardViewModel.onDateChanged(
+              QueueDate(QueueDate.Range.valueOf(it.toString())))
+        }
+        _dialog.dismiss()
+      }
+      _dialog.show()
+    }
   }
 }
