@@ -152,7 +152,7 @@ class CustomerModelTest {
   }
 
   private fun `_balance on reverted payment with valid status and payment methods cases`():
-      Array<Any> =
+      Array<Array<Any>> =
       arrayOf(
           arrayOf(_uncompletedQueueWithCash, 500L),
           arrayOf(_uncompletedQueueWithAccountBalance, 500L),
@@ -180,7 +180,7 @@ class CustomerModelTest {
   }
 
   private fun `_balance on updated payment with valid status and payment methods cases`():
-      Array<Any> =
+      Array<Array<Any>> =
       arrayOf(
           arrayOf(_uncompletedQueueWithCash, _uncompletedQueueWithCash, 500L),
           arrayOf(_uncompletedQueueWithCash, _uncompletedQueueWithAccountBalance, 500L),
@@ -254,7 +254,7 @@ class CustomerModelTest {
   }
 
   private fun `_balance on updated payment with old queue has account balance payment and no customer cases`():
-      Array<Any> =
+      Array<Array<Any>> =
       arrayOf(
           arrayOf(_uncompletedQueueWithCash, 500L),
           arrayOf(_uncompletedQueueWithAccountBalance, 500L),
@@ -399,7 +399,7 @@ class CustomerModelTest {
   }
 
   private fun `_debt on updated payment with old queue has unpaid status and no customer cases`():
-      Array<Any> = arrayOf(arrayOf(_queue, 0), arrayOf(_unpaidQueue, -100))
+      Array<Array<Any>> = arrayOf(arrayOf(_queue, 0), arrayOf(_unpaidQueue, -100))
 
   @ParameterizedTest
   @MethodSource("_debt on updated payment with old queue has unpaid status and no customer cases")

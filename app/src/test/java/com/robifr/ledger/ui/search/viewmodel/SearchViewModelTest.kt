@@ -97,9 +97,9 @@ class SearchViewModelTest(private val _dispatcher: TestDispatcher) {
   @ValueSource(ints = [8, 10])
   fun `on search result a lot data`(totalData: Int) = runTest {
     val customers: List<CustomerModel> =
-        List(totalData) { i -> CustomerModel(id = (i + 1) * 111L, name = "Customer ${i + 1}") }
+        List(totalData) { i -> CustomerModel(id = (i + 1) * 111L, name = "Amy ${i + 1}") }
     val products: List<ProductModel> =
-        List(totalData) { i -> ProductModel(id = (i + 1) * 111L, name = "Product ${i + 1}") }
+        List(totalData) { i -> ProductModel(id = (i + 1) * 111L, name = "Apple ${i + 1}") }
     every { _customerRepository.search(any()) } returns CompletableFuture.completedFuture(customers)
     every { _productRepository.search(any()) } returns CompletableFuture.completedFuture(products)
     _viewModel.onSearch("A")

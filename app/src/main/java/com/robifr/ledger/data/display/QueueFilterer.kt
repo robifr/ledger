@@ -34,7 +34,7 @@ class QueueFilterer(
         !_shouldFilteredOutByCustomerId(it) &&
             !_shouldFilteredOutByStatus(it) &&
             !_shouldFilteredOutByDate(it) &&
-            !_shouldFilteredOutByTotalPrice(it)
+            !_shouldFilteredOutByGrandTotalPrice(it)
       }
 
   private fun _shouldFilteredOutByCustomerId(queue: QueueModel): Boolean {
@@ -55,7 +55,7 @@ class QueueFilterer(
   private fun _shouldFilteredOutByStatus(queue: QueueModel): Boolean =
       !filters.filteredStatus.contains(queue.status)
 
-  private fun _shouldFilteredOutByTotalPrice(queue: QueueModel): Boolean {
+  private fun _shouldFilteredOutByGrandTotalPrice(queue: QueueModel): Boolean {
     val (first: BigDecimal?, second: BigDecimal?) = filters.filteredTotalPrice
     return ((first != null && queue.grandTotalPrice().compareTo(first) < 0) ||
         (second != null && queue.grandTotalPrice().compareTo(second) > 0))

@@ -89,7 +89,7 @@ class DashboardRevenue(private val _fragment: DashboardFragment) : View.OnClickL
         yAxisDomain = model.yAxisDomain,
         data = model.data,
         colors = model.colors.map { _fragment.requireContext().getColor(it) },
-        groupInOrder = model.groupInOrder.map(OverviewType::toString).toSet())
+        groupInOrder = model.groupInOrder.map { it.toString() }.toSet())
   }
 
   enum class OverviewType(

@@ -72,7 +72,7 @@ object ChartBinding {
         ${xScaleBinding},
         ${yScaleBinding},
         ${JSONArray(data.map { it.toJson() })},
-        ${JSONArray(colors.map(JsInterface::argbToRgbaHex))},
+        ${JSONArray(colors.map { JsInterface.argbToRgbaHex(it) })},
         ${JSONArray(groupInOrder)}
       )
       """
@@ -96,7 +96,7 @@ object ChartBinding {
       chart.renderDonutChart(
         ${layoutBinding},
         ${JSONArray(data.map { it.toJson() })},
-        ${JSONArray(colors.map(JsInterface::argbToRgbaHex))},
+        ${JSONArray(colors.map { JsInterface.argbToRgbaHex(it) })},
         `${svgTextInCenter}`
       )
       """
