@@ -55,11 +55,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/screen_padding"
-            android:layoutDirection="rtl"
             android:textSize="@dimen/text_small"
-            app:chipIcon="@drawable/icon_arrow_dropdown_20"
             app:chipIconTint="?android:textColor"
             app:chipStrokeWidth="@dimen/stroke_selectable_width"
+            app:closeIcon="@drawable/icon_arrow_dropdown_20"
+            app:closeIconEnabled="true"
             app:ensureMinTouchTargetSize="false" />
 
         <com.google.android.material.chip.Chip
@@ -67,11 +67,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/screen_padding"
-            android:layoutDirection="rtl"
             android:textSize="@dimen/text_small"
-            app:chipIcon="@drawable/icon_arrow_dropdown_20"
             app:chipIconTint="?android:textColor"
             app:chipStrokeWidth="@dimen/stroke_selectable_width"
+            app:closeIcon="@drawable/icon_arrow_dropdown_20"
+            app:closeIconEnabled="true"
             app:ensureMinTouchTargetSize="false" />
       </com.google.android.material.chip.ChipGroup>
     </HorizontalScrollView>
