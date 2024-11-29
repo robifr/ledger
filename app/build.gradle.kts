@@ -27,14 +27,14 @@ plugins {
 }
 
 android {
-  compileSdk = 34
+  compileSdk = 35
   namespace = "com.robifr.ledger"
   buildToolsVersion = "34.0.0"
 
   defaultConfig {
     applicationId = "com.robifr.ledger"
     minSdk = 30
-    targetSdk = 34
+    targetSdk = 35
     versionCode = 1
     versionName = "1.1.2"
     multiDexEnabled = true

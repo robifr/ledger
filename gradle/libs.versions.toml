@@ -1,14 +1,14 @@
 [versions]
-androidGradlePlugin = "8.5.2"
+androidGradlePlugin = "8.7.2"
 androidxAppCompat = "1.7.0"
-androidxConstraintlayout = "2.1.4"
-androidxCore = "1.13.1"
+androidxConstraintlayout = "2.2.0"
+androidxCore = "1.15.0"
 androidxCoreTesting = "2.2.0"
-androidxNavigation = "2.7.7"
+androidxNavigation = "2.8.4"
 androidxRoom = "2.6.1"
-androidxWebkit = "1.11.0"
+androidxWebkit = "1.12.1"
 hilt = "2.51.1"
-junit = "5.10.3"
+jUnit = "5.11.3"
 kotlin = "2.0.20"
 kotlinxCoroutines = "1.9.0"
 kotlinxKover = "0.8.3"
@@ -38,7 +38,7 @@ jetbrains-kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-
 jetbrains-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 jetbrains-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jUnit" }
 squareup-leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
 
 [plugins]
