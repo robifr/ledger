@@ -23,14 +23,19 @@ import com.robifr.ledger.ui.RecyclerViewHolder
 
 class QueueListHolder(
     private val _cardBinding: QueueCardWideBinding,
-    internal val _queues: () -> List<QueueModel>,
-    internal val _onDeleteQueue: (QueueModel) -> Unit,
+    private val _queues: () -> List<QueueModel>,
+    private val _onDeleteQueue: (QueueModel) -> Unit,
     private val _expandedQueueIndex: () -> Int,
     private val _onExpandedQueueIndexChanged: (Int) -> Unit
 ) : RecyclerViewHolder(_cardBinding.root) {
-  internal var _queueIndex: Int = -1
+  private var _queueIndex: Int = -1
   private val _card: QueueCardWideComponent = QueueCardWideComponent(itemView.context, _cardBinding)
-  private val _menu: QueueListMenu = QueueListMenu(this)
+  private val _menu: QueueListMenu =
+      QueueListMenu(
+          holder = this,
+          queues = _queues,
+          onDeleteQueue = _onDeleteQueue,
+          queueIndex = { _queueIndex })
 
   init {
     _cardBinding.cardView.setOnClickListener { _onExpandedQueueIndexChanged(_queueIndex) }

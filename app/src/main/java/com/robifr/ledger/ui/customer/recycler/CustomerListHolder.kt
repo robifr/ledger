@@ -23,15 +23,20 @@ import com.robifr.ledger.ui.RecyclerViewHolder
 
 class CustomerListHolder(
     private val _cardBinding: CustomerCardWideBinding,
-    internal val _customers: () -> List<CustomerModel>,
-    internal val _onDeleteCustomer: (CustomerModel) -> Unit,
+    private val _customers: () -> List<CustomerModel>,
+    private val _onDeleteCustomer: (CustomerModel) -> Unit,
     private val _expandedCustomerIndex: () -> Int,
     private val _onExpandedCustomerIndexChanged: (Int) -> Unit
 ) : RecyclerViewHolder(_cardBinding.root) {
-  internal var _customerIndex: Int = -1
+  private var _customerIndex: Int = -1
   private val _card: CustomerCardWideComponent =
       CustomerCardWideComponent(itemView.context, _cardBinding)
-  private val _menu: CustomerListMenu = CustomerListMenu(this)
+  private val _menu: CustomerListMenu =
+      CustomerListMenu(
+          holder = this,
+          customers = _customers,
+          onDeleteCustomer = _onDeleteCustomer,
+          customerIndex = { _customerIndex })
 
   init {
     _cardBinding.cardView.setOnClickListener { _onExpandedCustomerIndexChanged(_customerIndex) }

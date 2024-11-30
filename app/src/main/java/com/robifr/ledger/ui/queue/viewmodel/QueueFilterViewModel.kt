@@ -34,7 +34,8 @@ import kotlinx.coroutines.withContext
 
 class QueueFilterViewModel(
     private val _viewModel: QueueViewModel,
-    private val _dispatcher: CoroutineDispatcher
+    private val _dispatcher: CoroutineDispatcher,
+    private val _selectAllQueues: suspend () -> List<QueueModel>
 ) {
   private val _filterer: QueueFilterer = QueueFilterer()
 
@@ -76,13 +77,13 @@ class QueueFilterViewModel(
 
   fun onDialogClosed() {
     _viewModel.viewModelScope.launch(_dispatcher) {
-      _viewModel._selectAllQueues().let {
+      _selectAllQueues().let {
         withContext(Dispatchers.Main) { _onFiltersChanged(_parseInputtedFilters(), it) }
       }
     }
   }
 
-  internal fun _onFiltersChanged(
+  fun _onFiltersChanged(
       filters: QueueFilters = _parseInputtedFilters(),
       queues: List<QueueModel> = _viewModel.uiState.safeValue.queues
   ) {

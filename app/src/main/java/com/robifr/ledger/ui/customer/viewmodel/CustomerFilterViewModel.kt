@@ -33,7 +33,8 @@ import kotlinx.coroutines.withContext
 
 class CustomerFilterViewModel(
     private val _viewModel: CustomerViewModel,
-    private val _dispatcher: CoroutineDispatcher
+    private val _dispatcher: CoroutineDispatcher,
+    private val _selectAllCustomers: suspend () -> List<CustomerModel>
 ) {
   private val _filterer: CustomerFilterer = CustomerFilterer()
 
@@ -65,13 +66,13 @@ class CustomerFilterViewModel(
 
   fun onDialogClosed() {
     _viewModel.viewModelScope.launch(_dispatcher) {
-      _viewModel._selectAllCustomers().let {
+      _selectAllCustomers().let {
         withContext(Dispatchers.Main) { _onFiltersChanged(customers = it) }
       }
     }
   }
 
-  internal fun _onFiltersChanged(
+  fun _onFiltersChanged(
       filters: CustomerFilters = _parseInputtedFilters(),
       customers: List<CustomerModel> = _viewModel.uiState.safeValue.customers
   ) {

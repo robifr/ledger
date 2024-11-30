@@ -20,7 +20,7 @@ import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.repository.ModelChangedListener
 
-internal class CustomerSyncListener(
+class CustomerSyncListener(
     val currentQueues: () -> List<QueueModel>,
     val onSyncQueues: (List<QueueModel>) -> Unit
 ) : ModelChangedListener<CustomerModel> {

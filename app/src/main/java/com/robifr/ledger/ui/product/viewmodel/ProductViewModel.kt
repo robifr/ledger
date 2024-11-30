@@ -45,7 +45,7 @@ import kotlinx.coroutines.withContext
 class ProductViewModel
 @Inject
 constructor(
-    @IoDispatcher internal val _dispatcher: CoroutineDispatcher,
+    @IoDispatcher private val _dispatcher: CoroutineDispatcher,
     private val _productRepository: ProductRepository
 ) : ViewModel() {
   private val _sorter: ProductSorter = ProductSorter()
@@ -69,7 +69,11 @@ constructor(
   val recyclerAdapterState: LiveData<RecyclerAdapterState>
     get() = _recyclerAdapterState
 
-  val filterView: ProductFilterViewModel = ProductFilterViewModel(this, _dispatcher)
+  val filterView: ProductFilterViewModel =
+      ProductFilterViewModel(
+          _viewModel = this,
+          _dispatcher = _dispatcher,
+          _selectAllProducts = { _selectAllProducts() })
 
   init {
     _productRepository.addModelChangedListener(_productChangedListener)
@@ -143,7 +147,7 @@ constructor(
     }
   }
 
-  internal suspend fun _selectAllProducts(): List<ProductModel> =
+  private suspend fun _selectAllProducts(): List<ProductModel> =
       _productRepository.selectAll().await()
 
   private fun _loadAllProducts() {

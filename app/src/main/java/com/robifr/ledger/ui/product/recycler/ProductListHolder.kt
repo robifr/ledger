@@ -23,15 +23,20 @@ import com.robifr.ledger.ui.RecyclerViewHolder
 
 class ProductListHolder(
     private val _cardBinding: ProductCardWideBinding,
-    internal val _products: () -> List<ProductModel>,
-    internal val _onDeleteProduct: (ProductModel) -> Unit,
+    private val _products: () -> List<ProductModel>,
+    private val _onDeleteProduct: (ProductModel) -> Unit,
     private val _expandedProductIndex: () -> Int,
     private val _onExpandedProductIndexChanged: (Int) -> Unit
 ) : RecyclerViewHolder(_cardBinding.root) {
-  internal var _productIndex: Int = -1
+  private var _productIndex: Int = -1
   private val _card: ProductCardWideComponent =
       ProductCardWideComponent(itemView.context, _cardBinding)
-  private val _menu: ProductListMenu = ProductListMenu(this)
+  private val _menu: ProductListMenu =
+      ProductListMenu(
+          holder = this,
+          products = _products,
+          onDeleteProduct = _onDeleteProduct,
+          productIndex = { _productIndex })
 
   init {
     _cardBinding.cardView.setOnClickListener { _onExpandedProductIndexChanged(_productIndex) }

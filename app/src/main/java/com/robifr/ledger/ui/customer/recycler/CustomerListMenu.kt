@@ -22,16 +22,21 @@ import androidx.navigation.findNavController
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.robifr.ledger.R
+import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.databinding.CustomerCardDialogMenuBinding
 import com.robifr.ledger.ui.editcustomer.EditCustomerFragment
 
-class CustomerListMenu(private val _holder: CustomerListHolder) {
+class CustomerListMenu(
+    holder: CustomerListHolder,
+    customers: () -> List<CustomerModel>,
+    onDeleteCustomer: (CustomerModel) -> Unit,
+    customerIndex: () -> Int
+) {
   private val _dialogBinding: CustomerCardDialogMenuBinding =
-      CustomerCardDialogMenuBinding.inflate(LayoutInflater.from(_holder.itemView.context)).apply {
+      CustomerCardDialogMenuBinding.inflate(LayoutInflater.from(holder.itemView.context)).apply {
         editButton.setOnClickListener {
-          val customerId: Long =
-              _holder._customers()[_holder._customerIndex].id ?: return@setOnClickListener
-          _holder.itemView
+          val customerId: Long = customers()[customerIndex()].id ?: return@setOnClickListener
+          holder.itemView
               .findNavController()
               .navigate(
                   R.id.editCustomerFragment,
@@ -43,12 +48,12 @@ class CustomerListMenu(private val _holder: CustomerListHolder) {
           _dialog.dismiss()
         }
         deleteButton.setOnClickListener {
-          _holder._onDeleteCustomer(_holder._customers()[_holder._customerIndex])
+          onDeleteCustomer(customers()[customerIndex()])
           _dialog.dismiss()
         }
       }
   private val _dialog: BottomSheetDialog =
-      BottomSheetDialog(_holder.itemView.context, R.style.BottomSheetDialog).apply {
+      BottomSheetDialog(holder.itemView.context, R.style.BottomSheetDialog).apply {
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         setContentView(_dialogBinding.root)
       }

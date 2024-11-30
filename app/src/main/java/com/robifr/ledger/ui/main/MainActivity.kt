@@ -58,7 +58,7 @@ class MainActivity :
   val activityBinding: MainActivityBinding
     get() = _activityBinding!!
 
-  @Inject internal lateinit var _settingsRepository: SettingsRepository
+  @Inject lateinit var _settingsRepository: SettingsRepository
   private lateinit var _permissionLauncher: ActivityResultLauncher<Intent>
   private lateinit var _create: MainCreate
 

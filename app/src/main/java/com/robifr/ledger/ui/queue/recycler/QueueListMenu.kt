@@ -22,15 +22,21 @@ import androidx.navigation.findNavController
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.robifr.ledger.R
+import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.databinding.QueueCardDialogMenuBinding
 import com.robifr.ledger.ui.editqueue.EditQueueFragment
 
-class QueueListMenu(private val _holder: QueueListHolder) {
+class QueueListMenu(
+    holder: QueueListHolder,
+    queues: () -> List<QueueModel>,
+    onDeleteQueue: (QueueModel) -> Unit,
+    queueIndex: () -> Int
+) {
   private val _dialogBinding: QueueCardDialogMenuBinding =
-      QueueCardDialogMenuBinding.inflate(LayoutInflater.from(_holder.itemView.context)).apply {
+      QueueCardDialogMenuBinding.inflate(LayoutInflater.from(holder.itemView.context)).apply {
         editButton.setOnClickListener {
-          val queueId: Long = _holder._queues()[_holder._queueIndex].id ?: return@setOnClickListener
-          _holder.itemView
+          val queueId: Long = queues()[queueIndex()].id ?: return@setOnClickListener
+          holder.itemView
               .findNavController()
               .navigate(
                   R.id.editQueueFragment,
@@ -40,12 +46,12 @@ class QueueListMenu(private val _holder: QueueListHolder) {
           _dialog.dismiss()
         }
         deleteButton.setOnClickListener {
-          _holder._onDeleteQueue(_holder._queues()[_holder._queueIndex])
+          onDeleteQueue(queues()[queueIndex()])
           _dialog.dismiss()
         }
       }
   private val _dialog: BottomSheetDialog =
-      BottomSheetDialog(_holder.itemView.context, R.style.BottomSheetDialog).apply {
+      BottomSheetDialog(holder.itemView.context, R.style.BottomSheetDialog).apply {
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         setContentView(_dialogBinding.root)
       }

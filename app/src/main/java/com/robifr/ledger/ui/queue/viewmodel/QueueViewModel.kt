@@ -47,7 +47,7 @@ import kotlinx.coroutines.withContext
 class QueueViewModel
 @Inject
 constructor(
-    @IoDispatcher internal val _dispatcher: CoroutineDispatcher,
+    @IoDispatcher private val _dispatcher: CoroutineDispatcher,
     private val _queueRepository: QueueRepository,
     private val _customerRepository: CustomerRepository
 ) : ViewModel() {
@@ -75,7 +75,9 @@ constructor(
   val recyclerAdapterState: LiveData<RecyclerAdapterState>
     get() = _recyclerAdapterState
 
-  val filterView: QueueFilterViewModel = QueueFilterViewModel(this, _dispatcher)
+  val filterView: QueueFilterViewModel =
+      QueueFilterViewModel(
+          _viewModel = this, _dispatcher = _dispatcher, _selectAllQueues = { _selectAllQueues() })
 
   init {
     _queueRepository.addModelChangedListener(_queueChangedListener)
@@ -150,7 +152,7 @@ constructor(
     }
   }
 
-  internal suspend fun _selectAllQueues(): List<QueueModel> = _queueRepository.selectAll().await()
+  private suspend fun _selectAllQueues(): List<QueueModel> = _queueRepository.selectAll().await()
 
   private fun _loadAllQueues() {
     viewModelScope.launch(_dispatcher) {
