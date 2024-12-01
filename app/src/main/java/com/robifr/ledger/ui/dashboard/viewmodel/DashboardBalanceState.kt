@@ -26,13 +26,11 @@ data class DashboardBalanceState(
     val customersWithBalance: List<CustomerBalanceInfo>,
     val customersWithDebt: List<CustomerDebtInfo>
 ) {
-  val totalBalance: BigDecimal
-    get() = customersWithBalance.sumOf { it.balance.toBigDecimal() }
+  fun totalBalance(): BigDecimal = customersWithBalance.sumOf { it.balance.toBigDecimal() }
 
-  val totalDebt: BigDecimal
-    get() = customersWithDebt.sumOf { it.debt }
+  fun totalDebt(): BigDecimal = customersWithDebt.sumOf { it.debt }
 
-  @get:ColorRes
-  val totalDebtColorRes: Int
-    get() = if (totalDebt.compareTo(0.toBigDecimal()) < 0) R.color.red else R.color.text_enabled
+  @ColorRes
+  fun totalDebtColorRes(): Int =
+      if (totalDebt().compareTo(0.toBigDecimal()) < 0) R.color.red else R.color.text_enabled
 }

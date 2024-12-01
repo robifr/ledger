@@ -117,8 +117,8 @@ class DashboardFragment : Fragment() {
   }
 
   private fun _onBalanceState(state: DashboardBalanceState) {
-    _balanceOverview.setTotalBalance(state.totalBalance, state.customersWithBalance.size)
+    _balanceOverview.setTotalBalance(state.totalBalance(), state.customersWithBalance.size)
     _balanceOverview.setTotalDebt(
-        state.totalDebt, state.totalDebtColorRes, state.customersWithDebt.size)
+        state.totalDebt(), state.totalDebtColorRes(), state.customersWithDebt.size)
   }
 }
