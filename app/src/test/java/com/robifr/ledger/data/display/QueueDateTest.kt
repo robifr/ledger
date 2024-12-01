@@ -43,24 +43,27 @@ class QueueDateTest {
   @MethodSource("_date range cases")
   fun `date range`(range: QueueDate.Range, dateStart: String, dateEnd: String) {
     val fixedClock: Clock = Clock.fixed(Instant.parse("2024-01-01T00:00:00Z"), ZoneId.of("UTC"))
-    assertAll({
-      assertEquals(
-          Instant.parse(dateStart),
-          when (range) {
-            QueueDate.Range.ALL_TIME,
-            QueueDate.Range.CUSTOM ->
-                range.dateStart(fixedClock).withZoneSameInstant(ZoneId.of("UTC")).toInstant()
-            else -> range.dateStart(fixedClock).withZoneSameLocal(ZoneId.of("UTC")).toInstant()
-          },
-          "Generate date start based on the given range")
-      assertEquals(
-          Instant.parse(dateEnd),
-          when (range) {
-            QueueDate.Range.CUSTOM ->
-                range.dateEnd(fixedClock).withZoneSameInstant(ZoneId.of("UTC")).toInstant()
-            else -> range.dateEnd(fixedClock).withZoneSameLocal(ZoneId.of("UTC")).toInstant()
-          },
-          "Generate date end based on the given range")
-    })
+    assertAll(
+        {
+          assertEquals(
+              Instant.parse(dateStart),
+              when (range) {
+                QueueDate.Range.ALL_TIME,
+                QueueDate.Range.CUSTOM ->
+                    range.dateStart(fixedClock).withZoneSameInstant(ZoneId.of("UTC")).toInstant()
+                else -> range.dateStart(fixedClock).withZoneSameLocal(ZoneId.of("UTC")).toInstant()
+              },
+              "Generate date start based on the given range")
+        },
+        {
+          assertEquals(
+              Instant.parse(dateEnd),
+              when (range) {
+                QueueDate.Range.CUSTOM ->
+                    range.dateEnd(fixedClock).withZoneSameInstant(ZoneId.of("UTC")).toInstant()
+                else -> range.dateEnd(fixedClock).withZoneSameLocal(ZoneId.of("UTC")).toInstant()
+              },
+              "Generate date end based on the given range")
+        })
   }
 }

@@ -57,15 +57,18 @@ class SettingsViewModelTest(private val _dispatcher: TestDispatcher) {
     mockkStatic(AppCompatDelegate::class)
     coEvery { _settingsRepository.saveLanguageUsed(any()) } returns true
     _viewModel.onLanguageChanged(LanguageOption.INDONESIA)
-    assertAll({
-      assertEquals(
-          LanguageOption.INDONESIA,
-          _viewModel.uiState.safeValue.languageUsed,
-          "Update current used language")
-      assertDoesNotThrow("Immediately apply and save the current used language") {
-        verify { AppCompatDelegate.setApplicationLocales(any()) }
-        coVerify { _settingsRepository.saveLanguageUsed(any()) }
-      }
-    })
+    assertAll(
+        {
+          assertEquals(
+              LanguageOption.INDONESIA,
+              _viewModel.uiState.safeValue.languageUsed,
+              "Update current used language")
+        },
+        {
+          assertDoesNotThrow("Immediately apply and save the current used language") {
+            verify { AppCompatDelegate.setApplicationLocales(any()) }
+            coVerify { _settingsRepository.saveLanguageUsed(any()) }
+          }
+        })
   }
 }

@@ -63,19 +63,24 @@ class CustomerModelTest {
 
   @Test
   fun `is balance sufficient with different customer in queue`() {
-    assertAll({
-      // Before payment is made, ensure the actual shown
-      // balance — the one visible by user — is sufficient.
-      assertTrue(
-          _customer.isBalanceSufficient(_queue, _queue),
-          "Balance is sufficient when both customer equals")
-      assertTrue(
-          _customer.isBalanceSufficient(null, _queue),
-          "Balance is sufficient when the customer in the old queue is null")
-      assertFalse(
-          _customer.copy(id = 222L).isBalanceSufficient(null, _queue),
-          "Balance is insufficient when both customer differs")
-    })
+    // Before payment is made, ensure the actual shown
+    // balance — the one visible by user — is sufficient.
+    assertAll(
+        {
+          assertTrue(
+              _customer.isBalanceSufficient(_queue, _queue),
+              "Balance is sufficient when both customer equals")
+        },
+        {
+          assertTrue(
+              _customer.isBalanceSufficient(null, _queue),
+              "Balance is sufficient when the customer in the old queue is null")
+        },
+        {
+          assertFalse(
+              _customer.copy(id = 222L).isBalanceSufficient(null, _queue),
+              "Balance is insufficient when both customer differs")
+        })
   }
 
   @Test
@@ -93,26 +98,31 @@ class CustomerModelTest {
         _queue.copy(
             customer = lessBalanceCustomer,
             productOrders = _queue.productOrders.map { it.copy(totalPrice = 600.toBigDecimal()) })
-    assertAll({
-      // After payment is made. Ensure the balance — from both current and deducted balance —
-      // is sufficient. This is a case where all the customer balance has already been used,
-      // making it appear to be less than the queue's grand total price.
-      assertTrue(
-          lessBalanceCustomer.isBalanceSufficient(
-              queueWithGrandTotalPriceEqualsCustomerBalance,
-              queueWithGrandTotalPriceLessThanCustomerBalance),
-          "Balance is sufficient when the new queue has lesser grand total price")
-      assertTrue(
-          lessBalanceCustomer.isBalanceSufficient(
-              queueWithGrandTotalPriceEqualsCustomerBalance,
-              queueWithGrandTotalPriceEqualsCustomerBalance),
-          "Balance is sufficient when the new queue has equals grand total price")
-      assertFalse(
-          lessBalanceCustomer.isBalanceSufficient(
-              queueWithGrandTotalPriceEqualsCustomerBalance,
-              queueWithGrandTotalPriceMoreThanCustomerBalance),
-          "Balance is insufficient when the new queue has more grand total price")
-    })
+    // After payment is made. Ensure the balance — from both current and deducted balance —
+    // is sufficient. This is a case where all the customer balance has already been used,
+    // making it appear to be less than the queue's grand total price.
+    assertAll(
+        {
+          assertTrue(
+              lessBalanceCustomer.isBalanceSufficient(
+                  queueWithGrandTotalPriceEqualsCustomerBalance,
+                  queueWithGrandTotalPriceLessThanCustomerBalance),
+              "Balance is sufficient when the new queue has lesser grand total price")
+        },
+        {
+          assertTrue(
+              lessBalanceCustomer.isBalanceSufficient(
+                  queueWithGrandTotalPriceEqualsCustomerBalance,
+                  queueWithGrandTotalPriceEqualsCustomerBalance),
+              "Balance is sufficient when the new queue has equals grand total price")
+        },
+        {
+          assertFalse(
+              lessBalanceCustomer.isBalanceSufficient(
+                  queueWithGrandTotalPriceEqualsCustomerBalance,
+                  queueWithGrandTotalPriceMoreThanCustomerBalance),
+              "Balance is insufficient when the new queue has more grand total price")
+        })
   }
 
   private fun `_balance on made payment with valid status and payment methods cases`():

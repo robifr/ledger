@@ -120,22 +120,27 @@ class CreateQueueViewModelTest(
     _viewModel.onPaymentMethodChanged(QueueModel.PaymentMethod.ACCOUNT_BALANCE)
 
     _viewModel.onCustomerChanged(_customer.copy(balance = balance))
-    assertAll({
-      assertEquals(
-          _customer.copy(balance = if (balance == 500L) 400L else balance),
-          _viewModel.uiState.safeValue.temporalCustomer,
-          "Temporal customer must be updated when the customer change")
-      assertEquals(
-          if (balance == 0L) setOf(QueueModel.PaymentMethod.CASH)
-          else setOf(QueueModel.PaymentMethod.CASH, QueueModel.PaymentMethod.ACCOUNT_BALANCE),
-          _viewModel.uiState.safeValue.allowedPaymentMethods,
-          "Allowed payment methods must be updated when the customer change")
-      assertEquals(
-          if (balance == 0L) QueueModel.PaymentMethod.CASH
-          else QueueModel.PaymentMethod.ACCOUNT_BALANCE,
-          _viewModel.uiState.safeValue.paymentMethod,
-          "Fallback payment method to cash when the customer balance is insufficient")
-    })
+    assertAll(
+        {
+          assertEquals(
+              _customer.copy(balance = if (balance == 500L) 400L else balance),
+              _viewModel.uiState.safeValue.temporalCustomer,
+              "Temporal customer must be updated when the customer change")
+        },
+        {
+          assertEquals(
+              if (balance == 0L) setOf(QueueModel.PaymentMethod.CASH)
+              else setOf(QueueModel.PaymentMethod.CASH, QueueModel.PaymentMethod.ACCOUNT_BALANCE),
+              _viewModel.uiState.safeValue.allowedPaymentMethods,
+              "Allowed payment methods must be updated when the customer change")
+        },
+        {
+          assertEquals(
+              if (balance == 0L) QueueModel.PaymentMethod.CASH
+              else QueueModel.PaymentMethod.ACCOUNT_BALANCE,
+              _viewModel.uiState.safeValue.paymentMethod,
+              "Fallback payment method to cash when the customer balance is insufficient")
+        })
   }
 
   @ParameterizedTest
@@ -147,29 +152,34 @@ class CreateQueueViewModelTest(
     _viewModel.onPaymentMethodChanged(QueueModel.PaymentMethod.ACCOUNT_BALANCE)
 
     _viewModel.onStatusChanged(status)
-    assertAll({
-      assertEquals(
-          _customer.copy(
-              balance = if (status == QueueModel.Status.COMPLETED) 400L else 500L,
-              debt =
-                  if (status == QueueModel.Status.UNPAID) (-100).toBigDecimal()
-                  else 0.toBigDecimal()),
-          _viewModel.uiState.safeValue.temporalCustomer,
-          "Temporal customer must be updated when the status change")
-      assertEquals(
-          if (status == QueueModel.Status.COMPLETED) {
-            setOf(QueueModel.PaymentMethod.CASH, QueueModel.PaymentMethod.ACCOUNT_BALANCE)
-          } else {
-            setOf(QueueModel.PaymentMethod.CASH)
-          },
-          _viewModel.uiState.safeValue.allowedPaymentMethods,
-          "Allowed payment methods must be updated when the status change")
-      assertEquals(
-          if (status == QueueModel.Status.COMPLETED) QueueModel.PaymentMethod.ACCOUNT_BALANCE
-          else QueueModel.PaymentMethod.CASH,
-          _viewModel.uiState.safeValue.paymentMethod,
-          "Fallback payment method to cash when the status is other than completed")
-    })
+    assertAll(
+        {
+          assertEquals(
+              _customer.copy(
+                  balance = if (status == QueueModel.Status.COMPLETED) 400L else 500L,
+                  debt =
+                      if (status == QueueModel.Status.UNPAID) (-100).toBigDecimal()
+                      else 0.toBigDecimal()),
+              _viewModel.uiState.safeValue.temporalCustomer,
+              "Temporal customer must be updated when the status change")
+        },
+        {
+          assertEquals(
+              if (status == QueueModel.Status.COMPLETED) {
+                setOf(QueueModel.PaymentMethod.CASH, QueueModel.PaymentMethod.ACCOUNT_BALANCE)
+              } else {
+                setOf(QueueModel.PaymentMethod.CASH)
+              },
+              _viewModel.uiState.safeValue.allowedPaymentMethods,
+              "Allowed payment methods must be updated when the status change")
+        },
+        {
+          assertEquals(
+              if (status == QueueModel.Status.COMPLETED) QueueModel.PaymentMethod.ACCOUNT_BALANCE
+              else QueueModel.PaymentMethod.CASH,
+              _viewModel.uiState.safeValue.paymentMethod,
+              "Fallback payment method to cash when the status is other than completed")
+        })
   }
 
   @ParameterizedTest
@@ -182,27 +192,33 @@ class CreateQueueViewModelTest(
 
     _viewModel.onProductOrdersChanged(
         _queue.productOrders.map { it.copy(totalPrice = totalPrice.toBigDecimal()) })
-    assertAll({
-      assertEquals(
-          _customer.copy(
-              balance =
-                  if (totalPrice == 100L) _customer.balance - totalPrice else _customer.balance),
-          _viewModel.uiState.safeValue.temporalCustomer,
-          "Temporal customer must be updated when the product orders change")
-      assertEquals(
-          if (totalPrice == 100L) {
-            setOf(QueueModel.PaymentMethod.CASH, QueueModel.PaymentMethod.ACCOUNT_BALANCE)
-          } else {
-            setOf(QueueModel.PaymentMethod.CASH)
-          },
-          _viewModel.uiState.safeValue.allowedPaymentMethods,
-          "Allowed payment method must be updated when the product orders change")
-      assertEquals(
-          if (totalPrice == 100L) QueueModel.PaymentMethod.ACCOUNT_BALANCE
-          else QueueModel.PaymentMethod.CASH,
-          _viewModel.uiState.safeValue.paymentMethod,
-          "Fallback payment method to cash when the status is other than completed")
-    })
+    assertAll(
+        {
+          assertEquals(
+              _customer.copy(
+                  balance =
+                      if (totalPrice == 100L) _customer.balance - totalPrice
+                      else _customer.balance),
+              _viewModel.uiState.safeValue.temporalCustomer,
+              "Temporal customer must be updated when the product orders change")
+        },
+        {
+          assertEquals(
+              if (totalPrice == 100L) {
+                setOf(QueueModel.PaymentMethod.CASH, QueueModel.PaymentMethod.ACCOUNT_BALANCE)
+              } else {
+                setOf(QueueModel.PaymentMethod.CASH)
+              },
+              _viewModel.uiState.safeValue.allowedPaymentMethods,
+              "Allowed payment method must be updated when the product orders change")
+        },
+        {
+          assertEquals(
+              if (totalPrice == 100L) QueueModel.PaymentMethod.ACCOUNT_BALANCE
+              else QueueModel.PaymentMethod.CASH,
+              _viewModel.uiState.safeValue.paymentMethod,
+              "Fallback payment method to cash when the status is other than completed")
+        })
   }
 
   @ParameterizedTest

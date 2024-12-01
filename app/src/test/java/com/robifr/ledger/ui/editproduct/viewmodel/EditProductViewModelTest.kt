@@ -99,12 +99,16 @@ class EditProductViewModelTest(
 
     every { _productRepository.update(any()) } returns CompletableFuture.completedFuture(0)
     _viewModel.onSave()
-    assertAll({
-      assertNotNull(_viewModel.uiState.safeValue.nameErrorMessageRes, "Show error for a blank name")
-      assertDoesNotThrow("Prevent save for a blank name") {
-        verify(exactly = 0) { _productRepository.update(any()) }
-      }
-    })
+    assertAll(
+        {
+          assertNotNull(
+              _viewModel.uiState.safeValue.nameErrorMessageRes, "Show error for a blank name")
+        },
+        {
+          assertDoesNotThrow("Prevent save for a blank name") {
+            verify(exactly = 0) { _productRepository.update(any()) }
+          }
+        })
   }
 
   @Test

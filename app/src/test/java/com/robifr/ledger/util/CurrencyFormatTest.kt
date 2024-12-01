@@ -116,34 +116,49 @@ class CurrencyFormatTest {
   @Test
   fun `parse currency with invalid argument`() {
     val decimalSeparator: String = CurrencyFormat.decimalSeparator(_us)
-    assertAll({
-      assertEquals(
-          0.toBigDecimal(),
-          CurrencyFormat.parse("", _us),
-          "Parse to zero when there's only an empty string")
-      assertEquals(
-          0.toBigDecimal(),
-          CurrencyFormat.parse(" ", _us),
-          "Parse to zero when there's only a blank string")
-      assertEquals(
-          0.toBigDecimal(),
-          CurrencyFormat.parse("-", _us),
-          "Parse to zero when there's only a minus sign")
-      assertEquals(
-          0.toBigDecimal(),
-          CurrencyFormat.parse(decimalSeparator, _us),
-          "Parse to zero when there's only a decimal separator")
-      assertEquals(
-          0.toBigDecimal(),
-          CurrencyFormat.parse("-${decimalSeparator}", _us),
-          "Parse to zero when only '-${decimalSeparator}' presented")
-      assertEquals(
-          0.toBigDecimal(),
-          CurrencyFormat.parse("--1", _us),
-          "Parse to zero when there are multiple minus sign")
-      assertEquals(
-          _amount, CurrencyFormat.parse("${_amount}0", _us), "Remove trailing zero when parsing")
-    })
+    assertAll(
+        {
+          assertEquals(
+              0.toBigDecimal(),
+              CurrencyFormat.parse("", _us),
+              "Parse to zero when there's only an empty string")
+        },
+        {
+          assertEquals(
+              0.toBigDecimal(),
+              CurrencyFormat.parse(" ", _us),
+              "Parse to zero when there's only a blank string")
+        },
+        {
+          assertEquals(
+              0.toBigDecimal(),
+              CurrencyFormat.parse("-", _us),
+              "Parse to zero when there's only a minus sign")
+        },
+        {
+          assertEquals(
+              0.toBigDecimal(),
+              CurrencyFormat.parse(decimalSeparator, _us),
+              "Parse to zero when there's only a decimal separator")
+        },
+        {
+          assertEquals(
+              0.toBigDecimal(),
+              CurrencyFormat.parse("-${decimalSeparator}", _us),
+              "Parse to zero when only '-${decimalSeparator}' presented")
+        },
+        {
+          assertEquals(
+              0.toBigDecimal(),
+              CurrencyFormat.parse("--1", _us),
+              "Parse to zero when there are multiple minus sign")
+        },
+        {
+          assertEquals(
+              _amount,
+              CurrencyFormat.parse("${_amount}0", _us),
+              "Remove trailing zero when parsing")
+        })
   }
 
   private fun `_is symbol position at start cases`(): Array<Array<Any>> =

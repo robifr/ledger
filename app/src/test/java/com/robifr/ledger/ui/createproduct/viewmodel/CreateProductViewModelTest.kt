@@ -79,18 +79,20 @@ class CreateProductViewModelTest(
     if (name.isNotBlank()) {
       assertNull(_viewModel.uiState.safeValue.nameErrorMessageRes, "Remove error for a filled name")
     } else {
-      assertAll({
-        assertNull(
-            _viewModel.uiState.safeValue.nameErrorMessageRes,
-            "Remove error when there's no error beforehand")
-
-        // Simulate error when editing with a blank name.
-        _viewModel.onSave()
-        _viewModel.onNameTextChanged(name)
-        assertNotNull(
-            _viewModel.uiState.safeValue.nameErrorMessageRes,
-            "Keep error when there's an error beforehand")
-      })
+      assertAll(
+          {
+            assertNull(
+                _viewModel.uiState.safeValue.nameErrorMessageRes,
+                "Remove error when there's no error beforehand")
+          },
+          {
+            // Simulate error when editing with a blank name.
+            _viewModel.onSave()
+            _viewModel.onNameTextChanged(name)
+            assertNotNull(
+                _viewModel.uiState.safeValue.nameErrorMessageRes,
+                "Keep error when there's an error beforehand")
+          })
     }
   }
 
@@ -100,12 +102,16 @@ class CreateProductViewModelTest(
 
     every { _productRepository.add(any()) } returns CompletableFuture.completedFuture(0L)
     _viewModel.onSave()
-    assertAll({
-      assertNotNull(_viewModel.uiState.safeValue.nameErrorMessageRes, "Show error for a blank name")
-      assertDoesNotThrow("Prevent save for a blank name") {
-        verify(exactly = 0) { _productRepository.add(any()) }
-      }
-    })
+    assertAll(
+        {
+          assertNotNull(
+              _viewModel.uiState.safeValue.nameErrorMessageRes, "Show error for a blank name")
+        },
+        {
+          assertDoesNotThrow("Prevent save for a blank name") {
+            verify(exactly = 0) { _productRepository.add(any()) }
+          }
+        })
   }
 
   @ParameterizedTest
