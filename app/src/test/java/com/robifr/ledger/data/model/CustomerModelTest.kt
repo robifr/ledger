@@ -83,46 +83,51 @@ class CustomerModelTest {
         })
   }
 
-  @Test
-  fun `is balance sufficient with less balance customer`() {
-    val lessBalanceCustomer: CustomerModel = _customer.copy(balance = 0L)
-    val queueWithGrandTotalPriceLessThanCustomerBalance =
-        _queue.copy(
+  private fun `_is balance sufficient with less balance customer cases`(): Array<Array<Any>> =
+      arrayOf(
+          // It's sufficient when the new queue's grand total price is lesser or equal to the old
+          // one. Because the old balance (500, which is the current balance + old queue's grand
+          // total price) is greater than or equal to the new queue's grand total price.
+          arrayOf(0L, _completedQueueWithAccountBalance, 500L, 400L, true),
+          arrayOf(0L, _completedQueueWithAccountBalance, 500L, 500L, true),
+          arrayOf(0L, _completedQueueWithAccountBalance, 500L, 600L, false),
+          // It's insufficient when the old queue's status isn't completed and the payment method
+          // isn't account balance. Because the old balance can't be reverted in that way.
+          arrayOf(0L, _queue, 500L, 400L, false),
+          arrayOf(0L, _queue, 500L, 500L, false),
+          arrayOf(0L, _queue, 500L, 600L, false))
+
+  @ParameterizedTest
+  @MethodSource("_is balance sufficient with less balance customer cases")
+  fun `is balance sufficient with less balance customer`(
+      balance: Long,
+      oldQueue: QueueModel,
+      oldQueueGrandTotalPrice: Long,
+      newQueueGrandTotalPrice: Long,
+      isSufficient: Boolean
+  ) {
+    val lessBalanceCustomer: CustomerModel = _customer.copy(balance = balance)
+    val oldQueue =
+        oldQueue.copy(
             customer = lessBalanceCustomer,
-            productOrders = _queue.productOrders.map { it.copy(totalPrice = 400.toBigDecimal()) })
-    val queueWithGrandTotalPriceEqualsCustomerBalance =
-        _queue.copy(
+            productOrders =
+                _completedQueueWithAccountBalance.productOrders.map {
+                  it.copy(totalPrice = oldQueueGrandTotalPrice.toBigDecimal())
+                })
+    val newQueue =
+        _completedQueueWithAccountBalance.copy(
             customer = lessBalanceCustomer,
-            productOrders = _queue.productOrders.map { it.copy(totalPrice = 500.toBigDecimal()) })
-    val queueWithGrandTotalPriceMoreThanCustomerBalance =
-        _queue.copy(
-            customer = lessBalanceCustomer,
-            productOrders = _queue.productOrders.map { it.copy(totalPrice = 600.toBigDecimal()) })
+            productOrders =
+                _completedQueueWithAccountBalance.productOrders.map {
+                  it.copy(totalPrice = newQueueGrandTotalPrice.toBigDecimal())
+                })
     // After payment is made. Ensure the balance — from both current and deducted balance —
     // is sufficient. This is a case where all the customer balance has already been used,
     // making it appear to be less than the queue's grand total price.
-    assertAll(
-        {
-          assertTrue(
-              lessBalanceCustomer.isBalanceSufficient(
-                  queueWithGrandTotalPriceEqualsCustomerBalance,
-                  queueWithGrandTotalPriceLessThanCustomerBalance),
-              "Balance is sufficient when the new queue has lesser grand total price")
-        },
-        {
-          assertTrue(
-              lessBalanceCustomer.isBalanceSufficient(
-                  queueWithGrandTotalPriceEqualsCustomerBalance,
-                  queueWithGrandTotalPriceEqualsCustomerBalance),
-              "Balance is sufficient when the new queue has equals grand total price")
-        },
-        {
-          assertFalse(
-              lessBalanceCustomer.isBalanceSufficient(
-                  queueWithGrandTotalPriceEqualsCustomerBalance,
-                  queueWithGrandTotalPriceMoreThanCustomerBalance),
-              "Balance is insufficient when the new queue has more grand total price")
-        })
+    assertEquals(
+        isSufficient,
+        lessBalanceCustomer.isBalanceSufficient(oldQueue, newQueue),
+        "Balance is sufficient when the new queue's grand total price is lesser or equal to the old")
   }
 
   private fun `_balance on made payment with valid status and payment methods cases`():

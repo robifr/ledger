@@ -67,7 +67,10 @@ data class CustomerModel(
         if (oldQueue?.customerId != null &&
             oldQueue.customerId == id &&
             newQueue.customerId != null &&
-            newQueue.customerId == id) {
+            newQueue.customerId == id &&
+            oldQueue.status == QueueModel.Status.COMPLETED &&
+            oldQueue.paymentMethod == QueueModel.PaymentMethod.ACCOUNT_BALANCE) {
+          // Revert balance from old queue to obtain the old balance.
           balance.toBigDecimal() + oldTotalPrice
         } else {
           balance.toBigDecimal()
