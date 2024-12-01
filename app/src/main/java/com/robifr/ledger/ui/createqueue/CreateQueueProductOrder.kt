@@ -178,7 +178,7 @@ private class SelectProductOrderActionModeCallback(private val _fragment: Create
 
   override fun onActionItemClicked(mode: ActionMode?, item: MenuItem?): Boolean =
       when (item?.itemId) {
-        R.id.createqueue_contextualtoolbar_delete_item -> {
+        R.id.delete -> {
           _fragment.createQueueViewModel.selectProductOrderView.onDeleteSelectedProductOrder()
           true
         }
