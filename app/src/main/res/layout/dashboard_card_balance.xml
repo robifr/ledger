@@ -26,9 +26,9 @@
       android:layout_height="match_parent"
       android:orientation="vertical"
       android:paddingStart="@dimen/space_smallMedium"
-      android:paddingTop="15dp"
+      android:paddingTop="@dimen/space_medium"
       android:paddingEnd="@dimen/space_smallMedium"
-      android:paddingBottom="15dp">
+      android:paddingBottom="@dimen/space_medium">
 
     <TextView
         android:id="@+id/title"
@@ -44,7 +44,7 @@
         android:id="@+id/totalBalanceTitleIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
+        android:layout_marginStart="@dimen/space_smallMedium"
         android:src="@drawable/icon_account_wallet"
         app:layout_constraintBottom_toBottomOf="@id/totalCustomersWithBalanceTitle"
         app:layout_constraintStart_toStartOf="parent"
@@ -75,7 +75,7 @@
         android:id="@+id/totalBalance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="@dimen/space_smallMedium"
         android:layout_marginBottom="@dimen/space_medium"
         android:textSize="@dimen/text_mediumLarge"
         android:textStyle="bold"
@@ -96,7 +96,7 @@
         android:id="@+id/totalDebtTitleIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
+        android:layout_marginStart="@dimen/space_smallMedium"
         android:src="@drawable/icon_dollar_off"
         app:layout_constraintBottom_toBottomOf="@id/totalCustomersWithDebtTitle"
         app:layout_constraintStart_toStartOf="parent"
@@ -128,7 +128,7 @@
         android:id="@+id/totalDebt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="@dimen/space_smallMedium"
         android:textSize="@dimen/text_mediumLarge"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="@id/totalDebtTitle"

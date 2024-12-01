@@ -79,8 +79,8 @@
   </style>
 
   <style name="Divider" parent="Widget.Material3.MaterialDivider">
-    <item name="android:layout_marginTop">5dp</item>
-    <item name="android:layout_marginBottom">5dp</item>
+    <item name="android:layout_marginTop">@dimen/space_small</item>
+    <item name="android:layout_marginBottom">@dimen/space_small</item>
     <item name="dividerThickness">@dimen/stroke_width</item>
     <item name="dividerColor">@color/stroke</item>
   </style>

@@ -135,7 +135,7 @@
       style="@style/Widget.Material3.Button.TextButton"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginStart="12dp"
+      android:layout_marginStart="@dimen/space_smallMedium"
       android:layout_marginBottom="@dimen/space_medium"
       android:minHeight="0dp"
       android:text="@string/queue_filterDate_customRange"

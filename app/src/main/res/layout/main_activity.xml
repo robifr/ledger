@@ -40,8 +40,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="20dp"
+        android:layout_marginEnd="@dimen/space_medium"
+        android:layout_marginBottom="@dimen/space_medium"
         android:src="@drawable/icon_add"
         app:rippleColor="@color/primary_ripple" />
   </androidx.coordinatorlayout.widget.CoordinatorLayout>
@@ -51,8 +51,8 @@
       android:layout_width="match_parent"
       android:layout_height="65dp"
       android:background="?colorSurface"
-      app:itemPaddingBottom="10dp"
-      app:itemPaddingTop="10dp"
+      app:itemPaddingBottom="@dimen/space_smallMedium"
+      app:itemPaddingTop="@dimen/space_smallMedium"
       app:itemTextAppearanceActive="@style/BottomNavigationView.TextAppearanceActive"
       app:itemTextAppearanceInactive="@style/TextAppearance.Material3.LabelSmall"
       app:labelVisibilityMode="labeled"

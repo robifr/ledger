@@ -103,7 +103,7 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="@dimen/space_medium"
-          android:layout_marginTop="30dp"
+          android:layout_marginTop="@dimen/space_mediumLarge"
           android:layout_marginEnd="@dimen/space_medium"
           android:padding="@dimen/space_medium"
           android:text="@string/createCustomer_balance_add"

@@ -22,16 +22,13 @@
   <androidx.constraintlayout.widget.ConstraintLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:paddingStart="20dp"
-      android:paddingTop="20dp"
-      android:paddingEnd="20dp"
-      android:paddingBottom="10dp">
+      android:padding="@dimen/space_medium">
 
     <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
+        android:paddingBottom="@dimen/space_small"
         android:text="@string/createQueue_productOrders_makeProductOrders"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent" />
@@ -99,7 +96,7 @@
         android:id="@+id/totalPriceTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="@dimen/space_medium"
         android:gravity="end"
         android:text="@string/createQueue_productOrders_totalPrice"
         app:layout_constraintStart_toStartOf="parent"

@@ -53,7 +53,7 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="@dimen/space_medium"
-          android:layout_marginTop="15dp"
+          android:layout_marginTop="@dimen/space_medium"
           android:layout_marginEnd="@dimen/space_medium" />
 
       <include
@@ -62,7 +62,7 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="@dimen/space_medium"
-          android:layout_marginTop="15dp"
+          android:layout_marginTop="@dimen/space_medium"
           android:layout_marginEnd="@dimen/space_medium" />
 
       <include
@@ -71,7 +71,7 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="@dimen/space_medium"
-          android:layout_marginTop="15dp"
+          android:layout_marginTop="@dimen/space_medium"
           android:layout_marginEnd="@dimen/space_medium" />
     </LinearLayout>
   </androidx.core.widget.NestedScrollView>

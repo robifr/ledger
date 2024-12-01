@@ -52,10 +52,10 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginTop="@dimen/space_small"
           android:layout_marginEnd="@dimen/space_medium"
-          android:layout_marginBottom="5dp"
+          android:layout_marginBottom="@dimen/space_small"
           android:hint="@string/createQueue_customer"
-          android:paddingTop="5dp"
           app:endIconDrawable="@drawable/icon_cancel_20"
           app:endIconMode="custom">
 
@@ -75,9 +75,9 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="@dimen/space_medium"
-          android:layout_marginTop="5dp"
+          android:layout_marginTop="@dimen/space_small"
           android:layout_marginEnd="@dimen/space_medium"
-          android:layout_marginBottom="5dp"
+          android:layout_marginBottom="@dimen/space_small"
           android:hint="@string/createQueue_date">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -96,9 +96,9 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="@dimen/space_medium"
-          android:layout_marginTop="5dp"
+          android:layout_marginTop="@dimen/space_small"
           android:layout_marginEnd="@dimen/space_medium"
-          android:layout_marginBottom="5dp"
+          android:layout_marginBottom="@dimen/space_small"
           android:hint="@string/createQueue_status">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -117,9 +117,9 @@
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_marginStart="@dimen/space_medium"
-          android:layout_marginTop="30dp"
+          android:layout_marginTop="@dimen/space_mediumLarge"
           android:layout_marginEnd="@dimen/space_medium"
-          android:layout_marginBottom="8dp"
+          android:layout_marginBottom="@dimen/space_smallMedium"
           android:text="@string/createQueue_paymentMethods"
           android:textStyle="bold" />
 
@@ -133,9 +133,8 @@
           android:checkable="true"
           android:drawableLeft="@drawable/icon_money"
           android:gravity="start|center_vertical"
-          android:paddingStart="20dp"
+          android:minHeight="@dimen/button_minHeight"
           android:paddingTop="@dimen/space_medium"
-          android:paddingEnd="20dp"
           android:paddingBottom="@dimen/space_medium"
           android:tag="CASH"
           android:text="@string/enum_queuePaymentMethod_cash"
@@ -153,9 +152,8 @@
           android:checkable="true"
           android:drawableLeft="@drawable/icon_account_wallet"
           android:gravity="start|center_vertical"
-          android:paddingStart="20dp"
+          android:minHeight="@dimen/button_minHeight"
           android:paddingTop="@dimen/space_medium"
-          android:paddingEnd="20dp"
           android:paddingBottom="@dimen/space_medium"
           android:tag="ACCOUNT_BALANCE"
           android:text="@string/enum_queuePaymentMethod_accountBalance"

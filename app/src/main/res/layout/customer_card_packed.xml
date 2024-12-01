@@ -62,7 +62,7 @@
         android:id="@+id/balance"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:paddingTop="3dp"
+        android:paddingTop="@dimen/space_tiny"
         android:textSize="@dimen/text_small"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

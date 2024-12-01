@@ -20,7 +20,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/space_medium"
-    android:layout_marginBottom="5dp"
+    android:layout_marginBottom="@dimen/space_small"
     android:textSize="@dimen/text_small"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent" />

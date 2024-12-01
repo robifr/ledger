@@ -58,7 +58,7 @@
         android:id="@+id/language"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="@dimen/space_small"
         android:text="@string/enum_languageOption_englishUs"
         android:textSize="@dimen/text_small" />
   </LinearLayout>
