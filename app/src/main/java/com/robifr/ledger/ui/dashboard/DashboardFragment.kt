@@ -18,10 +18,13 @@ package com.robifr.ledger.ui.dashboard
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.DashboardFragmentBinding
@@ -38,7 +41,7 @@ import com.robifr.ledger.util.getColorAttr
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class DashboardFragment : Fragment() {
+class DashboardFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   private var _fragmentBinding: DashboardFragmentBinding? = null
   val fragmentBinding: DashboardFragmentBinding
     get() = _fragmentBinding!!
@@ -64,6 +67,7 @@ class DashboardFragment : Fragment() {
     requireActivity().window.statusBarColor =
         requireContext().getColorAttr(android.R.attr.colorBackground)
     requireActivity().window.navigationBarColor = requireContext().getColor(R.color.surface)
+    fragmentBinding.toolbar.setOnMenuItemClickListener(this)
     dashboardViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
     dashboardViewModel.summaryView.uiState.observe(viewLifecycleOwner, ::_onSummaryState)
     dashboardViewModel.summaryView.chartModel.observe(viewLifecycleOwner, ::_onSummaryChartModel)
@@ -71,6 +75,15 @@ class DashboardFragment : Fragment() {
     dashboardViewModel.revenueView.chartModel.observe(viewLifecycleOwner, ::_onRevenueChartModel)
     dashboardViewModel.balanceView.uiState.observe(viewLifecycleOwner, ::_onBalanceState)
   }
+
+  override fun onMenuItemClick(item: MenuItem?): Boolean =
+      when (item?.itemId) {
+        R.id.settings -> {
+          findNavController().navigate(R.id.settingsFragment)
+          true
+        }
+        else -> false
+      }
 
   private fun _onSnackbarState(state: SnackbarState) {
     Snackbar.make(

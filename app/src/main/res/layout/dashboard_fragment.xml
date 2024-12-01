@@ -29,6 +29,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:colorBackground"
+        app:menu="@menu/dashboard_toolbar"
         app:layout_scrollFlags="scroll|enterAlways|snap"
         app:navigationIcon="@null"
         app:title="@string/appName" />
