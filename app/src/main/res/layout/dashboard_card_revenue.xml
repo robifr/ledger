@@ -26,24 +26,24 @@
       android:layout_height="match_parent"
       android:clipToPadding="false"
       android:orientation="vertical"
-      android:padding="@dimen/cardlist_padding">
+      android:padding="@dimen/space_smallMedium">
 
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/dashboard_revenue"
-        android:textSize="@dimen/text_mediumlarge"
+        android:textSize="@dimen/text_mediumLarge"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/dateChip"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/dateChip"
-        app:layout_constraintBottom_toBottomOf="@id/dateChip"/>
+        app:layout_constraintTop_toTopOf="@id/dateChip" />
 
     <com.google.android.material.chip.Chip
         android:id="@+id/dateChip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/screen_padding"
+        android:layout_marginStart="@dimen/space_medium"
         android:textSize="@dimen/text_small"
         app:chipIconTint="?android:textColor"
         app:chipStrokeWidth="@dimen/stroke_selectable_width"
@@ -57,7 +57,7 @@
         android:id="@+id/chart"
         android:layout_width="match_parent"
         android:layout_height="250dp"
-        android:layout_marginTop="@dimen/cardlist_item_margin"
+        android:layout_marginTop="@dimen/space_medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/dateChip" />
@@ -67,8 +67,8 @@
         android:id="@+id/receivedIncomeCardView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/cardlist_item_margin"
-        android:layout_marginEnd="@dimen/cardlist_margin"
+        android:layout_marginTop="@dimen/space_medium"
+        android:layout_marginEnd="@dimen/space_small"
         android:clickable="true"
         android:focusable="true"
         android:tag="RECEIVED_INCOME"
@@ -91,8 +91,8 @@
         android:id="@+id/projectedIncomeCardView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/cardlist_margin"
-        android:layout_marginTop="@dimen/cardlist_item_margin"
+        android:layout_marginStart="@dimen/space_small"
+        android:layout_marginTop="@dimen/space_medium"
         android:clickable="true"
         android:focusable="true"
         android:tag="PROJECTED_INCOME"

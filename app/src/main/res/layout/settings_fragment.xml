@@ -36,7 +36,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/screen_paddingbottom">
+        android:layout_marginBottom="@dimen/space_extraLarge">
 
       <include layout="@layout/settings_general" />
     </androidx.constraintlayout.widget.ConstraintLayout>

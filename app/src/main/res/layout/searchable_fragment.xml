@@ -61,9 +61,9 @@
       android:id="@+id/recyclerView"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:layout_marginStart="@dimen/screen_padding"
-      android:layout_marginEnd="@dimen/screen_padding"
+      android:layout_marginStart="@dimen/space_medium"
+      android:layout_marginEnd="@dimen/space_medium"
       android:clipToPadding="false"
-      android:paddingBottom="@dimen/screen_paddingbottom"
+      android:paddingBottom="@dimen/space_extraLarge"
       app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 </LinearLayout>

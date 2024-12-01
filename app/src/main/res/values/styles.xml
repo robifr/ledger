@@ -30,14 +30,14 @@
 
   <style name="BottomSheetDialog.Button" parent="Widget.Material3.Button.TextButton">
     <item name="android:layout_margin">0dp</item>
-    <item name="android:minHeight">@dimen/bottomdialog_button_minheight</item>
-    <item name="android:paddingStart">@dimen/bottomdialog_padding</item>
+    <item name="android:minHeight">@dimen/button_minHeight</item>
+    <item name="android:paddingStart">@dimen/space_medium</item>
     <item name="android:textSize">@dimen/text_small</item>
     <item name="android:textColor">?android:textColor</item>
     <item name="android:background">?colorSurface</item>
     <item name="android:foreground">?selectableItemBackground</item>
     <item name="android:gravity">left|center_vertical</item>
-    <item name="iconPadding">@dimen/text_icon_padding</item>
+    <item name="iconPadding">@dimen/space_medium</item>
     <item name="iconSize">@dimen/icon_small</item>
     <item name="iconTint">?colorControlNormal</item>
     <item name="cornerSize">0dp</item>
@@ -52,21 +52,21 @@
 
   <style name="BottomSheetDialog.Title" parent="Widget.AppCompat.TextView">
     <item name="android:layout_marginTop">-10dp</item>
-    <item name="android:layout_marginBottom">@dimen/bottomdialog_padding</item>
+    <item name="android:layout_marginBottom">@dimen/space_medium</item>
     <item name="android:textStyle">bold</item>
     <item name="android:gravity">center</item>
   </style>
 
   <style name="BottomSheetDialog.RadioButton.RoundedRight" parent="">
-    <item name="android:minHeight">@dimen/bottomdialog_button_minheight</item>
-    <item name="android:paddingStart">@dimen/bottomdialog_padding</item>
+    <item name="android:minHeight">@dimen/button_minHeight</item>
+    <item name="android:paddingStart">@dimen/space_medium</item>
     <item name="android:button">@null</item>
     <item name="android:textAlignment">textStart</item>
     <item name="android:textSize">@dimen/text_small</item>
     <item name="android:textColor">@color/text_selectable</item>
     <item name="android:background">@drawable/shape_radio_roundedright</item>
     <item name="android:drawableStart">@drawable/icon_radio_check_hideable</item>
-    <item name="android:drawablePadding">@dimen/text_icon_padding</item>
+    <item name="android:drawablePadding">@dimen/space_medium</item>
     <item name="android:drawableTint">@color/text_selectable</item>
   </style>
 

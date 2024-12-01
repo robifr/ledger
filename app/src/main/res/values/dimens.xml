@@ -17,47 +17,32 @@
 <resources>
   <dimen name="text_small">14sp</dimen>
   <dimen name="text_medium">16sp</dimen>
-  <dimen name="text_mediumlarge">18sp</dimen>
+  <dimen name="text_mediumLarge">18sp</dimen>
   <dimen name="text_large">20sp</dimen>
-  <dimen name="text_extralarge">24sp</dimen>
+  <dimen name="text_extraLarge">24sp</dimen>
 
-  <dimen name="text_icon_padding">18dp</dimen>
-
-  <dimen name="icon_extrasmall">16dp</dimen>
+  <dimen name="icon_extraSmall">16dp</dimen>
   <dimen name="icon_small">22dp</dimen>
   <dimen name="icon_medium">26dp</dimen>
   <dimen name="icon_large">32dp</dimen>
 
-  <dimen name="screen_padding">15dp</dimen>
-  <dimen name="screen_paddingbottom">90dp</dimen>
+  <dimen name="space_tiny">2dp</dimen>
+  <dimen name="space_small">4dp</dimen>
+  <dimen name="space_smallMedium">8dp</dimen>
+  <dimen name="space_medium">16dp</dimen>
+  <dimen name="space_mediumLarge">32dp</dimen>
+  <dimen name="space_large">64dp</dimen>
+  <dimen name="space_extraLarge">90dp</dimen>
 
   <dimen name="stroke_width">0.5dp</dimen>
   <dimen name="stroke_selectable_width">0.7dp</dimen>
 
-  <dimen name="bottomdialog_padding">20dp</dimen>
-  <dimen name="bottomdialog_paddingbottom">45dp</dimen>
-  <dimen name="bottomdialog_button_minheight">45dp</dimen>
-  <dimen name="bottomdialog_item_margin">15dp</dimen>
-  <dimen name="bottomdialog_title_margin">18dp</dimen>
-  <dimen name="bottomdialog_title_abovebutton_marginbottom">8dp</dimen>
+  <dimen name="button_minHeight">45dp</dimen>
 
-  <dimen name="cardlist_wide_height">90dp</dimen>
-  <dimen name="cardlist_packed_width">160dp</dimen>
-  <dimen name="cardlist_padding">10dp</dimen>
-  <dimen name="cardlist_margin">5dp</dimen>
-  <dimen name="cardlist_margin_reverse">-5dp</dimen>
-  <dimen name="cardlist_item_margin">15dp</dimen>
+  <dimen name="cardList_wide_height">90dp</dimen>
+  <dimen name="cardList_packed_width">160dp</dimen>
 
-  <dimen name="textinput_margintop">10dp</dimen>
+  <dimen name="table_column_minHeight">45dp</dimen>
 
-  <dimen name="button_padding">15dp</dimen>
-
-  <dimen name="chip_spacing">10dp</dimen>
-
-  <dimen name="list_title_margintop">15dp</dimen>
-
-  <dimen name="table_column_padding">10dp</dimen>
-  <dimen name="table_column_minheight">45dp</dimen>
-
-  <dimen name="illustration_maxwidth">300dp</dimen>
+  <dimen name="illustration_maxWidth">300dp</dimen>
 </resources>

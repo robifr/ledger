@@ -37,12 +37,12 @@ class FilterCustomerHeaderHolder(
         layoutParams =
             ChipGroup.LayoutParams(
                 ChipGroup.LayoutParams.MATCH_PARENT, ChipGroup.LayoutParams.WRAP_CONTENT)
-        updatePadding(
-            top = itemView.context.resources.getDimension(R.dimen.cardlist_margin).toInt())
+        updatePadding(top = itemView.context.resources.getDimension(R.dimen.space_small).toInt())
         isSingleLine = false
-        chipSpacingVertical = itemView.context.resources.getDimension(R.dimen.chip_spacing).toInt()
+        chipSpacingVertical =
+            itemView.context.resources.getDimension(R.dimen.space_smallMedium).toInt()
         chipSpacingHorizontal =
-            itemView.context.resources.getDimension(R.dimen.chip_spacing).toInt()
+            itemView.context.resources.getDimension(R.dimen.space_smallMedium).toInt()
       }
 
   init {

@@ -18,16 +18,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="@dimen/cardlist_wide_height">
+    android:minHeight="@dimen/cardList_wide_height">
 
   <include
       android:id="@+id/image"
       layout="@layout/reusable_image_shapeable"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginStart="@dimen/cardlist_padding"
-      android:layout_marginTop="@dimen/cardlist_padding"
-      android:layout_marginEnd="@dimen/cardlist_padding"
+      android:layout_marginStart="@dimen/space_smallMedium"
+      android:layout_marginTop="@dimen/space_smallMedium"
+      android:layout_marginEnd="@dimen/space_smallMedium"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
@@ -77,7 +77,7 @@
       android:layout_height="wrap_content"
       android:layout_marginTop="10dp"
       android:enabled="false"
-      android:paddingStart="@dimen/cardlist_padding"
+      android:paddingStart="@dimen/space_smallMedium"
       android:text="@string/customer_card_customerId"
       android:textSize="@dimen/text_small"
       app:layout_constraintStart_toStartOf="parent"
@@ -88,9 +88,9 @@
       android:id="@+id/uniqueId"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:paddingStart="@dimen/cardlist_padding"
-      android:paddingEnd="@dimen/cardlist_padding"
-      android:paddingBottom="@dimen/cardlist_padding"
+      android:paddingStart="@dimen/space_smallMedium"
+      android:paddingEnd="@dimen/space_smallMedium"
+      android:paddingBottom="@dimen/space_smallMedium"
       app:layout_constraintEnd_toEndOf="@id/uniqueIdTitle"
       app:layout_constraintStart_toStartOf="@id/uniqueIdTitle"
       app:layout_constraintTop_toBottomOf="@id/uniqueIdTitle" />
@@ -113,7 +113,7 @@
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:gravity="end|center_vertical"
-      android:paddingBottom="@dimen/cardlist_padding"
+      android:paddingBottom="@dimen/space_smallMedium"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="@id/balanceTitle"
       app:layout_constraintStart_toStartOf="@id/balanceTitle"
@@ -125,7 +125,7 @@
       android:layout_height="wrap_content"
       android:enabled="false"
       android:gravity="end|center_vertical"
-      android:paddingEnd="@dimen/cardlist_padding"
+      android:paddingEnd="@dimen/space_smallMedium"
       android:text="@string/customer_card_debt"
       android:textSize="@dimen/text_small"
       app:layout_constraintBottom_toBottomOf="@id/balanceTitle"
@@ -138,9 +138,9 @@
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:gravity="end|center_vertical"
-      android:paddingStart="@dimen/cardlist_padding"
-      android:paddingEnd="@dimen/cardlist_padding"
-      android:paddingBottom="@dimen/cardlist_padding"
+      android:paddingStart="@dimen/space_smallMedium"
+      android:paddingEnd="@dimen/space_smallMedium"
+      android:paddingBottom="@dimen/space_smallMedium"
       app:layout_constraintEnd_toEndOf="@id/debtTitle"
       app:layout_constraintStart_toStartOf="@id/debtTitle"
       app:layout_constraintTop_toBottomOf="@id/debtTitle" />

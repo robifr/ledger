@@ -19,7 +19,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clipChildren="false"
-    android:padding="@dimen/cardlist_padding">
+    android:minHeight="@dimen/button_minHeight"
+    android:padding="@dimen/space_smallMedium">
 
   <ImageView
       android:id="@+id/icon"
@@ -33,7 +34,7 @@
       android:id="@+id/title"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_marginStart="@dimen/text_icon_padding"
+      android:layout_marginStart="@dimen/space_medium"
       android:textSize="@dimen/text_small"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toStartOf="@id/amount"
@@ -47,7 +48,7 @@
       android:layout_height="wrap_content"
       android:layout_marginStart="5dp"
       android:gravity="end"
-      android:textSize="@dimen/text_mediumlarge"
+      android:textSize="@dimen/text_mediumLarge"
       android:textStyle="bold"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"

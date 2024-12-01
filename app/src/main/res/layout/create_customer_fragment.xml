@@ -37,16 +37,16 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/screen_paddingbottom"
+        android:layout_marginBottom="@dimen/space_extraLarge"
         android:orientation="vertical">
 
       <com.google.android.material.textfield.TextInputLayout
           android:id="@+id/nameLayout"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/screen_padding"
-          android:layout_marginTop="@dimen/textinput_margintop"
-          android:layout_marginEnd="@dimen/screen_padding"
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginTop="@dimen/space_smallMedium"
+          android:layout_marginEnd="@dimen/space_medium"
           android:hint="@string/createCustomer_name">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -64,9 +64,9 @@
           android:id="@+id/balanceLayout"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/screen_padding"
-          android:layout_marginTop="@dimen/textinput_margintop"
-          android:layout_marginEnd="@dimen/screen_padding"
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginTop="@dimen/space_smallMedium"
+          android:layout_marginEnd="@dimen/space_medium"
           android:hint="@string/createCustomer_balance">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -83,9 +83,9 @@
           android:id="@+id/debtLayout"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/screen_padding"
-          android:layout_marginTop="@dimen/textinput_margintop"
-          android:layout_marginEnd="@dimen/screen_padding"
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginTop="@dimen/space_smallMedium"
+          android:layout_marginEnd="@dimen/space_medium"
           android:hint="@string/createCustomer_debt">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -102,10 +102,10 @@
           android:id="@+id/addBalanceButton"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/screen_padding"
+          android:layout_marginStart="@dimen/space_medium"
           android:layout_marginTop="30dp"
-          android:layout_marginEnd="@dimen/screen_padding"
-          android:padding="@dimen/button_padding"
+          android:layout_marginEnd="@dimen/space_medium"
+          android:padding="@dimen/space_medium"
           android:text="@string/createCustomer_balance_add"
           android:textColor="?colorOnPrimary"
           app:backgroundTint="?colorPrimary"
@@ -115,9 +115,9 @@
           android:id="@+id/withdrawButton"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/screen_padding"
-          android:layout_marginEnd="@dimen/screen_padding"
-          android:padding="@dimen/button_padding"
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginEnd="@dimen/space_medium"
+          android:padding="@dimen/space_medium"
           android:text="@string/createCustomer_balance_withdraw"
           android:textColor="?colorOnSecondary"
           app:backgroundTint="?colorSecondary"

@@ -18,7 +18,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/bottomdialog_paddingbottom">
+    android:paddingBottom="@dimen/space_large">
 
   <com.google.android.material.bottomsheet.BottomSheetDragHandleView
       android:layout_width="match_parent"
@@ -53,8 +53,8 @@
           style="@style/Divider"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/bottomdialog_padding"
-          android:layout_marginEnd="@dimen/bottomdialog_padding" />
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginEnd="@dimen/space_medium" />
 
       <include
           android:id="@+id/filterDebt"

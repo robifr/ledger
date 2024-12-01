@@ -18,7 +18,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:padding="@dimen/cardlist_padding">
+    android:padding="@dimen/space_smallMedium">
 
   <ImageView
       android:id="@+id/icon"
@@ -40,7 +40,7 @@
       android:id="@+id/title"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginStart="@dimen/cardlist_padding"
+      android:layout_marginStart="@dimen/space_smallMedium"
       android:layout_marginTop="25dp"
       android:textSize="@dimen/text_small"
       android:textStyle="bold"
@@ -65,7 +65,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_marginTop="5dp"
-      android:textSize="@dimen/text_mediumlarge"
+      android:textSize="@dimen/text_mediumLarge"
       android:textStyle="bold"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintStart_toStartOf="@id/description"

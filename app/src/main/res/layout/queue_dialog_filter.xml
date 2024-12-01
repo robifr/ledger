@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="@dimen/bottomdialog_paddingbottom">
+        android:paddingBottom="@dimen/space_large">
 
       <include
           android:id="@+id/filterCustomer"
@@ -53,8 +53,8 @@
           style="@style/Divider"
           android:layout_width="match_parent"
           android:layout_height="@dimen/stroke_width"
-          android:layout_marginStart="@dimen/bottomdialog_padding"
-          android:layout_marginEnd="@dimen/bottomdialog_padding" />
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginEnd="@dimen/space_medium" />
 
       <include
           android:id="@+id/filterDate"
@@ -64,8 +64,8 @@
           style="@style/Divider"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/bottomdialog_padding"
-          android:layout_marginEnd="@dimen/bottomdialog_padding" />
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginEnd="@dimen/space_medium" />
 
       <include
           android:id="@+id/filterStatus"
@@ -75,8 +75,8 @@
           style="@style/Divider"
           android:layout_width="match_parent"
           android:layout_height="@dimen/stroke_width"
-          android:layout_marginStart="@dimen/bottomdialog_padding"
-          android:layout_marginEnd="@dimen/bottomdialog_padding" />
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginEnd="@dimen/space_medium" />
 
       <include
           android:id="@+id/filterTotalPrice"

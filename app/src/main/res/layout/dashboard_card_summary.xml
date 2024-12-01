@@ -25,24 +25,24 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:orientation="vertical"
-      android:padding="@dimen/cardlist_padding">
+      android:padding="@dimen/space_smallMedium">
 
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/dashboard_summary"
-        android:textSize="@dimen/text_mediumlarge"
+        android:textSize="@dimen/text_mediumLarge"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/dateChip"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/dateChip"
-        app:layout_constraintBottom_toBottomOf="@id/dateChip"/>
+        app:layout_constraintTop_toTopOf="@id/dateChip" />
 
     <com.google.android.material.chip.Chip
         android:id="@+id/dateChip"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/screen_padding"
+        android:layout_marginStart="@dimen/space_medium"
         android:textSize="@dimen/text_small"
         app:chipIconTint="?android:textColor"
         app:chipStrokeWidth="@dimen/stroke_selectable_width"
@@ -56,7 +56,7 @@
         android:id="@+id/chart"
         android:layout_width="0dp"
         android:layout_height="250dp"
-        android:layout_marginTop="@dimen/cardlist_item_margin"
+        android:layout_marginTop="@dimen/space_medium"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/dateChip" />
@@ -65,7 +65,7 @@
         android:id="@+id/listContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/cardlist_item_margin"
+        android:layout_marginTop="@dimen/space_medium"
         android:orientation="vertical"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
@@ -77,7 +77,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:barrierDirection="bottom"
-        app:barrierMargin="@dimen/cardlist_item_margin"
+        app:barrierMargin="@dimen/space_medium"
         app:constraint_referenced_ids="chart,listContainer" />
 
     <com.google.android.material.divider.MaterialDivider
@@ -92,7 +92,7 @@
         android:id="@+id/summaryFlow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/cardlist_item_margin"
+        android:layout_marginTop="@dimen/space_medium"
         app:constraint_referenced_ids="totalQueuesCardView,uncompletedQueuesCardView,activeCustomersCardView,productsSoldCardView"
         app:flow_maxElementsWrap="1"
         app:flow_wrapMode="chain"
@@ -106,7 +106,7 @@
         android:id="@+id/totalQueuesCardView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/cardlist_margin"
+        android:layout_marginEnd="@dimen/space_small"
         android:clickable="true"
         android:focusable="true"
         android:tag="TOTAL_QUEUES"
@@ -123,7 +123,7 @@
         android:id="@+id/uncompletedQueuesCardView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/cardlist_margin"
+        android:layout_marginStart="@dimen/space_small"
         android:clickable="true"
         android:focusable="true"
         android:tag="UNCOMPLETED_QUEUES"
@@ -140,7 +140,7 @@
         android:id="@+id/activeCustomersCardView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/cardlist_margin"
+        android:layout_marginStart="@dimen/space_small"
         android:clickable="true"
         android:focusable="true"
         android:tag="ACTIVE_CUSTOMERS"
@@ -157,7 +157,7 @@
         android:id="@+id/productsSoldCardView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/cardlist_margin"
+        android:layout_marginStart="@dimen/space_small"
         android:clickable="true"
         android:focusable="true"
         android:tag="PRODUCTS_SOLD"

@@ -40,7 +40,7 @@
         android:id="@+id/productLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/textinput_margintop"
+        android:layout_marginTop="@dimen/space_smallMedium"
         android:hint="@string/createQueue_productOrders_product"
         app:layout_constraintTop_toBottomOf="@id/title">
 
@@ -60,7 +60,7 @@
         android:id="@+id/quantityLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/textinput_margintop"
+        android:layout_marginTop="@dimen/space_smallMedium"
         android:hint="@string/createQueue_productOrders_quantity"
         app:layout_constraintTop_toBottomOf="@id/productLayout">
 
@@ -80,7 +80,7 @@
         android:id="@+id/discountLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/textinput_margintop"
+        android:layout_marginTop="@dimen/space_smallMedium"
         android:hint="@string/createQueue_productOrders_discount"
         app:layout_constraintTop_toBottomOf="@id/quantityLayout">
 

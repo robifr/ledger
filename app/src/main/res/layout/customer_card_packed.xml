@@ -19,22 +19,16 @@
     android:id="@+id/cardView"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginStart="@dimen/cardlist_margin"
-    android:layout_marginTop="@dimen/cardlist_margin"
-    android:layout_marginEnd="@dimen/cardlist_margin"
-    android:layout_marginBottom="@dimen/cardlist_margin"
+    android:layout_margin="@dimen/space_small"
     android:checkable="true"
     android:clickable="true"
     app:checkedIcon="@drawable/icon_check"
     app:strokeWidth="0dp">
 
   <androidx.constraintlayout.widget.ConstraintLayout
-      android:layout_width="@dimen/cardlist_packed_width"
+      android:layout_width="@dimen/cardList_packed_width"
       android:layout_height="wrap_content"
-      android:paddingStart="@dimen/cardlist_padding"
-      android:paddingTop="@dimen/cardlist_padding"
-      android:paddingEnd="@dimen/cardlist_padding"
-      android:paddingBottom="@dimen/cardlist_padding">
+      android:padding="@dimen/space_smallMedium">
 
     <include
         android:id="@+id/image"
@@ -52,7 +46,7 @@
         android:id="@+id/name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/cardlist_padding"
+        android:layout_marginStart="@dimen/space_smallMedium"
         android:ellipsize="end"
         android:maxLines="2"
         android:textSize="@dimen/text_small"

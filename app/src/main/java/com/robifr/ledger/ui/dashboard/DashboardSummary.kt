@@ -150,7 +150,7 @@ class DashboardSummary(private val _fragment: DashboardFragment) : View.OnClickL
     val oldestDateFontSize: Int =
         JsInterface.dpToCssPx(
             _fragment.requireContext(),
-            _fragment.resources.getDimensionPixelSize(R.dimen.text_mediumlarge).toFloat())
+            _fragment.resources.getDimensionPixelSize(R.dimen.text_mediumLarge).toFloat())
     val oldestDate: String? =
         model.oldestDate?.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG))
     _chart.displayDonutChart(

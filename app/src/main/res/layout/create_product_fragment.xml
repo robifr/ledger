@@ -32,9 +32,9 @@
       android:id="@+id/nameLayout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginStart="@dimen/screen_padding"
-      android:layout_marginTop="@dimen/textinput_margintop"
-      android:layout_marginEnd="@dimen/screen_padding"
+      android:layout_marginStart="@dimen/space_medium"
+      android:layout_marginTop="@dimen/space_smallMedium"
+      android:layout_marginEnd="@dimen/space_medium"
       android:hint="@string/createProduct_name">
 
     <com.google.android.material.textfield.TextInputEditText
@@ -52,9 +52,9 @@
       android:id="@+id/priceLayout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:layout_marginStart="@dimen/screen_padding"
-      android:layout_marginTop="@dimen/textinput_margintop"
-      android:layout_marginEnd="@dimen/screen_padding"
+      android:layout_marginStart="@dimen/space_medium"
+      android:layout_marginTop="@dimen/space_smallMedium"
+      android:layout_marginEnd="@dimen/space_medium"
       android:hint="@string/createProduct_price">
 
     <com.google.android.material.textfield.TextInputEditText

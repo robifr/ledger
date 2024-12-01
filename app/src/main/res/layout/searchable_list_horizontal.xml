@@ -18,15 +18,15 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/list_title_margintop">
+    android:layout_marginTop="@dimen/space_medium">
 
   <TextView
       android:id="@+id/title"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:gravity="center_vertical"
-      android:paddingStart="@dimen/screen_padding"
-      android:textSize="@dimen/text_mediumlarge"
+      android:paddingStart="@dimen/space_medium"
+      android:textSize="@dimen/text_mediumLarge"
       android:textStyle="bold"
       app:layout_constraintBottom_toBottomOf="@id/viewMoreButton"
       app:layout_constraintStart_toStartOf="parent"
@@ -37,7 +37,7 @@
       style="@style/Widget.Material3.Button.IconButton"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginEnd="@dimen/screen_padding"
+      android:layout_marginEnd="@dimen/space_medium"
       app:icon="@drawable/icon_arrow_forward"
       app:iconSize="@dimen/icon_medium"
       app:iconTint="?colorControlNormal"
@@ -48,7 +48,7 @@
   <HorizontalScrollView
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:minHeight="@dimen/cardlist_wide_height"
+      android:minHeight="@dimen/cardList_wide_height"
       android:scrollbars="none"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@id/viewMoreButton"
@@ -59,7 +59,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingStart="@dimen/screen_padding"
-        android:paddingEnd="@dimen/screen_padding" />
+        android:paddingStart="@dimen/space_medium"
+        android:paddingEnd="@dimen/space_medium" />
   </HorizontalScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

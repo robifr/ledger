@@ -19,7 +19,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/bottomdialog_paddingbottom">
+    android:paddingBottom="@dimen/space_large">
 
   <com.google.android.material.bottomsheet.BottomSheetDragHandleView
       android:id="@+id/dragHandle"

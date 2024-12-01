@@ -37,7 +37,7 @@
       android:layout_height="0dp"
       android:gravity="center"
       android:textColor="@color/text_enabled"
-      android:textSize="@dimen/text_mediumlarge"
+      android:textSize="@dimen/text_mediumLarge"
       app:layout_constraintBottom_toBottomOf="@id/shapeableImage"
       app:layout_constraintEnd_toEndOf="@id/shapeableImage"
       app:layout_constraintStart_toStartOf="@id/shapeableImage"

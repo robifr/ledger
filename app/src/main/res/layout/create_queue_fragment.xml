@@ -35,7 +35,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/screen_paddingbottom"
+        android:layout_marginBottom="@dimen/space_extraLarge"
         android:orientation="vertical">
 
       <!--
@@ -51,8 +51,8 @@
           style="@style/TextInputLayout"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/screen_padding"
-          android:layout_marginEnd="@dimen/screen_padding"
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginEnd="@dimen/space_medium"
           android:layout_marginBottom="5dp"
           android:hint="@string/createQueue_customer"
           android:paddingTop="5dp"
@@ -74,9 +74,9 @@
           style="@style/TextInputLayout"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/screen_padding"
+          android:layout_marginStart="@dimen/space_medium"
           android:layout_marginTop="5dp"
-          android:layout_marginEnd="@dimen/screen_padding"
+          android:layout_marginEnd="@dimen/space_medium"
           android:layout_marginBottom="5dp"
           android:hint="@string/createQueue_date">
 
@@ -95,9 +95,9 @@
           style="@style/TextInputLayout"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/screen_padding"
+          android:layout_marginStart="@dimen/space_medium"
           android:layout_marginTop="5dp"
-          android:layout_marginEnd="@dimen/screen_padding"
+          android:layout_marginEnd="@dimen/space_medium"
           android:layout_marginBottom="5dp"
           android:hint="@string/createQueue_status">
 
@@ -116,9 +116,9 @@
           android:id="@+id/paymentMethodTitle"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/screen_padding"
+          android:layout_marginStart="@dimen/space_medium"
           android:layout_marginTop="30dp"
-          android:layout_marginEnd="@dimen/screen_padding"
+          android:layout_marginEnd="@dimen/space_medium"
           android:layout_marginBottom="8dp"
           android:text="@string/createQueue_paymentMethods"
           android:textStyle="bold" />
@@ -128,40 +128,40 @@
           android:id="@+id/paymentMethodCashButton"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/screen_padding"
-          android:layout_marginEnd="@dimen/screen_padding"
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginEnd="@dimen/space_medium"
           android:checkable="true"
           android:drawableLeft="@drawable/icon_money"
           android:gravity="start|center_vertical"
           android:paddingStart="20dp"
-          android:paddingTop="@dimen/button_padding"
+          android:paddingTop="@dimen/space_medium"
           android:paddingEnd="20dp"
-          android:paddingBottom="@dimen/button_padding"
+          android:paddingBottom="@dimen/space_medium"
           android:tag="CASH"
           android:text="@string/enum_queuePaymentMethod_cash"
           android:textColor="?android:textColor"
           app:backgroundTint="?colorSurface"
-          app:iconPadding="@dimen/text_icon_padding"
+          app:iconPadding="@dimen/space_medium"
           app:rippleColor="?android:colorControlHighlight" />
 
       <com.google.android.material.button.MaterialButton
           android:id="@+id/paymentMethodAccountBalanceButton"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/screen_padding"
-          android:layout_marginEnd="@dimen/screen_padding"
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginEnd="@dimen/space_medium"
           android:checkable="true"
           android:drawableLeft="@drawable/icon_account_wallet"
           android:gravity="start|center_vertical"
           android:paddingStart="20dp"
-          android:paddingTop="@dimen/button_padding"
+          android:paddingTop="@dimen/space_medium"
           android:paddingEnd="20dp"
-          android:paddingBottom="@dimen/button_padding"
+          android:paddingBottom="@dimen/space_medium"
           android:tag="ACCOUNT_BALANCE"
           android:text="@string/enum_queuePaymentMethod_accountBalance"
           android:textColor="?android:textColor"
           app:backgroundTint="?colorSurface"
-          app:iconPadding="@dimen/text_icon_padding"
+          app:iconPadding="@dimen/space_medium"
           app:rippleColor="?android:colorControlHighlight" />
 
       <include
