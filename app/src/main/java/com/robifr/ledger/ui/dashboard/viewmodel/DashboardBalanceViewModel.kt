@@ -16,23 +16,67 @@
 
 package com.robifr.ledger.ui.dashboard.viewmodel
 
+import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
+import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.repository.InfoSyncListener
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class DashboardBalanceViewModel {
+class DashboardBalanceViewModel(
+    private val _viewModel: DashboardViewModel,
+    private val _dispatcher: CoroutineDispatcher,
+    private val _selectAllCustomersWithBalance: suspend () -> List<CustomerBalanceInfo>,
+    private val _selectAllCustomersWithDebt: suspend () -> List<CustomerDebtInfo>
+) {
+  val _customerBalanceChangedListener: InfoSyncListener<CustomerBalanceInfo, CustomerModel> =
+      InfoSyncListener(
+          currentInfo = { _uiState.safeValue.customersWithBalance },
+          modelToInfo = ::CustomerBalanceInfo,
+          onSyncInfo = { syncedInfo ->
+            _onCustomersWithBalanceChanged(syncedInfo.filter { it.balance != 0L })
+          })
+  val _customerDebtChangedListener: InfoSyncListener<CustomerDebtInfo, CustomerModel> =
+      InfoSyncListener(
+          currentInfo = { uiState.safeValue.customersWithDebt },
+          modelToInfo = ::CustomerDebtInfo,
+          onSyncInfo = { syncedInfo ->
+            _onCustomersWithDebtChanged(
+                syncedInfo.filter { it.debt.compareTo(0.toBigDecimal()) != 0 })
+          })
+
   private val _uiState: SafeMutableLiveData<DashboardBalanceState> =
       SafeMutableLiveData(
           DashboardBalanceState(customersWithBalance = listOf(), customersWithDebt = listOf()))
   val uiState: SafeLiveData<DashboardBalanceState>
     get() = _uiState
 
-  internal fun _onCustomersWithBalanceChanged(balanceInfo: List<CustomerBalanceInfo>) {
+  fun _loadAllCustomersWithBalance() {
+    _viewModel.viewModelScope.launch(_dispatcher) {
+      _selectAllCustomersWithBalance().let {
+        withContext(Dispatchers.Main) { _onCustomersWithBalanceChanged(it) }
+      }
+    }
+  }
+
+  fun _loadAllCustomersWithDebt() {
+    _viewModel.viewModelScope.launch(_dispatcher) {
+      _selectAllCustomersWithDebt().let {
+        withContext(Dispatchers.Main) { _onCustomersWithDebtChanged(it) }
+      }
+    }
+  }
+
+  private fun _onCustomersWithBalanceChanged(balanceInfo: List<CustomerBalanceInfo>) {
     _uiState.setValue(_uiState.safeValue.copy(customersWithBalance = balanceInfo))
   }
 
-  internal fun _onCustomersWithDebtChanged(debtInfo: List<CustomerDebtInfo>) {
+  private fun _onCustomersWithDebtChanged(debtInfo: List<CustomerDebtInfo>) {
     _uiState.setValue(_uiState.safeValue.copy(customersWithDebt = debtInfo))
   }
 }
