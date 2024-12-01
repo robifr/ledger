@@ -16,21 +16,53 @@
 
 package com.robifr.ledger.ui.dashboard.viewmodel
 
+import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.ui.dashboard.DashboardSummary
 import java.math.BigDecimal
 
-/**
- * @param mostActiveCustomers Map of the most active customers with their queue counts.
- * @param mostProductsSold Map of the most products sold with their quantity counts.
- */
 data class DashboardSummaryState(
-    val displayedChart: DashboardSummary.OverviewType,
-    val totalQueues: Int,
-    val totalUncompletedQueues: Int,
-    val totalActiveCustomers: Int,
-    val mostActiveCustomers: Map<CustomerModel, Int>,
-    val totalProductsSold: BigDecimal,
-    val mostProductsSold: Map<ProductModel, BigDecimal>
-)
+    val date: QueueDate,
+    val queues: List<QueueModel>,
+    val displayedChart: DashboardSummary.OverviewType
+) {
+  fun totalUncompletedQueues(): Int = queues.count { it.status != QueueModel.Status.COMPLETED }
+
+  fun totalActiveCustomers(): Int =
+      queues.asSequence().mapNotNull { it.customerId }.distinct().count()
+
+  /** @return Map of the most active customers with their queue counts. */
+  fun mostActiveCustomers(): Map<CustomerModel, Int> =
+      queues
+          .asSequence()
+          .mapNotNull { queue -> queue.customer?.let { it to 1 } }
+          .groupBy({ it.first }, { it.second })
+          .mapValues { it.value.size }
+          .toList()
+          .sortedByDescending { it.second }
+          .take(4)
+          .toMap()
+
+  fun totalProductsSold(): BigDecimal =
+      queues
+          .asSequence()
+          .flatMap { it.productOrders.asSequence() }
+          .sumOf { it.quantity.toBigDecimal() }
+
+  /** @return Map of the most products sold with their quantity counts. */
+  fun mostProductsSold(): Map<ProductModel, BigDecimal> =
+      queues
+          .asSequence()
+          .flatMap { it.productOrders }
+          .mapNotNull { productOrder ->
+            productOrder.referencedProduct()?.let { it to productOrder.quantity.toBigDecimal() }
+          }
+          .groupBy({ it.first }, { it.second })
+          .mapValues { entry -> entry.value.sumOf { it } }
+          .toList()
+          .sortedByDescending { it.second }
+          .take(4)
+          .toMap()
+}

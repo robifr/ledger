@@ -139,7 +139,6 @@
     <item quantity="one"><![CDATA[From <b>%d</b> customer]]></item>
     <item quantity="other"><![CDATA[From <b>%d</b> customers]]></item>
   </plurals>
-  <string name="dashboard_balance_note">*\u0020\u0020 Date filters have no effect on this balance overview.</string>
   <string name="dashboard_totalBalance">Total balance</string>
   <string name="dashboard_totalDebt">Total debt</string>
 

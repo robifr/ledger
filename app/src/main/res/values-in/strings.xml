@@ -139,7 +139,6 @@
     <item quantity="one"><![CDATA[Dari <b>%d</b> pelanggan]]></item>
     <item quantity="other"><![CDATA[Dari <b>%d</b> pelanggan]]></item>
   </plurals>
-  <string name="dashboard_balance_note">*\u0020\u0020 Filter tanggal tidak berpengaruh pada ikhtisar saldo ini.</string>
   <string name="dashboard_totalBalance">Saldo total</string>
   <string name="dashboard_totalDebt">Hutang total</string>
 

@@ -133,16 +133,5 @@
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="@id/totalDebtTitle"
         app:layout_constraintTop_toBottomOf="@id/totalCustomersWithDebtTitle" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/cardlist_padding"
-        android:layout_marginTop="25dp"
-        android:text="@string/dashboard_balance_note"
-        android:textSize="@dimen/text_small"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/totalDebt" />
   </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

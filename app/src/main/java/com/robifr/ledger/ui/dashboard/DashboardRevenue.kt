@@ -20,13 +20,23 @@ import android.view.View
 import androidx.annotation.ColorRes
 import androidx.appcompat.app.AppCompatDelegate
 import com.robifr.ledger.R
+import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.ui.dashboard.chart.Chart
 import com.robifr.ledger.ui.dashboard.chart.ChartWebViewClient
 import com.robifr.ledger.ui.dashboard.chart.RevenueChartModel
 import com.robifr.ledger.util.CurrencyFormat
 import java.math.BigDecimal
+import java.time.format.DateTimeFormatter
 
 class DashboardRevenue(private val _fragment: DashboardFragment) : View.OnClickListener {
+  private val _date: DashboardDate =
+      DashboardDate(
+          dateChip = { _fragment.fragmentBinding.revenue.dateChip },
+          fragment = _fragment,
+          _selectedDateRange = {
+            _fragment.dashboardViewModel.revenueView.uiState.safeValue.date.range
+          },
+          _onDateChanged = _fragment.dashboardViewModel.revenueView::onDateChanged)
   private val _chart: Chart =
       Chart(
           ChartWebViewClient(_fragment.requireContext()) {
@@ -59,6 +69,19 @@ class DashboardRevenue(private val _fragment: DashboardFragment) : View.OnClickL
           _fragment.dashboardViewModel.revenueView.onDisplayedChartChanged(
               OverviewType.valueOf(view.tag.toString()))
     }
+  }
+
+  fun setDate(date: QueueDate) {
+    val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy")
+    _fragment.fragmentBinding.revenue.dateChip.text =
+        if (date.range == QueueDate.Range.CUSTOM) {
+          _fragment.getString(
+              date.range.stringRes,
+              date.dateStart.format(dateFormat),
+              date.dateEnd.format(dateFormat))
+        } else {
+          _fragment.getString(date.range.stringRes)
+        }
   }
 
   fun loadChart() {

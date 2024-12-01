@@ -16,11 +16,24 @@
 
 package com.robifr.ledger.ui.dashboard.viewmodel
 
+import com.robifr.ledger.data.display.QueueDate
+import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.ui.dashboard.DashboardRevenue
 import java.math.BigDecimal
 
 data class DashboardRevenueState(
-    val displayedChart: DashboardRevenue.OverviewType,
-    val receivedIncome: BigDecimal,
-    val projectedIncome: BigDecimal
-)
+    val date: QueueDate,
+    val queues: List<QueueModel>,
+    val displayedChart: DashboardRevenue.OverviewType
+) {
+  fun receivedIncome(): BigDecimal =
+      queues
+          .asSequence()
+          // Received income are from the completed queues only.
+          .filter { it.status == QueueModel.Status.COMPLETED }
+          .flatMap { it.productOrders }
+          .sumOf { it.totalPrice }
+
+  fun projectedIncome(): BigDecimal =
+      queues.asSequence().flatMap { it.productOrders }.sumOf { it.totalPrice }
+}

@@ -32,35 +32,6 @@
         app:layout_scrollFlags="scroll|enterAlways|snap"
         app:navigationIcon="@null"
         app:title="@string/appName" />
-
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?android:colorBackground"
-        android:scrollbars="none"
-        app:layout_scrollFlags="scroll|enterAlways|snap">
-
-      <com.google.android.material.chip.ChipGroup
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:paddingTop="5dp"
-          android:paddingBottom="5dp"
-          app:chipSpacingHorizontal="@dimen/chip_spacing"
-          app:singleLine="true">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/dateChip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/screen_padding"
-            android:layoutDirection="rtl"
-            android:textSize="@dimen/text_small"
-            app:chipIcon="@drawable/icon_arrow_dropdown_20"
-            app:chipIconTint="?android:textColor"
-            app:chipStrokeWidth="@dimen/stroke_selectable_width"
-            app:ensureMinTouchTargetSize="false" />
-      </com.google.android.material.chip.ChipGroup>
-    </HorizontalScrollView>
   </com.google.android.material.appbar.AppBarLayout>
 
   <androidx.core.widget.NestedScrollView

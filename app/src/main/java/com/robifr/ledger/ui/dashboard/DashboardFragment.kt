@@ -24,7 +24,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
-import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.databinding.DashboardFragmentBinding
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.dashboard.chart.RevenueChartModel
@@ -33,12 +32,10 @@ import com.robifr.ledger.ui.dashboard.chart.TotalQueuesChartModel
 import com.robifr.ledger.ui.dashboard.chart.UncompletedQueuesChartModel
 import com.robifr.ledger.ui.dashboard.viewmodel.DashboardBalanceState
 import com.robifr.ledger.ui.dashboard.viewmodel.DashboardRevenueState
-import com.robifr.ledger.ui.dashboard.viewmodel.DashboardState
 import com.robifr.ledger.ui.dashboard.viewmodel.DashboardSummaryState
 import com.robifr.ledger.ui.dashboard.viewmodel.DashboardViewModel
 import com.robifr.ledger.util.getColorAttr
 import dagger.hilt.android.AndroidEntryPoint
-import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
 class DashboardFragment : Fragment() {
@@ -47,7 +44,6 @@ class DashboardFragment : Fragment() {
     get() = _fragmentBinding!!
 
   val dashboardViewModel: DashboardViewModel by activityViewModels()
-  private lateinit var _date: DashboardDate
   private lateinit var _summaryOverview: DashboardSummary
   private lateinit var _revenueOverview: DashboardRevenue
   private lateinit var _balanceOverview: DashboardBalance
@@ -58,7 +54,6 @@ class DashboardFragment : Fragment() {
       savedInstanceState: Bundle?
   ): View {
     _fragmentBinding = DashboardFragmentBinding.inflate(inflater, container, false)
-    _date = DashboardDate(this)
     _summaryOverview = DashboardSummary(this)
     _revenueOverview = DashboardRevenue(this)
     _balanceOverview = DashboardBalance(this)
@@ -70,7 +65,6 @@ class DashboardFragment : Fragment() {
         requireContext().getColorAttr(android.R.attr.colorBackground)
     requireActivity().window.navigationBarColor = requireContext().getColor(R.color.surface)
     dashboardViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
-    dashboardViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
     dashboardViewModel.summaryView.uiState.observe(viewLifecycleOwner, ::_onSummaryState)
     dashboardViewModel.summaryView.chartModel.observe(viewLifecycleOwner, ::_onSummaryChartModel)
     dashboardViewModel.revenueView.uiState.observe(viewLifecycleOwner, ::_onRevenueState)
@@ -86,30 +80,18 @@ class DashboardFragment : Fragment() {
         .show()
   }
 
-  private fun _onUiState(state: DashboardState) {
-    val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy")
-    fragmentBinding.dateChip.text =
-        if (state.date.range == QueueDate.Range.CUSTOM) {
-          getString(
-              state.date.range.stringRes,
-              state.date.dateStart.format(dateFormat),
-              state.date.dateEnd.format(dateFormat))
-        } else {
-          getString(state.date.range.stringRes)
-        }
-  }
-
   private fun _onSummaryState(state: DashboardSummaryState) {
+    _summaryOverview.setDate(state.date)
     _summaryOverview.selectCard(state.displayedChart)
-    _summaryOverview.setTotalQueues(state.totalQueues)
-    _summaryOverview.setTotalUncompletedQueues(state.totalUncompletedQueues)
-    _summaryOverview.setTotalActiveCustomers(state.totalActiveCustomers)
-    _summaryOverview.setTotalProductsSold(state.totalProductsSold)
+    _summaryOverview.setTotalQueues(state.queues.size)
+    _summaryOverview.setTotalUncompletedQueues(state.totalUncompletedQueues())
+    _summaryOverview.setTotalActiveCustomers(state.totalActiveCustomers())
+    _summaryOverview.setTotalProductsSold(state.totalProductsSold())
     when (state.displayedChart) {
       DashboardSummary.OverviewType.ACTIVE_CUSTOMERS ->
-          _summaryOverview.displayMostActiveCustomersList(state.mostActiveCustomers)
+          _summaryOverview.displayMostActiveCustomersList(state.mostActiveCustomers())
       DashboardSummary.OverviewType.PRODUCTS_SOLD ->
-          _summaryOverview.displayMostProductsSoldList(state.mostProductsSold)
+          _summaryOverview.displayMostProductsSoldList(state.mostProductsSold())
       // The rest of the enum is a web view, which is handled via `_onSummaryChartModel()`.
       else -> _summaryOverview.loadChart()
     }
@@ -123,9 +105,10 @@ class DashboardFragment : Fragment() {
   }
 
   private fun _onRevenueState(state: DashboardRevenueState) {
+    _revenueOverview.setDate(state.date)
     _revenueOverview.selectCard(state.displayedChart)
-    _revenueOverview.setTotalReceivedIncome(state.receivedIncome)
-    _revenueOverview.setTotalProjectedIncome(state.projectedIncome)
+    _revenueOverview.setTotalReceivedIncome(state.receivedIncome())
+    _revenueOverview.setTotalProjectedIncome(state.projectedIncome())
     _revenueOverview.loadChart()
   }
 

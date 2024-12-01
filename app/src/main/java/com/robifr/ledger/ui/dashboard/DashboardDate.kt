@@ -23,6 +23,7 @@ import androidx.core.util.Pair
 import com.google.android.material.R as MaterialR
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.chip.Chip
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.robifr.ledger.R
 import com.robifr.ledger.data.display.QueueDate
@@ -31,17 +32,22 @@ import com.robifr.ledger.util.ClassPath
 import java.time.Instant
 import java.time.ZoneId
 
-class DashboardDate(private val _fragment: DashboardFragment) {
+class DashboardDate(
+    dateChip: () -> Chip,
+    fragment: DashboardFragment,
+    private val _selectedDateRange: () -> QueueDate.Range,
+    private val _onDateChanged: (QueueDate) -> Unit
+) {
   private val _dialogBinding: DashboardDialogDateBinding =
-      DashboardDialogDateBinding.inflate(_fragment.layoutInflater).apply {
+      DashboardDialogDateBinding.inflate(fragment.layoutInflater).apply {
         customButton.setOnClickListener {
           _customDatePickerDialog.show(
-              _fragment.requireActivity().supportFragmentManager,
+              fragment.requireActivity().supportFragmentManager,
               ClassPath.simpleName(DashboardDate::class.java))
         }
       }
   private val _dialog: BottomSheetDialog =
-      BottomSheetDialog(_fragment.requireContext(), R.style.BottomSheetDialog).apply {
+      BottomSheetDialog(fragment.requireContext(), R.style.BottomSheetDialog).apply {
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         setContentView(_dialogBinding.root)
       }
@@ -55,7 +61,7 @@ class DashboardDate(private val _fragment: DashboardFragment) {
             addOnPositiveButtonClickListener { date: Pair<Long?, Long?>? ->
               date?.first?.let { startDate ->
                 date.second?.let { endDate ->
-                  _fragment.dashboardViewModel.onDateChanged(
+                  _onDateChanged(
                       QueueDate(
                           Instant.ofEpochMilli(startDate).atZone(ZoneId.systemDefault()),
                           Instant.ofEpochMilli(endDate).atZone(ZoneId.systemDefault())))
@@ -66,13 +72,12 @@ class DashboardDate(private val _fragment: DashboardFragment) {
           }
 
   init {
-    _fragment.fragmentBinding.dateChip.setOnClickListener {
+    dateChip().setOnClickListener {
       // Remove listener to prevent callback being called during `check()` and `clearCheck()`.
       _dialogBinding.radioGroup.setOnCheckedChangeListener(null)
       // Custom range uses classic button. They aren't supposed to get selected.
-      val dateRange: QueueDate.Range = _fragment.dashboardViewModel.uiState.safeValue.date.range
-      if (dateRange != QueueDate.Range.CUSTOM) {
-        _dialogBinding.radioGroup.findViewWithTag<View>(dateRange.toString())?.id?.let {
+      if (_selectedDateRange() != QueueDate.Range.CUSTOM) {
+        _dialogBinding.radioGroup.findViewWithTag<View>(_selectedDateRange().toString())?.id?.let {
           _dialogBinding.radioGroup.check(it)
         }
       } else {
@@ -81,8 +86,7 @@ class DashboardDate(private val _fragment: DashboardFragment) {
       }
       _dialogBinding.radioGroup.setOnCheckedChangeListener { group: RadioGroup?, radioId ->
         group?.findViewById<RadioButton>(radioId)?.tag?.let {
-          _fragment.dashboardViewModel.onDateChanged(
-              QueueDate(QueueDate.Range.valueOf(it.toString())))
+          _onDateChanged(QueueDate(QueueDate.Range.valueOf(it.toString())))
         }
         _dialog.dismiss()
       }

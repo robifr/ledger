@@ -25,10 +25,7 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:orientation="vertical"
-      android:paddingStart="@dimen/cardlist_padding"
-      android:paddingTop="15dp"
-      android:paddingEnd="@dimen/cardlist_padding"
-      android:paddingBottom="@dimen/cardlist_padding">
+      android:padding="@dimen/cardlist_padding">
 
     <TextView
         android:id="@+id/title"
@@ -38,6 +35,21 @@
         android:textSize="@dimen/text_mediumlarge"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/dateChip"
+        app:layout_constraintBottom_toBottomOf="@id/dateChip"/>
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/dateChip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/screen_padding"
+        android:textSize="@dimen/text_small"
+        app:chipIconTint="?android:textColor"
+        app:chipStrokeWidth="@dimen/stroke_selectable_width"
+        app:closeIcon="@drawable/icon_arrow_dropdown_20"
+        app:closeIconEnabled="true"
+        app:ensureMinTouchTargetSize="false"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <WebView
@@ -47,7 +59,7 @@
         android:layout_marginTop="@dimen/cardlist_item_margin"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/title" />
+        app:layout_constraintTop_toBottomOf="@id/dateChip" />
 
     <LinearLayout
         android:id="@+id/listContainer"

@@ -19,7 +19,6 @@ package com.robifr.ledger.ui.dashboard.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
 import com.robifr.ledger.data.model.CustomerModel
@@ -27,10 +26,7 @@ import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.InfoSyncListener
-import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.QueueRepository
-import com.robifr.ledger.ui.SafeLiveData
-import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,21 +42,11 @@ import kotlinx.coroutines.withContext
 class DashboardViewModel
 @Inject
 constructor(
-    @IoDispatcher private val _dispatcher: CoroutineDispatcher,
+    @IoDispatcher internal val _dispatcher: CoroutineDispatcher,
     private val _queueRepository: QueueRepository,
     private val _customerRepository: CustomerRepository
 ) : ViewModel() {
   val balanceView: DashboardBalanceViewModel = DashboardBalanceViewModel()
-  private val _queueChangedListener: ModelSyncListener<QueueModel> =
-      ModelSyncListener(
-          currentModel = { _uiState.safeValue.queues },
-          onSyncModels = { syncedModels ->
-            _onQueuesChanged(
-                syncedModels.filterNot {
-                  it.date.isBefore(_uiState.safeValue.date.dateStart.toInstant()) ||
-                      it.date.isAfter(_uiState.safeValue.date.dateEnd.toInstant())
-                })
-          })
   private val _customerBalanceChangedListener:
       InfoSyncListener<CustomerBalanceInfo, CustomerModel> =
       InfoSyncListener(
@@ -82,38 +68,34 @@ constructor(
   val snackbarState: LiveData<SnackbarState>
     get() = _snackbarState
 
-  private val _uiState: SafeMutableLiveData<DashboardState> =
-      SafeMutableLiveData(
-          DashboardState(date = QueueDate(QueueDate.Range.ALL_TIME), queues = listOf()))
-  val uiState: SafeLiveData<DashboardState>
-    get() = _uiState
-
-  val summaryView: DashboardSummaryViewModel = DashboardSummaryViewModel(this)
-  val revenueView: DashboardRevenueViewModel = DashboardRevenueViewModel(this)
+  val summaryView: DashboardSummaryViewModel =
+      DashboardSummaryViewModel(
+          _viewModel = this,
+          _dispatcher = _dispatcher,
+          _selectAllQueuesInRange = ::_selectAllQueuesInRange)
+  val revenueView: DashboardRevenueViewModel =
+      DashboardRevenueViewModel(
+          _viewModel = this,
+          _dispatcher = _dispatcher,
+          _selectAllQueuesInRange = ::_selectAllQueuesInRange)
 
   init {
-    _queueRepository.addModelChangedListener(_queueChangedListener)
+    _queueRepository.addModelChangedListener(summaryView._queueChangedListener)
+    _queueRepository.addModelChangedListener(revenueView._queueChangedListener)
     _customerRepository.addModelChangedListener(_customerBalanceChangedListener)
     _customerRepository.addModelChangedListener(_customerDebtChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    _loadAllQueuesInRange(_uiState.safeValue.date)
+    summaryView._loadAllQueuesInRange()
+    revenueView._loadAllQueuesInRange()
     _loadAllCustomersWithBalance()
     _loadAllCustomersWithDebt()
   }
 
   override fun onCleared() {
-    _queueRepository.removeModelChangedListener(_queueChangedListener)
+    _queueRepository.removeModelChangedListener(summaryView._queueChangedListener)
+    _queueRepository.removeModelChangedListener(revenueView._queueChangedListener)
     _customerRepository.removeModelChangedListener(_customerBalanceChangedListener)
     _customerRepository.removeModelChangedListener(_customerDebtChangedListener)
-  }
-
-  fun onDateChanged(date: QueueDate) {
-    _uiState.setValue(_uiState.safeValue.copy(date = date))
-    _loadAllQueuesInRange(_uiState.safeValue.date)
-  }
-
-  private fun _onQueuesChanged(queues: List<QueueModel>) {
-    _uiState.setValue(_uiState.safeValue.copy(queues = queues))
   }
 
   private suspend fun _selectAllQueuesInRange(
@@ -126,14 +108,6 @@ constructor(
 
   private suspend fun _selectAllCustomersWithDebt(): List<CustomerDebtInfo> =
       _customerRepository.selectAllInfoWithDebt().await()
-
-  private fun _loadAllQueuesInRange(date: QueueDate) {
-    viewModelScope.launch(_dispatcher) {
-      _selectAllQueuesInRange(date.dateStart, date.dateEnd).let {
-        withContext(Dispatchers.Main) { _onQueuesChanged(it) }
-      }
-    }
-  }
 
   private fun _loadAllCustomersWithBalance() {
     viewModelScope.launch(_dispatcher) {

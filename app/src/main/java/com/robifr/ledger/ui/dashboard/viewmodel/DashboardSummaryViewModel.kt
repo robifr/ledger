@@ -18,13 +18,16 @@ package com.robifr.ledger.ui.dashboard.viewmodel
 
 import android.webkit.WebView
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.viewModelScope
 import androidx.webkit.WebViewClientCompat
 import com.robifr.ledger.assetbinding.chart.ChartData
 import com.robifr.ledger.assetbinding.chart.ChartUtil
 import com.robifr.ledger.data.display.QueueDate
+import com.robifr.ledger.data.display.QueueFilterer
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.SafeLiveData
-import com.robifr.ledger.ui.SafeMediatorLiveData
+import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.dashboard.DashboardSummary
 import com.robifr.ledger.ui.dashboard.chart.SummaryChartModel
@@ -32,35 +35,33 @@ import com.robifr.ledger.ui.dashboard.chart.TotalQueuesChartModel
 import com.robifr.ledger.ui.dashboard.chart.UncompletedQueuesChartModel
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class DashboardSummaryViewModel(private val _viewModel: DashboardViewModel) {
-  private val _uiState: SafeMediatorLiveData<DashboardSummaryState> =
-      SafeMediatorLiveData(
-              DashboardSummaryState(
-                  displayedChart = DashboardSummary.OverviewType.TOTAL_QUEUES,
-                  totalQueues = 0,
-                  totalUncompletedQueues = 0,
-                  totalActiveCustomers = 0,
-                  mostActiveCustomers = mapOf(),
-                  totalProductsSold = 0.toBigDecimal(),
-                  mostProductsSold = mapOf()))
-          .apply {
-            addSource(_viewModel.uiState.toLiveData()) { state ->
-              setValue(
-                  safeValue.copy(
-                      totalQueues = state.queues.size,
-                      totalUncompletedQueues =
-                          state.queues.count { it.status != QueueModel.Status.COMPLETED },
-                      totalActiveCustomers =
-                          state.queues.asSequence().mapNotNull { it.customerId }.distinct().count(),
-                      totalProductsSold =
-                          state.queues
-                              .asSequence()
-                              .flatMap { it.productOrders.asSequence() }
-                              .sumOf { it.quantity.toBigDecimal() },
-                  ))
-            }
-          }
+class DashboardSummaryViewModel(
+    private val _viewModel: DashboardViewModel,
+    private val _dispatcher: CoroutineDispatcher,
+    private val _selectAllQueuesInRange:
+        suspend (startDate: ZonedDateTime, endDate: ZonedDateTime) -> List<QueueModel>
+) {
+  val _queueChangedListener: ModelSyncListener<QueueModel> =
+      ModelSyncListener(
+          currentModel = { _uiState.safeValue.queues },
+          onSyncModels = {
+            _onQueuesChanged(
+                QueueFilterer()
+                    .apply { filters = filters.copy(filteredDate = _uiState.safeValue.date) }
+                    .filter(it))
+          })
+
+  private val _uiState: SafeMutableLiveData<DashboardSummaryState> =
+      SafeMutableLiveData(
+          DashboardSummaryState(
+              date = QueueDate(QueueDate.Range.ALL_TIME),
+              queues = listOf(),
+              displayedChart = DashboardSummary.OverviewType.TOTAL_QUEUES))
   val uiState: SafeLiveData<DashboardSummaryState>
     get() = _uiState
 
@@ -75,12 +76,6 @@ class DashboardSummaryViewModel(private val _viewModel: DashboardViewModel) {
 
   fun onDisplayedChartChanged(displayedChart: DashboardSummary.OverviewType) {
     _uiState.setValue(_uiState.safeValue.copy(displayedChart = displayedChart))
-    when (displayedChart) {
-      DashboardSummary.OverviewType.ACTIVE_CUSTOMERS -> _onDisplayMostActiveCustomers()
-      DashboardSummary.OverviewType.PRODUCTS_SOLD -> _onDisplayMostProductsSold()
-      // The rest of the enum is a web view, which is handled via `onWebViewLoaded()`.
-      else -> Unit
-    }
   }
 
   fun onWebViewLoaded() {
@@ -92,17 +87,32 @@ class DashboardSummaryViewModel(private val _viewModel: DashboardViewModel) {
     }
   }
 
+  fun onDateChanged(date: QueueDate) {
+    _uiState.setValue(_uiState.safeValue.copy(date = date))
+    _loadAllQueuesInRange(_uiState.safeValue.date)
+  }
+
+  fun _onQueuesChanged(queues: List<QueueModel>) {
+    _uiState.setValue(_uiState.safeValue.copy(queues = queues))
+  }
+
+  fun _loadAllQueuesInRange(date: QueueDate = _uiState.safeValue.date) {
+    _viewModel.viewModelScope.launch(_dispatcher) {
+      _selectAllQueuesInRange(date.dateStart, date.dateEnd).let {
+        withContext(Dispatchers.Main) { _onQueuesChanged(it) }
+      }
+    }
+  }
+
   private fun _onDisplayTotalQueuesChart() {
     // Remove unnecessary dates.
     val dateStart: ZonedDateTime =
-        _viewModel.uiState.safeValue.queues
-            .takeIf { _viewModel.uiState.safeValue.date.range == QueueDate.Range.ALL_TIME }
+        _uiState.safeValue.queues
+            .takeIf { _uiState.safeValue.date.range == QueueDate.Range.ALL_TIME }
             ?.minOfOrNull(QueueModel::date)
             ?.atZone(ZoneId.systemDefault())
-            ?: _viewModel.uiState.safeValue.date.dateStart
-                .toInstant()
-                .atZone(ZoneId.systemDefault())
-    val dateEnd: ZonedDateTime = _viewModel.uiState.safeValue.date.dateEnd
+            ?: _uiState.safeValue.date.dateStart.toInstant().atZone(ZoneId.systemDefault())
+    val dateEnd: ZonedDateTime = _uiState.safeValue.date.dateEnd
 
     // The key is a formatted date.
     val rawDataSummed: LinkedHashMap<String, Int> = linkedMapOf()
@@ -110,7 +120,7 @@ class DashboardSummaryViewModel(private val _viewModel: DashboardViewModel) {
     var maxValue: Int = yAxisTicks - 1
     // Sum the values if the date is equal. The queues also have to be sorted by date
     // because D3.js draws everything in order.
-    for (queue in _viewModel.uiState.safeValue.queues.sortedBy(QueueModel::date)) {
+    for (queue in _uiState.safeValue.queues.sortedBy(QueueModel::date)) {
       rawDataSummed
           .merge(
               ChartUtil.toDateTime(queue.date.atZone(ZoneId.systemDefault()), dateStart to dateEnd),
@@ -140,7 +150,7 @@ class DashboardSummaryViewModel(private val _viewModel: DashboardViewModel) {
           set(QueueModel.Status.UNPAID.stringRes, 0)
         }
     var oldestDate: ZonedDateTime? = null
-    for (queue in _viewModel.uiState.safeValue.queues) {
+    for (queue in _uiState.safeValue.queues) {
       // Merge the data if the status is uncompleted.
       if (rawDataSummed.containsKey(queue.status.stringRes)) {
         rawDataSummed.merge(queue.status.stringRes, 1, Int::plus)
@@ -158,40 +168,5 @@ class DashboardSummaryViewModel(private val _viewModel: DashboardViewModel) {
                     QueueModel.Status.IN_PROCESS.backgroundColorRes,
                     QueueModel.Status.UNPAID.backgroundColorRes),
             oldestDate = oldestDate))
-  }
-
-  private fun _onDisplayMostActiveCustomers() {
-    _uiState.setValue(
-        _uiState.safeValue.copy(
-            mostActiveCustomers =
-                _viewModel.uiState.safeValue.queues
-                    .asSequence()
-                    .mapNotNull { queue -> queue.customer?.let { it to 1 } }
-                    .groupBy({ it.first }, { it.second })
-                    .mapValues { it.value.size }
-                    .toList()
-                    .sortedByDescending { it.second }
-                    .take(4)
-                    .toMap()))
-  }
-
-  private fun _onDisplayMostProductsSold() {
-    _uiState.setValue(
-        _uiState.safeValue.copy(
-            mostProductsSold =
-                _viewModel.uiState.safeValue.queues
-                    .asSequence()
-                    .flatMap { it.productOrders }
-                    .mapNotNull { productOrder ->
-                      productOrder.referencedProduct()?.let {
-                        it to productOrder.quantity.toBigDecimal()
-                      }
-                    }
-                    .groupBy({ it.first }, { it.second })
-                    .mapValues { entry -> entry.value.sumOf { it } }
-                    .toList()
-                    .sortedByDescending { it.second }
-                    .take(4)
-                    .toMap()))
   }
 }
