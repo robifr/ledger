@@ -19,9 +19,12 @@ package com.robifr.ledger.ui.queue.viewmodel
 import com.robifr.ledger.data.display.QueueSortMethod
 import com.robifr.ledger.data.model.QueueModel
 
+/**
+ * @property expandedQueueIndex Currently expanded queue index from [queues]. -1 to represent none
+ *   being expanded.
+ */
 data class QueueState(
     val queues: List<QueueModel>,
-    /** Currently expanded queue index from [queues]. -1 to represent none being expanded. */
     val expandedQueueIndex: Int,
     val sortMethod: QueueSortMethod
 )

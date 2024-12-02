@@ -20,9 +20,9 @@ import com.robifr.ledger.data.model.CustomerModel
 import java.math.BigDecimal
 
 /**
- * @param filteredBalance Filter customer if [CustomerModel.balance] is in-between min (first) and
- *   max (second). Set the pair value as null to represent unbounded number.
- * @param filteredDebt Filter customer if [CustomerModel.debt] is in-between min (first) and max
+ * @property filteredBalance Filter customer if [CustomerModel.balance] is in-between min (first)
+ *   and max (second). Set the pair value as null to represent unbounded number.
+ * @property filteredDebt Filter customer if [CustomerModel.debt] is in-between min (first) and max
  *   (second). Set the pair value as null to represent unbounded number.
  */
 data class CustomerFilters(

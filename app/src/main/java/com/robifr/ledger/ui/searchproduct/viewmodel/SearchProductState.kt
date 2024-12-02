@@ -19,17 +19,18 @@ package com.robifr.ledger.ui.searchproduct.viewmodel
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
 
+/**
+ * @property isSelectionEnabled Whether the fragment should return
+ *   [SearchProductFragment.Request.SELECT_PRODUCT] on back navigation.
+ * @property expandedProductIndex Currently expanded product index from [products]. -1 to represent
+ *   none being expanded.
+ */
 data class SearchProductState(
-    /**
-     * Whether the fragment should return [SearchProductFragment.Request.SELECT_PRODUCT] on back
-     * navigation.
-     */
     val isSelectionEnabled: Boolean,
     val initialQuery: String,
     val query: String,
     val initialSelectedProductIds: List<Long>,
     val products: List<ProductModel>,
-    /** Currently expanded product index from [products]. -1 to represent none being expanded. */
     val expandedProductIndex: Int
 ) {
   val isNoResultFoundIllustrationVisible: Boolean

@@ -23,12 +23,12 @@ import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
 import java.time.ZonedDateTime
 
+/**
+ * @property temporalCustomer Current inputted customer with changes to data like balance or debt as
+ *   an overview before doing the actual transaction.
+ */
 data class CreateQueueState(
     val customer: CustomerModel?,
-    /**
-     * Current inputted customer with changes to data like balance or debt as an overview before
-     * doing the actual transaction.
-     */
     val temporalCustomer: CustomerModel?,
     val date: ZonedDateTime,
     val status: QueueModel.Status,

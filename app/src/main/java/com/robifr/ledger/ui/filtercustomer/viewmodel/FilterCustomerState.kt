@@ -18,9 +18,12 @@ package com.robifr.ledger.ui.filtercustomer.viewmodel
 
 import com.robifr.ledger.data.model.CustomerModel
 
+/**
+ * @property expandedCustomerIndex Currently expanded customer index from [customers]. -1 to
+ *   represent none being expanded.
+ */
 data class FilterCustomerState(
     val customers: List<CustomerModel>,
-    /** Currently expanded customer index from [customers]. -1 to represent none being expanded. */
     val expandedCustomerIndex: Int,
     val filteredCustomers: List<CustomerModel>
 )

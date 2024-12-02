@@ -20,11 +20,14 @@ import androidx.annotation.StringRes
 import com.robifr.ledger.R
 import com.robifr.ledger.data.model.ProductModel
 
+/**
+ * @property expandedProductIndex Currently expanded product index from [products]. -1 to represent
+ *   none being expanded.
+ */
 data class SelectProductState(
     val initialSelectedProduct: ProductModel?,
     val selectedProductOnDatabase: ProductModel?,
     val products: List<ProductModel>,
-    /** Currently expanded product index from [products]. -1 to represent none being expanded. */
     val expandedProductIndex: Int,
     val isSelectedProductPreviewExpanded: Boolean
 ) {

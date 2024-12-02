@@ -20,16 +20,16 @@ import com.robifr.ledger.data.model.QueueModel
 import java.math.BigDecimal
 
 /**
- * @param filteredCustomerIds Filter queue if [customer ID][QueueModel.customerId] is included
+ * @property filteredCustomerIds Filter queue if [customer ID][QueueModel.customerId] is included
  *   inside the list.
- * @param isNullCustomerShown Whether queue with no [customer ID][QueueModel.customerId] should be
- *   shown or not.
- * @param filteredStatus Filter queue if [status][QueueModel.status] is included.
- * @param filteredTotalPrice Filter queue if [grand total price][QueueModel.grandTotalPrice] is
+ * @property isNullCustomerShown Whether queue with no [customer ID][QueueModel.customerId] should
+ *   be shown or not.
+ * @property filteredStatus Filter queue if [status][QueueModel.status] is included.
+ * @property filteredTotalPrice Filter queue if [grand total price][QueueModel.grandTotalPrice] is
  *   in-between min (first) and max (second). Set the pair value as null to represent unbounded
  *   number.
- * @param filteredDate Filter queues if [date][QueueModel.date] is still considered within specified
- *   range of start and end date.
+ * @property filteredDate Filter queues if [date][QueueModel.date] is still considered within
+ *   specified range of start and end date.
  */
 data class QueueFilters(
     val filteredCustomerIds: List<Long>,

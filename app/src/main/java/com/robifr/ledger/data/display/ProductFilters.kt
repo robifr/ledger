@@ -19,7 +19,7 @@ package com.robifr.ledger.data.display
 import com.robifr.ledger.data.model.ProductModel
 
 /**
- * @param filteredPrice Filter product if [ProductModel.price] is in-between min (first) and max
+ * @property filteredPrice Filter product if [ProductModel.price] is in-between min (first) and max
  *   (second). Set the pair value as null to represent unbounded number.
  */
 data class ProductFilters(val filteredPrice: Pair<Long?, Long?>)

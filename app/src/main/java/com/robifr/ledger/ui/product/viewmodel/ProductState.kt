@@ -19,9 +19,12 @@ package com.robifr.ledger.ui.product.viewmodel
 import com.robifr.ledger.data.display.ProductSortMethod
 import com.robifr.ledger.data.model.ProductModel
 
+/**
+ * @property expandedProductIndex Currently expanded product index from [products]. -1 to represent
+ *   none being expanded.
+ */
 data class ProductState(
     val products: List<ProductModel>,
-    /** Currently expanded product index from [products]. -1 to represent none being expanded. */
     val expandedProductIndex: Int,
     val sortMethod: ProductSortMethod
 )

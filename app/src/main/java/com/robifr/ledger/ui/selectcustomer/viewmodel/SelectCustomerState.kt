@@ -20,11 +20,14 @@ import androidx.annotation.StringRes
 import com.robifr.ledger.R
 import com.robifr.ledger.data.model.CustomerModel
 
+/**
+ * @property expandedCustomerIndex Currently expanded customer index from [customers]. -1 to
+ *   represent none being expanded.
+ */
 data class SelectCustomerState(
     val initialSelectedCustomer: CustomerModel?,
     val selectedCustomerOnDatabase: CustomerModel?,
     val customers: List<CustomerModel>,
-    /** Currently expanded customer index from [customers]. -1 to represent none being expanded. */
     val expandedCustomerIndex: Int,
     val isSelectedCustomerPreviewExpanded: Boolean
 ) {

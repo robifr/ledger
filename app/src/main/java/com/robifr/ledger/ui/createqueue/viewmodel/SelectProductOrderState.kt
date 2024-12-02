@@ -16,10 +16,10 @@
 
 package com.robifr.ledger.ui.createqueue.viewmodel
 
-data class SelectProductOrderState(
-    /** Selected product order indexes from [CreateQueueState.productOrders] */
-    val selectedIndexes: Set<Int>
-) {
+/**
+ * @property selectedIndexes Selected product order indexes from [CreateQueueState.productOrders]
+ */
+data class SelectProductOrderState(val selectedIndexes: Set<Int>) {
   val isContextualModeActive: Boolean
     get() = selectedIndexes.isNotEmpty()
 }

@@ -19,17 +19,18 @@ package com.robifr.ledger.ui.searchcustomer.viewmodel
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 
+/**
+ * @property isSelectionEnabled Whether the fragment should return
+ *   [SearchCustomerFragment.Request.SELECT_CUSTOMER] on back navigation.
+ * @property expandedCustomerIndex Currently expanded customer index from [customers]. -1 to
+ *   represent none being expanded.
+ */
 data class SearchCustomerState(
-    /**
-     * Whether the fragment should return [SearchCustomerFragment.Request.SELECT_CUSTOMER] on back
-     * navigation.
-     */
     val isSelectionEnabled: Boolean,
     val initialQuery: String,
     val query: String,
     val initialSelectedCustomerIds: List<Long>,
     val customers: List<CustomerModel>,
-    /** Currently expanded customer index from [customers]. -1 to represent none being expanded. */
     val expandedCustomerIndex: Int
 ) {
   val isNoResultFoundIllustrationVisible: Boolean

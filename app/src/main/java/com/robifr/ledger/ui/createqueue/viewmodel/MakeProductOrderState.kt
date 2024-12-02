@@ -20,16 +20,16 @@ import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import java.math.BigDecimal
 
+/**
+ * @property productOrderToEdit Reference to the original product order that will be edited. This
+ *   value shouldn't change during the editing process.
+ */
 data class MakeProductOrderState(
     val isDialogShown: Boolean,
     val product: ProductModel?,
     val formattedQuantity: String,
     val formattedDiscount: String,
     val totalPrice: BigDecimal,
-    /**
-     * Reference to the original product order that will be edited. This value shouldn't change
-     * during the editing process.
-     */
     val productOrderToEdit: ProductOrderModel?
 ) {
   val isSaveButtonEnabled: Boolean

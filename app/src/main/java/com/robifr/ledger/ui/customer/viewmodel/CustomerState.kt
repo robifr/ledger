@@ -19,9 +19,12 @@ package com.robifr.ledger.ui.customer.viewmodel
 import com.robifr.ledger.data.display.CustomerSortMethod
 import com.robifr.ledger.data.model.CustomerModel
 
+/**
+ * @property expandedCustomerIndex Currently expanded customer index from [customers]. -1 to
+ *   represent none being expanded.
+ */
 data class CustomerState(
     val customers: List<CustomerModel>,
-    /** Currently expanded customer index from [customers]. -1 to represent none being expanded. */
     val expandedCustomerIndex: Int,
     val sortMethod: CustomerSortMethod
 )
