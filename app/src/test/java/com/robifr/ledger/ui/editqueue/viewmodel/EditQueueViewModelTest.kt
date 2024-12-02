@@ -37,10 +37,13 @@ import java.time.ZoneId
 import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -115,6 +118,26 @@ class EditQueueViewModelTest(
             productOrders = _queueToEdit.productOrders),
         _viewModel.uiState.safeValue,
         "Match state with the retrieved data from the fragment arguments")
+  }
+
+  @Test
+  fun `on initialize with empty initial queue`() {
+    every { _queueRepository.selectById(null) } returns CompletableFuture.completedFuture(null)
+    assertThrows<NullPointerException>("Can't edit queue if there's no queue ID is provided") {
+      runTest {
+        _viewModel =
+            EditQueueViewModel(
+                dispatcher = _dispatcher,
+                queueRepository = _queueRepository,
+                customerRepository = mockk(),
+                productRepository = mockk(),
+                _savedStateHandle =
+                    SavedStateHandle().apply {
+                      set(EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key, null)
+                    })
+        advanceUntilIdle()
+      }
+    }
   }
 
   @ParameterizedTest

@@ -33,12 +33,15 @@ import io.mockk.verify
 import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -90,6 +93,23 @@ class EditCustomerViewModelTest(
             debt = _customerToEdit.debt),
         _viewModel.uiState.safeValue,
         "Match state with the retrieved data from the fragment arguments")
+  }
+
+  @Test
+  fun `on initialize with empty initial customer`() {
+    every { _customerRepository.selectById(null) } returns CompletableFuture.completedFuture(null)
+    assertThrows<NullPointerException>("Can't edit customer if there's no customer ID provided") {
+      runTest {
+        _viewModel =
+            EditCustomerViewModel(
+                _dispatcher,
+                _customerRepository,
+                SavedStateHandle().apply {
+                  set(EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key, null)
+                })
+        advanceUntilIdle()
+      }
+    }
   }
 
   @Test
