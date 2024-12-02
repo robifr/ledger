@@ -164,9 +164,9 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   private fun _onMakeProductOrderState(state: MakeProductOrderState) {
     if (state.isDialogShown) {
       if (state.productOrderToEdit != null) {
-        _inputProductOrder.makeProductOrder.openEditDialog(state.isSaveButtonEnabled)
+        _inputProductOrder.makeProductOrder.openEditDialog()
       } else {
-        _inputProductOrder.makeProductOrder.openCreateDialog()
+        _inputProductOrder.makeProductOrder.openCreateDialog(state.isAddButtonEnabled)
       }
     }
     _inputProductOrder.makeProductOrder.setInputtedProduct(state.product)

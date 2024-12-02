@@ -128,18 +128,18 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
             totalPrice, AppCompatDelegate.getApplicationLocales().toLanguageTags())
   }
 
-  fun openCreateDialog() {
+  fun openCreateDialog(isAddButtonEnabled: Boolean) {
     _dialogBinding.title.setText(R.string.createQueue_productOrders_makeProductOrders)
     _dialog.show()
     _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setText(R.string.action_add)
-    _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = true
+    _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = isAddButtonEnabled
   }
 
-  fun openEditDialog(isSaveButtonEnabled: Boolean) {
+  fun openEditDialog() {
     _dialogBinding.title.setText(R.string.createQueue_productOrders_editProductOrders)
     _dialog.show()
     _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setText(R.string.action_save)
-    _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = isSaveButtonEnabled
+    _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = true
   }
 }
 

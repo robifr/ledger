@@ -32,6 +32,6 @@ data class MakeProductOrderState(
     val totalPrice: BigDecimal,
     val productOrderToEdit: ProductOrderModel?
 ) {
-  val isSaveButtonEnabled: Boolean
+  val isAddButtonEnabled: Boolean
     get() = product != null
 }
