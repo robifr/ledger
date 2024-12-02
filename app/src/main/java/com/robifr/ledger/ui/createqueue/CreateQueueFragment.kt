@@ -30,6 +30,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
+import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.databinding.CreateQueueFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
@@ -196,6 +197,8 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
           createQueueViewModel
               .selectCustomerById(customerId)
               .observe(viewLifecycleOwner, createQueueViewModel::onCustomerChanged)
+        } else {
+          createQueueViewModel.onCustomerChanged(createQueueViewModel.uiState.safeValue.customer)
         }
       }
       null -> Unit
@@ -207,14 +210,19 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
       SelectProductFragment.Request.SELECT_PRODUCT -> {
         val productId: Long =
             result.getLong(SelectProductFragment.Result.SELECTED_PRODUCT_ID_LONG.key)
+        val onProductChanged: (ProductModel?) -> Unit = {
+          // The dialog should be opened first to avoid overwriting the product.
+          createQueueViewModel.makeProductOrderView.onDialogShown(
+              createQueueViewModel.makeProductOrderView.uiState.safeValue.productOrderToEdit)
+          createQueueViewModel.makeProductOrderView.onProductChanged(it)
+        }
         if (productId != 0L) {
           createQueueViewModel
               .selectProductById(productId)
-              .observe(
-                  viewLifecycleOwner, createQueueViewModel.makeProductOrderView::onProductChanged)
+              .observe(viewLifecycleOwner, onProductChanged)
+        } else {
+          onProductChanged(createQueueViewModel.makeProductOrderView.uiState.safeValue.product)
         }
-        createQueueViewModel.makeProductOrderView.onDialogShown(
-            createQueueViewModel.makeProductOrderView.uiState.safeValue.productOrderToEdit)
       }
       null -> Unit
     }
