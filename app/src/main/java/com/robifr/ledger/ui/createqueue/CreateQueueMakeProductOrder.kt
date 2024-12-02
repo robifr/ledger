@@ -132,14 +132,14 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
     _dialogBinding.title.setText(R.string.createQueue_productOrders_makeProductOrders)
     _dialog.show()
     _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setText(R.string.action_add)
-    _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setEnabled(true)
+    _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = true
   }
 
   fun openEditDialog(isSaveButtonEnabled: Boolean) {
     _dialogBinding.title.setText(R.string.createQueue_productOrders_editProductOrders)
     _dialog.show()
     _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setText(R.string.action_save)
-    _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setEnabled(isSaveButtonEnabled)
+    _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = isSaveButtonEnabled
   }
 }
 

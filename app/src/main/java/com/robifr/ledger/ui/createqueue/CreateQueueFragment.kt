@@ -179,11 +179,11 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     _inputProductOrder.setContextualMode(state.isContextualModeActive)
     _inputProductOrder.setSelectedProductOrderByIndexes(state.selectedIndexes)
     // Disable every possible irrelevant action when contextual mode is on.
-    fragmentBinding.customerLayout.setEnabled(!state.isContextualModeActive)
-    fragmentBinding.customer.setEnabled(!state.isContextualModeActive)
-    fragmentBinding.date.setEnabled(!state.isContextualModeActive)
-    fragmentBinding.status.setEnabled(!state.isContextualModeActive)
-    fragmentBinding.productOrder.addButton.setEnabled(!state.isContextualModeActive)
+    fragmentBinding.customerLayout.isEnabled = !state.isContextualModeActive
+    fragmentBinding.customer.isEnabled = !state.isContextualModeActive
+    fragmentBinding.date.isEnabled = !state.isContextualModeActive
+    fragmentBinding.status.isEnabled = !state.isContextualModeActive
+    fragmentBinding.productOrder.addButton.isEnabled = !state.isContextualModeActive
     _inputPaymentMethod.setEnabledButtons(
         if (!state.isContextualModeActive) {
           // Only enable the allowed buttons, preventing all buttons from being enabled

@@ -41,7 +41,9 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
   }
 
   override fun setGravity(@GravityInt gravity: Int) {
-    super.setGravity(gravity)
+    // For unknown reason, using property access here will crash the app.
+    // Same applies to any methods from Android when overridden.
+    @Suppress("UsePropertyAccessSyntax") super.setGravity(gravity)
     _originalGravity = gravity
   }
 
@@ -56,7 +58,7 @@ constructor(context: Context, attrs: AttributeSet? = null, @AttrRes defStyleAttr
     // of the text may get clipped when the text stops after scroll. This ensures that when
     // the text is long enough, it will use start/left gravity.
     if (width - paddingLeft - paddingRight < paint.measureText(text.toString())) {
-      super.setGravity(Gravity.START) // Don't set `_originalGravity` to the start.
+      super.gravity = Gravity.START // Don't set `_originalGravity` to the start.
     } else {
       gravity = _originalGravity
     }
