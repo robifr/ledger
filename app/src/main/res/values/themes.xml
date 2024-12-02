@@ -49,19 +49,19 @@
     <item name="textInputStyle">@style/TextInputLayout</item>
 
     <!--
-        Ripple color.
+      Ripple color.
 
-        Note: Each material widgets use their own ripple color.
-          Ensure to correctly set `app:rippleColor` on the widget.
+      Note: Each material widgets use their own ripple color.
+        Ensure to correctly set `app:rippleColor` on the widget.
     -->
     <item name="colorControlHighlight">@color/black_10</item>
 
     <!--
-        System status and navigation bar.
+      System status and navigation bar.
 
-        Note: Sometimes there's few screens where we have to manually set the color.
-          Like when contextual toolbar is shown, we match the status bar color to it,
-          or when bottom navigation is shown, we match the navigation bar color.
+      Note: Sometimes there's few screens where we have to manually set the color.
+        Like when contextual toolbar is shown, we match the status bar color to it,
+        or when bottom navigation is shown, we match the navigation bar color.
     -->
     <item name="android:statusBarColor">?android:colorBackground</item>
     <item name="android:windowLightStatusBar">true</item>

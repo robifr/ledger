@@ -49,7 +49,10 @@
         app:layout_constraintWidth_max="60dp"
         app:layout_constraintWidth_min="60dp" />
 
-    <!-- Set `clickable` and `focusable` to false to pass the click event to the card itself. -->
+    <!--
+      Set `android:clickable` and `android:focusable` to false
+      to pass the click event to the card itself.
+    -->
     <CheckBox
         android:id="@+id/checkbox"
         android:layout_width="0dp"
