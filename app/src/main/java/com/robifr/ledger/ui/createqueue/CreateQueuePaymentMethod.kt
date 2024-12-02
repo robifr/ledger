@@ -66,7 +66,6 @@ class CreateQueuePaymentMethod(private val _fragment: CreateQueueFragment) : Vie
         null,
         _fragment.requireContext().getDrawable(R.drawable.icon_check),
         null)
-    button.isChecked = true
   }
 
   private fun _unselectButton(button: MaterialButton) {
@@ -75,6 +74,5 @@ class CreateQueuePaymentMethod(private val _fragment: CreateQueueFragment) : Vie
         null,
         null,
         null)
-    button.isChecked = false
   }
 }
