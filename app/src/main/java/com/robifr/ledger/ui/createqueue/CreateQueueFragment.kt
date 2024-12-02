@@ -183,9 +183,15 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.customer.setEnabled(!state.isContextualModeActive)
     fragmentBinding.date.setEnabled(!state.isContextualModeActive)
     fragmentBinding.status.setEnabled(!state.isContextualModeActive)
-    fragmentBinding.paymentMethodCashButton.setEnabled(!state.isContextualModeActive)
-    fragmentBinding.paymentMethodAccountBalanceButton.setEnabled(!state.isContextualModeActive)
     fragmentBinding.productOrder.addButton.setEnabled(!state.isContextualModeActive)
+    _inputPaymentMethod.setEnabledButtons(
+        if (!state.isContextualModeActive) {
+          // Only enable the allowed buttons, preventing all buttons from being enabled
+          // when the contextual mode is switched.
+          createQueueViewModel.uiState.safeValue.allowedPaymentMethods
+        } else {
+          setOf()
+        })
   }
 
   private fun _onSelectCustomerResult(requestKey: String, result: Bundle) {
