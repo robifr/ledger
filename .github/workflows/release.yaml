@@ -44,7 +44,7 @@ jobs:
           key.storePassword:${{ secrets.KEYSTORE_STORE_PASSWORD }}
           EOF
 
-      # The generated keystore from the following command:
+      # Generate the base64-encoded keystore with:
       # $ base64 -i keystore.jks
       - name: Decode and create keystore.jks
         run: echo "${{ secrets.KEYSTORE_JKS_BASE64 }}" | base64 --decode > keystore.jks
