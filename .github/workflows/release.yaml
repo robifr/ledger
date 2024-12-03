@@ -1,0 +1,68 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yaml
+
+  release-apk:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-cleanup: 'always'
+          validate-wrappers: true
+
+      - name: Ensure gradlew is executable
+        run: chmod +x ./gradlew
+
+      - name: Generate keystore.properties
+        run: |
+          cat <<EOF > keystore.properties
+          key.alias:${{ secrets.KEYSTORE_KEY_ALIAS }}
+          key.password:${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          key.storeFile:${{ vars.KEYSTORE_STORE_FILE_PATH }}
+          key.storePassword:${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          EOF
+
+      # The generated keystore from the following command:
+      # $ base64 -i keystore.jks
+      - name: Decode and create keystore.jks
+        run: echo "${{ secrets.KEYSTORE_JKS_BASE64 }}" | base64 --decode > keystore.jks
+
+      - name: Build release APK
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Create GitHub release draft
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref_name }}
+        run: |
+          RELEASE_NOTES="## What's new:
+          Bug fixes and other improvements."
+          
+          gh release create "$tag" \
+            --repo="${GITHUB_REPOSITORY}" \
+            --title="v${tag#v}" \
+            --notes="${RELEASE_NOTES}" \
+            --draft \
+            ./app/build/outputs/apk/release/*.apk

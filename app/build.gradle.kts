@@ -15,6 +15,7 @@
  */
 
 import com.android.build.gradle.internal.tasks.factory.dependsOn
+import java.util.Properties
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
@@ -38,6 +39,7 @@ android {
     versionCode = 1
     versionName = "1.1.4"
     multiDexEnabled = true
+    setProperty("archivesBaseName", "ledger-v$versionName")
 
     ksp {
       arg("room.schemaLocation", "${projectDir}/schemas")
@@ -46,10 +48,24 @@ android {
     }
   }
 
+  signingConfigs {
+    create("release") {
+      val file: File = rootProject.file("keystore.properties")
+      if (file.exists()) {
+        val properties: Properties = Properties().apply { load(file.inputStream()) }
+        keyAlias = properties.getProperty("key.alias")
+        keyPassword = properties.getProperty("key.password")
+        storeFile = file("${rootDir}/${properties.getProperty("key.storeFile")}")
+        storePassword = properties.getProperty("key.storePassword")
+      }
+    }
+  }
+
   buildTypes {
     release {
       isMinifyEnabled = true
       manifestPlaceholders["app_name"] = "@string/appName"
+      signingConfig = signingConfigs.getByName("release")
       proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
     }
 
