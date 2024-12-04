@@ -151,11 +151,7 @@ class CustomerViewModelTest(private val _dispatcher: TestDispatcher) {
             _firstCustomer.copy(balance = _firstCustomer.balance + 100L),
             _secondCustomer,
             _thirdCustomer)
-    every { _customerRepository.notifyModelUpdated(any()) } answers
-        {
-          _customerChangedListenerCaptor.captured.onModelUpdated(updatedCustomers)
-        }
-    _customerRepository.notifyModelUpdated(updatedCustomers)
+    _customerChangedListenerCaptor.captured.onModelUpdated(updatedCustomers)
     assertEquals(
         updatedCustomers,
         _viewModel.uiState.safeValue.customers,

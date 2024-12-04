@@ -161,11 +161,7 @@ class SearchCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
     advanceUntilIdle()
 
     val updatedCustomer: CustomerModel = customer.copy(balance = customer.balance + 100L)
-    every { _customerRepository.notifyModelUpdated(any()) } answers
-        {
-          _customerChangedListenerCaptor.captured.onModelUpdated(listOf(updatedCustomer))
-        }
-    _customerRepository.notifyModelUpdated(listOf(updatedCustomer))
+    _customerChangedListenerCaptor.captured.onModelUpdated(listOf(updatedCustomer))
     assertEquals(
         listOf(updatedCustomer),
         _viewModel.uiState.safeValue.customers,

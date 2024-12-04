@@ -147,11 +147,7 @@ class ProductViewModelTest(private val _dispatcher: TestDispatcher) {
     val updatedProducts: List<ProductModel> =
         listOf(
             _firstProduct.copy(price = _firstProduct.price + 100L), _secondProduct, _thirdProduct)
-    every { _productRepository.notifyModelUpdated(any()) } answers
-        {
-          _productChangedListenerCaptor.captured.onModelUpdated(updatedProducts)
-        }
-    _productRepository.notifyModelUpdated(updatedProducts)
+    _productChangedListenerCaptor.captured.onModelUpdated(updatedProducts)
     assertEquals(
         updatedProducts,
         _viewModel.uiState.safeValue.products,

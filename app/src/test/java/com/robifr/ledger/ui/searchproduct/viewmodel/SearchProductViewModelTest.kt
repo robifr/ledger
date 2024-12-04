@@ -160,11 +160,7 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
     advanceUntilIdle()
 
     val updatedProduct: ProductModel = product.copy(price = product.price + 100L)
-    every { _productRepository.notifyModelUpdated(any()) } answers
-        {
-          _productChangedListenerCaptor.captured.onModelUpdated(listOf(updatedProduct))
-        }
-    _productRepository.notifyModelUpdated(listOf(updatedProduct))
+    _productChangedListenerCaptor.captured.onModelUpdated(listOf(updatedProduct))
     assertEquals(
         listOf(updatedProduct),
         _viewModel.uiState.safeValue.products,

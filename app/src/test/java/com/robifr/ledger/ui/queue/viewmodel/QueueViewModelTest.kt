@@ -214,11 +214,7 @@ class QueueViewModelTest(private val _dispatcher: TestDispatcher) {
   fun `on sync queue from database`() {
     val updatedQueues: List<QueueModel> =
         listOf(_firstQueue.copy(status = QueueModel.Status.COMPLETED), _secondQueue, _thirdQueue)
-    every { _queueRepository.notifyModelUpdated(any()) } answers
-        {
-          _queueChangedListenerCaptor.captured.onModelUpdated(updatedQueues)
-        }
-    _queueRepository.notifyModelUpdated(updatedQueues)
+    _queueChangedListenerCaptor.captured.onModelUpdated(updatedQueues)
     assertEquals(
         updatedQueues,
         _viewModel.uiState.safeValue.queues,
@@ -229,11 +225,7 @@ class QueueViewModelTest(private val _dispatcher: TestDispatcher) {
   fun `on sync customer from database`() {
     val updatedCustomer: CustomerModel? =
         _firstQueue.customer?.let { it.copy(balance = it.balance + 100L) }
-    every { _customerRepository.notifyModelUpdated(any()) } answers
-        {
-          _customerChangedListenerCaptor.captured.onModelUpdated(listOfNotNull(updatedCustomer))
-        }
-    _customerRepository.notifyModelUpdated(listOfNotNull(updatedCustomer))
+    _customerChangedListenerCaptor.captured.onModelUpdated(listOfNotNull(updatedCustomer))
     assertEquals(
         listOf(_firstQueue.copy(customer = updatedCustomer), _secondQueue, _thirdQueue),
         _viewModel.uiState.safeValue.queues,
