@@ -27,7 +27,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.robifr.ledger.R
-import com.robifr.ledger.local.ColumnConverter.InstantConverter
+import com.robifr.ledger.local.InstantConverter
 import java.math.BigDecimal
 import java.time.Instant
 import kotlinx.parcelize.Parcelize
@@ -59,7 +59,7 @@ data class QueueModel(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") override val id: Long? = null,
     @ColumnInfo(name = "customer_id") val customerId: Long? = null,
     @ColumnInfo(name = "status") val status: Status,
-    @field:TypeConverters(InstantConverter::class) @ColumnInfo(name = "date") val date: Instant,
+    @ColumnInfo(name = "date") @field:TypeConverters(InstantConverter::class) val date: Instant,
     @ColumnInfo(name = "payment_method") val paymentMethod: PaymentMethod,
     @Ignore val customer: CustomerModel? = null,
     @Ignore val productOrders: List<ProductOrderModel> = listOf()

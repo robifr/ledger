@@ -24,7 +24,7 @@ import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
-import com.robifr.ledger.local.ColumnConverter.BigDecimalConverter
+import com.robifr.ledger.local.BigDecimalConverter
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlinx.parcelize.Parcelize
@@ -68,8 +68,8 @@ data class ProductOrderModel(
     @ColumnInfo(name = "product_price") val productPrice: Long? = null,
     @ColumnInfo(name = "quantity") val quantity: Double = 0.0,
     @ColumnInfo(name = "discount") val discount: Long = 0L,
-    @field:TypeConverters(BigDecimalConverter::class)
     @ColumnInfo(name = "total_price")
+    @field:TypeConverters(BigDecimalConverter::class)
     val totalPrice: BigDecimal = calculateTotalPrice(productPrice, quantity, discount)
 ) : Model, Parcelable {
   @Ignore fun withId(id: Long?): ProductOrderModel = copy(id = id)
