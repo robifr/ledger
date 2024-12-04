@@ -95,24 +95,25 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
   private fun `_on dialog closed with unbounded balance range cases`(): Array<Array<Any>> =
       arrayOf(
-          arrayOf("", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
-          arrayOf("$100", "", listOf(_secondCustomer, _thirdCustomer)),
-          arrayOf("", "$100", listOf(_firstCustomer, _secondCustomer)))
+          arrayOf("$0", "$0", "", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
+          arrayOf("$0", "$0", "$100", "", listOf(_secondCustomer, _thirdCustomer)),
+          arrayOf("$0", "$0", "", "$100", listOf(_firstCustomer, _secondCustomer)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with unbounded balance range cases")
   fun `on dialog closed with unbounded balance range`(
-      formattedMinBalance: String,
-      formattedMaxBalance: String,
+      oldFormattedMinBalance: String,
+      oldFormattedMaxBalance: String,
+      newFormattedMinBalance: String,
+      newFormattedMaxBalance: String,
       filteredCustomers: List<CustomerModel>
   ) {
-    // Simulate when the previous filter has any range applied.
-    _viewModel.onMinBalanceTextChanged("$0")
-    _viewModel.onMaxBalanceTextChanged("$0")
+    _viewModel.onMinBalanceTextChanged(oldFormattedMinBalance)
+    _viewModel.onMaxBalanceTextChanged(oldFormattedMaxBalance)
     _viewModel.onDialogClosed()
 
-    _viewModel.onMinBalanceTextChanged(formattedMinBalance)
-    _viewModel.onMaxBalanceTextChanged(formattedMaxBalance)
+    _viewModel.onMinBalanceTextChanged(newFormattedMinBalance)
+    _viewModel.onMaxBalanceTextChanged(newFormattedMaxBalance)
 
     _viewModel.onDialogClosed()
     assertEquals(
@@ -123,26 +124,27 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
   private fun `_on dialog closed with unbounded debt range cases`(): Array<Array<Any>> =
       arrayOf(
-          arrayOf("", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
-          arrayOf("-$100", "", listOf(_firstCustomer, _secondCustomer)),
-          arrayOf("$100", "", listOf(_firstCustomer, _secondCustomer)),
-          arrayOf("", "-$100", listOf(_secondCustomer, _thirdCustomer)),
-          arrayOf("", "$100", listOf(_secondCustomer, _thirdCustomer)))
+          arrayOf("$0", "$0", "", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
+          arrayOf("$0", "$0", "-$100", "", listOf(_firstCustomer, _secondCustomer)),
+          arrayOf("$0", "$0", "$100", "", listOf(_firstCustomer, _secondCustomer)),
+          arrayOf("$0", "$0", "", "-$100", listOf(_secondCustomer, _thirdCustomer)),
+          arrayOf("$0", "$0", "", "$100", listOf(_secondCustomer, _thirdCustomer)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with unbounded debt range cases")
   fun `on dialog closed with unbounded debt range`(
-      formattedMinDebt: String,
-      formattedMaxDebt: String,
+      oldFormattedMinDebt: String,
+      oldFormattedMaxDebt: String,
+      newFormattedMinDebt: String,
+      newFormattedMaxDebt: String,
       filteredCustomers: List<CustomerModel>
   ) {
-    // Simulate when the previous filter has any range applied.
-    _viewModel.onMinDebtTextChanged("$0")
-    _viewModel.onMaxDebtTextChanged("$0")
+    _viewModel.onMinDebtTextChanged(oldFormattedMinDebt)
+    _viewModel.onMaxDebtTextChanged(oldFormattedMaxDebt)
     _viewModel.onDialogClosed()
 
-    _viewModel.onMinDebtTextChanged(formattedMinDebt)
-    _viewModel.onMaxDebtTextChanged(formattedMaxDebt)
+    _viewModel.onMinDebtTextChanged(newFormattedMinDebt)
+    _viewModel.onMaxDebtTextChanged(newFormattedMaxDebt)
 
     _viewModel.onDialogClosed()
     assertEquals(
