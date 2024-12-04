@@ -162,24 +162,25 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   private fun `_on dialog closed with unbounded grand total price range cases`():
       Array<Array<Any>> =
       arrayOf(
-          arrayOf("", "", listOf(_firstQueue, _secondQueue, _thirdQueue)),
-          arrayOf("$200", "", listOf(_secondQueue, _thirdQueue)),
-          arrayOf("", "$200", listOf(_firstQueue, _secondQueue)))
+          arrayOf("$0", "$0", "", "", listOf(_firstQueue, _secondQueue, _thirdQueue)),
+          arrayOf("$0", "$0", "$200", "", listOf(_secondQueue, _thirdQueue)),
+          arrayOf("$0", "$0", "", "$200", listOf(_firstQueue, _secondQueue)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with unbounded grand total price range cases")
   fun `on dialog closed with unbounded grand total price range`(
-      formattedMinTotalPrice: String,
-      formattedMaxTotalPrice: String,
+      oldFormattedMinTotalPrice: String,
+      oldFormattedMaxTotalPrice: String,
+      newFormattedMinTotalPrice: String,
+      newFormattedMaxTotalPrice: String,
       filteredQueues: List<QueueModel>
   ) {
-    // Simulate when the previous filter has any range applied.
-    _viewModel.onMinTotalPriceTextChanged("$0")
-    _viewModel.onMaxTotalPriceTextChanged("$0")
+    _viewModel.onMinTotalPriceTextChanged(oldFormattedMinTotalPrice)
+    _viewModel.onMaxTotalPriceTextChanged(oldFormattedMaxTotalPrice)
     _viewModel.onDialogClosed()
 
-    _viewModel.onMinTotalPriceTextChanged(formattedMinTotalPrice)
-    _viewModel.onMaxTotalPriceTextChanged(formattedMaxTotalPrice)
+    _viewModel.onMinTotalPriceTextChanged(newFormattedMinTotalPrice)
+    _viewModel.onMaxTotalPriceTextChanged(newFormattedMaxTotalPrice)
 
     _viewModel.onDialogClosed()
     assertEquals(

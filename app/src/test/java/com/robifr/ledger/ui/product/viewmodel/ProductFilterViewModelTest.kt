@@ -86,24 +86,25 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
   private fun `_on dialog closed with unbounded price range cases`(): Array<Array<Any>> =
       arrayOf(
-          arrayOf("", "", listOf(_firstProduct, _secondProduct, _thirdProduct)),
-          arrayOf("$200", "", listOf(_secondProduct, _thirdProduct)),
-          arrayOf("", "$200", listOf(_firstProduct, _secondProduct)))
+          arrayOf("$0", "$0", "", "", listOf(_firstProduct, _secondProduct, _thirdProduct)),
+          arrayOf("$0", "$0", "$200", "", listOf(_secondProduct, _thirdProduct)),
+          arrayOf("$0", "$0", "", "$200", listOf(_firstProduct, _secondProduct)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with unbounded price range cases")
   fun `on dialog closed with unbounded price range`(
-      formattedMinPrice: String,
-      formattedMaxPrice: String,
+      oldFormattedMinPrice: String,
+      oldFormattedMaxPrice: String,
+      newFormattedMinPrice: String,
+      newFormattedMaxPrice: String,
       filteredProducts: List<ProductModel>
   ) {
-    // Simulate when the previous filter has any range applied.
-    _viewModel.onMinPriceTextChanged("$0")
-    _viewModel.onMaxPriceTextChanged("$0")
+    _viewModel.onMinPriceTextChanged(oldFormattedMinPrice)
+    _viewModel.onMaxPriceTextChanged(oldFormattedMaxPrice)
     _viewModel.onDialogClosed()
 
-    _viewModel.onMinPriceTextChanged(formattedMinPrice)
-    _viewModel.onMaxPriceTextChanged(formattedMaxPrice)
+    _viewModel.onMinPriceTextChanged(newFormattedMinPrice)
+    _viewModel.onMaxPriceTextChanged(newFormattedMaxPrice)
 
     _viewModel.onDialogClosed()
     assertEquals(
