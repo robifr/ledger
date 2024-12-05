@@ -16,19 +16,14 @@
 
 package com.robifr.ledger.repository
 
+import android.content.Context
 import android.content.SharedPreferences
 import com.robifr.ledger.data.display.LanguageOption
-import com.robifr.ledger.di.IoDispatcher
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
-@Singleton
-class SettingsRepository
-@Inject
-constructor(
-    @IoDispatcher private val _dispatcher: CoroutineDispatcher,
+class SettingsRepository(
+    private val _dispatcher: CoroutineDispatcher,
     private val _sharedPreferences: SharedPreferences
 ) {
   private val _KEY_LANGUAGE_USED = "language_used"
@@ -44,4 +39,19 @@ constructor(
       withContext(_dispatcher) {
         _sharedPreferences.edit().putString(_KEY_LANGUAGE_USED, language.languageTag).commit()
       }
+
+  companion object {
+    @Volatile private var _instance: SettingsRepository? = null
+
+    @Synchronized
+    fun instance(context: Context, dispatcher: CoroutineDispatcher): SettingsRepository =
+        _instance
+            ?: SettingsRepository(dispatcher, _settingsPreferences(context)).apply {
+              _instance = this
+            }
+
+    private fun _settingsPreferences(context: Context): SharedPreferences =
+        context.applicationContext.getSharedPreferences(
+            "com.robifr.ledger.settingsprefs", Context.MODE_PRIVATE)
+  }
 }

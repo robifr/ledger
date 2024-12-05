@@ -17,7 +17,6 @@
 package com.robifr.ledger.di
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ProductOrderRepository
 import com.robifr.ledger.repository.ProductRepository
@@ -52,7 +51,7 @@ class RepositoryModule {
 
   @Provides
   fun provideSettingsRepository(
-      @IoDispatcher dispatcher: CoroutineDispatcher,
-      sharedPrefs: SharedPreferences
-  ): SettingsRepository = SettingsRepository(dispatcher, sharedPrefs)
+      @ApplicationContext context: Context,
+      @IoDispatcher dispatcher: CoroutineDispatcher
+  ): SettingsRepository = SettingsRepository.instance(context.applicationContext, dispatcher)
 }
