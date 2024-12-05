@@ -30,7 +30,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.future.await
 
 @HiltViewModel
 class DashboardViewModel
@@ -83,11 +82,11 @@ constructor(
   private suspend fun _selectAllQueuesInRange(
       startDate: ZonedDateTime,
       endDate: ZonedDateTime
-  ): List<QueueModel> = _queueRepository.selectAllInRange(startDate, endDate).await()
+  ): List<QueueModel> = _queueRepository.selectAllInRange(startDate, endDate)
 
   private suspend fun _selectAllCustomersWithBalance(): List<CustomerBalanceInfo> =
-      _customerRepository.selectAllInfoWithBalance().await()
+      _customerRepository.selectAllInfoWithBalance()
 
   private suspend fun _selectAllCustomersWithDebt(): List<CustomerDebtInfo> =
-      _customerRepository.selectAllInfoWithDebt().await()
+      _customerRepository.selectAllInfoWithDebt()
 }

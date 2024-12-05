@@ -38,7 +38,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -101,8 +100,8 @@ constructor(
     _searchJob =
         viewModelScope.launch(_dispatcher) {
           delay(300L)
-          _productRepository.search(query).await().let { products: List<ProductModel> ->
-            _uiState.postValue(_uiState.safeValue.copy(query = query, products = products))
+          _productRepository.search(query).let {
+            _uiState.postValue(_uiState.safeValue.copy(query = query, products = it))
             _recyclerAdapterState.postValue(RecyclerAdapterState.DataSetChanged)
           }
         }
@@ -127,7 +126,7 @@ constructor(
 
   fun onDeleteProduct(product: ProductModel) {
     viewModelScope.launch(_dispatcher) {
-      _productRepository.delete(product).await()?.also { effected ->
+      _productRepository.delete(product).also { effected ->
         _snackbarState.postValue(
             SnackbarState(
                 if (effected > 0) {

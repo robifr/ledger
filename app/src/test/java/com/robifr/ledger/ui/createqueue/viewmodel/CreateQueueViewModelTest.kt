@@ -29,12 +29,12 @@ import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.repository.QueueRepository
 import io.mockk.clearAllMocks
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.Instant
 import java.time.ZoneId
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -244,10 +244,10 @@ class CreateQueueViewModelTest(
   fun `on save with empty product orders`() {
     _viewModel.onProductOrdersChanged(listOf())
 
-    every { _queueRepository.add(any()) } returns CompletableFuture.completedFuture(0L)
+    coEvery { _queueRepository.add(any()) } returns 0L
     _viewModel.onSave()
     assertDoesNotThrow("Prevent save for an empty product orders") {
-      verify(exactly = 0) { _queueRepository.add(any()) }
+      coVerify(exactly = 0) { _queueRepository.add(any()) }
     }
   }
 
@@ -260,7 +260,7 @@ class CreateQueueViewModelTest(
     _viewModel.onPaymentMethodChanged(_queue.paymentMethod)
     _viewModel.onProductOrdersChanged(_queue.productOrders)
 
-    every { _queueRepository.add(any()) } returns CompletableFuture.completedFuture(createdQueueId)
+    coEvery { _queueRepository.add(any()) } returns createdQueueId
     _viewModel.onSave()
     if (createdQueueId == 0L) {
       assertDoesNotThrow("Don't return result for a failed save") {
@@ -276,8 +276,7 @@ class CreateQueueViewModelTest(
 
   @Test
   fun `select customer by id`() {
-    every { _customerRepository.selectById(any<Long>()) } returns
-        CompletableFuture.completedFuture(_customer)
+    coEvery { _customerRepository.selectById(any<Long>()) } returns _customer
     assertEquals(
         _customer,
         _viewModel.selectCustomerById(_customer.id).value,
@@ -286,8 +285,7 @@ class CreateQueueViewModelTest(
 
   @Test
   fun `select product by id`() {
-    every { _productRepository.selectById(any<Long>()) } returns
-        CompletableFuture.completedFuture(_product)
+    coEvery { _productRepository.selectById(any<Long>()) } returns _product
     assertEquals(
         _product,
         _viewModel.selectProductById(_product.id).value,

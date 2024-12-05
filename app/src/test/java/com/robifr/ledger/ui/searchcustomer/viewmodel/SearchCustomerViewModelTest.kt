@@ -27,12 +27,13 @@ import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -100,13 +101,13 @@ class SearchCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
 
   @Test
   fun `on search with fast input`() = runTest {
-    every { _customerRepository.search(any()) } returns CompletableFuture.completedFuture(listOf())
+    coEvery { _customerRepository.search(any()) } returns listOf()
     _viewModel.onSearch("A")
     _viewModel.onSearch("B")
     _viewModel.onSearch("C")
     advanceUntilIdle()
     assertDoesNotThrow("Prevent search from triggering multiple times when typing quickly") {
-      verify(atMost = 1) { _customerRepository.search(any()) }
+      coVerify(atMost = 1) { _customerRepository.search(any()) }
     }
   }
 
@@ -119,7 +120,7 @@ class SearchCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
         } else {
           listOf()
         }
-    every { _customerRepository.search(query) } returns CompletableFuture.completedFuture(customers)
+    coEvery { _customerRepository.search(query) } returns customers
     _viewModel.onSearch(query)
     advanceUntilIdle()
     assertEquals(
@@ -155,8 +156,7 @@ class SearchCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
   @Test
   fun `on sync customer from database`() = runTest {
     val customer: CustomerModel = CustomerModel(id = 111L, name = "Amy", balance = 100L)
-    every { _customerRepository.search(any()) } returns
-        CompletableFuture.completedFuture(listOf(customer))
+    coEvery { _customerRepository.search(any()) } returns listOf(customer)
     _viewModel.onSearch("Amy")
     advanceUntilIdle()
 

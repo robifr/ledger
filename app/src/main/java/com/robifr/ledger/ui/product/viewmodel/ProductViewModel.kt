@@ -37,7 +37,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -135,7 +134,7 @@ constructor(
 
   fun onDeleteProduct(product: ProductModel) {
     viewModelScope.launch(_dispatcher) {
-      _productRepository.delete(product).await()?.let { effected ->
+      _productRepository.delete(product).let { effected ->
         _snackbarState.postValue(
             SnackbarState(
                 if (effected > 0) {
@@ -147,8 +146,7 @@ constructor(
     }
   }
 
-  private suspend fun _selectAllProducts(): List<ProductModel> =
-      _productRepository.selectAll().await()
+  private suspend fun _selectAllProducts(): List<ProductModel> = _productRepository.selectAll()
 
   private fun _loadAllProducts() {
     viewModelScope.launch(_dispatcher) {

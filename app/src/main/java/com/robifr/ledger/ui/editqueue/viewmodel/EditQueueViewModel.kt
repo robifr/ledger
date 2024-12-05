@@ -36,7 +36,6 @@ import java.time.ZoneId
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -123,15 +122,15 @@ constructor(
   }
 
   private suspend fun _selectQueueById(queueId: Long?): QueueModel? =
-      _queueRepository.selectById(queueId).await().also { queue: QueueModel? ->
-        if (queue == null) {
+      _queueRepository.selectById(queueId).also {
+        if (it == null) {
           _snackbarState.postValue(
               SnackbarState(StringResource(R.string.createQueue_fetchQueueError)))
         }
       }
 
   private suspend fun _updateQueue(queue: QueueModel) {
-    _queueRepository.update(queue).await()?.let { effected ->
+    _queueRepository.update(queue).let { effected ->
       if (effected > 0) _editResultState.postValue(EditQueueResultState(queue.id))
       _snackbarState.postValue(
           SnackbarState(

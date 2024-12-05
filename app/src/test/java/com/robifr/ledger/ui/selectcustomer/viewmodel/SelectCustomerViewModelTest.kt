@@ -27,12 +27,12 @@ import com.robifr.ledger.ui.selectcustomer.SelectCustomerFragment
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -63,10 +63,9 @@ class SelectCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
     every {
       _customerRepository.addModelChangedListener(capture(_customerChangedListenerCaptor))
     } just Runs
-    every { _customerRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(_firstCustomer, _secondCustomer, _thirdCustomer))
-    every { _customerRepository.selectById(any<Long>()) } returns
-        CompletableFuture.completedFuture(_firstCustomer)
+    coEvery { _customerRepository.selectAll() } returns
+        listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
+    coEvery { _customerRepository.selectById(any<Long>()) } returns _firstCustomer
     _viewModel = SelectCustomerViewModel(SavedStateHandle(), _dispatcher, _customerRepository)
   }
 
@@ -97,8 +96,8 @@ class SelectCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
     val firstCustomer: CustomerModel = _firstCustomer.copy(name = "Cal")
     val secondCustomer: CustomerModel = _secondCustomer.copy(name = "Amy")
     val thirdCustomer: CustomerModel = _thirdCustomer.copy(name = "Ben")
-    every { _customerRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(firstCustomer, secondCustomer, thirdCustomer))
+    coEvery { _customerRepository.selectAll() } returns
+        listOf(firstCustomer, secondCustomer, thirdCustomer)
     _viewModel = SelectCustomerViewModel(SavedStateHandle(), _dispatcher, _customerRepository)
     assertEquals(
         listOf(secondCustomer, thirdCustomer, firstCustomer),

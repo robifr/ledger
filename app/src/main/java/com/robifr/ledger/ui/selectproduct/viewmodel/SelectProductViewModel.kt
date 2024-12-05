@@ -35,7 +35,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -120,14 +119,13 @@ constructor(
     _recyclerAdapterState.setValue(RecyclerAdapterState.ItemChanged(0))
   }
 
-  private suspend fun _selectAllProducts(): List<ProductModel> =
-      _productRepository.selectAll().await()
+  private suspend fun _selectAllProducts(): List<ProductModel> = _productRepository.selectAll()
 
   private fun _loadAllProducts() {
     viewModelScope.launch(_dispatcher) {
       val products: List<ProductModel> = _selectAllProducts()
       val selectedProductOnDb: ProductModel? =
-          _productRepository.selectById(_uiState.safeValue.initialSelectedProduct?.id).await()
+          _productRepository.selectById(_uiState.safeValue.initialSelectedProduct?.id)
       withContext(Dispatchers.Main) {
         _onProductsChanged(products)
         _onSelectedProductOnDatabaseChanged(selectedProductOnDb)

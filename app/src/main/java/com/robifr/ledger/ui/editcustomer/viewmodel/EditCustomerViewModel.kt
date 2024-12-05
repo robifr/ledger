@@ -33,7 +33,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -74,15 +73,15 @@ constructor(
       }
 
   private suspend fun _selectCustomerById(customerId: Long?): CustomerModel? =
-      _customerRepository.selectById(customerId).await().also { customer: CustomerModel? ->
-        if (customer == null) {
+      _customerRepository.selectById(customerId).also {
+        if (it == null) {
           _snackbarState.postValue(
               SnackbarState(StringResource(R.string.createCustomer_fetchCustomerError)))
         }
       }
 
   private suspend fun _updateCustomer(customer: CustomerModel) {
-    _customerRepository.update(customer).await()?.let { effected ->
+    _customerRepository.update(customer).let { effected ->
       if (effected > 0) _editResultState.postValue(EditCustomerResultState(customer.id))
       _snackbarState.postValue(
           SnackbarState(

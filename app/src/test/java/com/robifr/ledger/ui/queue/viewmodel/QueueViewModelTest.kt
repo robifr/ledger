@@ -31,6 +31,7 @@ import com.robifr.ledger.repository.QueueRepository
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -40,7 +41,6 @@ import io.mockk.verify
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -104,8 +104,7 @@ class QueueViewModelTest(private val _dispatcher: TestDispatcher) {
       _customerRepository.addModelChangedListener(capture(_customerChangedListenerCaptor))
     } just Runs
     every { Environment.isExternalStorageManager() } returns true
-    every { _queueRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(_firstQueue, _secondQueue, _thirdQueue))
+    coEvery { _queueRepository.selectAll() } returns listOf(_firstQueue, _secondQueue, _thirdQueue)
     _viewModel =
         QueueViewModel(
             _dispatcher = _dispatcher,
@@ -130,8 +129,7 @@ class QueueViewModelTest(private val _dispatcher: TestDispatcher) {
 
   @Test
   fun `on initialize with unordered date`() {
-    every { _queueRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(_thirdQueue, _firstQueue, _secondQueue))
+    coEvery { _queueRepository.selectAll() } returns listOf(_thirdQueue, _firstQueue, _secondQueue)
     _viewModel =
         QueueViewModel(
             _dispatcher = _dispatcher,

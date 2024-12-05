@@ -26,12 +26,12 @@ import com.robifr.ledger.repository.ModelSyncListener
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -63,15 +63,15 @@ class CustomerViewModelTest(private val _dispatcher: TestDispatcher) {
     every {
       _customerRepository.addModelChangedListener(capture(_customerChangedListenerCaptor))
     } just Runs
-    every { _customerRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(_firstCustomer, _secondCustomer, _thirdCustomer))
+    coEvery { _customerRepository.selectAll() } returns
+        listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
     _viewModel = CustomerViewModel(_dispatcher, _customerRepository)
   }
 
   @Test
   fun `on initialize with unordered name`() {
-    every { _customerRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(_thirdCustomer, _firstCustomer, _secondCustomer))
+    coEvery { _customerRepository.selectAll() } returns
+        listOf(_thirdCustomer, _firstCustomer, _secondCustomer)
     _viewModel = CustomerViewModel(_dispatcher, _customerRepository)
     assertEquals(
         listOf(_firstCustomer, _secondCustomer, _thirdCustomer),

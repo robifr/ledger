@@ -35,7 +35,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -76,15 +75,15 @@ constructor(
       }
 
   private suspend fun _selectProductById(productId: Long?): ProductModel? =
-      _productRepository.selectById(productId).await().also { product: ProductModel? ->
-        if (product == null) {
+      _productRepository.selectById(productId).also {
+        if (it == null) {
           _snackbarState.postValue(
               SnackbarState(StringResource(R.string.createProduct_fetchProductError)))
         }
       }
 
   private suspend fun _updateProduct(product: ProductModel) {
-    _productRepository.update(product).await()?.let { effected ->
+    _productRepository.update(product).let { effected ->
       if (effected > 0) _editResultState.postValue(EditProductResultState(product.id))
       _snackbarState.postValue(
           SnackbarState(

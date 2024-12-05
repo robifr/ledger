@@ -56,8 +56,6 @@ abstract class LocalDatabase : RoomDatabase() {
   companion object {
     @Volatile private var _instance: LocalDatabase? = null
 
-    // TODO: Remove annotation after Kotlin migration.
-    @JvmStatic
     @Synchronized
     fun instance(context: Context): LocalDatabase =
         _instance

@@ -29,12 +29,12 @@ import com.robifr.ledger.repository.QueueRepository
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueState
 import com.robifr.ledger.ui.editqueue.EditQueueFragment
 import io.mockk.clearAllMocks
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.Instant
 import java.time.ZoneId
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -86,9 +86,8 @@ class EditQueueViewModelTest(
     _queueRepository = mockk()
     _resultStateObserver = mockk(relaxed = true)
 
-    every { _queueRepository.add(any()) } returns CompletableFuture.completedFuture(0L)
-    every { _queueRepository.selectById(_queueToEdit.id) } returns
-        CompletableFuture.completedFuture(_queueToEdit)
+    coEvery { _queueRepository.add(any()) } returns 0L
+    coEvery { _queueRepository.selectById(_queueToEdit.id) } returns _queueToEdit
     _viewModel =
         EditQueueViewModel(
             dispatcher = _dispatcher,
@@ -122,7 +121,7 @@ class EditQueueViewModelTest(
 
   @Test
   fun `on initialize with empty initial queue`() {
-    every { _queueRepository.selectById(null) } returns CompletableFuture.completedFuture(null)
+    coEvery { _queueRepository.selectById(null) } returns null
     assertThrows<NullPointerException>("Can't edit queue if there's no queue ID is provided") {
       runTest {
         _viewModel =
@@ -148,8 +147,7 @@ class EditQueueViewModelTest(
     val initialCustomer: CustomerModel =
         _customer.copy(id = if (isCustomerChanged) 222L else _customer.id, balance = 0L)
     val initialQueue: QueueModel = _queueToEdit.copy(customer = initialCustomer)
-    every { _queueRepository.selectById(_queueToEdit.id) } returns
-        CompletableFuture.completedFuture(initialQueue)
+    coEvery { _queueRepository.selectById(_queueToEdit.id) } returns initialQueue
     _viewModel =
         EditQueueViewModel(
             dispatcher = _dispatcher,
@@ -220,28 +218,28 @@ class EditQueueViewModelTest(
   fun `on save with empty product orders`() {
     _viewModel.onProductOrdersChanged(listOf())
 
-    every { _queueRepository.update(any()) } returns CompletableFuture.completedFuture(0)
+    coEvery { _queueRepository.update(any()) } returns 0
     _viewModel.onSave()
     assertDoesNotThrow("Prevent save for an empty product orders") {
-      verify(exactly = 0) { _queueRepository.update(any()) }
+      coVerify(exactly = 0) { _queueRepository.update(any()) }
     }
   }
 
   @Test
   fun `on save with edited queue result update operation`() {
     // Prevent save with add operation (parent class behavior) instead of update operation.
-    every { _queueRepository.update(any()) } returns CompletableFuture.completedFuture(0)
+    coEvery { _queueRepository.update(any()) } returns 0
     _viewModel.onSave()
     assertDoesNotThrow("Editing a queue shouldn't result in adding new data") {
-      verify(exactly = 0) { _queueRepository.add(any()) }
-      verify(exactly = 1) { _queueRepository.update(any()) }
+      coVerify(exactly = 0) { _queueRepository.add(any()) }
+      coVerify(exactly = 1) { _queueRepository.update(any()) }
     }
   }
 
   @ParameterizedTest
   @ValueSource(ints = [0, 1])
   fun `on save with edited queue`(effectedRows: Int) {
-    every { _queueRepository.update(any()) } returns CompletableFuture.completedFuture(effectedRows)
+    coEvery { _queueRepository.update(any()) } returns effectedRows
     _viewModel.onSave()
     if (effectedRows == 0) {
       assertDoesNotThrow("Don't return result for a failed save") {

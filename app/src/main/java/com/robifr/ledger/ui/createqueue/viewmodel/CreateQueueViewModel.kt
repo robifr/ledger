@@ -40,7 +40,6 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -130,8 +129,8 @@ constructor(
       MutableLiveData<CustomerModel?>().apply {
         viewModelScope.launch(_dispatcher) {
           postValue(
-              _customerRepository.selectById(customerId).await().also { customer: CustomerModel? ->
-                if (customer == null) {
+              _customerRepository.selectById(customerId).also {
+                if (it == null) {
                   _snackbarState.postValue(
                       SnackbarState(StringResource(R.string.createQueue_fetchCustomerError)))
                 }
@@ -143,8 +142,8 @@ constructor(
       MutableLiveData<ProductModel?>().apply {
         viewModelScope.launch(_dispatcher) {
           postValue(
-              _productRepository.selectById(productId).await().also { product: ProductModel? ->
-                if (product == null) {
+              _productRepository.selectById(productId).also {
+                if (it == null) {
                   _snackbarState.postValue(
                       SnackbarState(StringResource(R.string.createQueue_fetchProductError)))
                 }
@@ -183,7 +182,7 @@ constructor(
   }
 
   private suspend fun _addQueue(queue: QueueModel) {
-    _queueRepository.add(queue).await()?.let { id ->
+    _queueRepository.add(queue).let { id ->
       if (id != 0L) _resultState.postValue(CreateQueueResultState(id))
       _snackbarState.postValue(
           SnackbarState(

@@ -27,12 +27,13 @@ import com.robifr.ledger.ui.searchproduct.SearchProductFragment
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -99,13 +100,13 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
 
   @Test
   fun `on search with fast input`() = runTest {
-    every { _productRepository.search(any()) } returns CompletableFuture.completedFuture(listOf())
+    coEvery { _productRepository.search(any()) } returns listOf()
     _viewModel.onSearch("A")
     _viewModel.onSearch("B")
     _viewModel.onSearch("C")
     advanceUntilIdle()
     assertDoesNotThrow("Prevent search from triggering multiple times when typing quickly") {
-      verify(atMost = 1) { _productRepository.search(any()) }
+      coVerify(atMost = 1) { _productRepository.search(any()) }
     }
   }
 
@@ -118,7 +119,7 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
         } else {
           listOf()
         }
-    every { _productRepository.search(query) } returns CompletableFuture.completedFuture(products)
+    coEvery { _productRepository.search(query) } returns products
     _viewModel.onSearch(query)
     advanceUntilIdle()
     assertEquals(
@@ -154,8 +155,7 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
   @Test
   fun `on sync product from database`() = runTest {
     val product: ProductModel = ProductModel(id = 111L, name = "Apple", price = 100L)
-    every { _productRepository.search(any()) } returns
-        CompletableFuture.completedFuture(listOf(product))
+    coEvery { _productRepository.search(any()) } returns listOf(product)
     _viewModel.onSearch("Apple")
     advanceUntilIdle()
 

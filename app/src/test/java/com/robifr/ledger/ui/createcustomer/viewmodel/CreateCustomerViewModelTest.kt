@@ -23,10 +23,10 @@ import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.repository.CustomerRepository
 import io.mockk.clearAllMocks
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -102,7 +102,7 @@ class CreateCustomerViewModelTest(
   fun `on save with blank name`() {
     _viewModel.onNameTextChanged(" ")
 
-    every { _customerRepository.add(any()) } returns CompletableFuture.completedFuture(0L)
+    coEvery { _customerRepository.add(any()) } returns 0L
     _viewModel.onSave()
     assertAll(
         {
@@ -111,7 +111,7 @@ class CreateCustomerViewModelTest(
         },
         {
           assertDoesNotThrow("Prevent save for a blank name") {
-            verify(exactly = 0) { _customerRepository.add(any()) }
+            coVerify(exactly = 0) { _customerRepository.add(any()) }
           }
         })
   }
@@ -123,8 +123,7 @@ class CreateCustomerViewModelTest(
     _viewModel.onBalanceChanged(100L)
     _viewModel.onDebtChanged((-100).toBigDecimal())
 
-    every { _customerRepository.add(any()) } returns
-        CompletableFuture.completedFuture(createdCustomerId)
+    coEvery { _customerRepository.add(any()) } returns createdCustomerId
     _viewModel.onSave()
     if (createdCustomerId == 0L) {
       assertDoesNotThrow("Don't return result for a failed save") {

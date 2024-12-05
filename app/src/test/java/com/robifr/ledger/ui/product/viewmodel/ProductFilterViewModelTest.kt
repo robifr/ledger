@@ -23,10 +23,10 @@ import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.repository.ProductRepository
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -55,8 +55,8 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _productRepository = mockk()
 
     every { _productRepository.addModelChangedListener(any()) } just Runs
-    every { _productRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(_firstProduct, _secondProduct, _thirdProduct))
+    coEvery { _productRepository.selectAll() } returns
+        listOf(_firstProduct, _secondProduct, _thirdProduct)
     _productViewModel = ProductViewModel(_dispatcher, _productRepository)
     _viewModel = _productViewModel.filterView
   }

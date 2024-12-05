@@ -23,10 +23,10 @@ import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.repository.ProductRepository
 import io.mockk.clearAllMocks
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -100,7 +100,7 @@ class CreateProductViewModelTest(
   fun `on save with blank name`() {
     _viewModel.onNameTextChanged(" ")
 
-    every { _productRepository.add(any()) } returns CompletableFuture.completedFuture(0L)
+    coEvery { _productRepository.add(any()) } returns 0L
     _viewModel.onSave()
     assertAll(
         {
@@ -109,7 +109,7 @@ class CreateProductViewModelTest(
         },
         {
           assertDoesNotThrow("Prevent save for a blank name") {
-            verify(exactly = 0) { _productRepository.add(any()) }
+            coVerify(exactly = 0) { _productRepository.add(any()) }
           }
         })
   }
@@ -120,8 +120,7 @@ class CreateProductViewModelTest(
     _viewModel.onNameTextChanged("Apple")
     _viewModel.onPriceTextChanged("$100")
 
-    every { _productRepository.add(any()) } returns
-        CompletableFuture.completedFuture(createdProductId)
+    coEvery { _productRepository.add(any()) } returns createdProductId
     _viewModel.onSave()
     if (createdProductId == 0L) {
       assertDoesNotThrow("Don't return result for a failed save") {

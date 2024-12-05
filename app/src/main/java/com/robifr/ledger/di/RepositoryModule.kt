@@ -17,6 +17,7 @@
 package com.robifr.ledger.di
 
 import android.content.Context
+import com.robifr.ledger.local.LocalDatabase
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ProductOrderRepository
 import com.robifr.ledger.repository.ProductRepository
@@ -34,20 +35,41 @@ import kotlinx.coroutines.CoroutineDispatcher
 @InstallIn(ViewModelComponent::class, ActivityComponent::class)
 class RepositoryModule {
   @Provides
-  fun provideCustomerRepository(@ApplicationContext context: Context): CustomerRepository =
-      CustomerRepository.instance(context)
+  fun provideCustomerRepository(
+      @ApplicationContext context: Context,
+      @IoDispatcher dispatcher: CoroutineDispatcher
+  ): CustomerRepository =
+      CustomerRepository.instance(
+          dispatcher, LocalDatabase.instance(context.applicationContext).customerDao())
 
   @Provides
-  fun provideProductRepository(@ApplicationContext context: Context): ProductRepository =
-      ProductRepository.instance(context)
+  fun provideProductRepository(
+      @ApplicationContext context: Context,
+      @IoDispatcher dispatcher: CoroutineDispatcher
+  ): ProductRepository =
+      ProductRepository.instance(
+          dispatcher, LocalDatabase.instance(context.applicationContext).productDao())
 
   @Provides
-  fun provideProductOrderRepository(@ApplicationContext context: Context): ProductOrderRepository =
-      ProductOrderRepository.instance(context)
+  fun provideProductOrderRepository(
+      @ApplicationContext context: Context,
+      @IoDispatcher dispatcher: CoroutineDispatcher
+  ): ProductOrderRepository =
+      ProductOrderRepository.instance(
+          dispatcher, LocalDatabase.instance(context.applicationContext).productOrderDao())
 
   @Provides
-  fun provideQueueRepository(@ApplicationContext context: Context): QueueRepository =
-      QueueRepository.instance(context)
+  fun provideQueueRepository(
+      @ApplicationContext context: Context,
+      @IoDispatcher dispatcher: CoroutineDispatcher,
+      customerRepository: CustomerRepository,
+      productOrderRepository: ProductOrderRepository
+  ): QueueRepository =
+      QueueRepository.instance(
+          dispatcher,
+          LocalDatabase.instance(context.applicationContext).queueDao(),
+          customerRepository,
+          productOrderRepository)
 
   @Provides
   fun provideSettingsRepository(

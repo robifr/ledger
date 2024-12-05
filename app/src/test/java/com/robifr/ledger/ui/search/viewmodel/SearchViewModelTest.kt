@@ -23,10 +23,9 @@ import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ProductRepository
 import io.mockk.clearAllMocks
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -56,14 +55,14 @@ class SearchViewModelTest(private val _dispatcher: TestDispatcher) {
 
   @Test
   fun `on search with fast input`() = runTest {
-    every { _customerRepository.search(any()) } returns CompletableFuture.completedFuture(listOf())
-    every { _productRepository.search(any()) } returns CompletableFuture.completedFuture(listOf())
+    coEvery { _customerRepository.search(any()) } returns listOf()
+    coEvery { _productRepository.search(any()) } returns listOf()
     _viewModel.onSearch("A")
     _viewModel.onSearch("B")
     _viewModel.onSearch("C")
     advanceUntilIdle()
     assertDoesNotThrow("Prevent search from triggering multiple times when typing quickly") {
-      verify(atMost = 1) { _customerRepository.search(any()) }
+      coVerify(atMost = 1) { _customerRepository.search(any()) }
     }
   }
 
@@ -82,8 +81,8 @@ class SearchViewModelTest(private val _dispatcher: TestDispatcher) {
         } else {
           listOf()
         }
-    every { _customerRepository.search(query) } returns CompletableFuture.completedFuture(customers)
-    every { _productRepository.search(query) } returns CompletableFuture.completedFuture(products)
+    coEvery { _customerRepository.search(query) } returns customers
+    coEvery { _productRepository.search(query) } returns products
     _viewModel.onSearch(query)
     advanceUntilIdle()
     assertEquals(
@@ -100,8 +99,8 @@ class SearchViewModelTest(private val _dispatcher: TestDispatcher) {
         List(totalData) { i -> CustomerModel(id = (i + 1) * 111L, name = "Amy ${i + 1}") }
     val products: List<ProductModel> =
         List(totalData) { i -> ProductModel(id = (i + 1) * 111L, name = "Apple ${i + 1}") }
-    every { _customerRepository.search(any()) } returns CompletableFuture.completedFuture(customers)
-    every { _productRepository.search(any()) } returns CompletableFuture.completedFuture(products)
+    coEvery { _customerRepository.search(any()) } returns customers
+    coEvery { _productRepository.search(any()) } returns products
     _viewModel.onSearch("A")
     advanceUntilIdle()
     assertEquals(

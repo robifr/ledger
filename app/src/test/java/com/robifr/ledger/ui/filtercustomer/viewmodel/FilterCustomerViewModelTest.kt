@@ -23,9 +23,8 @@ import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 import io.mockk.clearAllMocks
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -50,8 +49,8 @@ class FilterCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
     clearAllMocks()
     _customerRepository = mockk()
 
-    every { _customerRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(_firstCustomer, _secondCustomer, _thirdCustomer))
+    coEvery { _customerRepository.selectAll() } returns
+        listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
     _viewModel = FilterCustomerViewModel(_dispatcher, _customerRepository, SavedStateHandle())
   }
 
@@ -80,8 +79,8 @@ class FilterCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
     val firstCustomer: CustomerModel = _firstCustomer.copy(name = "Cal")
     val secondCustomer: CustomerModel = _secondCustomer.copy(name = "Amy")
     val thirdCustomer: CustomerModel = _thirdCustomer.copy(name = "Ben")
-    every { _customerRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(firstCustomer, secondCustomer, thirdCustomer))
+    coEvery { _customerRepository.selectAll() } returns
+        listOf(firstCustomer, secondCustomer, thirdCustomer)
     _viewModel = FilterCustomerViewModel(_dispatcher, _customerRepository, SavedStateHandle())
     assertEquals(
         listOf(secondCustomer, thirdCustomer, firstCustomer),

@@ -35,7 +35,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -120,14 +119,13 @@ constructor(
     _recyclerAdapterState.setValue(RecyclerAdapterState.ItemChanged(0))
   }
 
-  private suspend fun _selectAllCustomers(): List<CustomerModel> =
-      _customerRepository.selectAll().await()
+  private suspend fun _selectAllCustomers(): List<CustomerModel> = _customerRepository.selectAll()
 
   private fun _loadAllCustomers() {
     viewModelScope.launch(_dispatcher) {
       val customers: List<CustomerModel> = _selectAllCustomers()
       val selectedCustomerOnDb: CustomerModel? =
-          _customerRepository.selectById(_uiState.safeValue.initialSelectedCustomer?.id).await()
+          _customerRepository.selectById(_uiState.safeValue.initialSelectedCustomer?.id)
       withContext(Dispatchers.Main) {
         _onCustomersChanged(customers)
         _onSelectedCustomerOnDatabaseChanged(selectedCustomerOnDb)

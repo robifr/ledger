@@ -33,7 +33,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.math.BigDecimal
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -94,7 +93,7 @@ constructor(
           debt = _uiState.safeValue.debt)
 
   private suspend fun _addCustomer(customer: CustomerModel) {
-    _customerRepository.add(customer).await().let { id: Long? ->
+    _customerRepository.add(customer).let { id ->
       if (id != 0L) _resultState.postValue(CreateCustomerResultState(id))
       _snackbarState.postValue(
           SnackbarState(

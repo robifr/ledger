@@ -27,12 +27,12 @@ import com.robifr.ledger.ui.selectproduct.SelectProductFragment
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -62,10 +62,9 @@ class SelectProductViewModelTest(private val _dispatcher: TestDispatcher) {
     every {
       _productRepository.addModelChangedListener(capture(_productChangedListenerCaptor))
     } just Runs
-    every { _productRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(_firstProduct, _secondProduct, _thirdProduct))
-    every { _productRepository.selectById(any<Long>()) } returns
-        CompletableFuture.completedFuture(_firstProduct)
+    coEvery { _productRepository.selectAll() } returns
+        listOf(_firstProduct, _secondProduct, _thirdProduct)
+    coEvery { _productRepository.selectById(any<Long>()) } returns _firstProduct
     _viewModel = SelectProductViewModel(SavedStateHandle(), _dispatcher, _productRepository)
   }
 
@@ -96,8 +95,8 @@ class SelectProductViewModelTest(private val _dispatcher: TestDispatcher) {
     val firstProduct: ProductModel = _firstProduct.copy(name = "Cherry")
     val secondProduct: ProductModel = _secondProduct.copy(name = "Apple")
     val thirdProduct: ProductModel = _thirdProduct.copy(name = "Banana")
-    every { _productRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(firstProduct, secondProduct, thirdProduct))
+    coEvery { _productRepository.selectAll() } returns
+        listOf(firstProduct, secondProduct, thirdProduct)
     _viewModel = SelectProductViewModel(SavedStateHandle(), _dispatcher, _productRepository)
     assertEquals(
         listOf(secondProduct, thirdProduct, firstProduct),

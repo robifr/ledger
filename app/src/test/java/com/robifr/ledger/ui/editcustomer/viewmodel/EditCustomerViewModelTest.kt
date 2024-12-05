@@ -27,10 +27,10 @@ import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerState
 import com.robifr.ledger.ui.editcustomer.EditCustomerFragment
 import io.mockk.clearAllMocks
-import io.mockk.every
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.mockk
 import io.mockk.verify
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -68,9 +68,8 @@ class EditCustomerViewModelTest(
     _customerRepository = mockk()
     _resultStateObserver = mockk(relaxed = true)
 
-    every { _customerRepository.add(any()) } returns CompletableFuture.completedFuture(0L)
-    every { _customerRepository.selectById(_customerToEdit.id) } returns
-        CompletableFuture.completedFuture(_customerToEdit)
+    coEvery { _customerRepository.add(any()) } returns 0L
+    coEvery { _customerRepository.selectById(_customerToEdit.id) } returns _customerToEdit
     _viewModel =
         EditCustomerViewModel(
             _dispatcher,
@@ -97,7 +96,7 @@ class EditCustomerViewModelTest(
 
   @Test
   fun `on initialize with empty initial customer`() {
-    every { _customerRepository.selectById(null) } returns CompletableFuture.completedFuture(null)
+    coEvery { _customerRepository.selectById(null) } returns null
     assertThrows<NullPointerException>("Can't edit customer if there's no customer ID provided") {
       runTest {
         _viewModel =
@@ -116,7 +115,7 @@ class EditCustomerViewModelTest(
   fun `on save with blank name`() {
     _viewModel.onNameTextChanged(" ")
 
-    every { _customerRepository.update(any()) } returns CompletableFuture.completedFuture(0)
+    coEvery { _customerRepository.update(any()) } returns 0
     _viewModel.onSave()
     assertAll(
         {
@@ -125,7 +124,7 @@ class EditCustomerViewModelTest(
         },
         {
           assertDoesNotThrow("Prevent save for a blank name") {
-            verify(exactly = 0) { _customerRepository.add(any()) }
+            coVerify(exactly = 0) { _customerRepository.add(any()) }
           }
         })
   }
@@ -133,19 +132,18 @@ class EditCustomerViewModelTest(
   @Test
   fun `on save with edited customer result update operation`() {
     // Prevent save with add operation (parent class behavior) instead of update operation.
-    every { _customerRepository.update(any()) } returns CompletableFuture.completedFuture(0)
+    coEvery { _customerRepository.update(any()) } returns 0
     _viewModel.onSave()
     assertDoesNotThrow("Editing a customer shouldn't result in adding new data") {
-      verify(exactly = 0) { _customerRepository.add(any()) }
-      verify(exactly = 1) { _customerRepository.update(any()) }
+      coVerify(exactly = 0) { _customerRepository.add(any()) }
+      coVerify(exactly = 1) { _customerRepository.update(any()) }
     }
   }
 
   @ParameterizedTest
   @ValueSource(ints = [0, 1])
   fun `on save with edited customer`(effectedRows: Int) {
-    every { _customerRepository.update(any()) } returns
-        CompletableFuture.completedFuture(effectedRows)
+    coEvery { _customerRepository.update(any()) } returns effectedRows
     _viewModel.onSave()
     if (effectedRows == 0) {
       assertDoesNotThrow("Don't return result for a failed save") {

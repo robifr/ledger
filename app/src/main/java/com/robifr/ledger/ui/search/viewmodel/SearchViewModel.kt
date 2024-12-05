@@ -28,7 +28,6 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -52,10 +51,10 @@ constructor(
     _searchJob =
         viewModelScope.launch(_dispatcher) {
           delay(300L)
-          _customerRepository.search(query).await().take(8).also {
+          _customerRepository.search(query).take(8).also {
             _uiState.postValue(_uiState.safeValue.copy(query = query, customers = it))
           }
-          _productRepository.search(query).await().take(8).also {
+          _productRepository.search(query).take(8).also {
             _uiState.postValue(_uiState.safeValue.copy(query = query, products = it))
           }
         }

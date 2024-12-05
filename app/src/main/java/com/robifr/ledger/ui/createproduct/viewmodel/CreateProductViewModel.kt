@@ -35,7 +35,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.ParseException
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -95,7 +94,7 @@ constructor(
   }
 
   private suspend fun _addProduct(product: ProductModel) {
-    _productRepository.add(product).await().let { id: Long? ->
+    _productRepository.add(product).let { id ->
       if (id != 0L) _resultState.postValue(CreateProductResultState(id))
       _snackbarState.postValue(
           SnackbarState(

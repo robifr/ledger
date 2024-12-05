@@ -39,7 +39,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -140,7 +139,7 @@ constructor(
 
   fun onDeleteQueue(queue: QueueModel) {
     viewModelScope.launch(_dispatcher) {
-      _queueRepository.delete(queue).await()?.let { effected ->
+      _queueRepository.delete(queue).let { effected ->
         _snackbarState.postValue(
             SnackbarState(
                 if (effected > 0) {
@@ -152,7 +151,7 @@ constructor(
     }
   }
 
-  private suspend fun _selectAllQueues(): List<QueueModel> = _queueRepository.selectAll().await()
+  private suspend fun _selectAllQueues(): List<QueueModel> = _queueRepository.selectAll()
 
   private fun _loadAllQueues() {
     viewModelScope.launch(_dispatcher) {

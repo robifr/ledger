@@ -23,10 +23,10 @@ import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.repository.CustomerRepository
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -57,8 +57,8 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _customerRepository = mockk()
 
     every { _customerRepository.addModelChangedListener(any()) } just Runs
-    every { _customerRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(_firstCustomer, _secondCustomer, _thirdCustomer))
+    coEvery { _customerRepository.selectAll() } returns
+        listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
     _customerViewModel = CustomerViewModel(_dispatcher, _customerRepository)
     _viewModel = _customerViewModel.filterView
   }

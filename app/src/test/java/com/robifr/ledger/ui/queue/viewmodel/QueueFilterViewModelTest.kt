@@ -28,6 +28,7 @@ import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.QueueRepository
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -35,7 +36,6 @@ import io.mockk.mockkStatic
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -116,8 +116,7 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     every { _queueRepository.addModelChangedListener(any()) } just Runs
     every { _customerRepository.addModelChangedListener(any()) } just Runs
     every { Environment.isExternalStorageManager() } returns true
-    every { _queueRepository.selectAll() } returns
-        CompletableFuture.completedFuture(listOf(_firstQueue, _secondQueue, _thirdQueue))
+    coEvery { _queueRepository.selectAll() } returns listOf(_firstQueue, _secondQueue, _thirdQueue)
     _queueViewModel =
         QueueViewModel(
             _dispatcher = _dispatcher,
