@@ -18,13 +18,12 @@ package com.robifr.ledger.util
 
 object ClassPath {
   fun simpleName(cls: Class<*>): String =
-      if (cls.enclosingClass != null) "${cls.enclosingClass.simpleName}.${cls.simpleName}"
-      else cls.simpleName
+      cls.enclosingClass?.let { "${it.simpleName}.${cls.simpleName}" } ?: cls.simpleName
 
   fun simpleName(e: Enum<*>): String = "${simpleName(e.javaClass)}.${e.name}"
 
   fun fullName(cls: Class<*>): String =
-      if (cls.enclosingClass != null) "${cls.enclosingClass.name}.${cls.simpleName}" else cls.name
+      cls.enclosingClass?.let { "${it.name}.${cls.simpleName}" } ?: cls.name
 
   fun fullName(e: Enum<*>): String = "${fullName(e.javaClass)}.${e.name}"
 }

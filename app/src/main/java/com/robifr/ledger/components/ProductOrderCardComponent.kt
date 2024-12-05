@@ -56,13 +56,10 @@ class ProductOrderCardComponent(
 
   private fun _setProductPriceAndQuantity(productPrice: Long?, quantity: Double) {
     val formattedProductPrice: String =
-        if (productPrice != null) {
+        productPrice?.let {
           CurrencyFormat.format(
-              productPrice.toBigDecimal(),
-              AppCompatDelegate.getApplicationLocales().toLanguageTags())
-        } else {
-          _context.getString(R.string.symbol_notAvailable)
-        }
+              it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        } ?: _context.getString(R.string.symbol_notAvailable)
     val formattedQuantity: String =
         CurrencyFormat.format(
             quantity.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags(), "")

@@ -30,12 +30,12 @@ object FindView {
 
   fun findParentById(view: View, targetId: Int): View? {
     if (view.id == targetId) return view
-    return if (view.parent != null) findParentById(view.parent as View, targetId) else null
+    return view.parent?.let { findParentById(view.parent as View, targetId) }
   }
 
   fun <T : View?> findParentByType(view: View, cls: Class<T>): T? {
     if (cls.isInstance(view)) return cls.cast(view)
-    return if (view.parent != null) findParentByType(view.parent as View, cls) else null
+    return view.parent?.let { findParentByType(view.parent as View, cls) }
   }
 
   fun <T : View?> findViewByType(viewGroup: ViewGroup, cls: Class<T>): T? {

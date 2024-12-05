@@ -228,13 +228,11 @@ class QueueCardWideComponent(
                 productName.isEnabled =
                     productOrder.productName != null && productOrder.productPrice != null
                 productPrice.text =
-                    if (productOrder.productPrice != null) {
+                    productOrder.productPrice?.let {
                       CurrencyFormat.format(
-                          productOrder.productPrice.toBigDecimal(),
+                          it.toBigDecimal(),
                           AppCompatDelegate.getApplicationLocales().toLanguageTags())
-                    } else {
-                      _context.getString(R.string.symbol_notAvailable)
-                    }
+                    } ?: _context.getString(R.string.symbol_notAvailable)
                 quantity.text =
                     CurrencyFormat.format(
                         productOrder.quantity.toBigDecimal(),
