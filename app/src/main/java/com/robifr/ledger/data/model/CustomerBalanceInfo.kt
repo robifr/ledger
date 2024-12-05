@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.data.model
 
-@JvmRecord
 data class CustomerBalanceInfo(override val id: Long?, val balance: Long) : Info {
   constructor(customer: CustomerModel) : this(customer.id, customer.balance)
 }

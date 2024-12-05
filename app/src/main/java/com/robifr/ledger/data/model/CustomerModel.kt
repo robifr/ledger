@@ -34,7 +34,6 @@ import kotlinx.parcelize.Parcelize
  *   [CustomerDao.totalDebtById] to count current total debt.
  * @see Model.id
  */
-@JvmRecord
 @Parcelize
 @Entity(tableName = "customer")
 data class CustomerModel(
@@ -45,14 +44,6 @@ data class CustomerModel(
 ) : Model, Parcelable {
   /** Reserved constructor to be used by Room upon querying. */
   constructor(id: Long, name: String, balance: Long) : this(id, name, balance, 0.toBigDecimal())
-
-  @Ignore fun withId(id: Long?): CustomerModel = copy(id = id)
-
-  @Ignore fun withName(name: String): CustomerModel = copy(name = name)
-
-  @Ignore fun withBalance(balance: Long): CustomerModel = copy(balance = balance)
-
-  @Ignore fun withDebt(debt: BigDecimal): CustomerModel = copy(debt = debt)
 
   /**
    * Check whether balance is sufficient before making a payment. Where current customer belongs to
@@ -211,16 +202,4 @@ data class CustomerModel(
       } else {
         debt
       }
-
-  companion object {
-    @JvmStatic fun toBuilder(): NameBuild = Builder()
-  }
-
-  interface NameBuild {
-    fun withName(name: String): CustomerModel
-  }
-
-  private class Builder : NameBuild {
-    override fun withName(name: String): CustomerModel = CustomerModel(name = name)
-  }
 }

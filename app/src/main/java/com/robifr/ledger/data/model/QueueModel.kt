@@ -42,7 +42,6 @@ import kotlinx.parcelize.Parcelize
  * @property productOrders List of referenced ordered products.
  * @see Model.id
  */
-@JvmRecord
 @Parcelize
 @Entity(
     tableName = "queue",
@@ -73,31 +72,9 @@ data class QueueModel(
       paymentMethod: PaymentMethod
   ) : this(id, customerId, status, date, paymentMethod, null, listOf())
 
-  @Ignore fun withId(id: Long?): QueueModel = copy(id = id)
-
-  @Ignore fun withCustomerId(customerId: Long?): QueueModel = copy(customerId = customerId)
-
-  @Ignore fun withStatus(status: Status): QueueModel = copy(status = status)
-
-  @Ignore fun withDate(date: Instant): QueueModel = copy(date = date)
-
-  @Ignore
-  fun withPaymentMethod(paymentMethod: PaymentMethod): QueueModel =
-      copy(paymentMethod = paymentMethod)
-
-  @Ignore fun withCustomer(customer: CustomerModel?): QueueModel = copy(customer = customer)
-
-  @Ignore
-  fun withProductOrders(productOrders: List<ProductOrderModel>): QueueModel =
-      copy(productOrders = productOrders)
-
   @Ignore fun grandTotalPrice(): BigDecimal = productOrders.sumOf { it.totalPrice }
 
   @Ignore fun totalDiscount(): BigDecimal = productOrders.sumOf { it.discount.toBigDecimal() }
-
-  companion object {
-    @JvmStatic fun toBuilder(): StatusBuild = Builder()
-  }
 
   enum class Status(
       @StringRes val stringRes: Int,
@@ -113,29 +90,5 @@ data class QueueModel(
   enum class PaymentMethod(@StringRes val stringRes: Int) {
     CASH(R.string.enum_queuePaymentMethod_cash),
     ACCOUNT_BALANCE(R.string.enum_queuePaymentMethod_accountBalance)
-  }
-
-  interface StatusBuild {
-    fun withStatus(status: Status): DateBuild
-  }
-
-  interface DateBuild {
-    fun withDate(date: Instant): PaymentMethodBuild
-  }
-
-  interface PaymentMethodBuild {
-    fun withPaymentMethod(paymentMethod: PaymentMethod): QueueModel
-  }
-
-  private class Builder : StatusBuild, DateBuild, PaymentMethodBuild {
-    private lateinit var _status: Status
-    private lateinit var _date: Instant
-
-    override fun withStatus(status: Status): DateBuild = apply { _status = status }
-
-    override fun withDate(date: Instant): PaymentMethodBuild = apply { _date = date }
-
-    override fun withPaymentMethod(paymentMethod: PaymentMethod): QueueModel =
-        QueueModel(status = _status, date = _date, paymentMethod = paymentMethod)
   }
 }

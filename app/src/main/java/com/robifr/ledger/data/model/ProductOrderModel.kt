@@ -41,7 +41,6 @@ import kotlinx.parcelize.Parcelize
  *   the calculation.
  * @see Model.id
  */
-@JvmRecord
 @Parcelize
 @Entity(
     tableName = "product_order",
@@ -72,25 +71,6 @@ data class ProductOrderModel(
     @field:TypeConverters(BigDecimalConverter::class)
     val totalPrice: BigDecimal = calculateTotalPrice(productPrice, quantity, discount)
 ) : Model, Parcelable {
-  @Ignore fun withId(id: Long?): ProductOrderModel = copy(id = id)
-
-  @Ignore fun withQueueId(queueId: Long?): ProductOrderModel = copy(queueId = queueId)
-
-  @Ignore fun withProductId(productId: Long?): ProductOrderModel = copy(productId = productId)
-
-  @Ignore
-  fun withProductName(productName: String?): ProductOrderModel = copy(productName = productName)
-
-  @Ignore
-  fun withProductPrice(productPrice: Long?): ProductOrderModel = copy(productPrice = productPrice)
-
-  @Ignore fun withQuantity(quantity: Double): ProductOrderModel = copy(quantity = quantity)
-
-  @Ignore fun withDiscount(discount: Long): ProductOrderModel = copy(discount = discount)
-
-  @Ignore
-  fun withTotalPrice(totalPrice: BigDecimal): ProductOrderModel = copy(totalPrice = totalPrice)
-
   /**
    * @return Referenced product associated with the current product order. [productId] will remains
    *   null if its null, which can occur when the actual product has been deleted from the database.
@@ -114,8 +94,6 @@ data class ProductOrderModel(
   }
 
   companion object {
-    @JvmStatic fun toBuilder(): ProductOrderModel = ProductOrderModel()
-
     fun calculateTotalPrice(productPrice: Long?, quantity: Double, discount: Long): BigDecimal {
       val totalPrice: BigDecimal =
           productPrice?.let {

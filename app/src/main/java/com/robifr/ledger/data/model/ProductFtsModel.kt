@@ -21,7 +21,6 @@ import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.PrimaryKey
 
-@JvmRecord
 @Fts4
 @Entity(tableName = "product_fts")
 data class ProductFtsModel(

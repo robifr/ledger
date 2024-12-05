@@ -18,7 +18,6 @@ package com.robifr.ledger.data.model
 
 import java.math.BigDecimal
 
-@JvmRecord
 data class CustomerDebtInfo(override val id: Long?, val debt: BigDecimal) : Info {
   constructor(customer: CustomerModel) : this(customer.id, customer.debt)
 }

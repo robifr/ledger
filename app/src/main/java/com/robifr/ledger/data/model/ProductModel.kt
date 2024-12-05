@@ -19,7 +19,6 @@ package com.robifr.ledger.data.model
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
@@ -29,29 +28,10 @@ import kotlinx.parcelize.Parcelize
  * @property price Product price.
  * @see Model.id
  */
-@JvmRecord
 @Parcelize
 @Entity(tableName = "product")
 data class ProductModel(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") override val id: Long? = null,
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "price") val price: Long = 0L
-) : Model, Parcelable {
-  @Ignore fun withId(id: Long?): ProductModel = copy(id = id)
-
-  @Ignore fun withName(name: String): ProductModel = copy(name = name)
-
-  @Ignore fun withPrice(price: Long): ProductModel = copy(price = price)
-
-  companion object {
-    @JvmStatic fun toBuilder(): NameBuild = Builder()
-  }
-
-  interface NameBuild {
-    fun withName(name: String): ProductModel
-  }
-
-  private class Builder : NameBuild {
-    override fun withName(name: String): ProductModel = ProductModel(name = name)
-  }
-}
+) : Model, Parcelable
