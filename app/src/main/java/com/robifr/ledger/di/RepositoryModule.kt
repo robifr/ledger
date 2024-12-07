@@ -18,6 +18,7 @@ package com.robifr.ledger.di
 
 import android.content.Context
 import com.robifr.ledger.local.LocalDatabase
+import com.robifr.ledger.local.TransactionProvider
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ProductOrderRepository
 import com.robifr.ledger.repository.ProductRepository
@@ -64,12 +65,15 @@ class RepositoryModule {
       @IoDispatcher dispatcher: CoroutineDispatcher,
       customerRepository: CustomerRepository,
       productOrderRepository: ProductOrderRepository
-  ): QueueRepository =
-      QueueRepository.instance(
-          dispatcher,
-          LocalDatabase.instance(context.applicationContext).queueDao(),
-          customerRepository,
-          productOrderRepository)
+  ): QueueRepository {
+    val localDb: LocalDatabase = LocalDatabase.instance(context.applicationContext)
+    return QueueRepository.instance(
+        dispatcher,
+        localDb.queueDao(),
+        TransactionProvider(localDb),
+        customerRepository,
+        productOrderRepository)
+  }
 
   @Provides
   fun provideSettingsRepository(
