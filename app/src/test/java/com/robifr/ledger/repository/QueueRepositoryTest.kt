@@ -110,15 +110,15 @@ class QueueRepositoryTest(private val _dispatcher: TestDispatcher) {
 
   @Test
   fun `select query result mapped queue`() {
-    val unmappedQueue: QueueModel = _queue.copy(customer = null, productOrders = listOf())
+    // Simulate current queue in the database with unmapped property.
+    _localDao.data[0] = _queue.copy(customer = null, productOrders = listOf())
     assertAll(
         "Map every queue property that doesn't belong to the database table",
         { runTest { assertEquals(listOf(_queue), _queueRepository.selectAll()) } },
-        { runTest { assertEquals(_queue, _queueRepository.selectById(unmappedQueue.id)) } },
+        { runTest { assertEquals(_queue, _queueRepository.selectById(_queue.id)) } },
         {
           runTest {
-            assertEquals(
-                listOf(_queue), _queueRepository.selectById(listOfNotNull(unmappedQueue.id)))
+            assertEquals(listOf(_queue), _queueRepository.selectById(listOfNotNull(_queue.id)))
           }
         },
         {

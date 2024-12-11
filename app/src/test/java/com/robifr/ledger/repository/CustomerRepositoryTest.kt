@@ -46,7 +46,8 @@ class CustomerRepositoryTest(private val _dispatcher: TestDispatcher) {
   private lateinit var _localDao: FakeCustomerDao
   private lateinit var _modelChangedListener: ModelChangedListener<CustomerModel>
 
-  private val _customer: CustomerModel = CustomerModel(id = 111L, name = "Amy", balance = 0L)
+  private val _customer: CustomerModel =
+      CustomerModel(id = 111L, name = "Amy", balance = 0L, debt = (-100).toBigDecimal())
   private val _productOrder: ProductOrderModel =
       ProductOrderModel(
           id = 111L,
@@ -80,22 +81,19 @@ class CustomerRepositoryTest(private val _dispatcher: TestDispatcher) {
 
   @Test
   fun `select query result mapped customer`() {
-    val mappedCustomer: CustomerModel = _customer.copy(debt = (-100).toBigDecimal())
+    // Simulate current customer in the database with unmapped property.
+    _localDao.data[0] = _customer.copy(debt = 0.toBigDecimal())
     assertAll(
         "Map every customer property that doesn't belong to the database table",
-        { runTest { assertEquals(listOf(mappedCustomer), _customerRepository.selectAll()) } },
-        { runTest { assertEquals(mappedCustomer, _customerRepository.selectById(_customer.id)) } },
+        { runTest { assertEquals(listOf(_customer), _customerRepository.selectAll()) } },
+        { runTest { assertEquals(_customer, _customerRepository.selectById(_customer.id)) } },
         {
           runTest {
             assertEquals(
-                listOf(mappedCustomer), _customerRepository.selectById(listOfNotNull(_customer.id)))
+                listOf(_customer), _customerRepository.selectById(listOfNotNull(_customer.id)))
           }
         },
-        {
-          runTest {
-            assertEquals(listOf(mappedCustomer), _customerRepository.search(_customer.name))
-          }
-        })
+        { runTest { assertEquals(listOf(_customer), _customerRepository.search(_customer.name)) } })
   }
 
   private fun `_add customer cases`(): Array<Array<Any?>> =
@@ -117,7 +115,8 @@ class CustomerRepositoryTest(private val _dispatcher: TestDispatcher) {
           runTest {
             assertEquals(
                 insertedId,
-                _customerRepository.add(_customer.copy(id = initialId)),
+                // A new customer doesn't have any debt.
+                _customerRepository.add(_customer.copy(id = initialId, debt = 0.toBigDecimal())),
                 "Return the inserted customer ID")
           }
         },
@@ -125,11 +124,7 @@ class CustomerRepositoryTest(private val _dispatcher: TestDispatcher) {
           assertDoesNotThrow("Notify added customer to the `ModelChangedListener`") {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelAdded(
-                  listOfNotNull(
-                          insertedCustomer?.copy(
-                              id = insertedId,
-                              // Map properties that doesn't belong to the table.
-                              debt = _localDao.totalDebtById(insertedId)))
+                  listOfNotNull(insertedCustomer?.copy(id = insertedId, debt = 0.toBigDecimal()))
                       .ifEmpty { any() })
             }
           }
@@ -158,12 +153,7 @@ class CustomerRepositoryTest(private val _dispatcher: TestDispatcher) {
         {
           assertDoesNotThrow("Notify updated customer to the `ModelChangedListener`") {
             verify(exactly = notifyCount) {
-              _modelChangedListener.onModelUpdated(
-                  listOfNotNull(
-                          updatedCustomer?.copy(
-                              // Map properties that doesn't belong to the table.
-                              debt = _localDao.totalDebtById(_customer.id)))
-                      .ifEmpty { any() })
+              _modelChangedListener.onModelUpdated(listOfNotNull(updatedCustomer).ifEmpty { any() })
             }
           }
         })
@@ -191,12 +181,7 @@ class CustomerRepositoryTest(private val _dispatcher: TestDispatcher) {
         {
           assertDoesNotThrow("Notify deleted customer to the `ModelChangedListener`") {
             verify(exactly = notifyCount) {
-              _modelChangedListener.onModelDeleted(
-                  listOfNotNull(
-                          deletedCustomer?.copy(
-                              // Map properties that doesn't belong to the table.
-                              debt = _localDao.totalDebtById(_customer.id)))
-                      .ifEmpty { any() })
+              _modelChangedListener.onModelDeleted(listOfNotNull(deletedCustomer).ifEmpty { any() })
             }
           }
         })
