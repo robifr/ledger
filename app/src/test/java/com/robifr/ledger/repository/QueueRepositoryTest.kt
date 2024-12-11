@@ -325,12 +325,8 @@ class QueueRepositoryTest(private val _dispatcher: TestDispatcher) {
     assertEquals(
         updatedCustomerIdAndBalanceInDb.map { _customer.copy(id = it.first, balance = it.second) },
         _customerDao.data,
-        """
-        Update old customer balance via `CustomerBalance.balanceOnUpdatedPayment()`
-        and current referenced customer balance via `CustomerBalance.balanceOnRevertedPayment`
-        """
-            .trimIndent()
-            .replace("\n", " "))
+        "Update old customer balance via `CustomerBalance.balanceOnUpdatedPayment()` and " +
+            "current referenced customer balance via `CustomerBalance.balanceOnRevertedPayment()`")
   }
 
   fun `_delete queue cases`(): Array<Array<Any?>> =

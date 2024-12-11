@@ -65,7 +65,7 @@ class CurrencyFormatTest {
         "Correctly parse amount with locale ${languageTag}")
   }
 
-  private fun `_format currency unit with different digits`(): Array<Array<Any>> =
+  private fun `_format currency unit with different digits cases`(): Array<Array<Any>> =
       arrayOf(
           // Dozen and hundred.
           arrayOf(0.toBigDecimal(), "$0"),
@@ -100,7 +100,7 @@ class CurrencyFormatTest {
           arrayOf(1_555_555_555_000_000_000L.toBigDecimal(), "$1,555,555.5T"))
 
   @ParameterizedTest
-  @MethodSource("_format currency unit with different digits")
+  @MethodSource("_format currency unit with different digits cases")
   fun `format currency unit with different digits`(amount: BigDecimal, formattedAmount: String) {
     val context: Context = mockk()
     every { context.getString(R.string.symbol_thousand) } returns "K"

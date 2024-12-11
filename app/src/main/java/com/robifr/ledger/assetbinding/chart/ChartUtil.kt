@@ -84,7 +84,7 @@ object ChartUtil {
     val paddedMaxValue: BigDecimal = 1.toBigDecimal().max(_ceilToNearestNiceNumber(maxValue, ticks))
     return valueToConvert
         .divide(paddedMaxValue, 2, RoundingMode.HALF_UP)
-        .multiply(BigDecimal.valueOf(100))
+        .multiply(100.toBigDecimal())
         .toDouble()
   }
 
@@ -134,13 +134,12 @@ object ChartUtil {
     val million: BigDecimal = 1_000_000.toBigDecimal()
     val billion: BigDecimal = 1_000_000_000.toBigDecimal()
     val trillion: BigDecimal = 1_000_000_000_000L.toBigDecimal()
-    var scaleFactor: BigDecimal = 1.toBigDecimal()
-    if (amount.compareTo(trillion) >= 0) scaleFactor = trillion
-    else if (amount.compareTo(billion) >= 0) scaleFactor = billion
-    else if (amount.compareTo(million) >= 0) scaleFactor = million
-    else if (amount.compareTo(thousand) >= 0) scaleFactor = thousand
-    else if (amount.compareTo(hundred) >= 0) scaleFactor = hundred
-
+    var scaleFactor: BigDecimal =
+        if (amount.compareTo(trillion) >= 0) trillion
+        else if (amount.compareTo(billion) >= 0) billion
+        else if (amount.compareTo(million) >= 0) million
+        else if (amount.compareTo(thousand) >= 0) thousand
+        else if (amount.compareTo(hundred) >= 0) hundred else 1.toBigDecimal()
     // Scale down the value because `Math#log10` doesn't work with `BigDecimal`,
     // while the algorithm requires it.
     val minScaled: Double = 0.toBigDecimal().divide(scaleFactor, MathContext.DECIMAL128).toDouble()

@@ -18,7 +18,6 @@ package com.robifr.ledger.local.access
 
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.local.FtsStringConverter
-import io.mockk.mockk
 
 data class FakeProductDao(
     override val data: MutableList<ProductModel>,
@@ -58,7 +57,7 @@ data class FakeProductDao(
   override fun _search(query: String): List<ProductModel> =
       data.filter { query in "*\"${FtsStringConverter.toFtsSpacedString(it.name)}\"*" }
 
-  override fun _deleteFts(rowId: Long) = Unit
+  override fun _deleteFts(rowId: Long) {}
 
-  override fun _insertFts(rowId: Long, productName: String): Long = mockk()
+  override fun _insertFts(rowId: Long, productName: String): Long = -1L
 }

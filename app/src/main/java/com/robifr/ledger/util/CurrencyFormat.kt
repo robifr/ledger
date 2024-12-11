@@ -39,17 +39,16 @@ object CurrencyFormat {
       amount: BigDecimal,
       languageTag: String,
       symbol: String = symbol(languageTag)
-  ): String {
-    val format: DecimalFormat =
-        NumberFormat.getCurrencyInstance(Locale.forLanguageTag(languageTag)) as DecimalFormat
-    val symbols: DecimalFormatSymbols = format.decimalFormatSymbols
-    symbols.currencySymbol = symbol
-    format.roundingMode = RoundingMode.DOWN
-    format.minimumFractionDigits = MINIMUM_FRACTION_DIGITS
-    format.maximumFractionDigits = MAXIMUM_FRACTION_DIGITS
-    format.decimalFormatSymbols = symbols
-    return format.format(amount)
-  }
+  ): String =
+      (NumberFormat.getCurrencyInstance(Locale.forLanguageTag(languageTag)) as DecimalFormat)
+          .apply {
+            roundingMode = RoundingMode.DOWN
+            minimumFractionDigits = MINIMUM_FRACTION_DIGITS
+            maximumFractionDigits = MAXIMUM_FRACTION_DIGITS
+            // Directly modifying `currencySymbol` may not work due to immutability.
+            decimalFormatSymbols = decimalFormatSymbols.apply { currencySymbol = symbol }
+          }
+          .format(amount)
 
   /**
    * @return Formatted amount into local specific currency with an appropriate suffix (such as K for
@@ -121,18 +120,18 @@ object CurrencyFormat {
       DecimalFormatSymbols(Locale.forLanguageTag(languageTag)).currencySymbol
 
   @JvmStatic
+  fun isSymbolAtStart(languageTag: String): Boolean =
+      (NumberFormat.getCurrencyInstance(Locale.forLanguageTag(languageTag)) as DecimalFormat)
+          .toLocalizedPattern()
+          .indexOf('\u00A4') == 0
+
+  @JvmStatic
   fun groupingSeparator(languageTag: String): String =
       DecimalFormatSymbols(Locale.forLanguageTag(languageTag)).groupingSeparator.toString()
 
   @JvmStatic
   fun decimalSeparator(languageTag: String): String =
       DecimalFormatSymbols(Locale.forLanguageTag(languageTag)).decimalSeparator.toString()
-
-  @JvmStatic
-  fun isSymbolAtStart(languageTag: String): Boolean =
-      (NumberFormat.getCurrencyInstance(Locale.forLanguageTag(languageTag)) as DecimalFormat)
-          .toLocalizedPattern()
-          .indexOf('\u00A4') == 0
 
   @JvmStatic
   fun countDecimalPlace(amount: BigDecimal): Int =

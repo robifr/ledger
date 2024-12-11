@@ -23,7 +23,6 @@ import androidx.annotation.ColorInt
 import androidx.appcompat.app.AppCompatDelegate
 import com.robifr.ledger.R
 import com.robifr.ledger.util.CurrencyFormat
-import java.math.BigDecimal
 
 class JsInterface(private val _context: Context) {
   @JavascriptInterface
@@ -43,7 +42,7 @@ class JsInterface(private val _context: Context) {
 
   @JavascriptInterface
   fun formatCurrencyWithUnit(amount: Double, languageTag: String, symbol: String): String =
-      CurrencyFormat.formatWithUnit(_context, BigDecimal.valueOf(amount), languageTag, symbol)
+      CurrencyFormat.formatWithUnit(_context, amount.toBigDecimal(), languageTag, symbol)
 
   @JavascriptInterface
   fun localeLanguageTag(): String = AppCompatDelegate.getApplicationLocales().toLanguageTags()

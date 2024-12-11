@@ -47,13 +47,13 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
   }
 
   fun onBalanceAmountTextChanged(formattedAmount: String) {
-    var amountToAdd: BigDecimal = 0.toBigDecimal()
-    try {
-      amountToAdd =
+    val amountToAdd: BigDecimal =
+        try {
           CurrencyFormat.parse(
               formattedAmount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
-    } catch (ignore: ParseException) {}
-
+        } catch (_: ParseException) {
+          0.toBigDecimal()
+        }
     val balanceAfter: BigDecimal =
         _createCustomerViewModel.uiState.safeValue.balance.toBigDecimal() + amountToAdd
     _addBalanceState.setValue(
@@ -78,13 +78,13 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
   }
 
   fun onWithdrawAmountTextChanged(formattedAmount: String) {
-    var amountToWithdraw: BigDecimal = 0.toBigDecimal()
-    try {
-      amountToWithdraw =
+    val amountToWithdraw: BigDecimal =
+        try {
           CurrencyFormat.parse(
               formattedAmount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
-    } catch (ignore: ParseException) {}
-
+        } catch (_: ParseException) {
+          0.toBigDecimal()
+        }
     val balanceAfter: BigDecimal =
         _createCustomerViewModel.uiState.safeValue.balance.toBigDecimal() - amountToWithdraw
     val isLeftOverBalanceAvailable: Boolean = balanceAfter.compareTo(0.toBigDecimal()) >= 0
@@ -99,27 +99,23 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
                 else _withdrawBalanceState.safeValue.availableAmountToWithdraw))
   }
 
-  private fun _parseInputtedBalanceAmount(): Long {
-    var inputtedAmount: Long = 0L
-    try {
-      inputtedAmount =
-          CurrencyFormat.parse(
-                  _addBalanceState.safeValue.formattedAmount,
-                  AppCompatDelegate.getApplicationLocales().toLanguageTags())
-              .toLong()
-    } catch (ignore: ParseException) {}
-    return inputtedAmount
-  }
+  private fun _parseInputtedBalanceAmount(): Long =
+      try {
+        CurrencyFormat.parse(
+                _addBalanceState.safeValue.formattedAmount,
+                AppCompatDelegate.getApplicationLocales().toLanguageTags())
+            .toLong()
+      } catch (_: ParseException) {
+        0L
+      }
 
-  private fun _parseInputtedWithdrawAmount(): Long {
-    var inputtedAmount: Long = 0L
-    try {
-      inputtedAmount =
-          CurrencyFormat.parse(
-                  _withdrawBalanceState.safeValue.formattedAmount,
-                  AppCompatDelegate.getApplicationLocales().toLanguageTags())
-              .toLong()
-    } catch (ignore: ParseException) {}
-    return inputtedAmount
-  }
+  private fun _parseInputtedWithdrawAmount(): Long =
+      try {
+        CurrencyFormat.parse(
+                _withdrawBalanceState.safeValue.formattedAmount,
+                AppCompatDelegate.getApplicationLocales().toLanguageTags())
+            .toLong()
+      } catch (_: ParseException) {
+        0L
+      }
 }

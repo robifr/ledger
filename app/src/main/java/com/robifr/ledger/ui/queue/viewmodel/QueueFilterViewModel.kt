@@ -113,7 +113,7 @@ class QueueFilterViewModel(
                 _uiState.safeValue.formattedMinTotalPrice,
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
       }
-    } catch (ignore: ParseException) {}
+    } catch (_: ParseException) {}
 
     var maxTotalPrice: BigDecimal? = null
     try {
@@ -123,7 +123,7 @@ class QueueFilterViewModel(
                 _uiState.safeValue.formattedMaxTotalPrice,
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
       }
-    } catch (ignore: ParseException) {}
+    } catch (_: ParseException) {}
 
     return QueueFilters(
         filteredCustomerIds = _uiState.safeValue.customerIds,

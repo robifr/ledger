@@ -45,7 +45,7 @@ allprojects {
       toggleOffOn()
       trimTrailingWhitespace()
       removeUnusedImports()
-      licenseHeaderFile(file("${project.rootDir}/gradle/spotless/license_header.txt"))
+      licenseHeaderFile(file("${rootDir}/gradle/spotless/license_header.txt"))
     }
 
     kotlin {
@@ -54,14 +54,14 @@ allprojects {
       ktfmt()
       toggleOffOn()
       trimTrailingWhitespace()
-      licenseHeaderFile(file("${project.rootDir}/gradle/spotless/license_header.txt"))
+      licenseHeaderFile(file("${rootDir}/gradle/spotless/license_header.txt"))
     }
 
     kotlinGradle {
       target("**/*.gradle.kts")
       targetExclude("${layout.buildDirectory}/**")
       ktfmt()
-      licenseHeaderFile(file("${project.rootDir}/gradle/spotless/license_header.txt"), "^\\w+")
+      licenseHeaderFile(file("${rootDir}/gradle/spotless/license_header.txt"), "^\\w+")
     }
 
     javascript {
@@ -69,7 +69,7 @@ allprojects {
       targetExclude("**/assets/libs/**/*.js", "${layout.buildDirectory}/**")
       prettier().config(mapOf("tabWidth" to 2, "useTabs" to false, "printWidth" to 100))
       licenseHeaderFile(
-          file("${project.rootDir}/gradle/spotless/license_header.txt"), "\"use strict\"|^\\w+")
+          file("${rootDir}/gradle/spotless/license_header.txt"), "\"use strict\"|^\\w+")
     }
 
     format("xml") {
@@ -79,16 +79,14 @@ allprojects {
       // Set delimiter to match either xml tag or comment, to prevent comment being removed when
       // placed below xml header tag.
       // <xml .../><!-- Any comment here shouldn't be replaced with header license -->
-      licenseHeaderFile(
-          file("${project.rootDir}/gradle/spotless/license_header_xml.txt"), "^(<\\w+|<!--)")
+      licenseHeaderFile(file("${rootDir}/gradle/spotless/license_header_xml.txt"), "^(<\\w+|<!--)")
     }
 
     format("html") {
       target("**/src/main/assets/**/*.html")
       targetExclude("${layout.buildDirectory}/**")
       prettier()
-      licenseHeaderFile(
-          file("${project.rootDir}/gradle/spotless/license_header_html.txt"), "<!DOCTYPE")
+      licenseHeaderFile(file("${rootDir}/gradle/spotless/license_header_html.txt"), "<!DOCTYPE")
     }
   }
 
@@ -98,7 +96,7 @@ allprojects {
         options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Xlint:unchecked"))
       }
 
-      create<Delete>("clear") { delete = setOf(rootProject.layout.buildDirectory) }
+      create<Delete>("clear") { delete = setOf(layout.buildDirectory) }
     }
   }
 }

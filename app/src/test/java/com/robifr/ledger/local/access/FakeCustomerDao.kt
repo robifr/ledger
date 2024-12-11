@@ -21,7 +21,6 @@ import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.local.FtsStringConverter
-import io.mockk.mockk
 import java.math.BigDecimal
 
 data class FakeCustomerDao(
@@ -86,7 +85,7 @@ data class FakeCustomerDao(
         listOf()
       }
 
-  override fun _deleteFts(rowId: Long) = Unit
+  override fun _deleteFts(rowId: Long) {}
 
-  override fun _insertFts(rowId: Long, customerName: String): Long = mockk()
+  override fun _insertFts(rowId: Long, customerName: String): Long = -1L
 }

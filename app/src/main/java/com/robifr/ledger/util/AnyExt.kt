@@ -33,7 +33,7 @@ fun Any.toIndentedString(): String = buildString {
       }
       ',' -> {
         appendLine(char).append(space.repeat(indent))
-        i++ // Default `toString` will always puts a blank space after comma.
+        i++ // Default `toString()` will always puts a blank space after comma.
       }
       else -> append(char)
     }

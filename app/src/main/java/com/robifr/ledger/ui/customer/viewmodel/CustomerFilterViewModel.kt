@@ -109,7 +109,7 @@ class CustomerFilterViewModel(
                     AppCompatDelegate.getApplicationLocales().toLanguageTags())
                 .toLong()
       }
-    } catch (ignore: ParseException) {}
+    } catch (_: ParseException) {}
 
     var maxBalance: Long? = null
     try {
@@ -120,7 +120,7 @@ class CustomerFilterViewModel(
                     AppCompatDelegate.getApplicationLocales().toLanguageTags())
                 .toLong()
       }
-    } catch (ignore: ParseException) {}
+    } catch (_: ParseException) {}
 
     var minDebt: BigDecimal? = null
     try {
@@ -130,7 +130,7 @@ class CustomerFilterViewModel(
                 _uiState.safeValue.formattedMinDebt,
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
       }
-    } catch (ignore: ParseException) {}
+    } catch (_: ParseException) {}
 
     var maxDebt: BigDecimal? = null
     try {
@@ -140,7 +140,7 @@ class CustomerFilterViewModel(
                 _uiState.safeValue.formattedMaxDebt,
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
       }
-    } catch (ignore: ParseException) {}
+    } catch (_: ParseException) {}
 
     return CustomerFilters(
         filteredBalance = minBalance to maxBalance, filteredDebt = minDebt to maxDebt)

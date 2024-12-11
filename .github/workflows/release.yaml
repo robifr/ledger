@@ -55,14 +55,14 @@ jobs:
       - name: Create GitHub release draft
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref_name }}
+          TAG: ${{ github.ref_name }}
         run: |
           RELEASE_NOTES="## What's new:
           Bug fixes and other improvements."
           
-          gh release create "$tag" \
+          gh release create "${TAG}" \
             --repo="${GITHUB_REPOSITORY}" \
-            --title="v${tag#v}" \
+            --title="v${TAG#v}" \
             --notes="${RELEASE_NOTES}" \
             --draft \
             ./app/build/outputs/apk/release/*.apk

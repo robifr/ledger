@@ -39,7 +39,7 @@ android {
     versionCode = 1
     versionName = "1.1.4"
     multiDexEnabled = true
-    setProperty("archivesBaseName", "ledger-v$versionName")
+    setProperty("archivesBaseName", "ledger-v${versionName}")
 
     ksp {
       arg("room.schemaLocation", "${projectDir}/schemas")

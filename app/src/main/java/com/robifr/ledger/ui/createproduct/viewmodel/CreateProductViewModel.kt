@@ -82,14 +82,15 @@ constructor(
   }
 
   protected open fun _parseInputtedProduct(): ProductModel {
-    var price: Long = 0L
-    try {
-      price =
+    val price: Long =
+        try {
           CurrencyFormat.parse(
                   _uiState.safeValue.formattedPrice,
                   AppCompatDelegate.getApplicationLocales().toLanguageTags())
               .toLong()
-    } catch (ignore: ParseException) {}
+        } catch (_: ParseException) {
+          0L
+        }
     return ProductModel(name = _uiState.safeValue.name, price = price)
   }
 

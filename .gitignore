@@ -1,27 +1,27 @@
 # Mostly from https://www.github.com/github/gitignore repository.
 
-# Gradle files
+# Gradle files.
 .gradle/
 build/
 app/release/
 
-# Kotlin files
+# Kotlin files.
 .kotlin/
 
-# Local configuration file (sdk path, etc)
+# Local configuration file (sdk path, etc).
 local.properties
 
-# Log/OS files
+# Log/OS files.
 *.log
 
-# Android Studio generated files and folders
+# Android Studio generated files and folders.
 *.apk
 .externalNativeBuild/
 .cxx/
 captures/
 output.json
 
-# IntelliJ
+# IntelliJ.
 *.iml
 .idea/*
 !.idea/codeStyles
@@ -29,21 +29,21 @@ misc.xml
 deploymentTargetDropDown.xml
 render.experimental.xml
 
-# VS Code
+# VS Code.
 .vscode/*
 !.vscode/settings.json
 
-# Keystore files
+# Keystore files.
 *.jks
 *.keystore
 keystore.properties
 
-# Google Services (e.g. APIs or Firebase)
+# Google Services (e.g. APIs or Firebase).
 google-services.json
 
-# Android Profiling
+# Android Profiling.
 *.hprof
 
-# JavaScript asset libraries
+# JavaScript asset libraries.
 **/assets/libs/*
 !**/assets/libs/index.js

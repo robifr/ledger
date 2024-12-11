@@ -87,7 +87,7 @@ class ProductFilterViewModel(
                     AppCompatDelegate.getApplicationLocales().toLanguageTags())
                 .toLong()
       }
-    } catch (ignore: ParseException) {}
+    } catch (_: ParseException) {}
 
     var maxPrice: Long? = null
     try {
@@ -98,7 +98,7 @@ class ProductFilterViewModel(
                     AppCompatDelegate.getApplicationLocales().toLanguageTags())
                 .toLong()
       }
-    } catch (ignore: ParseException) {}
+    } catch (_: ParseException) {}
 
     return ProductFilters(minPrice to maxPrice)
   }
