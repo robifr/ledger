@@ -56,12 +56,18 @@
       app:layout_constraintStart_toEndOf="@id/customerImage"
       app:layout_constraintTop_toTopOf="@id/customerImage" />
 
+  <!--
+    Set `android:clickable` and `android:focusable` to false
+    to pass the click event to the card itself.
+  -->
   <com.google.android.material.chip.Chip
       android:id="@+id/statusChip"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_marginStart="@dimen/space_smallMedium"
+      android:clickable="false"
       android:enabled="false"
+      android:focusable="false"
       android:paddingTop="@dimen/space_small"
       android:paddingBottom="@dimen/space_small"
       android:textSize="@dimen/text_small"
