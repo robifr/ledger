@@ -16,6 +16,7 @@
 
 package com.robifr.ledger.ui.createqueue
 
+import androidx.annotation.StringRes
 import com.google.android.material.R as MaterialR
 import com.google.android.material.datepicker.CalendarConstraints
 import com.google.android.material.datepicker.DateValidatorPointBackward
@@ -60,8 +61,8 @@ class CreateQueueDate(private val _fragment: CreateQueueFragment) {
     }
   }
 
-  fun setInputtedDate(date: ZonedDateTime) {
+  fun setInputtedDate(date: ZonedDateTime, @StringRes dateFormat: Int) {
     _fragment.fragmentBinding.date.setText(
-        DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy").format(date))
+        DateTimeFormatter.ofPattern(_fragment.getString(dateFormat)).format(date))
   }
 }

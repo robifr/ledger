@@ -17,7 +17,10 @@
 package com.robifr.ledger.ui.createqueue.viewmodel
 
 import androidx.annotation.ColorRes
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatDelegate
 import com.robifr.ledger.R
+import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
@@ -41,6 +44,12 @@ data class CreateQueueState(
 
   val isTemporalCustomerSummaryVisible: Boolean
     get() = customer != null
+
+  @StringRes
+  fun dateFormat(): Int =
+      LanguageOption.entries
+          .find { it.languageTag == AppCompatDelegate.getApplicationLocales().toLanguageTags() }
+          ?.fullDateFormat ?: LanguageOption.ENGLISH_US.fullDateFormat
 
   @get:ColorRes
   val customerDebtColorRes: Int

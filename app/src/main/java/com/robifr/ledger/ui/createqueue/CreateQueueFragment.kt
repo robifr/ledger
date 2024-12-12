@@ -151,7 +151,7 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         state.isTemporalCustomerSummaryVisible)
 
     val inputtedQueue: QueueModel = createQueueViewModel.parseInputtedQueue()
-    _inputDate.setInputtedDate(state.date)
+    _inputDate.setInputtedDate(state.date, state.dateFormat())
     _inputStatus.setInputtedStatus(state.status)
     _inputPaymentMethod.setInputtedPaymentMethod(state.paymentMethod)
     _inputPaymentMethod.setEnabledButtons(state.allowedPaymentMethods)

@@ -25,6 +25,7 @@ import androidx.core.view.isVisible
 import com.google.android.material.R as MaterialR
 import com.google.android.material.shape.ShapeAppearanceModel
 import com.robifr.ledger.R
+import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
@@ -135,7 +136,16 @@ class QueueCardWideComponent(
   }
 
   private fun _setDate(date: ZonedDateTime, isNormalCard: Boolean) {
-    val formattedDate: String = date.format(DateTimeFormatter.ofPattern("d MMMM yyyy"))
+    val formattedDate: String =
+        date.format(
+            DateTimeFormatter.ofPattern(
+                _context.getString(
+                    LanguageOption.entries
+                        .find {
+                          it.languageTag ==
+                              AppCompatDelegate.getApplicationLocales().toLanguageTags()
+                        }
+                        ?.shortDateFormat ?: LanguageOption.ENGLISH_US.shortDateFormat)))
     if (isNormalCard) _binding.normalCard.date.text = formattedDate
     else _binding.expandedCard.date.text = formattedDate
   }

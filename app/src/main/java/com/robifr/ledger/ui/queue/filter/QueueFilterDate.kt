@@ -17,6 +17,7 @@
 package com.robifr.ledger.ui.queue.filter
 
 import android.view.View
+import androidx.annotation.StringRes
 import androidx.core.util.Pair
 import androidx.core.view.isVisible
 import com.google.android.material.R as MaterialR
@@ -76,7 +77,7 @@ class QueueFilterDate(
   }
 
   /** @param date [QueueFilters.filteredDate] */
-  fun setFilteredDate(date: QueueDate) {
+  fun setFilteredDate(date: QueueDate, @StringRes dateFormat: Int) {
     // Remove listener to prevent unintended updates to both view model and the chip itself
     // when manually set the date, like `QueueDate.Range.CUSTOM`.
     _dialogBinding.filterDate.chipGroup.setOnCheckedStateChangeListener(null)
@@ -86,7 +87,8 @@ class QueueFilterDate(
     _dialogBinding.filterDate.chipGroup
         .findViewWithTag<Chip>(QueueDate.Range.CUSTOM.toString())
         ?.apply {
-          val format: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy")
+          val format: DateTimeFormatter =
+              DateTimeFormatter.ofPattern(_fragment.getString(dateFormat))
           // Hide custom range chip when it's not being selected, and show otherwise.
           isVisible = date.range == QueueDate.Range.CUSTOM
           text =

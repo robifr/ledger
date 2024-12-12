@@ -45,9 +45,6 @@
   <!-- `QueueModel#PaymentMethod`. -->
   <string name="enum_queuePaymentMethod_cash">Tunai</string>
   <string name="enum_queuePaymentMethod_accountBalance">Saldo akun</string>
-  <!-- `LanguageOption`. -->
-  <string name="enum_languageOption_englishUs">Inggris (Amerika Serikat)</string>
-  <string name="enum_languageOption_indonesia">Indonesia</string>
 
   <!-- Action button. -->
   <string name="action_add">Tambah</string>
@@ -84,7 +81,7 @@
     ]]>
   </string>
   <!-- Navigation. -->
-  <string name="main_navigation_dashboard">Dashbor</string>
+  <string name="main_navigation_dashboard">Dasbor</string>
   <string name="main_navigation_queue">Antrean</string>
   <string name="main_navigation_customer">Pelanggan</string>
   <string name="main_navigation_product">Produk</string>
@@ -122,7 +119,7 @@
     <item quantity="one"><![CDATA[<b>%d</b> antrean]]></item>
     <item quantity="other"><![CDATA[<b>%d</b> antrean]]></item>
   </plurals>
-  <string name="dashboard_productsSold">Products sold</string>
+  <string name="dashboard_productsSold">Produk terjual</string>
   <plurals name="dashboard_productsSold_n_item">
     <item quantity="one"><![CDATA[<b>%s</b> item]]></item>
     <item quantity="other"><![CDATA[<b>%s</b> item]]></item>
@@ -252,7 +249,7 @@
   <string name="editQueue">Edit antrean</string>
   <!-- Product orders. -->
   <string name="createQueue_productOrders">Pesanan produk</string>
-  <string name="createQueue_productOrders_grandTotalPrice">Harga total keseluruhan</string>
+  <string name="createQueue_productOrders_grandTotalPrice">Harga keseluruhan</string>
   <string name="createQueue_productOrders_totalDiscount">Diskon total</string>
   <string name="createQueue_productOrders_x_balance">Saldo %s</string>
   <string name="createQueue_productOrders_x_debt">Hutang %s</string>

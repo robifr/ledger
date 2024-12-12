@@ -94,7 +94,7 @@ class DashboardFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onSummaryState(state: DashboardSummaryState) {
-    _summaryOverview.setDate(state.date)
+    _summaryOverview.setDate(state.date, state.dateFormat())
     _summaryOverview.selectCard(state.displayedChart)
     _summaryOverview.setTotalQueues(state.queues.size)
     _summaryOverview.setTotalUncompletedQueues(state.totalUncompletedQueues())
@@ -118,7 +118,7 @@ class DashboardFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onRevenueState(state: DashboardRevenueState) {
-    _revenueOverview.setDate(state.date)
+    _revenueOverview.setDate(state.date, state.dateFormat())
     _revenueOverview.selectCard(state.displayedChart)
     _revenueOverview.setTotalReceivedIncome(state.receivedIncome())
     _revenueOverview.setTotalProjectedIncome(state.projectedIncome())

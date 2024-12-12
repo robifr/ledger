@@ -19,7 +19,20 @@ package com.robifr.ledger.data.display
 import androidx.annotation.StringRes
 import com.robifr.ledger.R
 
-enum class LanguageOption(val languageTag: String, @StringRes val stringRes: Int) {
-  ENGLISH_US("en-US", R.string.enum_languageOption_englishUs),
-  INDONESIA("id-ID", R.string.enum_languageOption_indonesia)
+enum class LanguageOption(
+    val languageTag: String,
+    @StringRes val stringRes: Int,
+    @StringRes val shortDateFormat: Int,
+    @StringRes val fullDateFormat: Int
+) {
+  ENGLISH_US(
+      "en-US",
+      R.string.enum_languageOption_englishUs,
+      R.string.enum_languageOption_englishUs_shortDateFormat,
+      R.string.enum_languageOption_englishUs_fullDateFormat),
+  INDONESIA(
+      "id-ID",
+      R.string.enum_languageOption_indonesia,
+      R.string.enum_languageOption_indonesia_shortDateFormat,
+      R.string.enum_languageOption_indonesia_fullDateFormat)
 }

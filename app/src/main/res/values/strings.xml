@@ -46,8 +46,12 @@
   <string name="enum_queuePaymentMethod_cash">Cash</string>
   <string name="enum_queuePaymentMethod_accountBalance">Account balance</string>
   <!-- `LanguageOption`. -->
-  <string name="enum_languageOption_englishUs">English (US)</string>
-  <string name="enum_languageOption_indonesia">Indonesia</string>
+  <string name="enum_languageOption_englishUs" translatable="false">English (US)</string>
+  <string name="enum_languageOption_englishUs_shortDateFormat" translatable="false">MMM d, yyyy</string>
+  <string name="enum_languageOption_englishUs_fullDateFormat" translatable="false">EEEE, MMMM d, yyyy</string>
+  <string name="enum_languageOption_indonesia" translatable="false">Indonesia</string>
+  <string name="enum_languageOption_indonesia_shortDateFormat" translatable="false">d MMM yyyy</string>
+  <string name="enum_languageOption_indonesia_fullDateFormat" translatable="false">EEEE, d MMMM yyyy</string>
 
   <!-- Action button. -->
   <string name="action_add">Add</string>

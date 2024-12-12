@@ -17,6 +17,7 @@
 package com.robifr.ledger.ui.dashboard
 
 import android.view.View
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.text.HtmlCompat
 import androidx.core.view.isGone
@@ -88,8 +89,8 @@ class DashboardSummary(private val _fragment: DashboardFragment) : View.OnClickL
     }
   }
 
-  fun setDate(date: QueueDate) {
-    val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy")
+  fun setDate(date: QueueDate, @StringRes dateFormat: Int) {
+    val dateFormat: DateTimeFormatter = DateTimeFormatter.ofPattern(_fragment.getString(dateFormat))
     _fragment.fragmentBinding.summary.dateChip.text =
         if (date.range == QueueDate.Range.CUSTOM) {
           _fragment.getString(

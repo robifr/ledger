@@ -120,7 +120,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   private fun _onFilterState(state: QueueFilterState) {
     _filter.filterCustomer.setNullCustomerShown(state.isNullCustomerShown)
     _filter.filterStatus.setFilteredStatus(state.status)
-    _filter.filterDate.setFilteredDate(state.date)
+    _filter.filterDate.setFilteredDate(state.date, state.dateFormat())
     _filter.filterTotalPrice.setFilteredMinTotalPriceText(state.formattedMinTotalPrice)
     _filter.filterTotalPrice.setFilteredMaxTotalPriceText(state.formattedMaxTotalPrice)
   }

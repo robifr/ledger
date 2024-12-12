@@ -16,6 +16,9 @@
 
 package com.robifr.ledger.ui.dashboard.viewmodel
 
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatDelegate
+import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductModel
@@ -28,6 +31,12 @@ data class DashboardSummaryState(
     val queues: List<QueueModel>,
     val displayedChart: DashboardSummary.OverviewType
 ) {
+  @StringRes
+  fun dateFormat(): Int =
+      LanguageOption.entries
+          .find { it.languageTag == AppCompatDelegate.getApplicationLocales().toLanguageTags() }
+          ?.shortDateFormat ?: LanguageOption.ENGLISH_US.shortDateFormat
+
   fun totalUncompletedQueues(): Int = queues.count { it.status != QueueModel.Status.COMPLETED }
 
   fun totalActiveCustomers(): Int =

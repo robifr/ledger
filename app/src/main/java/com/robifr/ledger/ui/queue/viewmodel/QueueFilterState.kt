@@ -16,6 +16,9 @@
 
 package com.robifr.ledger.ui.queue.viewmodel
 
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatDelegate
+import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.model.QueueModel
 
@@ -26,4 +29,10 @@ data class QueueFilterState(
     val status: Set<QueueModel.Status>,
     val formattedMinTotalPrice: String,
     val formattedMaxTotalPrice: String
-)
+) {
+  @StringRes
+  fun dateFormat(): Int =
+      LanguageOption.entries
+          .find { it.languageTag == AppCompatDelegate.getApplicationLocales().toLanguageTags() }
+          ?.shortDateFormat ?: LanguageOption.ENGLISH_US.shortDateFormat
+}

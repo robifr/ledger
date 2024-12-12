@@ -16,6 +16,9 @@
 
 package com.robifr.ledger.ui.dashboard.viewmodel
 
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatDelegate
+import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.ui.dashboard.DashboardRevenue
@@ -26,6 +29,12 @@ data class DashboardRevenueState(
     val queues: List<QueueModel>,
     val displayedChart: DashboardRevenue.OverviewType
 ) {
+  @StringRes
+  fun dateFormat(): Int =
+      LanguageOption.entries
+          .find { it.languageTag == AppCompatDelegate.getApplicationLocales().toLanguageTags() }
+          ?.shortDateFormat ?: LanguageOption.ENGLISH_US.shortDateFormat
+
   fun receivedIncome(): BigDecimal =
       queues
           .asSequence()
