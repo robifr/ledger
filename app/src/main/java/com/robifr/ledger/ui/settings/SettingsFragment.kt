@@ -56,13 +56,17 @@ class SettingsFragment : Fragment() {
         requireContext().getColorAttr(android.R.attr.colorBackground)
     requireActivity().window.navigationBarColor =
         requireContext().getColorAttr(android.R.attr.colorBackground)
-    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
+    // Use the activity's lifecycle owner to prevent the app from closing when the system
+    // back button is pressed after a configuration change. Just ensure that it's removed
+    // when this fragment is finished, to avoid a crash when closing the app.
+    requireActivity().onBackPressedDispatcher.addCallback(requireActivity(), _onBackPressed)
     fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
     settingsViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
   }
 
   fun finish() {
     findNavController().popBackStack()
+    _onBackPressed.remove()
   }
 
   private fun _onUiState(state: SettingsState) {
