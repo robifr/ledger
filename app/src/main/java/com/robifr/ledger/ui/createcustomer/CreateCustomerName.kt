@@ -18,7 +18,7 @@ package com.robifr.ledger.ui.createcustomer
 
 import android.text.Editable
 import com.google.android.material.textfield.TextInputEditText
-import com.robifr.ledger.ui.EditTextWatcher
+import com.robifr.ledger.components.EditTextWatcher
 
 class CreateCustomerName(private val _fragment: CreateCustomerFragment) {
   private val _nameTextWatcher: NameTextWatcher =

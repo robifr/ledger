@@ -18,9 +18,9 @@ package com.robifr.ledger.ui.product.filter
 
 import android.text.Editable
 import android.widget.EditText
+import com.robifr.ledger.components.CurrencyTextWatcher
 import com.robifr.ledger.data.display.ProductFilters
 import com.robifr.ledger.databinding.ProductDialogFilterBinding
-import com.robifr.ledger.ui.CurrencyTextWatcher
 import com.robifr.ledger.ui.product.ProductFragment
 
 class ProductFilterPrice(

@@ -27,14 +27,11 @@ import java.text.ParseException
 import java.util.Locale
 import kotlin.math.max
 
-// TODO: Remove `JvmStatic` annotations after Kotlin migration.
 object CurrencyFormat {
   const val MINIMUM_FRACTION_DIGITS: Int = 0
   const val MAXIMUM_FRACTION_DIGITS: Int = 5
 
   /** @return Formatted amount into local specific currency. */
-  @JvmOverloads
-  @JvmStatic
   fun format(
       amount: BigDecimal,
       languageTag: String,
@@ -54,8 +51,6 @@ object CurrencyFormat {
    * @return Formatted amount into local specific currency with an appropriate suffix (such as K for
    *   thousands or M for millions) appended at the end of the string.
    */
-  @JvmOverloads
-  @JvmStatic
   fun formatWithUnit(
       context: Context,
       amount: BigDecimal,
@@ -92,48 +87,52 @@ object CurrencyFormat {
   }
 
   /** @return Parsed amount from local specific currency. */
-  @JvmStatic
   @Throws(ParseException::class)
   fun parse(amount: String, languageTag: String): BigDecimal {
     val format: DecimalFormat =
-        NumberFormat.getNumberInstance(Locale.forLanguageTag(languageTag)) as DecimalFormat
-    format.isParseBigDecimal = true
-    val decimalSeparator: String = decimalSeparator(languageTag)
+        (NumberFormat.getNumberInstance(Locale.forLanguageTag(languageTag)) as DecimalFormat)
+            .apply { isParseBigDecimal = true }
+    // Replace every character except those that can be edited by the user
+    // (digits, negative sign, and decimal separator).
     val amountToParse: String =
-        amount.replace("[^\\d\\-\\${decimalSeparator}]".toRegex(), "").let {
-          // Edge case.
-          if (it.isBlank() ||
-              it == decimalSeparator ||
-              it == "-" ||
-              it == "-$decimalSeparator" ||
-              it.countOccurrence("-") > 1) {
-            "0"
-          } else {
-            it
-          }
-        }
+        amount
+            .replace("""[^\d\-${Regex.escape(decimalSeparator(languageTag))}]""".toRegex(), "")
+            .let { if (!isValidToParseAndFormat(amount, languageTag)) "0" else it }
     return (format.parse(amountToParse) as BigDecimal).stripTrailingZeros()
   }
 
-  @JvmStatic
+  fun isValidToParseAndFormat(amount: String, languageTag: String): Boolean {
+    val decimalSeparator: String = decimalSeparator(languageTag)
+    // Replace every character except those that can be edited by the user
+    // (digits, negative sign, and decimal separator).
+    val amount: String =
+        amount.replace("""[^\d\-${Regex.escape(decimalSeparator)}]""".toRegex(), "")
+    // Can't find any digit.
+    return !(amount.count { it.isDigit() } == 0 ||
+        // Found multiple decimal separator.
+        amount.count { it.toString() == decimalSeparator } > 1 ||
+        // Found multiple negative sign.
+        amount.count { it.toString() == "-" } > 1 ||
+        // Found any character before negative sign.
+        """([^\-]+)(?=-)""".toRegex().findAll(amount).count() > 0 ||
+        // Found the digit occurrence in decimal place is more than max allowed.
+        ("""(?<=\.)\d+""".toRegex().find(amount)?.value?.length ?: 0) > MAXIMUM_FRACTION_DIGITS)
+  }
+
   fun symbol(languageTag: String): String =
       DecimalFormatSymbols(Locale.forLanguageTag(languageTag)).currencySymbol
 
-  @JvmStatic
   fun isSymbolAtStart(languageTag: String): Boolean =
       (NumberFormat.getCurrencyInstance(Locale.forLanguageTag(languageTag)) as DecimalFormat)
           .toLocalizedPattern()
           .indexOf('\u00A4') == 0
 
-  @JvmStatic
   fun groupingSeparator(languageTag: String): String =
       DecimalFormatSymbols(Locale.forLanguageTag(languageTag)).groupingSeparator.toString()
 
-  @JvmStatic
   fun decimalSeparator(languageTag: String): String =
       DecimalFormatSymbols(Locale.forLanguageTag(languageTag)).decimalSeparator.toString()
 
-  @JvmStatic
   fun countDecimalPlace(amount: BigDecimal): Int =
       max(0.0, amount.stripTrailingZeros().scale().toDouble()).toInt()
 }

@@ -22,9 +22,7 @@ import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
@@ -113,52 +111,46 @@ class CurrencyFormatTest {
         "Correctly format amount with different digits")
   }
 
-  @Test
-  fun `parse currency with invalid argument`() {
-    val decimalSeparator: String = CurrencyFormat.decimalSeparator(_us)
-    assertAll(
-        {
-          assertEquals(
-              0.toBigDecimal(),
-              CurrencyFormat.parse("", _us),
-              "Parse to zero when there's only an empty string")
-        },
-        {
-          assertEquals(
-              0.toBigDecimal(),
-              CurrencyFormat.parse(" ", _us),
-              "Parse to zero when there's only a blank string")
-        },
-        {
-          assertEquals(
-              0.toBigDecimal(),
-              CurrencyFormat.parse("-", _us),
-              "Parse to zero when there's only a minus sign")
-        },
-        {
-          assertEquals(
-              0.toBigDecimal(),
-              CurrencyFormat.parse(decimalSeparator, _us),
-              "Parse to zero when there's only a decimal separator")
-        },
-        {
-          assertEquals(
-              0.toBigDecimal(),
-              CurrencyFormat.parse("-${decimalSeparator}", _us),
-              "Parse to zero when only '-${decimalSeparator}' presented")
-        },
-        {
-          assertEquals(
-              0.toBigDecimal(),
-              CurrencyFormat.parse("--1", _us),
-              "Parse to zero when there are multiple minus sign")
-        },
-        {
-          assertEquals(
-              _amount,
-              CurrencyFormat.parse("${_amount}0", _us),
-              "Remove trailing zero when parsing")
-        })
+  private fun `_parse currency cases`(): Array<Array<Any>> =
+      arrayOf(
+          arrayOf(_us, "--100", 0.toBigDecimal()),
+          arrayOf(_us, "-0.0", 0.toBigDecimal()),
+          arrayOf(_us, "-.1", (-0.1).toBigDecimal()),
+          arrayOf(_us, "123.0", 123.toBigDecimal()),
+          arrayOf(_us, "123", 123.toBigDecimal()),
+      )
+
+  @ParameterizedTest
+  @MethodSource("_parse currency cases")
+  fun `parse currency`(languageTag: String, amount: String, parsedAmount: BigDecimal) {
+    assertEquals(
+        parsedAmount,
+        CurrencyFormat.parse(amount, languageTag),
+        "Fallback to zero for anything that can't be parsed")
+  }
+
+  private fun `_is valid to parse and format cases`(): Array<Array<Any>> =
+      arrayOf(
+          arrayOf(_us, "", false),
+          arrayOf(_us, " ", false),
+          arrayOf(_us, "-", false),
+          arrayOf(_us, "$-", false),
+          arrayOf(_us, ".", false),
+          arrayOf(_us, ".-", false),
+          arrayOf(_us, "-.", false),
+          arrayOf(_us, "-.0", true),
+          arrayOf(_us, "-.1", true),
+          arrayOf(_us, "--1", false),
+          arrayOf(_us, "123", true),
+      )
+
+  @ParameterizedTest
+  @MethodSource("_is valid to parse and format cases")
+  fun `is valid to parse and format`(languageTag: String, amount: String, isValid: Boolean) {
+    assertEquals(
+        isValid,
+        CurrencyFormat.isValidToParseAndFormat(amount, languageTag),
+        "Returns true for the amount that can be both parsed and formatted")
   }
 
   private fun `_is symbol position at start cases`(): Array<Array<Any>> =

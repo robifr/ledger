@@ -18,9 +18,9 @@ package com.robifr.ledger.ui.queue.filter
 
 import android.text.Editable
 import android.widget.EditText
+import com.robifr.ledger.components.CurrencyTextWatcher
 import com.robifr.ledger.data.display.QueueFilters
 import com.robifr.ledger.databinding.QueueDialogFilterBinding
-import com.robifr.ledger.ui.CurrencyTextWatcher
 import com.robifr.ledger.ui.queue.QueueFragment
 
 class QueueFilterTotalPrice(
@@ -71,11 +71,7 @@ class QueueFilterTotalPrice(
 }
 
 private class MinTotalPriceTextWatcher(private val _fragment: QueueFragment, view: EditText) :
-    CurrencyTextWatcher(view) {
-  init {
-    _maximumAmount = Long.MAX_VALUE.toBigDecimal()
-  }
-
+    CurrencyTextWatcher(view = view, _maximumAmount = Long.MAX_VALUE.toBigDecimal()) {
   override fun afterTextChanged(editable: Editable) {
     super.afterTextChanged(editable)
     _fragment.queueViewModel.filterView.onMinTotalPriceTextChanged(newText())
@@ -83,11 +79,7 @@ private class MinTotalPriceTextWatcher(private val _fragment: QueueFragment, vie
 }
 
 private class MaxTotalPriceTextWatcher(private val _fragment: QueueFragment, view: EditText) :
-    CurrencyTextWatcher(view) {
-  init {
-    _maximumAmount = Long.MAX_VALUE.toBigDecimal()
-  }
-
+    CurrencyTextWatcher(view = view, _maximumAmount = Long.MAX_VALUE.toBigDecimal()) {
   override fun afterTextChanged(editable: Editable) {
     super.afterTextChanged(editable)
     _fragment.queueViewModel.filterView.onMaxTotalPriceTextChanged(newText())

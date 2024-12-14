@@ -23,8 +23,8 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.robifr.ledger.R
+import com.robifr.ledger.components.CurrencyTextWatcher
 import com.robifr.ledger.databinding.CreateCustomerDialogTransactionBinding
-import com.robifr.ledger.ui.CurrencyTextWatcher
 import com.robifr.ledger.util.CurrencyFormat
 
 class CreateCustomerBalance(private val _fragment: CreateCustomerFragment) {

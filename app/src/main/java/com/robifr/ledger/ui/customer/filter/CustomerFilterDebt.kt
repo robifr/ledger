@@ -18,9 +18,9 @@ package com.robifr.ledger.ui.customer.filter
 
 import android.text.Editable
 import android.widget.EditText
+import com.robifr.ledger.components.CurrencyTextWatcher
 import com.robifr.ledger.data.display.CustomerFilters
 import com.robifr.ledger.databinding.CustomerDialogFilterBinding
-import com.robifr.ledger.ui.CurrencyTextWatcher
 import com.robifr.ledger.ui.customer.CustomerFragment
 
 class CustomerFilterDebt(
@@ -57,11 +57,7 @@ class CustomerFilterDebt(
 }
 
 private class MinDebtTextWatcher(private val _fragment: CustomerFragment, view: EditText) :
-    CurrencyTextWatcher(view) {
-  init {
-    _maximumAmount = Long.MAX_VALUE.toBigDecimal()
-  }
-
+    CurrencyTextWatcher(view = view, _maximumAmount = Long.MAX_VALUE.toBigDecimal()) {
   override fun afterTextChanged(editable: Editable) {
     super.afterTextChanged(editable)
     _fragment.customerViewModel.filterView.onMinDebtTextChanged(newText())
@@ -69,11 +65,7 @@ private class MinDebtTextWatcher(private val _fragment: CustomerFragment, view: 
 }
 
 private class MaxDebtTextWatcher(private val _fragment: CustomerFragment, view: EditText) :
-    CurrencyTextWatcher(view) {
-  init {
-    _maximumAmount = Long.MAX_VALUE.toBigDecimal()
-  }
-
+    CurrencyTextWatcher(view = view, _maximumAmount = Long.MAX_VALUE.toBigDecimal()) {
   override fun afterTextChanged(editable: Editable) {
     super.afterTextChanged(editable)
     _fragment.customerViewModel.filterView.onMaxDebtTextChanged(newText())
