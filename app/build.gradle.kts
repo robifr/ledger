@@ -37,7 +37,7 @@ android {
     minSdk = 30
     targetSdk = 35
     versionCode = 1
-    versionName = "1.1.4"
+    versionName = "1.1.5"
     multiDexEnabled = true
     setProperty("archivesBaseName", "ledger-v${versionName}")
 
