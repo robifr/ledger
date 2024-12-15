@@ -3,7 +3,6 @@
 # Gradle files.
 .gradle/
 build/
-app/release/
 
 # Kotlin files.
 .kotlin/
@@ -18,6 +17,7 @@ local.properties
 *.apk
 .externalNativeBuild/
 .cxx/
+app/release/
 captures/
 output.json
 
