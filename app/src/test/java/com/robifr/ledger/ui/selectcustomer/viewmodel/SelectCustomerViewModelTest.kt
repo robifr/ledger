@@ -75,7 +75,7 @@ class SelectCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
         SelectCustomerViewModel(
             SavedStateHandle().apply {
               set(
-                  SelectCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_PARCELABLE.key,
+                  SelectCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_PARCELABLE.key(),
                   _firstCustomer)
             },
             _dispatcher,

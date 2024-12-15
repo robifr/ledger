@@ -38,9 +38,9 @@ class EditCustomerFragment : CreateCustomerFragment() {
 
   private fun _onResultState(state: EditCustomerResultState) {
     parentFragmentManager.setFragmentResult(
-        Request.EDIT_CUSTOMER.key,
+        Request.EDIT_CUSTOMER.key(),
         Bundle().apply {
-          state.editedCustomerId?.let { putLong(Result.EDITED_CUSTOMER_ID_LONG.key, it) }
+          state.editedCustomerId?.let { putLong(Result.EDITED_CUSTOMER_ID_LONG.key(), it) }
         })
     finish()
   }

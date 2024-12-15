@@ -116,9 +116,9 @@ class SearchCustomerFragment : Fragment(), SearchView.OnQueryTextListener {
   private fun _onResultState(state: SearchCustomerResultState) {
     if (searchCustomerViewModel.uiState.safeValue.isSelectionEnabled) {
       parentFragmentManager.setFragmentResult(
-          Request.SELECT_CUSTOMER.key,
+          Request.SELECT_CUSTOMER.key(),
           Bundle().apply {
-            state.selectedCustomerId?.let { putLong(Result.SELECTED_CUSTOMER_ID_LONG.key, it) }
+            state.selectedCustomerId?.let { putLong(Result.SELECTED_CUSTOMER_ID_LONG.key(), it) }
           })
     }
     finish()

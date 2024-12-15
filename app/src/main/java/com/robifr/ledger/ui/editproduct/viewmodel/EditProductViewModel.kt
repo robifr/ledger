@@ -100,7 +100,7 @@ constructor(
       // The initial product ID shouldn't be null when editing data.
       _selectProductById(
               _savedStateHandle.get<Long>(
-                  EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key)!!)
+                  EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key())!!)
           ?.let {
             withContext(Dispatchers.Main) {
               _initialProductToEdit = it

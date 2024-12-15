@@ -39,7 +39,7 @@ class QueueFilterCustomer(
               R.id.filterCustomerFragment,
               Bundle().apply {
                 putLongArray(
-                    FilterCustomerFragment.Arguments.INITIAL_FILTERED_CUSTOMER_IDS_LONG_ARRAY.key,
+                    FilterCustomerFragment.Arguments.INITIAL_FILTERED_CUSTOMER_IDS_LONG_ARRAY.key(),
                     _fragment.queueViewModel.filterView.uiState.safeValue.customerIds.toLongArray())
               })
       dialog.dismiss()

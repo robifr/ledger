@@ -60,7 +60,7 @@ constructor(
           SelectProductState(
               initialSelectedProduct =
                   savedStateHandle.get<ProductModel>(
-                      SelectProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_PARCELABLE.key),
+                      SelectProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_PARCELABLE.key()),
               selectedProductOnDatabase = null,
               products = listOf(),
               expandedProductIndex = -1,

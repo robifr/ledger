@@ -62,16 +62,16 @@ constructor(
           SearchCustomerState(
               isSelectionEnabled =
                   savedStateHandle.get<Boolean>(
-                      SearchCustomerFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key) ?: false,
+                      SearchCustomerFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key()) ?: false,
               initialQuery =
                   savedStateHandle.get<String>(
-                      SearchCustomerFragment.Arguments.INITIAL_QUERY_STRING.key) ?: "",
+                      SearchCustomerFragment.Arguments.INITIAL_QUERY_STRING.key()) ?: "",
               query = "",
               initialSelectedCustomerIds =
                   savedStateHandle
                       .get<LongArray>(
                           SearchCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_IDS_LONG_ARRAY
-                              .key)
+                              .key())
                       ?.toList() ?: listOf(),
               customers = listOf(),
               expandedCustomerIndex = -1))

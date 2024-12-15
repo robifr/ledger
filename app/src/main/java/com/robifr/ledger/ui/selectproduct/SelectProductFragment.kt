@@ -87,7 +87,7 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     super.onStart()
     // Result should be called after all the view model state fully observed.
     parentFragmentManager.setFragmentResultListener(
-        SearchProductFragment.Request.SELECT_PRODUCT.key,
+        SearchProductFragment.Request.SELECT_PRODUCT.key(),
         viewLifecycleOwner,
         ::_onSearchProductResult)
   }
@@ -100,9 +100,10 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                   R.id.searchProductFragment,
                   Bundle().apply {
                     putBoolean(
-                        SearchProductFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key, true)
+                        SearchProductFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key(), true)
                     putLongArray(
-                        SearchProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_IDS_LONG_ARRAY.key,
+                        SearchProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_IDS_LONG_ARRAY
+                            .key(),
                         listOfNotNull(
                                 selectProductViewModel.uiState.safeValue.initialSelectedProduct?.id)
                             .toLongArray())
@@ -126,9 +127,9 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   private fun _onResultState(state: SelectProductResultState) {
     parentFragmentManager.setFragmentResult(
-        Request.SELECT_PRODUCT.key,
+        Request.SELECT_PRODUCT.key(),
         Bundle().apply {
-          state.selectedProductId?.let { putLong(Result.SELECTED_PRODUCT_ID_LONG.key, it) }
+          state.selectedProductId?.let { putLong(Result.SELECTED_PRODUCT_ID_LONG.key(), it) }
         })
     finish()
   }
@@ -142,10 +143,10 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onSearchProductResult(requestKey: String, result: Bundle) {
-    when (SearchProductFragment.Request.entries.find { it.key == requestKey }) {
+    when (SearchProductFragment.Request.entries.find { it.key() == requestKey }) {
       SearchProductFragment.Request.SELECT_PRODUCT -> {
         val productId: Long =
-            result.getLong(SearchProductFragment.Result.SELECTED_PRODUCT_ID_LONG.key)
+            result.getLong(SearchProductFragment.Result.SELECTED_PRODUCT_ID_LONG.key())
         if (productId != 0L) {
           selectProductViewModel.uiState.safeValue.products
               .find { it.id != null && it.id == productId }

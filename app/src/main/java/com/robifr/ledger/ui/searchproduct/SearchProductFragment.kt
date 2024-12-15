@@ -116,9 +116,9 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
   private fun _onResultState(state: SearchProductResultState) {
     if (searchProductViewModel.uiState.safeValue.isSelectionEnabled) {
       parentFragmentManager.setFragmentResult(
-          Request.SELECT_PRODUCT.key,
+          Request.SELECT_PRODUCT.key(),
           Bundle().apply {
-            state.selectedProductId?.let { putLong(Result.SELECTED_PRODUCT_ID_LONG.key, it) }
+            state.selectedProductId?.let { putLong(Result.SELECTED_PRODUCT_ID_LONG.key(), it) }
           })
     }
     finish()

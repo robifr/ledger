@@ -60,7 +60,7 @@ constructor(
           SelectCustomerState(
               initialSelectedCustomer =
                   savedStateHandle.get<CustomerModel>(
-                      SelectCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_PARCELABLE.key),
+                      SelectCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_PARCELABLE.key()),
               selectedCustomerOnDatabase = null,
               customers = listOf(),
               expandedCustomerIndex = -1,

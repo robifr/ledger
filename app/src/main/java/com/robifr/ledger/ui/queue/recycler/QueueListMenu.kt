@@ -41,7 +41,8 @@ class QueueListMenu(
               .navigate(
                   R.id.editQueueFragment,
                   Bundle().apply {
-                    putLong(EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key, queueId)
+                    putLong(
+                        EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key(), queueId)
                   })
           _dialog.dismiss()
         }

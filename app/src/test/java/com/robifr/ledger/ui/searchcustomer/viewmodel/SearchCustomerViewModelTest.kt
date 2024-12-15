@@ -70,10 +70,10 @@ class SearchCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel =
         SearchCustomerViewModel(
             SavedStateHandle().apply {
-              set(SearchCustomerFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key, true)
-              set(SearchCustomerFragment.Arguments.INITIAL_QUERY_STRING.key, "Amy")
+              set(SearchCustomerFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key(), true)
+              set(SearchCustomerFragment.Arguments.INITIAL_QUERY_STRING.key(), "Amy")
               set(
-                  SearchCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_IDS_LONG_ARRAY.key,
+                  SearchCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_IDS_LONG_ARRAY.key(),
                   longArrayOf(111L))
             },
             _dispatcher,

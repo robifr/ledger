@@ -87,7 +87,7 @@ class SelectCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     super.onStart()
     // Result should be called after all the view model state fully observed.
     parentFragmentManager.setFragmentResultListener(
-        SearchCustomerFragment.Request.SELECT_CUSTOMER.key,
+        SearchCustomerFragment.Request.SELECT_CUSTOMER.key(),
         viewLifecycleOwner,
         ::_onSearchCustomerResult)
   }
@@ -100,10 +100,10 @@ class SelectCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                   R.id.searchCustomerFragment,
                   Bundle().apply {
                     putBoolean(
-                        SearchCustomerFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key, true)
+                        SearchCustomerFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key(), true)
                     putLongArray(
                         SearchCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_IDS_LONG_ARRAY
-                            .key,
+                            .key(),
                         listOfNotNull(
                                 selectCustomerViewModel.uiState.safeValue.initialSelectedCustomer
                                     ?.id)
@@ -128,9 +128,9 @@ class SelectCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   private fun _onResultState(state: SelectCustomerResultState) {
     parentFragmentManager.setFragmentResult(
-        Request.SELECT_CUSTOMER.key,
+        Request.SELECT_CUSTOMER.key(),
         Bundle().apply {
-          state.selectedCustomerId?.let { putLong(Result.SELECTED_CUSTOMER_ID_LONG.key, it) }
+          state.selectedCustomerId?.let { putLong(Result.SELECTED_CUSTOMER_ID_LONG.key(), it) }
         })
     finish()
   }
@@ -144,10 +144,10 @@ class SelectCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onSearchCustomerResult(requestKey: String, result: Bundle) {
-    when (SearchCustomerFragment.Request.entries.find { it.key == requestKey }) {
+    when (SearchCustomerFragment.Request.entries.find { it.key() == requestKey }) {
       SearchCustomerFragment.Request.SELECT_CUSTOMER -> {
         val customerId: Long =
-            result.getLong(SearchCustomerFragment.Result.SELECTED_CUSTOMER_ID_LONG.key)
+            result.getLong(SearchCustomerFragment.Result.SELECTED_CUSTOMER_ID_LONG.key())
         if (customerId != 0L) {
           selectCustomerViewModel.uiState.safeValue.customers
               .find { it.id != null && it.id == customerId }

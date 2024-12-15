@@ -35,7 +35,7 @@ class CreateQueueCustomer(private val _fragment: CreateQueueFragment) {
               R.id.selectCustomerFragment,
               Bundle().apply {
                 putParcelable(
-                    SelectCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_PARCELABLE.key,
+                    SelectCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_PARCELABLE.key(),
                     _fragment.createQueueViewModel.uiState.safeValue.customer)
               })
     }

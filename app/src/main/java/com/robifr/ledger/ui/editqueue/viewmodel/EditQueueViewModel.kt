@@ -147,7 +147,7 @@ constructor(
       // The initial queue ID shouldn't be null when editing data.
       _selectQueueById(
               _savedStateHandle.get<Long>(
-                  EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key)!!)
+                  EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key())!!)
           ?.let {
             withContext(Dispatchers.Main) {
               _initialQueueToEdit = it

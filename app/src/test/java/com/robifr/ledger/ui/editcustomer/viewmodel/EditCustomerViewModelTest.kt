@@ -76,7 +76,7 @@ class EditCustomerViewModelTest(
             _customerRepository,
             SavedStateHandle().apply {
               set(
-                  EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key,
+                  EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key(),
                   _customerToEdit.id)
             })
     _viewModel.editResultState.observe(_lifecycleOwner, _resultStateObserver)
@@ -104,7 +104,7 @@ class EditCustomerViewModelTest(
                 _dispatcher,
                 _customerRepository,
                 SavedStateHandle().apply {
-                  set(EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key, null)
+                  set(EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key(), null)
                 })
         advanceUntilIdle()
       }

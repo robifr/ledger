@@ -29,10 +29,10 @@ import com.robifr.ledger.util.ClassPath
  * // DataReceiverFragment.kt
  * // Listening request from another fragment.
  * parentFragmentManager.setFragmentResultListener(
- *     DataSenderFragment.Request.REQUEST_ID.key, viewLifecycleOwner) { requestKey, result ->
- *       if (requestKey == DataSenderFragment.Request.REQUEST_ID.key) {
+ *     DataSenderFragment.Request.REQUEST_ID.key(), viewLifecycleOwner) { requestKey, result ->
+ *       if (requestKey == DataSenderFragment.Request.REQUEST_ID.key()) {
  *         // Data received: 100L
- *         result.getLong(DataSenderFragment.Result.RESULTED_ID_LONG.key)
+ *         result.getLong(DataSenderFragment.Result.RESULTED_ID_LONG.key())
  *       }
  *     }
  *
@@ -52,13 +52,12 @@ import com.robifr.ledger.util.ClassPath
  * // Somewhere in DataSenderFragment.kt
  * // Send result.
  * parentFragmentManager.setFragmentResult(
- *    Request.RESULTED_ID.key,
- *    Bundle().apply { putLong(Result.RESULTED_ID.key, 100L) })
+ *    Request.RESULTED_ID.key(),
+ *    Bundle().apply { putLong(Result.RESULTED_ID.key(), 100L) })
  * ```
  */
 interface FragmentResultKey {
   /** Generated key from [ClassPath.fullName] to transfer data between fragments. */
-  val key: String
-    get() =
-        if (this is Enum<*>) ClassPath.fullName(this as Enum<*>) else ClassPath.fullName(javaClass)
+  fun key(): String =
+      if (this is Enum<*>) ClassPath.fullName(this as Enum<*>) else ClassPath.fullName(javaClass)
 }

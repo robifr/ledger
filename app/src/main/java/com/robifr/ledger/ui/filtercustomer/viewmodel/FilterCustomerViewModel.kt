@@ -123,7 +123,7 @@ constructor(
         withContext(Dispatchers.Main) {
           val filteredCustomerIds: LongArray =
               _savedStateHandle.get<LongArray>(
-                  FilterCustomerFragment.Arguments.INITIAL_FILTERED_CUSTOMER_IDS_LONG_ARRAY.key)
+                  FilterCustomerFragment.Arguments.INITIAL_FILTERED_CUSTOMER_IDS_LONG_ARRAY.key())
                   ?: longArrayOf()
           val filteredCustomer: List<CustomerModel> =
               customers.filter { it.id != null && filteredCustomerIds.contains(it.id) }

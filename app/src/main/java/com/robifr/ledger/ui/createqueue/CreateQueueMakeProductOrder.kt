@@ -46,7 +46,7 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
                   R.id.selectProductFragment,
                   Bundle().apply {
                     putParcelable(
-                        SelectProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_PARCELABLE.key,
+                        SelectProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_PARCELABLE.key(),
                         _fragment.createQueueViewModel.makeProductOrderView.uiState.safeValue
                             .product)
                   })

@@ -38,9 +38,9 @@ class EditQueueFragment : CreateQueueFragment() {
 
   private fun _onResultState(state: EditQueueResultState) {
     parentFragmentManager.setFragmentResult(
-        Request.EDIT_QUEUE.key,
+        Request.EDIT_QUEUE.key(),
         Bundle().apply {
-          state.editedQueueId?.let { putLong(Result.EDITED_QUEUE_ID_LONG.key, it) }
+          state.editedQueueId?.let { putLong(Result.EDITED_QUEUE_ID_LONG.key(), it) }
         })
     finish()
   }

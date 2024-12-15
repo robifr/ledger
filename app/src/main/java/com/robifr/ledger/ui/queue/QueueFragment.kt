@@ -83,7 +83,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     super.onStart()
     // Result should be called after all the view model state fully observed.
     parentFragmentManager.setFragmentResultListener(
-        FilterCustomerFragment.Request.FILTER_CUSTOMER.key,
+        FilterCustomerFragment.Request.FILTER_CUSTOMER.key(),
         viewLifecycleOwner,
         ::_onFilterCustomerResult)
   }
@@ -126,10 +126,11 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onFilterCustomerResult(requestKey: String, result: Bundle) {
-    when (FilterCustomerFragment.Request.entries.find { it.key == requestKey }) {
+    when (FilterCustomerFragment.Request.entries.find { it.key() == requestKey }) {
       FilterCustomerFragment.Request.FILTER_CUSTOMER -> {
         val filteredCustomerIds: LongArray =
-            result.getLongArray(FilterCustomerFragment.Result.FILTERED_CUSTOMER_IDS_LONG_ARRAY.key)
+            result.getLongArray(
+                FilterCustomerFragment.Result.FILTERED_CUSTOMER_IDS_LONG_ARRAY.key())
                 ?: longArrayOf()
         queueViewModel.filterView.onCustomerIdsChanged(filteredCustomerIds.toList())
         _filter.openDialog()

@@ -88,7 +88,7 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
               R.id.searchCustomerFragment,
               Bundle().apply {
                 putString(
-                    SearchCustomerFragment.Arguments.INITIAL_QUERY_STRING.key,
+                    SearchCustomerFragment.Arguments.INITIAL_QUERY_STRING.key(),
                     _searchViewModel.uiState.safeValue.query)
               })
     }
@@ -99,7 +99,7 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
               R.id.searchProductFragment,
               Bundle().apply {
                 putString(
-                    SearchProductFragment.Arguments.INITIAL_QUERY_STRING.key,
+                    SearchProductFragment.Arguments.INITIAL_QUERY_STRING.key(),
                     _searchViewModel.uiState.safeValue.query)
               })
     }

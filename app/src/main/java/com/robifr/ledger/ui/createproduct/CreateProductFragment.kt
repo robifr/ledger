@@ -94,9 +94,9 @@ open class CreateProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   private fun _onResultState(state: CreateProductResultState) {
     parentFragmentManager.setFragmentResult(
-        Request.CREATE_PRODUCT.key,
+        Request.CREATE_PRODUCT.key(),
         Bundle().apply {
-          state.createdProductId?.let { putLong(Result.CREATED_PRODUCT_ID_LONG.key, it) }
+          state.createdProductId?.let { putLong(Result.CREATED_PRODUCT_ID_LONG.key(), it) }
         })
     finish()
   }

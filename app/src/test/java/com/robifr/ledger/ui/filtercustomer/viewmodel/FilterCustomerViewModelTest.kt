@@ -62,7 +62,7 @@ class FilterCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
             _customerRepository,
             SavedStateHandle().apply {
               set(
-                  FilterCustomerFragment.Arguments.INITIAL_FILTERED_CUSTOMER_IDS_LONG_ARRAY.key,
+                  FilterCustomerFragment.Arguments.INITIAL_FILTERED_CUSTOMER_IDS_LONG_ARRAY.key(),
                   listOfNotNull(_firstCustomer.id).toLongArray())
             })
     assertEquals(

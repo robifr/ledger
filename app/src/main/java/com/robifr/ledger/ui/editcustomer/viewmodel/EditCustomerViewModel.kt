@@ -98,7 +98,7 @@ constructor(
       // The initial customer ID shouldn't be null when editing data.
       _selectCustomerById(
               _savedStateHandle.get<Long>(
-                  EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key)!!)
+                  EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key())!!)
           ?.let {
             withContext(Dispatchers.Main) {
               _initialCustomerToEdit = it

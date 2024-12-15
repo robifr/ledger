@@ -42,7 +42,7 @@ class ProductListMenu(
                   R.id.editProductFragment,
                   Bundle().apply {
                     putLong(
-                        EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key,
+                        EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key(),
                         productId)
                   })
           _dialog.dismiss()

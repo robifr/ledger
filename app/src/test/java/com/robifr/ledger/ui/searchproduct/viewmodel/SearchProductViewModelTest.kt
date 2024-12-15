@@ -69,10 +69,10 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel =
         SearchProductViewModel(
             SavedStateHandle().apply {
-              set(SearchProductFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key, true)
-              set(SearchProductFragment.Arguments.INITIAL_QUERY_STRING.key, "Apple")
+              set(SearchProductFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key(), true)
+              set(SearchProductFragment.Arguments.INITIAL_QUERY_STRING.key(), "Apple")
               set(
-                  SearchProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_IDS_LONG_ARRAY.key,
+                  SearchProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_IDS_LONG_ARRAY.key(),
                   longArrayOf(111L))
             },
             _dispatcher,

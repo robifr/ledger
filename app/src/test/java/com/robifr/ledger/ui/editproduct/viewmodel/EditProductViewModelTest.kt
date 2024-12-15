@@ -78,7 +78,7 @@ class EditProductViewModelTest(
             _productRepository,
             SavedStateHandle().apply {
               set(
-                  EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key,
+                  EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key(),
                   _productToEdit.id)
             })
     _viewModel.editResultState.observe(_lifecycleOwner, _resultStateObserver)
@@ -105,7 +105,7 @@ class EditProductViewModelTest(
                 _dispatcher,
                 _productRepository,
                 SavedStateHandle().apply {
-                  set(EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key, null)
+                  set(EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key(), null)
                 })
         advanceUntilIdle()
       }

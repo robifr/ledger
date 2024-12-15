@@ -102,9 +102,9 @@ open class CreateCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener 
 
   private fun _onResultState(state: CreateCustomerResultState) {
     parentFragmentManager.setFragmentResult(
-        Request.CREATE_CUSTOMER.key,
+        Request.CREATE_CUSTOMER.key(),
         Bundle().apply {
-          state.createdCustomerId?.let { putLong(Result.CREATED_CUSTOMER_ID_LONG.key, it) }
+          state.createdCustomerId?.let { putLong(Result.CREATED_CUSTOMER_ID_LONG.key(), it) }
         })
     finish()
   }

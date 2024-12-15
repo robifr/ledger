@@ -97,11 +97,11 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     super.onStart()
     // Result should be called after all the view model state fully observed.
     parentFragmentManager.setFragmentResultListener(
-        SelectCustomerFragment.Request.SELECT_CUSTOMER.key,
+        SelectCustomerFragment.Request.SELECT_CUSTOMER.key(),
         viewLifecycleOwner,
         ::_onSelectCustomerResult)
     parentFragmentManager.setFragmentResultListener(
-        SelectProductFragment.Request.SELECT_PRODUCT.key,
+        SelectProductFragment.Request.SELECT_PRODUCT.key(),
         viewLifecycleOwner,
         ::_onSelectProductResult)
   }
@@ -121,9 +121,9 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   private fun _onResultState(state: CreateQueueResultState) {
     parentFragmentManager.setFragmentResult(
-        Request.CREATE_QUEUE.key,
+        Request.CREATE_QUEUE.key(),
         Bundle().apply {
-          state.createdQueueId?.let { putLong(Result.CREATED_QUEUE_ID_LONG.key, it) }
+          state.createdQueueId?.let { putLong(Result.CREATED_QUEUE_ID_LONG.key(), it) }
         })
     finish()
   }
@@ -195,10 +195,10 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onSelectCustomerResult(requestKey: String, result: Bundle) {
-    when (SelectCustomerFragment.Request.entries.find { it.key == requestKey }) {
+    when (SelectCustomerFragment.Request.entries.find { it.key() == requestKey }) {
       SelectCustomerFragment.Request.SELECT_CUSTOMER -> {
         val customerId: Long =
-            result.getLong(SelectCustomerFragment.Result.SELECTED_CUSTOMER_ID_LONG.key)
+            result.getLong(SelectCustomerFragment.Result.SELECTED_CUSTOMER_ID_LONG.key())
         if (customerId != 0L) {
           createQueueViewModel
               .selectCustomerById(customerId)
@@ -212,10 +212,10 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onSelectProductResult(requestKey: String, result: Bundle) {
-    when (SelectProductFragment.Request.entries.find { it.key == requestKey }) {
+    when (SelectProductFragment.Request.entries.find { it.key() == requestKey }) {
       SelectProductFragment.Request.SELECT_PRODUCT -> {
         val productId: Long =
-            result.getLong(SelectProductFragment.Result.SELECTED_PRODUCT_ID_LONG.key)
+            result.getLong(SelectProductFragment.Result.SELECTED_PRODUCT_ID_LONG.key())
         val onProductChanged: (ProductModel?) -> Unit = {
           // The dialog should be opened first to avoid overwriting the product.
           createQueueViewModel.makeProductOrderView.onDialogShown(

@@ -62,16 +62,16 @@ constructor(
           SearchProductState(
               isSelectionEnabled =
                   savedStateHandle.get<Boolean>(
-                      SearchProductFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key) ?: false,
+                      SearchProductFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key()) ?: false,
               initialQuery =
                   savedStateHandle.get<String>(
-                      SearchProductFragment.Arguments.INITIAL_QUERY_STRING.key) ?: "",
+                      SearchProductFragment.Arguments.INITIAL_QUERY_STRING.key()) ?: "",
               query = "",
               initialSelectedProductIds =
                   savedStateHandle
                       .get<LongArray>(
                           SearchProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_IDS_LONG_ARRAY
-                              .key)
+                              .key())
                       ?.toList() ?: listOf(),
               products = listOf(),
               expandedProductIndex = -1))

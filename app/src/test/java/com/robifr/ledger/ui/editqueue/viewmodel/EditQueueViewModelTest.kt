@@ -97,7 +97,7 @@ class EditQueueViewModelTest(
             _savedStateHandle =
                 SavedStateHandle().apply {
                   set(
-                      EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key,
+                      EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key(),
                       _queueToEdit.id)
                 })
     _viewModel.editResultState.observe(_lifecycleOwner, _resultStateObserver)
@@ -132,7 +132,7 @@ class EditQueueViewModelTest(
                 productRepository = mockk(),
                 _savedStateHandle =
                     SavedStateHandle().apply {
-                      set(EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key, null)
+                      set(EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key(), null)
                     })
         advanceUntilIdle()
       }
@@ -157,7 +157,7 @@ class EditQueueViewModelTest(
             _savedStateHandle =
                 SavedStateHandle().apply {
                   set(
-                      EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key,
+                      EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key(),
                       _queueToEdit.id)
                 })
 

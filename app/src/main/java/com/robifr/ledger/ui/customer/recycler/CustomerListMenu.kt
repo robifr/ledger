@@ -42,7 +42,7 @@ class CustomerListMenu(
                   R.id.editCustomerFragment,
                   Bundle().apply {
                     putLong(
-                        EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key,
+                        EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key(),
                         customerId)
                   })
           _dialog.dismiss()

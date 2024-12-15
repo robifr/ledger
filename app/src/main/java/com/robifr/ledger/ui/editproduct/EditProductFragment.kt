@@ -38,9 +38,9 @@ class EditProductFragment : CreateProductFragment() {
 
   private fun _onResultState(state: EditProductResultState) {
     parentFragmentManager.setFragmentResult(
-        Request.EDIT_PRODUCT.key,
+        Request.EDIT_PRODUCT.key(),
         Bundle().apply {
-          state.editedProductId?.let { putLong(Result.EDITED_PRODUCT_ID_LONG.key, it) }
+          state.editedProductId?.let { putLong(Result.EDITED_PRODUCT_ID_LONG.key(), it) }
         })
     finish()
   }
