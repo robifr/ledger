@@ -29,7 +29,7 @@ import com.robifr.ledger.data.display.QueueFilterer
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.SafeLiveData
-import com.robifr.ledger.ui.SafeMediatorLiveData
+import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.dashboard.DashboardRevenue
 import com.robifr.ledger.ui.dashboard.chart.RevenueChartModel
@@ -57,8 +57,8 @@ class DashboardRevenueViewModel(
                     .filter(it))
           })
 
-  private val _uiState: SafeMediatorLiveData<DashboardRevenueState> =
-      SafeMediatorLiveData(
+  private val _uiState: SafeMutableLiveData<DashboardRevenueState> =
+      SafeMutableLiveData(
           DashboardRevenueState(
               date = QueueDate(QueueDate.Range.ALL_TIME),
               queues = listOf(),
