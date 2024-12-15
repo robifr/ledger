@@ -18,6 +18,7 @@ package com.robifr.ledger.ui.createcustomer.viewmodel
 
 import androidx.appcompat.app.AppCompatDelegate
 import com.robifr.ledger.ui.SafeLiveData
+import com.robifr.ledger.ui.SafeMediatorLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.util.CurrencyFormat
 import java.math.BigDecimal
@@ -29,11 +30,15 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
   val addBalanceState: SafeLiveData<CustomerBalanceAddState>
     get() = _addBalanceState
 
-  private val _withdrawBalanceState: SafeMutableLiveData<CustomerBalanceWithdrawState> =
-      SafeMutableLiveData(
-          CustomerBalanceWithdrawState(
-              formattedAmount = "",
-              availableAmountToWithdraw = _createCustomerViewModel.uiState.safeValue.balance))
+  private val _withdrawBalanceState: SafeMediatorLiveData<CustomerBalanceWithdrawState> =
+      SafeMediatorLiveData(
+              CustomerBalanceWithdrawState(formattedAmount = "", availableAmountToWithdraw = 0L))
+          .apply {
+            addSource(_createCustomerViewModel.uiState.toLiveData()) {
+              _withdrawBalanceState.setValue(
+                  _withdrawBalanceState.safeValue.copy(availableAmountToWithdraw = it.balance))
+            }
+          }
   val withdrawBalanceState: SafeLiveData<CustomerBalanceWithdrawState>
     get() = _withdrawBalanceState
 
