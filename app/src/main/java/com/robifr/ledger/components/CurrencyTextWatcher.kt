@@ -56,7 +56,7 @@ open class CurrencyTextWatcher(
       // The entire text should be cleared when deleting "1" in "$1|" (the bar is cursor).
       val text: String = if (newText().count { it.isDigit() } == 0) "" else oldText()
       _view.setText(text)
-      _view.setSelection(max(0, min(_oldCursorPosition - 1, text.length)))
+      _view.setSelection(max(0, min(_oldCursorPosition - 1, _view.text.length)))
       _isEditing = false
       return
     }
@@ -80,7 +80,7 @@ open class CurrencyTextWatcher(
               decimalSeparator +
               formattedText.substring(lastDigitIndex)
       _view.setText(textWithDecimalSeparator)
-      _view.setSelection(max(0, min(_oldCursorPosition, textWithDecimalSeparator.length)))
+      _view.setSelection(max(0, min(_oldCursorPosition, _view.text.length)))
       _isEditing = false
       return
     }
@@ -96,14 +96,14 @@ open class CurrencyTextWatcher(
       val oldCursorPosition: Int =
           if (_isBackspaceClicked) _oldCursorPosition - 1 else _oldCursorPosition + 1
       _view.setText(newText())
-      _view.setSelection(max(0, min(oldCursorPosition, newText().length)))
+      _view.setSelection(max(0, min(oldCursorPosition, _view.text.length)))
       _isEditing = false
       return
     }
 
     val cursorPosition: Int = _calculateCursorPosition(formattedText, decimalSeparator, symbol)
     _view.setText(formattedText)
-    _view.setSelection(max(0, min(cursorPosition, formattedText.length)))
+    _view.setSelection(max(0, min(cursorPosition, _view.text.length)))
     _isEditing = false
   }
 
