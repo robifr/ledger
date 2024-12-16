@@ -69,15 +69,11 @@
 
   <!-- Main activity. -->
   <!-- Permission. -->
-  <string name="main_storageAccessPermission">Izin akses penyimpanan diperlukan</string>
+  <string name="main_storageAccessPermission"><![CDATA[<b>Izin akses penyimpanan diperlukan</b>]]></string>
   <string name="main_storageAccessPermission_description">
     <![CDATA[
-      <p>
-        Izin ini diperlukan untuk memastikan persistensi data.
-        Memberikan izin ini memungkinkan aplikasi menyimpan semua data bahkan setelah pencopotan pemasangan.
-        Data disimpan di dalam <br/>
-        \'/storage/emulated/0/Documents/.ledger/\'
-      </p>
+      Izin ini diperlukan agar aplikasi dapat menyimpan semua data, bahkan setelah pencopotan pemasangan.
+      Data disimpan di dalam: <tt>/storage/emulated/0/Documents/.ledger/</tt>
     ]]>
   </string>
   <!-- Navigation. -->

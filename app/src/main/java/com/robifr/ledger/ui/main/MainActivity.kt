@@ -127,7 +127,9 @@ class MainActivity :
             Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
             Uri.fromParts("package", packageName, null))
     MaterialAlertDialogBuilder(this)
-        .setTitle(R.string.main_storageAccessPermission)
+        .setTitle(
+            HtmlCompat.fromHtml(
+                getString(R.string.main_storageAccessPermission), HtmlCompat.FROM_HTML_MODE_LEGACY))
         .setMessage(
             HtmlCompat.fromHtml(
                 getString(R.string.main_storageAccessPermission_description),

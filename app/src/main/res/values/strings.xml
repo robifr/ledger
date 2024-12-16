@@ -76,15 +76,11 @@
 
   <!-- Main activity. -->
   <!-- Permission. -->
-  <string name="main_storageAccessPermission">Storage access permission required</string>
+  <string name="main_storageAccessPermission"><![CDATA[<b>Storage access permission required</b>]]></string>
   <string name="main_storageAccessPermission_description">
     <![CDATA[
-      <p>
-        This permission is required to ensure data persistence.
-        Granting this permission allows the app to retain all data even after uninstallation.
-        The data is stored inside <br/>
-        \'/storage/emulated/0/Documents/.ledger/\'
-      </p>
+      This permission is required to allow the app to retain all data, even after uninstallation.
+      The data is stored in: <tt>/storage/emulated/0/Documents/.ledger/</tt>
     ]]>
   </string>
   <!-- Navigation. -->
