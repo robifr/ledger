@@ -45,12 +45,6 @@ data class CreateQueueState(
   val isTemporalCustomerSummaryVisible: Boolean
     get() = customer != null
 
-  @StringRes
-  fun dateFormat(): Int =
-      LanguageOption.entries
-          .find { it.languageTag == AppCompatDelegate.getApplicationLocales().toLanguageTags() }
-          ?.fullDateFormat ?: LanguageOption.ENGLISH_US.fullDateFormat
-
   @get:ColorRes
   val customerDebtColorRes: Int
     get() =
@@ -62,4 +56,10 @@ data class CreateQueueState(
 
   val isPaymentMethodVisible: Boolean
     get() = status == QueueModel.Status.COMPLETED
+
+  @StringRes
+  fun dateFormat(): Int =
+      LanguageOption.entries
+          .find { it.languageTag == AppCompatDelegate.getApplicationLocales().toLanguageTags() }
+          ?.fullDateFormat ?: LanguageOption.ENGLISH_US.fullDateFormat
 }
