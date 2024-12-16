@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.createcustomer
 
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -150,9 +149,7 @@ private class OnBackPressedHandler(private val _fragment: CreateCustomerFragment
     MaterialAlertDialogBuilder(_fragment.requireContext())
         .setMessage(R.string.createCustomer_unsavedChangesWarning)
         .setNegativeButton(R.string.action_discardAndLeave) { _, _ -> _fragment.finish() }
-        .setPositiveButton(R.string.action_cancel) { dialog: DialogInterface?, _ ->
-          dialog?.dismiss()
-        }
+        .setPositiveButton(R.string.action_cancel) { _, _ -> }
         .show()
   }
 }

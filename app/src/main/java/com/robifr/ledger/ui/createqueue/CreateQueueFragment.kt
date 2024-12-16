@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.createqueue
 
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -249,9 +248,7 @@ private class OnBackPressedHandler(private val _fragment: CreateQueueFragment) :
     MaterialAlertDialogBuilder(_fragment.requireContext())
         .setMessage(R.string.createQueue_unsavedChangesWarning)
         .setNegativeButton(R.string.action_discardAndLeave) { _, _ -> _fragment.finish() }
-        .setPositiveButton(R.string.action_cancel) { dialog: DialogInterface?, _ ->
-          dialog?.dismiss()
-        }
+        .setPositiveButton(R.string.action_cancel) { _, _ -> }
         .show()
   }
 }

@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.createcustomer
 
-import android.content.DialogInterface
 import android.text.Editable
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
@@ -35,12 +34,9 @@ class CreateCustomerBalance(private val _fragment: CreateCustomerFragment) {
   private val _withdrawBalanceDialog: AlertDialog =
       MaterialAlertDialogBuilder(_fragment.requireContext())
           .setView(_withdrawBalanceDialogBinding.root)
-          .setNegativeButton(R.string.action_cancel) { dialog: DialogInterface?, _ ->
-            dialog?.dismiss()
-          }
-          .setPositiveButton(R.string.action_withdraw) { dialog: DialogInterface?, _ ->
+          .setNegativeButton(R.string.action_cancel) { _, _ -> }
+          .setPositiveButton(R.string.action_withdraw) { _, _ ->
             _fragment.createCustomerViewModel.balanceView.onWithdrawBalanceSubmitted()
-            dialog?.dismiss()
           }
           .create()
           .apply {
@@ -59,12 +55,9 @@ class CreateCustomerBalance(private val _fragment: CreateCustomerFragment) {
   private val _addBalanceDialog: AlertDialog =
       MaterialAlertDialogBuilder(_fragment.requireContext())
           .setView(_addBalanceDialogBinding.root)
-          .setNegativeButton(R.string.action_cancel) { dialog: DialogInterface?, _ ->
-            dialog?.dismiss()
-          }
-          .setPositiveButton(R.string.action_add) { dialog: DialogInterface?, _ ->
+          .setNegativeButton(R.string.action_cancel) { _, _ -> }
+          .setPositiveButton(R.string.action_add) { _, _ ->
             _fragment.createCustomerViewModel.balanceView.onAddBalanceSubmitted()
-            dialog?.dismiss()
           }
           .create()
           .apply {

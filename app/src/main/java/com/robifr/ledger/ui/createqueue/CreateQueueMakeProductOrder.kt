@@ -56,16 +56,12 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
   private val _dialog: AlertDialog =
       MaterialAlertDialogBuilder(_fragment.requireContext())
           .setView(_dialogBinding.root)
-          .setNegativeButton(R.string.action_cancel) { dialog: DialogInterface?, _ ->
-            dialog?.dismiss()
-          }
-          .setPositiveButton(R.string.action_add) { dialog: DialogInterface?, _ ->
+          .setNegativeButton(R.string.action_cancel) { _, _ -> }
+          .setPositiveButton(R.string.action_add) { _, _ ->
             _fragment.createQueueViewModel.makeProductOrderView.onSave()
-            dialog?.dismiss()
           }
           .create()
           .apply {
-            setContentView(_dialogBinding.root)
             setOnDismissListener {
               _fragment.createQueueViewModel.makeProductOrderView.onDialogClosed()
               currentFocus?.clearFocus()

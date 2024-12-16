@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.createproduct
 
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -130,9 +129,7 @@ private class OnBackPressedHandler(private val _fragment: CreateProductFragment)
     MaterialAlertDialogBuilder(_fragment.requireContext())
         .setMessage(R.string.createProduct_unsavedChangesWarning)
         .setNegativeButton(R.string.action_discardAndLeave) { _, _ -> _fragment.finish() }
-        .setPositiveButton(R.string.action_cancel) { dialog: DialogInterface?, _ ->
-          dialog?.dismiss()
-        }
+        .setPositiveButton(R.string.action_cancel) { _, _ -> }
         .show()
   }
 }
