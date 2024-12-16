@@ -18,9 +18,11 @@ package com.robifr.ledger.ui.customer.recycler
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import androidx.core.text.HtmlCompat
 import androidx.navigation.findNavController
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.robifr.ledger.R
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.databinding.CustomerCardDialogMenuBinding
@@ -48,8 +50,23 @@ class CustomerListMenu(
           _dialog.dismiss()
         }
         deleteButton.setOnClickListener {
-          onDeleteCustomer(customers()[customerIndex()])
-          _dialog.dismiss()
+          MaterialAlertDialogBuilder(holder.itemView.context)
+              .setTitle(
+                  HtmlCompat.fromHtml(
+                      holder.itemView.context.getString(R.string.customer_cardMenu_deleteWarning),
+                      HtmlCompat.FROM_HTML_MODE_LEGACY))
+              .setMessage(
+                  HtmlCompat.fromHtml(
+                      holder.itemView.context.getString(
+                          R.string.customer_cardMenu_deleteWarning_description,
+                          customers()[customerIndex()].name),
+                      HtmlCompat.FROM_HTML_MODE_LEGACY))
+              .setNegativeButton(R.string.action_delete) { _, _ ->
+                onDeleteCustomer(customers()[customerIndex()])
+                _dialog.dismiss()
+              }
+              .setPositiveButton(R.string.action_cancel) { _, _ -> }
+              .show()
         }
       }
   private val _dialog: BottomSheetDialog =

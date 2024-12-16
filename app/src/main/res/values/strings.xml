@@ -177,6 +177,13 @@
   <!-- Card menu. -->
   <string name="queue_cardMenu_edit" translatable="false">@string/action_edit</string>
   <string name="queue_cardMenu_delete" translatable="false">@string/action_delete</string>
+  <string name="queue_cardMenu_deleteWarning"><![CDATA[<b>Delete queue?</b>]]></string>
+  <string name="queue_cardMenu_deleteWarning_description">
+    <![CDATA[
+      Queue with ID \"%s\" will be permanently deleted and can\'t be recovered.
+      All related data will also be removed.
+    ]]>
+  </string>
   <!-- Snackbar. -->
   <string name="queue_deleteQueueError">Error! Failed to delete queue</string>
   <plurals name="queue_deleted_n_queue">
@@ -204,6 +211,13 @@
   <!-- Card menu. -->
   <string name="customer_cardMenu_edit" translatable="false">@string/action_edit</string>
   <string name="customer_cardMenu_delete" translatable="false">@string/action_delete</string>
+  <string name="customer_cardMenu_deleteWarning"><![CDATA[<b>Delete customer?</b>]]></string>
+  <string name="customer_cardMenu_deleteWarning_description">
+    <![CDATA[
+      \"%s\" will be permanently deleted and can\'t be recovered.
+      All related data will also be removed.
+    ]]>
+  </string>
   <!-- Snackbar. -->
   <string name="customer_deleteCustomerError">Error! Failed to delete customer</string>
   <plurals name="customer_deleted_n_customer" translatable="false">
@@ -231,6 +245,13 @@
   <!-- Card menu. -->
   <string name="product_cardMenu_edit" translatable="false">@string/action_edit</string>
   <string name="product_cardMenu_delete" translatable="false">@string/action_delete</string>
+  <string name="product_cardMenu_deleteWarning"><![CDATA[<b>Delete product?</b>]]></string>
+  <string name="product_cardMenu_deleteWarning_description">
+    <![CDATA[
+      \"%s\" will be permanently deleted and can\'t be recovered.
+      All related data will also be removed, except for the ordered product in the queue.
+    ]]>
+  </string>
   <!-- Snackbar. -->
   <string name="product_deleteProductError">Error! Failed to delete product</string>
   <plurals name="product_deleted_n_product" translatable="false">

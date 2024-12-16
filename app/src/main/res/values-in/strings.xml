@@ -170,6 +170,13 @@
   <!-- Card menu. -->
   <string name="queue_cardMenu_edit" translatable="false">@string/action_edit</string>
   <string name="queue_cardMenu_delete" translatable="false">@string/action_delete</string>
+  <string name="queue_cardMenu_deleteWarning"><![CDATA[<b>Hapus antrean?</b>]]></string>
+  <string name="queue_cardMenu_deleteWarning_description">
+    <![CDATA[
+      Antrean dengan ID \"%s\" akan dihapus secara permanen dan tidak dapat dipulihkan.
+      Semua data terkait juga akan dihapus.
+    ]]>
+  </string>
   <!-- Snackbar. -->
   <string name="queue_deleteQueueError">Kesalahan! Gagal menghapus antrean</string>
   <plurals name="queue_deleted_n_queue">
@@ -197,6 +204,13 @@
   <!-- Card menu. -->
   <string name="customer_cardMenu_edit" translatable="false">@string/action_edit</string>
   <string name="customer_cardMenu_delete" translatable="false">@string/action_delete</string>
+  <string name="customer_cardMenu_deleteWarning"><![CDATA[<b>Hapus pelanggan?</b>]]></string>
+  <string name="customer_cardMenu_deleteWarning_description">
+    <![CDATA[
+      \"%s\" akan dihapus secara permanen dan tidak dapat dipulihkan.
+      Semua data terkait juga akan dihapus.
+    ]]>
+  </string>
   <!-- Snackbar. -->
   <string name="customer_deleteCustomerError">Kesalahan! Gagal menghapus pelanggan</string>
   <plurals name="customer_deleted_n_customer" translatable="false">
@@ -224,6 +238,13 @@
   <!-- Card menu. -->
   <string name="product_cardMenu_edit" translatable="false">@string/action_edit</string>
   <string name="product_cardMenu_delete" translatable="false">@string/action_delete</string>
+  <string name="product_cardMenu_deleteWarning"><![CDATA[<b>Hapus produk?</b>]]></string>
+  <string name="product_cardMenu_deleteWarning_description">
+    <![CDATA[
+      \"%s\" akan dihapus secara permanen dan tidak dapat dipulihkan.
+      Semua data terkait juga akan dihapus, kecuali produk yang dipesan dalam antrean.
+    ]]>
+  </string>
   <!-- Snackbar. -->
   <string name="product_deleteProductError">Kesalahan! Gagal menghapus produk</string>
   <plurals name="product_deleted_n_product" translatable="false">

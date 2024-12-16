@@ -18,9 +18,11 @@ package com.robifr.ledger.ui.queue.recycler
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import androidx.core.text.HtmlCompat
 import androidx.navigation.findNavController
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.robifr.ledger.R
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.databinding.QueueCardDialogMenuBinding
@@ -47,8 +49,23 @@ class QueueListMenu(
           _dialog.dismiss()
         }
         deleteButton.setOnClickListener {
-          onDeleteQueue(queues()[queueIndex()])
-          _dialog.dismiss()
+          MaterialAlertDialogBuilder(holder.itemView.context)
+              .setTitle(
+                  HtmlCompat.fromHtml(
+                      holder.itemView.context.getString(R.string.queue_cardMenu_deleteWarning),
+                      HtmlCompat.FROM_HTML_MODE_LEGACY))
+              .setMessage(
+                  HtmlCompat.fromHtml(
+                      holder.itemView.context.getString(
+                          R.string.queue_cardMenu_deleteWarning_description,
+                          queues()[queueIndex()].id.toString()),
+                      HtmlCompat.FROM_HTML_MODE_LEGACY))
+              .setNegativeButton(R.string.action_delete) { _, _ ->
+                onDeleteQueue(queues()[queueIndex()])
+                _dialog.dismiss()
+              }
+              .setPositiveButton(R.string.action_cancel) { _, _ -> }
+              .show()
         }
       }
   private val _dialog: BottomSheetDialog =
