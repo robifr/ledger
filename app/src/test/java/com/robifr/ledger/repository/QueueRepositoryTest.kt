@@ -34,7 +34,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -49,7 +48,7 @@ import org.junit.jupiter.params.provider.MethodSource
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExperimentalCoroutinesApi
 @ExtendWith(MainCoroutineExtension::class)
-class QueueRepositoryTest(private val _dispatcher: TestDispatcher) {
+class QueueRepositoryTest {
   private lateinit var _queueRepository: QueueRepository
   private lateinit var _localDao: FakeQueueDao
   private lateinit var _transactionProvider: TransactionProvider
@@ -86,13 +85,13 @@ class QueueRepositoryTest(private val _dispatcher: TestDispatcher) {
     _modelChangedListener = spyk()
     _localDao = FakeQueueDao(mutableListOf(_queue))
     _productOrderDao = FakeProductOrderDao(mutableListOf(_productOrder))
-    _productOrderRepository = ProductOrderRepository(_dispatcher, _productOrderDao)
+    _productOrderRepository = ProductOrderRepository(_productOrderDao)
     _customerDao =
         FakeCustomerDao(
             data = mutableListOf(_customer),
             queueData = _localDao.data,
             productOrderData = _productOrderDao.data)
-    _customerRepository = CustomerRepository(_dispatcher, _customerDao)
+    _customerRepository = CustomerRepository(_customerDao)
 
     coEvery { _transactionProvider.withTransaction(capture(_withTransactionCaptor)) } coAnswers
         {
@@ -100,7 +99,6 @@ class QueueRepositoryTest(private val _dispatcher: TestDispatcher) {
         }
     _queueRepository =
         QueueRepository(
-            _dispatcher = _dispatcher,
             _localDao = _localDao,
             _transactionProvider = _transactionProvider,
             _customerRepository = _customerRepository,

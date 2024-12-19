@@ -26,7 +26,6 @@ import io.mockk.spyk
 import io.mockk.verify
 import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -41,7 +40,7 @@ import org.junit.jupiter.params.provider.MethodSource
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExperimentalCoroutinesApi
 @ExtendWith(MainCoroutineExtension::class)
-class CustomerRepositoryTest(private val _dispatcher: TestDispatcher) {
+class CustomerRepositoryTest {
   private lateinit var _customerRepository: CustomerRepository
   private lateinit var _localDao: FakeCustomerDao
   private lateinit var _modelChangedListener: ModelChangedListener<CustomerModel>
@@ -75,7 +74,7 @@ class CustomerRepositoryTest(private val _dispatcher: TestDispatcher) {
             data = mutableListOf(_customer),
             queueData = mutableListOf(_queue),
             productOrderData = mutableListOf(_productOrder))
-    _customerRepository = CustomerRepository(_dispatcher, _localDao)
+    _customerRepository = CustomerRepository(_localDao)
     _customerRepository.addModelChangedListener(_modelChangedListener)
   }
 

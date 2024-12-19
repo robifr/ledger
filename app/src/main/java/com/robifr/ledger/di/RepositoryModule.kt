@@ -30,45 +30,31 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineDispatcher
 
 @Module
 @InstallIn(ViewModelComponent::class, ActivityComponent::class)
 class RepositoryModule {
   @Provides
-  fun provideCustomerRepository(
-      @ApplicationContext context: Context,
-      @IoDispatcher dispatcher: CoroutineDispatcher
-  ): CustomerRepository =
-      CustomerRepository.instance(
-          dispatcher, LocalDatabase.instance(context.applicationContext).customerDao())
+  fun provideCustomerRepository(@ApplicationContext context: Context): CustomerRepository =
+      CustomerRepository.instance(LocalDatabase.instance(context.applicationContext).customerDao())
 
   @Provides
-  fun provideProductRepository(
-      @ApplicationContext context: Context,
-      @IoDispatcher dispatcher: CoroutineDispatcher
-  ): ProductRepository =
-      ProductRepository.instance(
-          dispatcher, LocalDatabase.instance(context.applicationContext).productDao())
+  fun provideProductRepository(@ApplicationContext context: Context): ProductRepository =
+      ProductRepository.instance(LocalDatabase.instance(context.applicationContext).productDao())
 
   @Provides
-  fun provideProductOrderRepository(
-      @ApplicationContext context: Context,
-      @IoDispatcher dispatcher: CoroutineDispatcher
-  ): ProductOrderRepository =
+  fun provideProductOrderRepository(@ApplicationContext context: Context): ProductOrderRepository =
       ProductOrderRepository.instance(
-          dispatcher, LocalDatabase.instance(context.applicationContext).productOrderDao())
+          LocalDatabase.instance(context.applicationContext).productOrderDao())
 
   @Provides
   fun provideQueueRepository(
       @ApplicationContext context: Context,
-      @IoDispatcher dispatcher: CoroutineDispatcher,
       customerRepository: CustomerRepository,
       productOrderRepository: ProductOrderRepository
   ): QueueRepository {
     val localDb: LocalDatabase = LocalDatabase.instance(context.applicationContext)
     return QueueRepository.instance(
-        dispatcher,
         localDb.queueDao(),
         TransactionProvider(localDb),
         customerRepository,
@@ -76,8 +62,6 @@ class RepositoryModule {
   }
 
   @Provides
-  fun provideSettingsRepository(
-      @ApplicationContext context: Context,
-      @IoDispatcher dispatcher: CoroutineDispatcher
-  ): SettingsRepository = SettingsRepository.instance(context.applicationContext, dispatcher)
+  fun provideSettingsRepository(@ApplicationContext context: Context): SettingsRepository =
+      SettingsRepository.instance(context.applicationContext)
 }

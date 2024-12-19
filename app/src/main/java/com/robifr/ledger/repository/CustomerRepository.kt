@@ -20,14 +20,11 @@ import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.local.access.CustomerDao
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class CustomerRepository(
-    private val _dispatcher: CoroutineDispatcher,
-    private val _localDao: CustomerDao,
-) : QueryReadable<CustomerModel>, QueryModifiable<CustomerModel> {
+class CustomerRepository(private val _localDao: CustomerDao) :
+    QueryReadable<CustomerModel>, QueryModifiable<CustomerModel> {
   private val _modelChangedListeners: HashSet<ModelChangedListener<CustomerModel>> = hashSetOf()
 
   fun addModelChangedListener(listener: ModelChangedListener<CustomerModel>) {
@@ -38,51 +35,42 @@ class CustomerRepository(
     _modelChangedListeners.remove(listener)
   }
 
-  override suspend fun selectAll(): List<CustomerModel> =
-      withContext(_dispatcher) { _mapFields(_localDao.selectAll()) }
+  override suspend fun selectAll(): List<CustomerModel> = _mapFields(_localDao.selectAll())
 
   override suspend fun selectById(id: Long?): CustomerModel? =
-      withContext(_dispatcher) { _localDao.selectById(id)?.let { _mapFields(it) } }
+      _localDao.selectById(id)?.let { _mapFields(it) }
 
   override suspend fun selectById(ids: List<Long>): List<CustomerModel> =
-      withContext(_dispatcher) { _localDao.selectById(ids).map { _mapFields(it) } }
+      _localDao.selectById(ids).map { _mapFields(it) }
 
-  override suspend fun isExistsById(id: Long?): Boolean =
-      withContext(_dispatcher) { _localDao.isExistsById(id) }
+  override suspend fun isExistsById(id: Long?): Boolean = _localDao.isExistsById(id)
 
   override suspend fun add(model: CustomerModel): Long =
-      withContext(_dispatcher) {
-        _localDao
-            .insert(model)
-            .let { rowId -> _localDao.selectIdByRowId(rowId) }
-            .also { insertedId -> selectById(insertedId)?.let { _notifyModelAdded(listOf(it)) } }
-      }
+      _localDao
+          .insert(model)
+          .let { rowId -> _localDao.selectIdByRowId(rowId) }
+          .also { insertedId -> selectById(insertedId)?.let { _notifyModelAdded(listOf(it)) } }
 
   override suspend fun update(model: CustomerModel): Int =
-      withContext(_dispatcher) {
-        _localDao.update(model).also { effectedRows ->
-          if (effectedRows > 0) selectById(model.id)?.let { _notifyModelUpdated(listOf(it)) }
-        }
+      _localDao.update(model).also { effectedRows ->
+        if (effectedRows > 0) selectById(model.id)?.let { _notifyModelUpdated(listOf(it)) }
       }
 
-  override suspend fun delete(model: CustomerModel): Int =
-      withContext(_dispatcher) {
-        // Note: Referenced customer ID on queue table will automatically set
-        //    to null upon customer deletion.
-        val deletedCustomer: CustomerModel = selectById(model.id) ?: return@withContext 0
-        _localDao.delete(model).also { effectedRows ->
-          if (effectedRows > 0) _notifyModelDeleted(listOf(deletedCustomer))
-        }
-      }
+  override suspend fun delete(model: CustomerModel): Int {
+    // Note: Referenced customer ID on queue table will automatically set
+    //    to null upon customer deletion.
+    val deletedCustomer: CustomerModel = selectById(model.id) ?: return 0
+    return _localDao.delete(model).also { effectedRows ->
+      if (effectedRows > 0) _notifyModelDeleted(listOf(deletedCustomer))
+    }
+  }
 
-  suspend fun search(query: String): List<CustomerModel> =
-      withContext(_dispatcher) { _mapFields(_localDao.search(query)) }
+  suspend fun search(query: String): List<CustomerModel> = _mapFields(_localDao.search(query))
 
   suspend fun selectAllInfoWithBalance(): List<CustomerBalanceInfo> =
-      withContext(_dispatcher) { _localDao.selectAllInfoWithBalance() }
+      _localDao.selectAllInfoWithBalance()
 
-  suspend fun selectAllInfoWithDebt(): List<CustomerDebtInfo> =
-      withContext(_dispatcher) { _localDao.selectAllInfoWithDebt() }
+  suspend fun selectAllInfoWithDebt(): List<CustomerDebtInfo> = _localDao.selectAllInfoWithDebt()
 
   private suspend fun _notifyModelAdded(models: List<CustomerModel>) {
     withContext(Dispatchers.Main) { _modelChangedListeners.forEach { it.onModelAdded(models) } }
@@ -102,16 +90,16 @@ class CustomerRepository(
    * those field mapped into it.
    */
   private suspend fun _mapFields(customer: CustomerModel): CustomerModel =
-      withContext(_dispatcher) { customer.copy(debt = _localDao.totalDebtById(customer.id)) }
+      customer.copy(debt = _localDao.totalDebtById(customer.id))
 
   private suspend fun _mapFields(customers: List<CustomerModel>): List<CustomerModel> =
-      withContext(_dispatcher) { customers.map { _mapFields(it) } }
+      customers.map { _mapFields(it) }
 
   companion object {
     @Volatile private var _instance: CustomerRepository? = null
 
     @Synchronized
-    fun instance(dispatcher: CoroutineDispatcher, customerDao: CustomerDao): CustomerRepository =
-        _instance ?: CustomerRepository(dispatcher, customerDao).apply { _instance = this }
+    fun instance(customerDao: CustomerDao): CustomerRepository =
+        _instance ?: CustomerRepository(customerDao).apply { _instance = this }
   }
 }

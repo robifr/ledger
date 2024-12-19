@@ -19,13 +19,8 @@ package com.robifr.ledger.repository
 import android.content.Context
 import android.content.SharedPreferences
 import com.robifr.ledger.data.display.LanguageOption
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
 
-class SettingsRepository(
-    private val _dispatcher: CoroutineDispatcher,
-    private val _sharedPreferences: SharedPreferences
-) {
+class SettingsRepository(private val _sharedPreferences: SharedPreferences) {
   private val _KEY_LANGUAGE_USED = "language_used"
 
   fun languageUsed(): LanguageOption {
@@ -36,19 +31,14 @@ class SettingsRepository(
   }
 
   suspend fun saveLanguageUsed(language: LanguageOption): Boolean =
-      withContext(_dispatcher) {
-        _sharedPreferences.edit().putString(_KEY_LANGUAGE_USED, language.languageTag).commit()
-      }
+      _sharedPreferences.edit().putString(_KEY_LANGUAGE_USED, language.languageTag).commit()
 
   companion object {
     @Volatile private var _instance: SettingsRepository? = null
 
     @Synchronized
-    fun instance(context: Context, dispatcher: CoroutineDispatcher): SettingsRepository =
-        _instance
-            ?: SettingsRepository(dispatcher, _settingsPreferences(context)).apply {
-              _instance = this
-            }
+    fun instance(context: Context): SettingsRepository =
+        _instance ?: SettingsRepository(_settingsPreferences(context)).apply { _instance = this }
 
     private fun _settingsPreferences(context: Context): SharedPreferences =
         context.applicationContext.getSharedPreferences(

@@ -23,7 +23,6 @@ import io.mockk.clearAllMocks
 import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -37,7 +36,7 @@ import org.junit.jupiter.params.provider.MethodSource
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExperimentalCoroutinesApi
 @ExtendWith(MainCoroutineExtension::class)
-class ProductOrderRepositoryTest(private val _dispatcher: TestDispatcher) {
+class ProductOrderRepositoryTest {
   private lateinit var _productOrderRepository: ProductOrderRepository
   private lateinit var _localDao: FakeProductOrderDao
   private lateinit var _modelChangedListener: ModelChangedListener<ProductOrderModel>
@@ -57,7 +56,7 @@ class ProductOrderRepositoryTest(private val _dispatcher: TestDispatcher) {
     clearAllMocks()
     _modelChangedListener = spyk()
     _localDao = FakeProductOrderDao(mutableListOf(_productOrder))
-    _productOrderRepository = ProductOrderRepository(_dispatcher, _localDao)
+    _productOrderRepository = ProductOrderRepository(_localDao)
     _productOrderRepository.addModelChangedListener(_modelChangedListener)
   }
 
