@@ -40,7 +40,6 @@
   <dimen name="button_minHeight">45dp</dimen>
 
   <dimen name="cardList_wide_height">90dp</dimen>
-  <dimen name="cardList_packed_width">160dp</dimen>
 
   <dimen name="table_column_minHeight">45dp</dimen>
 

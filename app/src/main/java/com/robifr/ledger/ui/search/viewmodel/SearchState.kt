@@ -24,12 +24,18 @@ data class SearchState(
     val products: List<ProductModel>,
     val query: String = ""
 ) {
+  val isTabLayoutVisible: Boolean
+    get() = query.isNotEmpty() && (customers.isNotEmpty() || products.isNotEmpty())
+
   val isNoResultFoundIllustrationVisible: Boolean
     get() = query.isNotEmpty() && customers.isEmpty() && products.isEmpty()
 
-  val isCustomerListVisible: Boolean
-    get() = query.isNotEmpty() && customers.isNotEmpty()
+  val isViewPagerVisible: Boolean
+    get() = query.isNotEmpty() && (customers.isNotEmpty() || products.isNotEmpty())
 
-  val isProductListVisible: Boolean
-    get() = query.isNotEmpty() && products.isNotEmpty()
+  val shouldSearchCustomerFragmentLoaded: Boolean
+    get() = query.isEmpty() || customers.isNotEmpty()
+
+  val shouldSearchProductFragmentLoaded: Boolean
+    get() = query.isEmpty() || products.isNotEmpty()
 }

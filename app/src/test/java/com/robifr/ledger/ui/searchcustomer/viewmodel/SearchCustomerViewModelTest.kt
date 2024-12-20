@@ -23,6 +23,7 @@ import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ModelSyncListener
+import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import io.mockk.CapturingSlot
 import io.mockk.Runs
@@ -66,11 +67,27 @@ class SearchCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
   }
 
   @Test
+  fun `on initialize with no arguments`() {
+    assertEquals(
+        SearchCustomerState(
+            isSelectionEnabled = false,
+            isToolbarVisible = true,
+            initialQuery = "",
+            query = "",
+            initialSelectedCustomerIds = listOf(),
+            customers = listOf(),
+            expandedCustomerIndex = -1),
+        _viewModel.uiState.safeValue,
+        "Apply the default state if no fragment arguments are provided")
+  }
+
+  @Test
   fun `on initialize with arguments`() {
     _viewModel =
         SearchCustomerViewModel(
             SavedStateHandle().apply {
               set(SearchCustomerFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key(), true)
+              set(SearchCustomerFragment.Arguments.IS_TOOLBAR_VISIBLE_BOOLEAN.key(), false)
               set(SearchCustomerFragment.Arguments.INITIAL_QUERY_STRING.key(), "Amy")
               set(
                   SearchCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_IDS_LONG_ARRAY.key(),
@@ -81,13 +98,14 @@ class SearchCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
     assertEquals(
         SearchCustomerState(
             isSelectionEnabled = true,
+            isToolbarVisible = false,
             initialQuery = "Amy",
             query = "",
             initialSelectedCustomerIds = listOf(111L),
             customers = listOf(),
             expandedCustomerIndex = -1),
         _viewModel.uiState.safeValue,
-        "Match state with the retrieved data from the fragment argument")
+        "Match state with the retrieved data from the fragment arguments")
   }
 
   @Test
@@ -151,6 +169,19 @@ class SearchCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
         SearchCustomerResultState(customer?.id),
         _viewModel.resultState.value,
         "Update result state based from the selected customer")
+  }
+
+  @Test
+  fun `on search ui state changed`() {
+    val searchState: SearchState =
+        SearchState(
+            customers = listOf(CustomerModel(name = "Amy")), products = listOf(), query = "A")
+    _viewModel.onSearchUiStateChanged(searchState)
+    assertEquals(
+        _viewModel.uiState.safeValue.copy(
+            customers = searchState.customers, query = searchState.query),
+        _viewModel.uiState.safeValue,
+        "Immediately update current state based from the search's UI state")
   }
 
   @Test

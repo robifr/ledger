@@ -107,6 +107,7 @@ dependencies {
   implementation(libs.androidx.core)
   implementation(libs.androidx.navigation.fragment)
   implementation(libs.androidx.navigation.ui)
+  implementation(libs.androidx.viewpager2)
   implementation(libs.androidx.webkit)
   implementation(libs.google.android.material)
 

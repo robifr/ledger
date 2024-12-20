@@ -21,37 +21,49 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
-import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.tabs.TabLayoutMediator
 import com.robifr.ledger.R
-import com.robifr.ledger.components.CustomerCardPackedComponent
-import com.robifr.ledger.components.ProductCardPackedComponent
-import com.robifr.ledger.databinding.CustomerCardPackedBinding
-import com.robifr.ledger.databinding.ProductCardPackedBinding
-import com.robifr.ledger.databinding.SearchableFragmentBinding
-import com.robifr.ledger.databinding.SearchableListHorizontalBinding
+import com.robifr.ledger.databinding.SearchFragmentBinding
+import com.robifr.ledger.ui.FragmentAdapter
 import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.search.viewmodel.SearchViewModel
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
+import com.robifr.ledger.util.CurrencyFormat
 import com.robifr.ledger.util.getColorAttr
 import com.robifr.ledger.util.hideKeyboard
+import com.robifr.ledger.util.hideTooltipText
 import com.robifr.ledger.util.showKeyboard
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
-  private var _fragmentBinding: SearchableFragmentBinding? = null
-  val fragmentBinding: SearchableFragmentBinding
+  private var _fragmentBinding: SearchFragmentBinding? = null
+  val fragmentBinding: SearchFragmentBinding
     get() = _fragmentBinding!!
 
   private val _searchViewModel: SearchViewModel by viewModels()
-  private lateinit var _customerListBinding: SearchableListHorizontalBinding
-  private lateinit var _productListBinding: SearchableListHorizontalBinding
+  private val _searchCustomerFragment: SearchCustomerFragment =
+      SearchCustomerFragment().apply {
+        arguments =
+            Bundle().apply {
+              putBoolean(SearchCustomerFragment.Arguments.IS_TOOLBAR_VISIBLE_BOOLEAN.key(), false)
+            }
+      }
+  private val _searchProductFragment: SearchProductFragment =
+      SearchProductFragment().apply {
+        arguments =
+            Bundle().apply {
+              putBoolean(SearchProductFragment.Arguments.IS_TOOLBAR_VISIBLE_BOOLEAN.key(), false)
+            }
+      }
+  private lateinit var _adapter: FragmentAdapter
   private lateinit var _onBackPressed: OnBackPressedHandler
 
   override fun onCreateView(
@@ -59,9 +71,8 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
       container: ViewGroup?,
       savedInstanceState: Bundle?
   ): View {
-    _fragmentBinding = SearchableFragmentBinding.inflate(inflater, container, false)
-    _customerListBinding = SearchableListHorizontalBinding.inflate(inflater, container, false)
-    _productListBinding = SearchableListHorizontalBinding.inflate(inflater, container, false)
+    _fragmentBinding = SearchFragmentBinding.inflate(inflater, container, false)
+    _adapter = FragmentAdapter(this)
     _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
   }
@@ -74,37 +85,34 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
     fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
     fragmentBinding.searchView.queryHint = getString(R.string.searchCustomersAndProducts)
     fragmentBinding.searchView.setOnQueryTextListener(this)
-    fragmentBinding.noResultsImage.image.setImageResource(R.drawable.image_noresultsfound)
+    fragmentBinding.viewPager.adapter = _adapter
     fragmentBinding.noResultsImage.title.setText(R.string.searchCustomersAndProducts_noResultsFound)
     fragmentBinding.noResultsImage.description.setText(
         R.string.searchCustomersAndProducts_noResultsFound_description)
-    fragmentBinding.recyclerView.isGone = true
-    fragmentBinding.horizontalListContainer.addView(_customerListBinding.root)
-    fragmentBinding.horizontalListContainer.addView(_productListBinding.root)
-    _customerListBinding.title.setText(R.string.searchCustomersAndProducts_customersFound)
-    _customerListBinding.viewMoreButton.setOnClickListener {
-      findNavController()
-          .navigate(
-              R.id.searchCustomerFragment,
-              Bundle().apply {
-                putString(
-                    SearchCustomerFragment.Arguments.INITIAL_QUERY_STRING.key(),
-                    _searchViewModel.uiState.safeValue.query)
-              })
-    }
-    _productListBinding.title.setText(R.string.searchCustomersAndProducts_productsFound)
-    _productListBinding.viewMoreButton.setOnClickListener {
-      findNavController()
-          .navigate(
-              R.id.searchProductFragment,
-              Bundle().apply {
-                putString(
-                    SearchProductFragment.Arguments.INITIAL_QUERY_STRING.key(),
-                    _searchViewModel.uiState.safeValue.query)
-              })
-    }
     _searchViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
 
+    TabLayoutMediator(fragmentBinding.tabLayout, fragmentBinding.viewPager) { tab, position ->
+          tab.view.hideTooltipText()
+          tab.text =
+              when (_adapter.fragmentTabs[position]) {
+                is SearchCustomerFragment ->
+                    getString(
+                        R.string.searchCustomersAndProducts_customers_x,
+                        CurrencyFormat.format(
+                            _searchViewModel.uiState.safeValue.customers.size.toBigDecimal(),
+                            AppCompatDelegate.getApplicationLocales().toLanguageTags(),
+                            ""))
+                is SearchProductFragment ->
+                    getString(
+                        R.string.searchCustomersAndProducts_products_x,
+                        CurrencyFormat.format(
+                            _searchViewModel.uiState.safeValue.products.size.toBigDecimal(),
+                            AppCompatDelegate.getApplicationLocales().toLanguageTags(),
+                            ""))
+                else -> null
+              }
+        }
+        .attach()
     if (_searchViewModel.uiState.safeValue.query.isEmpty()) {
       fragmentBinding.searchView.requestFocus()
       fragmentBinding.searchView.showKeyboard()
@@ -124,25 +132,14 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
   }
 
   private fun _onUiState(state: SearchState) {
+    fragmentBinding.tabLayout.isVisible = state.isTabLayoutVisible
     fragmentBinding.noResultsImage.root.isVisible = state.isNoResultFoundIllustrationVisible
-
-    _customerListBinding.root.isVisible = state.isCustomerListVisible
-    _customerListBinding.listContainer.removeAllViews()
-    for (customer in state.customers) {
-      val cardBinding: CustomerCardPackedBinding =
-          CustomerCardPackedBinding.inflate(layoutInflater, _customerListBinding.root, false)
-      CustomerCardPackedComponent(requireContext(), cardBinding).setCustomer(customer)
-      _customerListBinding.listContainer.addView(cardBinding.root)
-    }
-
-    _productListBinding.root.isVisible = state.isProductListVisible
-    _productListBinding.listContainer.removeAllViews()
-    for (product in state.products) {
-      val cardBinding: ProductCardPackedBinding =
-          ProductCardPackedBinding.inflate(layoutInflater, _productListBinding.root, false)
-      ProductCardPackedComponent(requireContext(), cardBinding).setProduct(product)
-      _productListBinding.listContainer.addView(cardBinding.root)
-    }
+    fragmentBinding.viewPager.isVisible = state.isViewPagerVisible
+    _adapter.setFragmentTabs(
+        mutableListOf<Fragment>().apply {
+          if (state.shouldSearchCustomerFragmentLoaded) add(_searchCustomerFragment)
+          if (state.shouldSearchProductFragmentLoaded) add(_searchProductFragment)
+        })
   }
 }
 

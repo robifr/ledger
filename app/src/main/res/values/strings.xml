@@ -372,8 +372,8 @@
 
   <!-- Search fragment. -->
   <string name="searchCustomersAndProducts">Search customers &amp; products</string>
-  <string name="searchCustomersAndProducts_customersFound">Customers</string>
-  <string name="searchCustomersAndProducts_productsFound">Products</string>
+  <string name="searchCustomersAndProducts_customers_x">Customers (%s)</string>
+  <string name="searchCustomersAndProducts_products_x">Products (%s)</string>
   <string name="searchCustomersAndProducts_noResultsFound">No results found</string>
   <string name="searchCustomersAndProducts_noResultsFound_description">Can\'t find any matching customers nor products</string>
 

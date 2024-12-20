@@ -27,6 +27,7 @@ import com.robifr.ledger.ui.searchproduct.SearchProductFragment
  */
 data class SearchProductState(
     val isSelectionEnabled: Boolean,
+    val isToolbarVisible: Boolean,
     val initialQuery: String,
     val query: String,
     val initialSelectedProductIds: List<Long>,

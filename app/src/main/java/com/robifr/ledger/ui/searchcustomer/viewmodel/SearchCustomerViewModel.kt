@@ -32,6 +32,7 @@ import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -63,6 +64,9 @@ constructor(
               isSelectionEnabled =
                   savedStateHandle.get<Boolean>(
                       SearchCustomerFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key()) ?: false,
+              isToolbarVisible =
+                  savedStateHandle.get<Boolean>(
+                      SearchCustomerFragment.Arguments.IS_TOOLBAR_VISIBLE_BOOLEAN.key()) ?: true,
               initialQuery =
                   savedStateHandle.get<String>(
                       SearchCustomerFragment.Arguments.INITIAL_QUERY_STRING.key()) ?: "",
@@ -136,6 +140,11 @@ constructor(
                 }))
       }
     }
+  }
+
+  fun onSearchUiStateChanged(state: SearchState) {
+    _uiState.setValue(_uiState.safeValue.copy(query = state.query, customers = state.customers))
+    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
   }
 
   private fun _onCustomersChanged(customers: List<CustomerModel>) {

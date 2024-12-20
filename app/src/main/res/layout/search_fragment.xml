@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+ ~ Copyright 2024 Robi
+ ~
+ ~ Licensed under the Apache License, Version 2.0 (the "License");
+ ~ you may not use this file except in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing, software
+ ~ distributed under the License is distributed on an "AS IS" BASIS,
+ ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ~ See the License for the specific language governing permissions and
+ ~ limitations under the License.
+ -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+  <com.google.android.material.appbar.AppBarLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:navigationIcon="@drawable/icon_arrow_back">
+
+      <androidx.appcompat.widget.SearchView
+          android:id="@+id/searchView"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:focusable="true"
+          android:focusableInTouchMode="true"
+          app:iconifiedByDefault="false"
+          app:queryBackground="@null"
+          app:searchHintIcon="@null"
+          app:searchIcon="@null" />
+    </androidx.appcompat.widget.Toolbar>
+
+    <!--
+      Override both `app:tabTextAppearance` and `app:tabSelectedTextAppearance` to prevent
+      little bouncy animation on the text while swiping. And the negative `app:tabPaddingTop`
+      and hardcoded `android:layout_height` is a hack to reduce the top padding.
+    -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/space_mediumLarge"
+        app:tabBackground="@android:color/transparent"
+        app:tabContentStart="@dimen/space_medium"
+        app:tabGravity="start"
+        app:tabMode="scrollable"
+        app:tabPaddingTop="-16dp"
+        app:tabRippleColor="@null"
+        app:tabSelectedTextAppearance="@style/TextAppearance.Material3.BodyMedium"
+        app:tabTextAppearance="@style/TextAppearance.Material3.BodyMedium" />
+  </com.google.android.material.appbar.AppBarLayout>
+
+  <include
+      android:id="@+id/noResultsImage"
+      layout="@layout/reusable_image_stateable"
+      android:visibility="gone" />
+
+  <androidx.viewpager2.widget.ViewPager2
+      android:id="@+id/viewPager"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+</LinearLayout>

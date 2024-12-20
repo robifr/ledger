@@ -23,6 +23,7 @@ import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.ProductRepository
+import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
 import io.mockk.CapturingSlot
 import io.mockk.Runs
@@ -65,11 +66,27 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
   }
 
   @Test
+  fun `on initialize with no arguments`() {
+    assertEquals(
+        SearchProductState(
+            isSelectionEnabled = false,
+            isToolbarVisible = true,
+            initialQuery = "",
+            query = "",
+            initialSelectedProductIds = listOf(),
+            products = listOf(),
+            expandedProductIndex = -1),
+        _viewModel.uiState.safeValue,
+        "Apply the default state if no fragment arguments are provided")
+  }
+
+  @Test
   fun `on initialize with arguments`() {
     _viewModel =
         SearchProductViewModel(
             SavedStateHandle().apply {
               set(SearchProductFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key(), true)
+              set(SearchProductFragment.Arguments.IS_TOOLBAR_VISIBLE_BOOLEAN.key(), false)
               set(SearchProductFragment.Arguments.INITIAL_QUERY_STRING.key(), "Apple")
               set(
                   SearchProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_IDS_LONG_ARRAY.key(),
@@ -80,13 +97,14 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
     assertEquals(
         SearchProductState(
             isSelectionEnabled = true,
+            isToolbarVisible = false,
             initialQuery = "Apple",
             query = "",
             initialSelectedProductIds = listOf(111L),
             products = listOf(),
             expandedProductIndex = -1),
         _viewModel.uiState.safeValue,
-        "Match state with the retrieved data from the fragment argument")
+        "Match state with the retrieved data from the fragment arguments")
   }
 
   @Test
@@ -150,6 +168,19 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
         SearchProductResultState(product?.id),
         _viewModel.resultState.value,
         "Update result state based from the selected product")
+  }
+
+  @Test
+  fun `on search ui state changed`() {
+    val searchState: SearchState =
+        SearchState(
+            products = listOf(ProductModel(name = "Apple")), customers = listOf(), query = "A")
+    _viewModel.onSearchUiStateChanged(searchState)
+    assertEquals(
+        _viewModel.uiState.safeValue.copy(
+            products = searchState.products, query = searchState.query),
+        _viewModel.uiState.safeValue,
+        "Immediately update current state based from the search's UI state")
   }
 
   @Test

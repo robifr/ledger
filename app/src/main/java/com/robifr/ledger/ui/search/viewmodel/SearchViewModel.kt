@@ -51,12 +51,11 @@ constructor(
     _searchJob =
         viewModelScope.launch(_dispatcher) {
           delay(300L)
-          _customerRepository.search(query).take(8).also {
-            _uiState.postValue(_uiState.safeValue.copy(query = query, customers = it))
-          }
-          _productRepository.search(query).take(8).also {
-            _uiState.postValue(_uiState.safeValue.copy(query = query, products = it))
-          }
+          _uiState.postValue(
+              _uiState.safeValue.copy(
+                  query = query,
+                  customers = _customerRepository.search(query),
+                  products = _productRepository.search(query)))
         }
   }
 }

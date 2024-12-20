@@ -27,6 +27,7 @@ import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
  */
 data class SearchCustomerState(
     val isSelectionEnabled: Boolean,
+    val isToolbarVisible: Boolean,
     val initialQuery: String,
     val query: String,
     val initialSelectedCustomerIds: List<Long>,

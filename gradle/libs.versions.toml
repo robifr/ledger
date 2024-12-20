@@ -6,6 +6,7 @@ androidxCore = "1.15.0"
 androidxCoreTesting = "2.2.0"
 androidxNavigation = "2.8.4"
 androidxRoom = "2.6.1"
+androidxViewPager2 = "1.1.0"
 androidxWebkit = "1.12.1"
 hilt = "2.51.1"
 jUnit = "5.11.3"
@@ -29,6 +30,7 @@ androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragme
 androidx-navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "androidxNavigation" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidxRoom" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "androidxRoom" }
+androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "androidxViewPager2" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "androidxWebkit" }
 google-android-material = { module = "com.google.android.material:material", version.ref = "materialComponents" }
 google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }

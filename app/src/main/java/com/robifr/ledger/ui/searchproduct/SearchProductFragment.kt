@@ -25,6 +25,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -33,6 +34,8 @@ import com.robifr.ledger.databinding.SearchableFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
 import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.search.viewmodel.SearchState
+import com.robifr.ledger.ui.search.viewmodel.SearchViewModel
 import com.robifr.ledger.ui.searchproduct.recycler.SearchProductAdapter
 import com.robifr.ledger.ui.searchproduct.viewmodel.SearchProductResultState
 import com.robifr.ledger.ui.searchproduct.viewmodel.SearchProductState
@@ -49,6 +52,8 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
     get() = _fragmentBinding!!
 
   val searchProductViewModel: SearchProductViewModel by viewModels()
+  private val _searchViewModel: SearchViewModel by
+      viewModels({ if (parentFragment !is NavHostFragment) requireParentFragment() else this })
   private lateinit var _adapter: SearchProductAdapter
   private lateinit var _onBackPressed: OnBackPressedHandler
 
@@ -68,6 +73,7 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
     requireActivity().window.navigationBarColor =
         requireContext().getColorAttr(android.R.attr.colorBackground)
     requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
+    fragmentBinding.toolbar.isVisible = searchProductViewModel.uiState.safeValue.isToolbarVisible
     fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
     fragmentBinding.searchView.queryHint = getString(R.string.searchProduct)
     fragmentBinding.searchView.setOnQueryTextListener(this)
@@ -83,13 +89,16 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
     searchProductViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
     searchProductViewModel.recyclerAdapterState.observe(
         viewLifecycleOwner, ::_onRecyclerAdapterState)
+    _searchViewModel.uiState.observe(viewLifecycleOwner, ::_onSearchUiState)
 
-    if (searchProductViewModel.uiState.safeValue.initialQuery.isNotEmpty()) {
-      fragmentBinding.searchView.setQuery(
-          searchProductViewModel.uiState.safeValue.initialQuery, true)
-    } else {
-      fragmentBinding.searchView.requestFocus()
-      fragmentBinding.searchView.showKeyboard()
+    if (searchProductViewModel.uiState.safeValue.isToolbarVisible) {
+      if (searchProductViewModel.uiState.safeValue.initialQuery.isNotEmpty()) {
+        fragmentBinding.searchView.setQuery(
+            searchProductViewModel.uiState.safeValue.initialQuery, true)
+      } else {
+        fragmentBinding.searchView.requestFocus()
+        fragmentBinding.searchView.showKeyboard()
+      }
     }
   }
 
@@ -138,8 +147,13 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
     }
   }
 
+  private fun _onSearchUiState(state: SearchState) {
+    searchProductViewModel.onSearchUiStateChanged(state)
+  }
+
   enum class Arguments : FragmentResultKey {
     INITIAL_QUERY_STRING,
+    IS_TOOLBAR_VISIBLE_BOOLEAN,
     IS_SELECTION_ENABLED_BOOLEAN,
     INITIAL_SELECTED_PRODUCT_IDS_LONG_ARRAY
   }

@@ -91,22 +91,4 @@ class SearchViewModelTest(private val _dispatcher: TestDispatcher) {
         _viewModel.uiState.safeValue,
         "Update customers and products based from the queried search result")
   }
-
-  @ParameterizedTest
-  @ValueSource(ints = [8, 10])
-  fun `on search result a lot data`(totalData: Int) = runTest {
-    val customers: List<CustomerModel> =
-        List(totalData) { i -> CustomerModel(id = (i + 1) * 111L, name = "Amy ${i + 1}") }
-    val products: List<ProductModel> =
-        List(totalData) { i -> ProductModel(id = (i + 1) * 111L, name = "Apple ${i + 1}") }
-    coEvery { _customerRepository.search(any()) } returns customers
-    coEvery { _productRepository.search(any()) } returns products
-    _viewModel.onSearch("A")
-    advanceUntilIdle()
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            query = "A", customers = customers.take(8), products = products.take(8)),
-        _viewModel.uiState.safeValue,
-        "Limit queried data from the search up to 8")
-  }
 }
