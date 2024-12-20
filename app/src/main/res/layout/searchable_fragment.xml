@@ -24,7 +24,7 @@
       android:id="@+id/toolbar"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:background="@drawable/shape_contextualtoolbar"
+      android:background="?actionModeBackground"
       app:navigationIcon="@drawable/icon_arrow_back">
 
     <androidx.appcompat.widget.SearchView

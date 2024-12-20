@@ -75,7 +75,7 @@
     <item name="windowActionModeOverlay">true</item>
     <item name="actionModeStyle">@style/ContextualToolbar</item>
     <item name="actionModeCloseDrawable">@drawable/icon_arrow_back</item>
-    <item name="actionModeBackground">@drawable/shape_contextualtoolbar</item>
+    <item name="actionModeBackground">?colorSurface</item>
 
     <!-- Snackbar. -->
     <item name="snackbarTextViewStyle">@style/Snackbar.TextView</item>
