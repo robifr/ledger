@@ -128,20 +128,14 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
     }
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = ["A", "Apple", "Banana", "  "])
-  fun `on search with complete query`(query: String) = runTest {
-    val products: List<ProductModel> =
-        if (query.contains("A", ignoreCase = true)) {
-          listOf(ProductModel(id = 111L, name = "Apple"), ProductModel(id = 222L, name = "Banana"))
-        } else {
-          listOf()
-        }
-    coEvery { _productRepository.search(query) } returns products
-    _viewModel.onSearch(query)
+  @Test
+  fun `on search with complete query`() = runTest {
+    val product: ProductModel = ProductModel(id = 111L, name = "Apple")
+    coEvery { _productRepository.search(any()) } returns listOf(product)
+    _viewModel.onSearch("A")
     advanceUntilIdle()
     assertEquals(
-        _viewModel.uiState.safeValue.copy(query = query, products = products),
+        _viewModel.uiState.safeValue.copy(query = "A", products = listOf(product)),
         _viewModel.uiState.safeValue,
         "Update products based from the queried search result")
   }

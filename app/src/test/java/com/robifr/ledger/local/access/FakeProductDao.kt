@@ -17,7 +17,6 @@
 package com.robifr.ledger.local.access
 
 import com.robifr.ledger.data.model.ProductModel
-import com.robifr.ledger.local.FtsStringConverter
 
 data class FakeProductDao(
     override val data: MutableList<ProductModel>,
@@ -48,6 +47,9 @@ data class FakeProductDao(
   override fun isExistsById(productId: Long?): Boolean =
       super<FakeQueryAccessible>.isExistsById(productId)
 
+  override fun search(query: String): List<ProductModel> =
+      _search(query.replace("\"".toRegex(), "\"\""))
+
   override fun _insert(product: ProductModel): Long = insert(product)
 
   override fun _update(product: ProductModel): Int = update(product)
@@ -55,7 +57,7 @@ data class FakeProductDao(
   override fun _delete(product: ProductModel): Int = delete(product)
 
   override fun _search(query: String): List<ProductModel> =
-      data.filter { query in "*\"${FtsStringConverter.toFtsSpacedString(it.name)}\"*" }
+      data.filter { it.name.contains(query, true) }
 
   override fun _deleteFts(rowId: Long) {}
 

@@ -185,4 +185,29 @@ class CustomerRepositoryTest {
           }
         })
   }
+
+  private fun `_search customer cases`(): Array<Array<Any?>> =
+      arrayOf(
+          arrayOf(listOf("Amy", "Cal"), "A", listOf("Amy", "Cal")),
+          arrayOf(listOf("Amy", "Cal"), "a", listOf("Amy", "Cal")),
+          arrayOf(listOf("Amy", "Cal"), "Amy", listOf("Amy")),
+          arrayOf(listOf("Amy", "Cal"), " ", listOf<String>()))
+
+  @ParameterizedTest
+  @MethodSource("_search customer cases")
+  fun `search customer`(
+      customerNamesInDb: List<String>,
+      query: String,
+      customerNamesFound: List<String>
+  ) = runTest {
+    // Simulate exact amount of the customers within the database.
+    _localDao.data.clear()
+    _localDao.idGenerator.lastIncrement = 0
+    customerNamesInDb.map { _localDao.data.add(_customer.copy(name = it)) }
+
+    assertEquals(
+        customerNamesFound,
+        _customerRepository.search(query).map { it.name },
+        "Search for customers whose names contain the query")
+  }
 }

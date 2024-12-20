@@ -129,20 +129,14 @@ class SearchCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
     }
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = ["A", "Amy", "Cal", "  "])
-  fun `on search with complete query`(query: String) = runTest {
-    val customers: List<CustomerModel> =
-        if (query.contains("A", ignoreCase = true)) {
-          listOf(CustomerModel(id = 111L, name = "Amy"), CustomerModel(id = 222L, name = "Cal"))
-        } else {
-          listOf()
-        }
-    coEvery { _customerRepository.search(query) } returns customers
-    _viewModel.onSearch(query)
+  @Test
+  fun `on search with complete query`() = runTest {
+    val customer: CustomerModel = CustomerModel(id = 111L, name = "Amy")
+    coEvery { _customerRepository.search(any()) } returns listOf(customer)
+    _viewModel.onSearch("A")
     advanceUntilIdle()
     assertEquals(
-        _viewModel.uiState.safeValue.copy(query = query, customers = customers),
+        _viewModel.uiState.safeValue.copy(query = "A", customers = listOf(customer)),
         _viewModel.uiState.safeValue,
         "Update customers based from the queried search result")
   }

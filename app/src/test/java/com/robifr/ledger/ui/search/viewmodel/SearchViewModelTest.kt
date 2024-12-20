@@ -35,8 +35,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 
 @ExperimentalCoroutinesApi
 @ExtendWith(InstantTaskExecutorExtension::class, MainCoroutineExtension::class)
@@ -66,28 +64,17 @@ class SearchViewModelTest(private val _dispatcher: TestDispatcher) {
     }
   }
 
-  @ParameterizedTest
-  @ValueSource(strings = ["A", "Amy", "Cal", "Apple", "Banana", "  "])
-  fun `on search with complete query`(query: String) = runTest {
-    val customers: List<CustomerModel> =
-        if (query.contains("A", ignoreCase = true)) {
-          listOf(CustomerModel(id = 111L, name = "Amy"), CustomerModel(id = 222L, name = "Cal"))
-        } else {
-          listOf()
-        }
-    val products: List<ProductModel> =
-        if (query.contains("A", ignoreCase = true)) {
-          listOf(ProductModel(id = 111L, name = "Apple"), ProductModel(id = 222L, name = "Banana"))
-        } else {
-          listOf()
-        }
-    coEvery { _customerRepository.search(query) } returns customers
-    coEvery { _productRepository.search(query) } returns products
-    _viewModel.onSearch(query)
+  @Test
+  fun `on search with complete query`() = runTest {
+    val customer: CustomerModel = CustomerModel(id = 111L, name = "Amy")
+    val product: ProductModel = ProductModel(id = 111L, name = "Apple")
+    coEvery { _customerRepository.search(any()) } returns listOf(customer)
+    coEvery { _productRepository.search(any()) } returns listOf(product)
+    _viewModel.onSearch("A")
     advanceUntilIdle()
     assertEquals(
         _viewModel.uiState.safeValue.copy(
-            query = query, customers = customers, products = products),
+            query = "A", customers = listOf(customer), products = listOf(product)),
         _viewModel.uiState.safeValue,
         "Update customers and products based from the queried search result")
   }

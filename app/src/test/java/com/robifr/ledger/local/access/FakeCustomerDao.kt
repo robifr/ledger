@@ -20,7 +20,6 @@ import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
-import com.robifr.ledger.local.FtsStringConverter
 import java.math.BigDecimal
 
 data class FakeCustomerDao(
@@ -61,6 +60,9 @@ data class FakeCustomerDao(
           .map { CustomerBalanceInfo(id = it.id, balance = it.balance) }
           .toList()
 
+  override fun search(query: String): List<CustomerModel> =
+      _search(query.replace("\"".toRegex(), "\"\""))
+
   override fun _insert(customer: CustomerModel): Long = insert(customer)
 
   override fun _update(customer: CustomerModel): Int = update(customer)
@@ -70,7 +72,7 @@ data class FakeCustomerDao(
   override fun _selectAllIds(): List<Long> = selectAll().mapNotNull { it.id }
 
   override fun _search(query: String): List<CustomerModel> =
-      data.filter { query in "*\"${FtsStringConverter.toFtsSpacedString(it.name)}\"*" }
+      data.filter { it.name.contains(query, true) }
 
   override fun _selectUnpaidQueueTotalPrice(customerId: Long?): List<BigDecimal> =
       if (customerId != null) {

@@ -140,4 +140,29 @@ class ProductRepositoryTest {
           }
         })
   }
+
+  private fun `_search product cases`(): Array<Array<Any?>> =
+      arrayOf(
+          arrayOf(listOf("Apple", "Banana"), "A", listOf("Apple", "Banana")),
+          arrayOf(listOf("Apple", "Banana"), "a", listOf("Apple", "Banana")),
+          arrayOf(listOf("Apple", "Banana"), "Apple", listOf("Apple")),
+          arrayOf(listOf("Apple", "Banana"), " ", listOf<String>()))
+
+  @ParameterizedTest
+  @MethodSource("_search product cases")
+  fun `search product`(
+      productNamesInDb: List<String>,
+      query: String,
+      productNamesFound: List<String>
+  ) = runTest {
+    // Simulate exact amount of the products within the database.
+    _localDao.data.clear()
+    _localDao.idGenerator.lastIncrement = 0
+    productNamesInDb.map { _localDao.data.add(_product.copy(name = it)) }
+
+    assertEquals(
+        productNamesFound,
+        _productRepository.search(query).map { it.name },
+        "Search for products whose names contain the query")
+  }
 }
