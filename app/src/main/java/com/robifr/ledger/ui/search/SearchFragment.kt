@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -35,7 +34,6 @@ import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.search.viewmodel.SearchViewModel
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
-import com.robifr.ledger.util.CurrencyFormat
 import com.robifr.ledger.util.getColorAttr
 import com.robifr.ledger.util.hideKeyboard
 import com.robifr.ledger.util.hideTooltipText
@@ -96,19 +94,8 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
           tab.text =
               when (_adapter.fragmentTabs[position]) {
                 is SearchCustomerFragment ->
-                    getString(
-                        R.string.searchCustomersAndProducts_customers_x,
-                        CurrencyFormat.format(
-                            _searchViewModel.uiState.safeValue.customers.size.toBigDecimal(),
-                            AppCompatDelegate.getApplicationLocales().toLanguageTags(),
-                            ""))
-                is SearchProductFragment ->
-                    getString(
-                        R.string.searchCustomersAndProducts_products_x,
-                        CurrencyFormat.format(
-                            _searchViewModel.uiState.safeValue.products.size.toBigDecimal(),
-                            AppCompatDelegate.getApplicationLocales().toLanguageTags(),
-                            ""))
+                    getString(R.string.searchCustomersAndProducts_customers)
+                is SearchProductFragment -> getString(R.string.searchCustomersAndProducts_products)
                 else -> null
               }
         }

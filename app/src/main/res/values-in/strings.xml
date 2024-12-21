@@ -365,8 +365,8 @@
 
   <!-- Search fragment. -->
   <string name="searchCustomersAndProducts">Cari pelanggan &amp; produk</string>
-  <string name="searchCustomersAndProducts_customers_x">Pelanggan (%s)</string>
-  <string name="searchCustomersAndProducts_products_x">Produk (%s)</string>
+  <string name="searchCustomersAndProducts_customers">Pelanggan</string>
+  <string name="searchCustomersAndProducts_products">Produk</string>
   <string name="searchCustomersAndProducts_noResultsFound">Tidak ada hasil yang ditemukan</string>
   <string name="searchCustomersAndProducts_noResultsFound_description">Tidak dapat menemukan pelanggan atau produk yang cocok</string>
 
