@@ -41,7 +41,6 @@ export const AxisPosition = Object.freeze({
     minRange: (layout) => layout.marginLeft,
     maxRange: (layout) => layout.width - layout.marginRight,
   },
-
   LEFT: {
     value: 2,
     axis: (scale) => d3.axisLeft(scale),
@@ -67,7 +66,6 @@ export function createLinearScale(axisPosition, domain) {
     .tickValues(d3.range(domain[0], domain[1] + tickStep, tickStep))
     .tickSizeOuter(0)
     .tickFormat((d) => Android.formatCurrencyWithUnit(d, Android.localeLanguageTag(), ""));
-
   return { scale: scale, axis: axis, axisPosition: axisPos };
 }
 
@@ -80,7 +78,6 @@ export function createLinearScale(axisPosition, domain) {
  */
 export function createPercentageLinearScale(axisPosition, domain) {
   if (domain.length !== 101) throw new Error("Domain size should contain 101 items");
-
   const axisPos = _axisPositionOf(axisPosition);
   const scale = d3.scaleLinear().domain([0, 100]);
   const axis = axisPos
@@ -91,7 +88,6 @@ export function createPercentageLinearScale(axisPosition, domain) {
       if (Math.floor(d) !== d) return ""; // Hide label for decimal numbers.
       return domain[i * 2 * (scale.ticks().length - 1)];
     });
-
   return { scale: scale, axis: axis, axisPosition: axisPos };
 }
 
@@ -111,7 +107,6 @@ export function createBandScale(axisPosition, domain, isAllLabelVisible = true) 
     .tickFormat((d, i) =>
       !isAllLabelVisible && i % _gapBetweenTicks(domain.length) !== 0 ? null : d
     );
-
   return { scale: scale, axis: axis, axisPosition: axisPos };
 }
 

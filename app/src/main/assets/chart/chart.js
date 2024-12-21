@@ -54,7 +54,6 @@ export class ChartLayout {
     // the font width is the most reliable solution for every user with different font sizes.
     /** @type {number} */
     this.height = height - fontSize;
-
     // Extra margin for the ticks.
     /** @type {number} */
     this.marginTop = marginTop + 10;
@@ -68,7 +67,6 @@ export class ChartLayout {
     this.fontSize = fontSize;
     /** @type {string} */
     this.backgroundColor = backgroundColor;
-
     Object.seal(this);
   }
 }
@@ -78,12 +76,11 @@ export class ChartLayout {
  * @param {bandScale} xScale
  * @param {linearScale | percentageLinearScale} yScale
  * @param {singleChartData[]} data
+ * @param {string} color
  */
 export function renderBarChart(layout, xScale, yScale, data, color) {
   d3.select("#container").select("svg").remove();
-
   const svg = d3.create("svg").attr("width", layout.width).attr("height", layout.height);
-
   d3.select("#container").append(() => svg.node());
   d3.select("body").style("background-color", layout.backgroundColor);
 
@@ -127,11 +124,8 @@ export function renderStackedBarChart(layout, xScale, yScale, data, colors, grou
   if (groupInOrder.length !== colors.length) {
     throw new RangeError(`The sizes of 'colors' and 'groupInOrder' have to be equals`);
   }
-
   d3.select("#container").select("svg").remove();
-
   const svg = d3.create("svg").attr("width", layout.width).attr("height", layout.height);
-
   d3.select("#container").append(() => svg.node());
   d3.select("body").style("background-color", layout.backgroundColor);
 
@@ -140,14 +134,6 @@ export function renderStackedBarChart(layout, xScale, yScale, data, colors, grou
   xScale.scale.range([xScale.axisPosition.minRange(layout), xScale.axisPosition.maxRange(layout)]);
   yScale.scale.range([yScale.axisPosition.minRange(layout), yScale.axisPosition.maxRange(layout)]);
   yScale.axis.tickSize(-layout.width + layout.marginRight + layout.marginLeft);
-
-  const groupedData = new Map();
-
-  // Group the data so that we can render them in order.
-  for (const d of data) {
-    if (!groupedData.has(d.group)) groupedData.set(d.group, []);
-    groupedData.get(d.group).push(d);
-  }
 
   // Draw y-axis.
   svg
@@ -160,13 +146,18 @@ export function renderStackedBarChart(layout, xScale, yScale, data, colors, grou
     .style("stroke", Android.colorHex("stroke"))
     .attr("stroke-width", 0.3);
 
-  for (let i = 0; i < groupInOrder.length; i++) {
+  const groupedData = new Map();
+  // Group the data so that we can render them in order.
+  for (const d of data) {
+    if (!groupedData.has(d.group)) groupedData.set(d.group, []);
+    groupedData.get(d.group).push(d);
+  }
+  for (const [i, group] of groupInOrder.entries()) {
     // Skip the group to be drawn at the end if the group doesn't contain any data.
     // If it's not defined in `groupInOrder`, don't draw them completely.
-    if (!groupedData.has(groupInOrder[i])) continue;
-
+    if (!groupedData.has(group)) continue;
     // Draw the group in order.
-    _drawBarChart(svg, layout, xScale, yScale, groupedData.get(groupInOrder[i]), colors[i]);
+    _drawBarChart(svg, layout, xScale, yScale, groupedData.get(group), colors[i]);
   }
 
   // Draw x-axis. Ensure that the x-axis is rendered after the bars to prevent overlapping.
@@ -185,12 +176,9 @@ export function renderStackedBarChart(layout, xScale, yScale, data, colors, grou
  */
 export function renderDonutChart(layout, data, colors, svgTextInCenter = "") {
   d3.select("#container").select("svg").remove();
-
   const svg = d3.create("svg").attr("width", layout.width).attr("height", layout.height);
-
   d3.select("#container").append(() => svg.node());
   d3.select("body").style("background-color", layout.backgroundColor);
-
   _drawDonutChart(svg, layout, data, colors, svgTextInCenter);
 }
 
@@ -206,9 +194,8 @@ function _measureSpaceForTicksLabel(svg, axis) {
   const textNodes = tempGroup.selectAll("text").nodes();
   const widest = d3.max(textNodes.map((node) => node.getBBox().width));
   const highest = d3.max(textNodes.map((node) => node.getBBox().height));
-
   tempGroup.remove();
-  return { widest, highest };
+  return { widest: widest, highest: highest };
 }
 
 /**
@@ -222,7 +209,6 @@ function _measureSpaceForTicksLabel(svg, axis) {
 function _drawBarChart(svg, layout, xScale, yScale, data, color) {
   // Set the corner radius to 20% of the bar width.
   const barCornerRadius = Math.min(5, Math.max(2, xScale.scale.bandwidth() * 0.2));
-
   svg
     .selectAll(".bar")
     .data(data)
@@ -235,12 +221,12 @@ function _drawBarChart(svg, layout, xScale, yScale, data, color) {
     .attr("height", (d) => layout.height - layout.marginBottom - yScale.scale(d.value))
     .attr(
       "d",
-      (item) => `
-        M${xScale.scale(item.key)},${yScale.scale(item.value) + barCornerRadius}
+      (d) => `
+        M${xScale.scale(d.key)},${yScale.scale(d.value) + barCornerRadius}
         a${barCornerRadius},${barCornerRadius} 0 0 1 ${barCornerRadius},${-barCornerRadius}
         h${xScale.scale.bandwidth() - 2 * barCornerRadius}
         a${barCornerRadius},${barCornerRadius} 0 0 1 ${barCornerRadius},${barCornerRadius}
-        v${layout.height - layout.marginBottom - yScale.scale(item.value) - barCornerRadius}
+        v${layout.height - layout.marginBottom - yScale.scale(d.value) - barCornerRadius}
         h${-xScale.scale.bandwidth()}Z
       `
     );
@@ -267,7 +253,6 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
   // the donut chart displays a gray color instead of being completely invisible.
   // This placeholder should be excluded from the chart legends.
   const NO_DATA_KEY = "_noData";
-
   // Add a placeholder if the sum of data values is zero.
   if (data.reduce((acc, d) => acc + d.value, 0) === 0) {
     data.push({ key: NO_DATA_KEY, value: 100 });
@@ -278,7 +263,6 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
     .pie()
     .sort(null)
     .value((d) => d.value);
-
   const chart = svg
     .append("g")
     .attr("transform", `translate(${chartXPosition}, ${chartYPosition})`);
@@ -294,7 +278,7 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
         .outerRadius(radius)
     )
     .attr("fill", (d, i) => colors[i])
-    .attr("stroke", Android.colorHex("colorSurface"))
+    .attr("stroke", layout.backgroundColor)
     .style("stroke-width", "1px");
   chart
     .append("g")
@@ -304,7 +288,6 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
 
   const legendRectSize = 15;
   const legendItemPadding = 5;
-
   const legend = svg.selectAll(".legend").data(pie(data)).enter().append("g");
   legend
     .append("rect")
@@ -335,7 +318,6 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
 
   const legendXPosition = chartXPosition + radius + 20;
   let legendYPosition = layout.marginTop + 20;
-
   // Dynamically set the legend y-position depending on how much space is occupied by the text.
   legend.each(function () {
     d3.select(this).attr("transform", `translate(${legendXPosition}, ${legendYPosition})`);

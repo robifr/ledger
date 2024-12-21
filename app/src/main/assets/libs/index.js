@@ -20,9 +20,9 @@
  * @typedef {Object} AndroidInterface
  * @property {(colorName: string) => string} colorHex
  * @property {(
- *      amount: number,
- *      languageTag: string,
- *      symbol: string) => string} formatCurrencyWithUnit
+ *     amount: number,
+ *     languageTag: string,
+ *     symbol: string) => string} formatCurrencyWithUnit
  * @property {() => string} localeLanguageTag
  */
 
