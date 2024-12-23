@@ -24,8 +24,7 @@ class SettingsRepository(private val _sharedPreferences: SharedPreferences) {
   private val _KEY_LANGUAGE_USED = "language_used"
 
   fun languageUsed(): LanguageOption {
-    val languagePrefs: String? =
-        _sharedPreferences.getString(_KEY_LANGUAGE_USED, LanguageOption.ENGLISH_US.languageTag)
+    val languagePrefs: String? = _sharedPreferences.getString(_KEY_LANGUAGE_USED, null)
     return LanguageOption.entries.find { it.languageTag == languagePrefs }
         ?: LanguageOption.ENGLISH_US
   }
