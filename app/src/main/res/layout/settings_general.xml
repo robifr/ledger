@@ -40,10 +40,7 @@
       android:background="?selectableItemBackground"
       android:clickable="true"
       android:orientation="vertical"
-      android:paddingStart="@dimen/space_medium"
-      android:paddingTop="@dimen/space_medium"
-      android:paddingEnd="@dimen/space_medium"
-      android:paddingBottom="@dimen/space_medium"
+      android:padding="@dimen/space_medium"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@id/generalTitle">
 
