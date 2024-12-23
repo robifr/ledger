@@ -54,9 +54,11 @@
   <string name="action_discardAndLeave">Buang dan keluar</string>
   <string name="action_edit">Edit</string>
   <string name="action_grant">Izinkan</string>
+  <string name="action_ignore">Abaikan</string>
   <string name="action_new">Baru</string>
   <string name="action_ok">Oke</string>
   <string name="action_save">Simpan</string>
+  <string name="action_update">Perbarui</string>
   <string name="action_withdraw">Tarik</string>
 
   <!-- Symbol. -->
@@ -72,9 +74,16 @@
   <string name="main_storageAccessPermission"><![CDATA[<b>Izin akses penyimpanan diperlukan</b>]]></string>
   <string name="main_storageAccessPermission_description">
     <![CDATA[
-      Izin ini diperlukan agar aplikasi dapat menyimpan semua data, bahkan setelah pencopotan pemasangan.
-      Data disimpan di dalam: <tt>/storage/emulated/0/Documents/.ledger/</tt>
+      Izin ini diperlukan agar aplikasi dapat menyimpan semua data, bahkan setelah pencopotan
+      pemasangan. Data disimpan di dalam: <tt>/storage/emulated/0/Documents/.ledger/</tt>
     ]]>
+  </string>
+  <string name="main_unknownSourceInstallationPermission">
+    <![CDATA[<b>Izin pemasangan sumber tidak dikenal diperlukan</b>]]>
+  </string>
+  <string name="main_unknownSourceInstallationPermission_description">
+    Izin ini diperlukan agar aplikasi dapat memberi notifikasi ketika versi baru tersedia di GitHub
+    dan memperbaruinya secara otomatis.
   </string>
   <!-- Navigation. -->
   <string name="main_navigation_dashboard">Dasbor</string>
@@ -86,6 +95,14 @@
   <string name="main_createNew_queue">Antrean</string>
   <string name="main_createNew_customer">Pelanggan</string>
   <string name="main_createNew_product">Produk</string>
+  <!-- App update. -->
+  <string name="main_appUpdate_updateAvailable_x"><![CDATA[<b>Pembaruan tersedia: %s</b>]]></string>
+  <string name="main_appUpdate_updateAvailable_description">
+    <![CDATA[
+      Diperbarui pada %s. Lihat apa saja yang baru
+      <a href="https://github.com/robifr/ledger/releases/latest">di sini</a>.
+    ]]>
+  </string>
 
   <!-- Settings fragment. -->
   <string name="settings">Pengaturan</string>
@@ -93,6 +110,10 @@
   <string name="settings_general">Umum</string>
   <string name="settings_language">Bahasa</string>
   <string name="settings_selectLanguage">Pilih bahasa</string>
+  <string name="settings_checkForAppUpdate">Periksa pembaruan aplikasi</string>
+  <string name="settings_lastChecked_x">Terakhir diperiksa: %s</string>
+  <!-- Snackbar. -->
+  <string name="settings_noUpdatesWereAvailable">Tidak ada pembaruan yang tersedia</string>
 
   <!-- Dashboard fragment. -->
   <string name="dashboard_date_selectDate">Pilih tanggal</string>

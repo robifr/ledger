@@ -17,6 +17,7 @@ ksp = "2.0.20-1.0.24" # The initial version must correspond to the Kotlin versio
 leakcanary = "2.14"
 materialComponents = "1.12.0"
 mockK = "1.13.13"
+okHttp = "4.12.0"
 spotless = "6.25.0"
 # JavaScript assets.
 d3 = "7.9.0"
@@ -42,6 +43,7 @@ jetbrains-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-co
 jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jUnit" }
 squareup-leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
+squareup-okhttp3-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okHttp" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

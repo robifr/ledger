@@ -23,16 +23,19 @@ enum class LanguageOption(
     val languageTag: String,
     @StringRes val stringRes: Int,
     @StringRes val shortDateFormat: Int,
-    @StringRes val fullDateFormat: Int
+    @StringRes val fullDateFormat: Int,
+    @StringRes val detailedDateFormat: Int
 ) {
   ENGLISH_US(
       "en-US",
       R.string.enum_languageOption_englishUs,
       R.string.enum_languageOption_englishUs_shortDateFormat,
-      R.string.enum_languageOption_englishUs_fullDateFormat),
+      R.string.enum_languageOption_englishUs_fullDateFormat,
+      R.string.enum_languageOption_englishUs_detailedDateFormat),
   INDONESIA(
       "id-ID",
       R.string.enum_languageOption_indonesia,
       R.string.enum_languageOption_indonesia_shortDateFormat,
-      R.string.enum_languageOption_indonesia_fullDateFormat)
+      R.string.enum_languageOption_indonesia_fullDateFormat,
+      R.string.enum_languageOption_indonesia_detailedDateFormat)
 }

@@ -59,4 +59,43 @@
         android:text="@string/enum_languageOption_englishUs"
         android:textSize="@dimen/text_small" />
   </LinearLayout>
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+      android:id="@+id/appUpdateLayout"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="?selectableItemBackground"
+      android:clickable="true"
+      android:padding="@dimen/space_medium"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/languageLayout">
+
+    <TextView
+        android:id="@+id/appUpdateTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/settings_checkForAppUpdate"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/appUpdateLastChecked"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/space_small"
+        android:text="@string/settings_lastChecked_x"
+        android:textSize="@dimen/text_small"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appUpdateTitle" />
+
+    <TextView
+        android:id="@+id/appUpdateRefreshIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/icon_refresh"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+  </androidx.constraintlayout.widget.ConstraintLayout>
 </merge>

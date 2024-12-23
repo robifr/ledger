@@ -19,9 +19,17 @@ package com.robifr.ledger.repository
 import android.content.Context
 import android.content.SharedPreferences
 import com.robifr.ledger.data.display.LanguageOption
+import com.robifr.ledger.network.AppUpdater
+import com.robifr.ledger.network.GithubReleaseModel
+import java.time.Instant
+import okhttp3.OkHttpClient
 
-class SettingsRepository(private val _sharedPreferences: SharedPreferences) {
+class SettingsRepository(
+    private val _sharedPreferences: SharedPreferences,
+    private val _appUpdater: AppUpdater
+) {
   private val _KEY_LANGUAGE_USED = "language_used"
+  private val _KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE = "last_checked_time_for_app_update"
 
   fun languageUsed(): LanguageOption {
     val languagePrefs: String? = _sharedPreferences.getString(_KEY_LANGUAGE_USED, null)
@@ -32,12 +40,32 @@ class SettingsRepository(private val _sharedPreferences: SharedPreferences) {
   suspend fun saveLanguageUsed(language: LanguageOption): Boolean =
       _sharedPreferences.edit().putString(_KEY_LANGUAGE_USED, language.languageTag).commit()
 
+  fun lastCheckedTimeForAppUpdate(): Instant {
+    val time: String? = _sharedPreferences.getString(_KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE, null)
+    return if (time != null) Instant.parse(time) else Instant.EPOCH
+  }
+
+  suspend fun saveLastCheckedTimeForAppUpdate(time: Instant): Boolean =
+      _sharedPreferences
+          .edit()
+          .putString(_KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE, time.toString())
+          .commit()
+
+  suspend fun obtainLatestAppRelease(): GithubReleaseModel? = _appUpdater.obtainLatestRelease()
+
+  suspend fun downloadAndInstallApp(appUrl: String) {
+    _appUpdater.downloadAndInstallApp(appUrl)
+  }
+
   companion object {
     @Volatile private var _instance: SettingsRepository? = null
 
     @Synchronized
     fun instance(context: Context): SettingsRepository =
-        _instance ?: SettingsRepository(_settingsPreferences(context)).apply { _instance = this }
+        _instance
+            ?: SettingsRepository(
+                    _settingsPreferences(context), AppUpdater(context, OkHttpClient()))
+                .apply { _instance = this }
 
     private fun _settingsPreferences(context: Context): SharedPreferences =
         context.applicationContext.getSharedPreferences(

@@ -22,13 +22,20 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
+import com.robifr.ledger.R
 import com.robifr.ledger.databinding.SettingsFragmentBinding
+import com.robifr.ledger.databinding.SettingsGeneralBinding
+import com.robifr.ledger.network.GithubReleaseModel
+import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsViewModel
 import com.robifr.ledger.util.getColorAttr
 import dagger.hilt.android.AndroidEntryPoint
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
 class SettingsFragment : Fragment() {
@@ -36,7 +43,11 @@ class SettingsFragment : Fragment() {
   val fragmentBinding: SettingsFragmentBinding
     get() = _fragmentBinding!!
 
-  val settingsViewModel: SettingsViewModel by viewModels()
+  private var _generalBinding: SettingsGeneralBinding? = null
+  val generalBinding: SettingsGeneralBinding
+    get() = _generalBinding!!
+
+  val settingsViewModel: SettingsViewModel by activityViewModels()
   private lateinit var _language: SettingsLanguage
   private lateinit var _onBackPressed: OnBackPressedHandler
 
@@ -46,6 +57,7 @@ class SettingsFragment : Fragment() {
       savedInstanceState: Bundle?
   ): View {
     _fragmentBinding = SettingsFragmentBinding.inflate(inflater, container, false)
+    _generalBinding = SettingsGeneralBinding.bind(fragmentBinding.root)
     _language = SettingsLanguage(this)
     _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
@@ -61,7 +73,10 @@ class SettingsFragment : Fragment() {
     // when this fragment is finished, to avoid a crash when closing the app.
     requireActivity().onBackPressedDispatcher.addCallback(requireActivity(), _onBackPressed)
     fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
+    generalBinding.appUpdateLayout.setOnClickListener { settingsViewModel.onCheckForAppUpdate() }
+    settingsViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
     settingsViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
+    settingsViewModel.appUpdateModel.observe(viewLifecycleOwner, ::_onAppUpdateModel)
   }
 
   fun finish() {
@@ -69,8 +84,36 @@ class SettingsFragment : Fragment() {
     _onBackPressed.remove()
   }
 
+  private fun _onSnackbarState(state: SnackbarState) {
+    Snackbar.make(
+            fragmentBinding.root as View,
+            state.messageRes.toStringValue(requireContext()),
+            Snackbar.LENGTH_LONG)
+        .show()
+  }
+
   private fun _onUiState(state: SettingsState) {
     _language.setLanguageUsed(state.languageUsed)
+    generalBinding.appUpdateLastChecked.text =
+        getString(
+            R.string.settings_lastChecked_x,
+            state.lastCheckedTimeForAppUpdate.format(
+                DateTimeFormatter.ofPattern(
+                    getString(
+                        settingsViewModel.uiState.safeValue.languageUsed.detailedDateFormat))))
+  }
+
+  private fun _onAppUpdateModel(model: GithubReleaseModel) {
+    val dateFormat: DateTimeFormatter =
+        DateTimeFormatter.ofPattern(
+            getString(settingsViewModel.uiState.safeValue.languageUsed.fullDateFormat))
+    AppUpdateAvailableDialog(requireContext())
+        .openDialog(
+            updateVersion = model.tagName,
+            updateDate =
+                ZonedDateTime.parse(model.publishedAt, DateTimeFormatter.ISO_DATE_TIME)
+                    .format(dateFormat),
+            onUpdate = { settingsViewModel.onUpdateApp() })
   }
 }
 

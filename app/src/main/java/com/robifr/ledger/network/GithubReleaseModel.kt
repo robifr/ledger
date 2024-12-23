@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.settings.viewmodel
+package com.robifr.ledger.network
 
-import com.robifr.ledger.data.display.LanguageOption
-import java.time.ZoneId
-import java.time.ZonedDateTime
-
-data class SettingsState(
-    val languageUsed: LanguageOption,
-    val lastCheckedTimeForAppUpdate: ZonedDateTime
-) {
-  fun isLastCheckedTimeForAppUpdatePastMidNight(): Boolean {
-    val now: ZonedDateTime = ZonedDateTime.now(ZoneId.systemDefault())
-    return lastCheckedTimeForAppUpdate.isBefore(now.toLocalDate().atStartOfDay(now.zone))
-  }
-}
+data class GithubReleaseModel(
+    val tagName: String,
+    val publishedAt: String,
+    val browserDownloadUrl: String
+)

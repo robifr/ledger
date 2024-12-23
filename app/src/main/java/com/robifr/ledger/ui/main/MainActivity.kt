@@ -17,11 +17,7 @@
 package com.robifr.ledger.ui.main
 
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.os.Environment
-import android.provider.Settings
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.OnBackPressedCallback
@@ -29,6 +25,7 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
@@ -43,10 +40,13 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationBarView
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.MainActivityBinding
-import com.robifr.ledger.repository.SettingsRepository
+import com.robifr.ledger.network.GithubReleaseModel
+import com.robifr.ledger.ui.settings.AppUpdateAvailableDialog
+import com.robifr.ledger.ui.settings.viewmodel.SettingsViewModel
 import com.robifr.ledger.util.hideTooltipText
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
 class MainActivity :
@@ -58,7 +58,8 @@ class MainActivity :
   val activityBinding: MainActivityBinding
     get() = _activityBinding!!
 
-  @Inject lateinit var _settingsRepository: SettingsRepository
+  private val _settingsViewModel: SettingsViewModel by viewModels()
+  private val _permission: RequiredPermission = RequiredPermission(this)
   private lateinit var _permissionLauncher: ActivityResultLauncher<Intent>
   private lateinit var _create: MainCreate
 
@@ -87,26 +88,14 @@ class MainActivity :
   }
 
   override fun onActivityResult(result: ActivityResult) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      // Permission granted.
-      if (Environment.isExternalStorageManager()) {
-        finish()
-        startActivity(intent)
-        // Denied. Retry to show dialog permission.
-      } else {
-        _requireStoragePermission()
-      }
-    }
+    finish()
+    startActivity(intent)
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     _activityBinding = MainActivityBinding.inflate(layoutInflater)
     setContentView(activityBinding.root)
-
-    _permissionLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult(), this)
-    if (!Environment.isExternalStorageManager()) _requireStoragePermission()
 
     _create = MainCreate(this)
     activityBinding.bottomNavigation.setOnItemSelectedListener(this)
@@ -116,16 +105,27 @@ class MainActivity :
     onBackPressedDispatcher.addCallback(this, OnBackPressedHandler(this))
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     AppCompatDelegate.setApplicationLocales(
-        LocaleListCompat.forLanguageTags(_settingsRepository.languageUsed().languageTag))
+        LocaleListCompat.forLanguageTags(
+            _settingsViewModel.uiState.safeValue.languageUsed.languageTag))
     listOf(R.id.dashboardFragment, R.id.queueFragment, R.id.customerFragment, R.id.productFragment)
         .forEach { activityBinding.bottomNavigation.findViewById<View>(it)?.hideTooltipText() }
+
+    _permissionLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult(), this)
+    if (!_permission.isStorageAccessGranted()) {
+      _requireStorageAccessPermission()
+    } else if (!_permission.isUnknownSourceInstallationGranted()) {
+      _requireUnknownSourceInstallationPermission()
+    } else {
+      // Only automatically check for app update once a day.
+      if (_settingsViewModel.uiState.safeValue.isLastCheckedTimeForAppUpdatePastMidNight()) {
+        _settingsViewModel.appUpdateModel.observe(this, ::_onAppUpdateModel)
+        _settingsViewModel.onCheckForAppUpdate()
+      }
+    }
   }
 
-  private fun _requireStoragePermission(): Intent {
-    val intent: Intent =
-        Intent(
-            Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
-            Uri.fromParts("package", packageName, null))
+  private fun _requireStorageAccessPermission() {
     MaterialAlertDialogBuilder(this)
         .setTitle(
             HtmlCompat.fromHtml(
@@ -135,10 +135,39 @@ class MainActivity :
                 getString(R.string.main_storageAccessPermission_description),
                 HtmlCompat.FROM_HTML_MODE_LEGACY))
         .setNegativeButton(R.string.action_denyAndQuit) { _, _ -> finish() }
-        .setPositiveButton(R.string.action_grant) { _, _ -> _permissionLauncher.launch(intent) }
+        .setPositiveButton(R.string.action_grant) { _, _ ->
+          _permissionLauncher.launch(_permission.storageAccessIntent())
+        }
         .setCancelable(false)
         .show()
-    return intent
+  }
+
+  private fun _requireUnknownSourceInstallationPermission() {
+    MaterialAlertDialogBuilder(this)
+        .setTitle(
+            HtmlCompat.fromHtml(
+                getString(R.string.main_unknownSourceInstallationPermission),
+                HtmlCompat.FROM_HTML_MODE_LEGACY))
+        .setMessage(getString(R.string.main_unknownSourceInstallationPermission_description))
+        .setNegativeButton(R.string.action_denyAndQuit) { _, _ -> finish() }
+        .setPositiveButton(R.string.action_grant) { _, _ ->
+          _permissionLauncher.launch(_permission.unknownSourceInstallationIntent())
+        }
+        .setCancelable(false)
+        .show()
+  }
+
+  private fun _onAppUpdateModel(model: GithubReleaseModel) {
+    val dateFormat: DateTimeFormatter =
+        DateTimeFormatter.ofPattern(
+            getString(_settingsViewModel.uiState.safeValue.languageUsed.fullDateFormat))
+    AppUpdateAvailableDialog(this)
+        .openDialog(
+            updateVersion = model.tagName,
+            updateDate =
+                ZonedDateTime.parse(model.publishedAt, DateTimeFormatter.ISO_DATE_TIME)
+                    .format(dateFormat),
+            onUpdate = { _settingsViewModel.onUpdateApp() })
   }
 }
 

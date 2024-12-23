@@ -18,14 +18,24 @@ package com.robifr.ledger.ui.settings.viewmodel
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.robifr.ledger.BuildConfig
+import com.robifr.ledger.R
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.di.IoDispatcher
+import com.robifr.ledger.network.GithubReleaseModel
 import com.robifr.ledger.repository.SettingsRepository
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
+import com.robifr.ledger.ui.SingleLiveEvent
+import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.StringResource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -37,14 +47,50 @@ constructor(
     @IoDispatcher private val _dispatcher: CoroutineDispatcher,
     private val _settingsRepository: SettingsRepository
 ) : ViewModel() {
+  private val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
+  val snackbarState: LiveData<SnackbarState>
+    get() = _snackbarState
+
   private val _uiState: SafeMutableLiveData<SettingsState> =
-      SafeMutableLiveData(SettingsState(_settingsRepository.languageUsed()))
+      SafeMutableLiveData(
+          SettingsState(
+              languageUsed = _settingsRepository.languageUsed(),
+              lastCheckedTimeForAppUpdate =
+                  _settingsRepository.lastCheckedTimeForAppUpdate().atZone(ZoneId.systemDefault())))
   val uiState: SafeLiveData<SettingsState>
     get() = _uiState
+
+  private val _appUpdateModel: MutableLiveData<GithubReleaseModel> = MutableLiveData()
+  val appUpdateModel: LiveData<GithubReleaseModel>
+    get() = _appUpdateModel
 
   fun onLanguageChanged(language: LanguageOption) {
     _uiState.setValue(_uiState.safeValue.copy(languageUsed = language))
     AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(language.languageTag))
     viewModelScope.launch(_dispatcher) { _settingsRepository.saveLanguageUsed(language) }
+  }
+
+  fun onCheckForAppUpdate() {
+    viewModelScope.launch(_dispatcher) {
+      _settingsRepository.obtainLatestAppRelease()?.let {
+        if (it.tagName.removePrefix("v") != BuildConfig.VERSION_NAME) {
+          _appUpdateModel.postValue(it)
+        } else {
+          _snackbarState.postValue(
+              SnackbarState(StringResource(R.string.settings_noUpdatesWereAvailable)))
+        }
+        val now: ZonedDateTime = ZonedDateTime.now(ZoneId.systemDefault())
+        _uiState.postValue(_uiState.safeValue.copy(lastCheckedTimeForAppUpdate = now))
+        _settingsRepository.saveLastCheckedTimeForAppUpdate(now.toInstant())
+      }
+    }
+  }
+
+  fun onUpdateApp() {
+    viewModelScope.launch(_dispatcher) {
+      _appUpdateModel.value?.let {
+        _settingsRepository.downloadAndInstallApp(it.browserDownloadUrl)
+      }
+    }
   }
 }

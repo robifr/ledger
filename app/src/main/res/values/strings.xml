@@ -49,9 +49,11 @@
   <string name="enum_languageOption_englishUs" translatable="false">English (US)</string>
   <string name="enum_languageOption_englishUs_shortDateFormat" translatable="false">MMM d, yyyy</string>
   <string name="enum_languageOption_englishUs_fullDateFormat" translatable="false">EEEE, MMMM d, yyyy</string>
+  <string name="enum_languageOption_englishUs_detailedDateFormat" translatable="false">EEEE, MMMM d, yyyy h:mm:ss a</string>
   <string name="enum_languageOption_indonesia" translatable="false">Indonesia</string>
   <string name="enum_languageOption_indonesia_shortDateFormat" translatable="false">d MMM yyyy</string>
   <string name="enum_languageOption_indonesia_fullDateFormat" translatable="false">EEEE, d MMMM yyyy</string>
+  <string name="enum_languageOption_indonesia_detailedDateFormat" translatable="false">EEEE, d MMMM yyyy HH.mm.ss</string>
 
   <!-- Action button. -->
   <string name="action_add">Add</string>
@@ -61,9 +63,11 @@
   <string name="action_discardAndLeave">Discard and leave</string>
   <string name="action_edit">Edit</string>
   <string name="action_grant">Grant</string>
+  <string name="action_ignore">Ignore</string>
   <string name="action_new">New</string>
   <string name="action_ok">Ok</string>
   <string name="action_save">Save</string>
+  <string name="action_update">Update</string>
   <string name="action_withdraw">Withdraw</string>
 
   <!-- Symbol. -->
@@ -83,6 +87,13 @@
       The data is stored in: <tt>/storage/emulated/0/Documents/.ledger/</tt>
     ]]>
   </string>
+  <string name="main_unknownSourceInstallationPermission">
+    <![CDATA[<b>Unknown source installation permission required</b>]]>
+  </string>
+  <string name="main_unknownSourceInstallationPermission_description">
+    This permission is required to allow the app to notify when a new version is available on GitHub
+    and update itself automatically.
+  </string>
   <!-- Navigation. -->
   <string name="main_navigation_dashboard">Dashboard</string>
   <string name="main_navigation_queue">Queue</string>
@@ -93,6 +104,14 @@
   <string name="main_createNew_queue">Queue</string>
   <string name="main_createNew_customer">Customer</string>
   <string name="main_createNew_product">Product</string>
+  <!-- App update. -->
+  <string name="main_appUpdate_updateAvailable_x"><![CDATA[<b>Update available: %s</b>]]></string>
+  <string name="main_appUpdate_updateAvailable_description">
+    <![CDATA[
+      Updated on %s. See what\'s new
+      <a href="https://github.com/robifr/ledger/releases/latest">here</a>.
+    ]]>
+  </string>
 
   <!-- Settings fragment. -->
   <string name="settings">Settings</string>
@@ -100,6 +119,10 @@
   <string name="settings_general">General</string>
   <string name="settings_language">Language</string>
   <string name="settings_selectLanguage">Select language</string>
+  <string name="settings_checkForAppUpdate">Check for app update</string>
+  <string name="settings_lastChecked_x">Last checked: %s</string>
+  <!-- Snackbar. -->
+  <string name="settings_noUpdatesWereAvailable">No updates were available</string>
 
   <!-- Dashboard fragment. -->
   <string name="dashboard_date_selectDate">Select date</string>

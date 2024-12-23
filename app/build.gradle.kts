@@ -37,7 +37,7 @@ android {
     minSdk = 30
     targetSdk = 35
     versionCode = 1
-    versionName = "1.1.7"
+    versionName = "1.2.0"
     multiDexEnabled = true
     setProperty("archivesBaseName", "ledger-v${versionName}")
 
@@ -110,6 +110,7 @@ dependencies {
   implementation(libs.androidx.viewpager2)
   implementation(libs.androidx.webkit)
   implementation(libs.google.android.material)
+  implementation(libs.squareup.okhttp3.okhttp)
 
   implementation(libs.androidx.room.ktx)
   ksp(libs.androidx.room.compiler)
