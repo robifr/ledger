@@ -21,18 +21,24 @@ import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 
 sealed interface StringResourceType {
+  val resId: Int
+
   fun toStringValue(context: Context): String
 }
 
-data class StringResource(@StringRes val resId: Int, val args: List<Any>) : StringResourceType {
+data class StringResource(@StringRes override val resId: Int, val args: List<Any>) :
+    StringResourceType {
   constructor(@StringRes resId: Int, vararg args: Any) : this(resId, args.toList())
 
   override fun toStringValue(context: Context): String =
       context.getString(resId, *args.toTypedArray())
 }
 
-data class PluralResource(@PluralsRes val resId: Int, val quantity: Int, val args: List<Any>) :
-    StringResourceType {
+data class PluralResource(
+    @PluralsRes override val resId: Int,
+    val quantity: Int,
+    val args: List<Any>
+) : StringResourceType {
   constructor(
       @PluralsRes resId: Int,
       quantity: Int,
