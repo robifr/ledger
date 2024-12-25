@@ -146,9 +146,9 @@ class SettingsViewModelTest(
   ) {
     mockkObject(NetworkState)
     every { NetworkState.isInternetAvailable(any()) } returns true
+    coEvery { _settingsRepository.obtainLatestAppRelease() } returns _githubRelease
     val oldUiState: SettingsState = _viewModel.uiState.safeValue
 
-    coEvery { _settingsRepository.obtainLatestAppRelease() } returns _githubRelease
     coEvery { _settingsRepository.saveLastCheckedTimeForAppUpdate(any()) } returns true
     mockkObject(VersionComparator)
     every { VersionComparator.isNewVersionNewer(any(), any()) } returns isNewVersionNewer
