@@ -114,6 +114,7 @@
   <string name="settings_lastChecked_x">Terakhir diperiksa: %s</string>
   <!-- Snackbar. -->
   <string name="settings_noUpdatesWereAvailable">Tidak ada pembaruan yang tersedia</string>
+  <string name="settings_noInternetConnectionForAppUpdates">Tidak ada koneksi internet, tidak dapat memeriksa pembaruan aplikasi</string>
 
   <!-- Dashboard fragment. -->
   <string name="dashboard_date_selectDate">Pilih tanggal</string>

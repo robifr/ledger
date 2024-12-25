@@ -73,7 +73,9 @@ class SettingsFragment : Fragment() {
     // when this fragment is finished, to avoid a crash when closing the app.
     requireActivity().onBackPressedDispatcher.addCallback(requireActivity(), _onBackPressed)
     fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
-    generalBinding.appUpdateLayout.setOnClickListener { settingsViewModel.onCheckForAppUpdate() }
+    generalBinding.appUpdateLayout.setOnClickListener {
+      settingsViewModel.onCheckForAppUpdate(requireContext())
+    }
     settingsViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
     settingsViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
     settingsViewModel.appUpdateModel.observe(viewLifecycleOwner, ::_onAppUpdateModel)

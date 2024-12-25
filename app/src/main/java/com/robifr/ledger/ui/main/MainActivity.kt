@@ -120,7 +120,7 @@ class MainActivity :
       // Only automatically check for app update once a day.
       if (_settingsViewModel.uiState.safeValue.isLastCheckedTimeForAppUpdatePastMidNight()) {
         _settingsViewModel.appUpdateModel.observe(this, ::_onAppUpdateModel)
-        _settingsViewModel.onCheckForAppUpdate()
+        _settingsViewModel.onCheckForAppUpdate(this)
       }
     }
   }

@@ -16,6 +16,7 @@
 
 package com.robifr.ledger.ui.settings.viewmodel
 
+import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.LiveData
@@ -27,6 +28,7 @@ import com.robifr.ledger.R
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.network.GithubReleaseModel
+import com.robifr.ledger.network.NetworkState
 import com.robifr.ledger.repository.SettingsRepository
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
@@ -71,7 +73,12 @@ constructor(
     viewModelScope.launch(_dispatcher) { _settingsRepository.saveLanguageUsed(language) }
   }
 
-  fun onCheckForAppUpdate() {
+  fun onCheckForAppUpdate(context: Context) {
+    if (!NetworkState.isInternetAvailable(context)) {
+      _snackbarState.setValue(
+          SnackbarState(StringResource(R.string.settings_noInternetConnectionForAppUpdates)))
+      return
+    }
     viewModelScope.launch(_dispatcher) {
       _settingsRepository.obtainLatestAppRelease()?.let {
         if (VersionComparator.isNewVersionNewer(

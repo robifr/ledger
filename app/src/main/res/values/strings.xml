@@ -123,6 +123,7 @@
   <string name="settings_lastChecked_x">Last checked: %s</string>
   <!-- Snackbar. -->
   <string name="settings_noUpdatesWereAvailable">No updates were available</string>
+  <string name="settings_noInternetConnectionForAppUpdates">No internet connection, unable to check for app updates</string>
 
   <!-- Dashboard fragment. -->
   <string name="dashboard_date_selectDate">Select date</string>
