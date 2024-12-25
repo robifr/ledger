@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.BuildConfig
@@ -63,7 +62,7 @@ constructor(
   val uiState: SafeLiveData<SettingsState>
     get() = _uiState
 
-  private val _appUpdateModel: MutableLiveData<GithubReleaseModel> = MutableLiveData()
+  private val _appUpdateModel: SingleLiveEvent<GithubReleaseModel> = SingleLiveEvent()
   val appUpdateModel: LiveData<GithubReleaseModel>
     get() = _appUpdateModel
 
