@@ -33,7 +33,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 
 @Module
 @InstallIn(ViewModelComponent::class, ActivityComponent::class)
-class RepositoryModule {
+object RepositoryModule {
   @Provides
   fun provideCustomerRepository(@ApplicationContext context: Context): CustomerRepository =
       CustomerRepository.instance(LocalDatabase.instance(context.applicationContext).customerDao())
