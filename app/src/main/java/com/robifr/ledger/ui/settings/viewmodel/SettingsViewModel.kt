@@ -33,6 +33,7 @@ import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.util.VersionComparator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -73,7 +74,8 @@ constructor(
   fun onCheckForAppUpdate() {
     viewModelScope.launch(_dispatcher) {
       _settingsRepository.obtainLatestAppRelease()?.let {
-        if (it.tagName.removePrefix("v") != BuildConfig.VERSION_NAME) {
+        if (VersionComparator.isNewVersionNewer(
+            BuildConfig.VERSION_NAME, it.tagName.removePrefix("v"))) {
           _appUpdateModel.postValue(it)
         } else {
           _snackbarState.postValue(
