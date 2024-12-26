@@ -106,8 +106,7 @@ constructor(
 
   fun onSave() {
     _resultState.setValue(
-        FilterCustomerResultState(
-            _uiState.safeValue.filteredCustomers.mapNotNull(CustomerModel::id)))
+        FilterCustomerResultState(_uiState.safeValue.filteredCustomers.mapNotNull { it.id }))
   }
 
   private fun _onCustomersChanged(customers: List<CustomerModel>) {

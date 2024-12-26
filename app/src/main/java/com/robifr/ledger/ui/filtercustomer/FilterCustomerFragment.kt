@@ -30,7 +30,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
-import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.databinding.ListableFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
 import com.robifr.ledger.ui.RecyclerAdapterState
@@ -106,7 +105,7 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                         SearchCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_IDS_LONG_ARRAY
                             .key(),
                         filterCustomerViewModel.uiState.safeValue.filteredCustomers
-                            .mapNotNull(CustomerModel::id)
+                            .mapNotNull { it.id }
                             .toLongArray())
                   })
           true

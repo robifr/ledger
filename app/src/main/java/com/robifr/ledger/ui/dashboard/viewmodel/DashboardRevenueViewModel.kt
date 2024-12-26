@@ -124,7 +124,7 @@ class DashboardRevenueViewModel(
     val dateStart: ZonedDateTime =
         _uiState.safeValue.queues
             .takeIf { _uiState.safeValue.date.range == QueueDate.Range.ALL_TIME }
-            ?.minOfOrNull(QueueModel::date)
+            ?.minOfOrNull { it.date }
             ?.atZone(ZoneId.systemDefault())
             ?: _uiState.safeValue.date.dateStart.toInstant().atZone(ZoneId.systemDefault())
     val dateEnd: ZonedDateTime = _uiState.safeValue.date.dateEnd
@@ -136,7 +136,7 @@ class DashboardRevenueViewModel(
     var maxValue: BigDecimal = (yAxisTicks - 1).toBigDecimal()
     // Sum the values if the date and overview type are equal.
     // The queues also have to be sorted by date because D3.js draws everything in order.
-    for (queue in _uiState.safeValue.queues.sortedBy(QueueModel::date)) {
+    for (queue in _uiState.safeValue.queues.sortedBy { it.date }) {
       val formattedDate: String =
           ChartUtil.toDateTime(queue.date.atZone(ZoneId.systemDefault()), dateStart to dateEnd)
       // Received income are from the completed queue only.
