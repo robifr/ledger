@@ -29,13 +29,29 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 class CreateQueueDate(private val _fragment: CreateQueueFragment) {
-  private val _dialog: MaterialDatePicker<Long> =
+  init {
+    _fragment.fragmentBinding.date.setOnClickListener {
+      _dialog()
+          .show(
+              _fragment.requireActivity().supportFragmentManager,
+              ClassPath.simpleName(CreateQueueDate::class.java))
+    }
+  }
+
+  fun setInputtedDate(date: ZonedDateTime, @StringRes dateFormat: Int) {
+    _fragment.fragmentBinding.date.setText(
+        DateTimeFormatter.ofPattern(_fragment.getString(dateFormat)).format(date))
+  }
+
+  private fun _dialog(): MaterialDatePicker<Long> =
       MaterialDatePicker.Builder.datePicker()
           .setTheme(MaterialR.style.ThemeOverlay_Material3_MaterialCalendar)
           .setTitleText(R.string.createQueue_date_selectDate)
           .setInputMode(MaterialDatePicker.INPUT_MODE_CALENDAR)
           .setCalendarConstraints(
               CalendarConstraints.Builder().setValidator(DateValidatorPointBackward.now()).build())
+          // Always recreate the dialog everytime it opens, so that the date selection
+          // is handled properly.
           .setSelection(
               _fragment.createQueueViewModel.uiState.safeValue.date
                   .toLocalDate()
@@ -52,17 +68,4 @@ class CreateQueueDate(private val _fragment: CreateQueueFragment) {
               }
             }
           }
-
-  init {
-    _fragment.fragmentBinding.date.setOnClickListener {
-      _dialog.show(
-          _fragment.requireActivity().supportFragmentManager,
-          ClassPath.simpleName(CreateQueueDate::class.java))
-    }
-  }
-
-  fun setInputtedDate(date: ZonedDateTime, @StringRes dateFormat: Int) {
-    _fragment.fragmentBinding.date.setText(
-        DateTimeFormatter.ofPattern(_fragment.getString(dateFormat)).format(date))
-  }
 }
