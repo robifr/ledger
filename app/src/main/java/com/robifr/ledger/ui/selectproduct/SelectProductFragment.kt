@@ -28,12 +28,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ListableFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
 import com.robifr.ledger.ui.RecyclerAdapterState
-import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
 import com.robifr.ledger.ui.selectproduct.recycler.SelectProductAdapter
 import com.robifr.ledger.ui.selectproduct.viewmodel.SelectProductResultState
@@ -77,7 +75,6 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
-    selectProductViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
     selectProductViewModel.resultState.observe(viewLifecycleOwner, ::_onResultState)
     selectProductViewModel.recyclerAdapterState.observe(
         viewLifecycleOwner, ::_onRecyclerAdapterState)
@@ -115,14 +112,6 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   fun finish() {
     findNavController().popBackStack()
-  }
-
-  private fun _onSnackbarState(state: SnackbarState) {
-    Snackbar.make(
-            fragmentBinding.root as View,
-            state.messageRes.toStringValue(requireContext()),
-            Snackbar.LENGTH_LONG)
-        .show()
   }
 
   private fun _onResultState(state: SelectProductResultState) {

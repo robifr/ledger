@@ -29,7 +29,6 @@ import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
-import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.selectcustomer.SelectCustomerFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -50,10 +49,6 @@ constructor(
   private val _customerChangedListener: ModelSyncListener<CustomerModel> =
       ModelSyncListener(
           currentModel = { _uiState.safeValue.customers }, onSyncModels = ::_onCustomersChanged)
-
-  private val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
-  val snackbarState: LiveData<SnackbarState>
-    get() = _snackbarState
 
   private val _uiState: SafeMutableLiveData<SelectCustomerState> =
       SafeMutableLiveData(
