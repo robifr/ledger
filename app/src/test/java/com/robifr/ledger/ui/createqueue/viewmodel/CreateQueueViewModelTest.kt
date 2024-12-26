@@ -28,6 +28,7 @@ import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.repository.QueueRepository
+import com.robifr.ledger.ui.SnackbarState
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -60,6 +61,7 @@ class CreateQueueViewModelTest(
   private lateinit var _customerRepository: CustomerRepository
   private lateinit var _productRepository: ProductRepository
   private lateinit var _viewModel: CreateQueueViewModel
+  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
   private lateinit var _resultStateObserver: Observer<CreateQueueResultState>
 
   private val _customer: CustomerModel = CustomerModel(id = 111L, name = "Amy", balance = 500L)
@@ -85,9 +87,11 @@ class CreateQueueViewModelTest(
     _queueRepository = mockk()
     _customerRepository = mockk()
     _productRepository = mockk()
+    _snackbarStateObserver = mockk(relaxed = true)
     _resultStateObserver = mockk(relaxed = true)
     _viewModel =
         CreateQueueViewModel(_dispatcher, _queueRepository, _customerRepository, _productRepository)
+    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
     _viewModel.resultState.observe(_lifecycleOwner, _resultStateObserver)
   }
 
@@ -246,9 +250,17 @@ class CreateQueueViewModelTest(
 
     coEvery { _queueRepository.add(any()) } returns 0L
     _viewModel.onSave()
-    assertDoesNotThrow("Prevent save for an empty product orders") {
-      coVerify(exactly = 0) { _queueRepository.add(any()) }
-    }
+    assertAll(
+        {
+          assertDoesNotThrow("Prevent save for an empty product orders") {
+            coVerify(exactly = 0) { _queueRepository.add(any()) }
+          }
+        },
+        {
+          assertDoesNotThrow("Notify the error via snackbar") {
+            verify { _snackbarStateObserver.onChanged(any()) }
+          }
+        })
   }
 
   @ParameterizedTest
@@ -262,33 +274,60 @@ class CreateQueueViewModelTest(
 
     coEvery { _queueRepository.add(any()) } returns createdQueueId
     _viewModel.onSave()
-    if (createdQueueId == 0L) {
-      assertDoesNotThrow("Don't return result for a failed save") {
-        verify(exactly = 0) { _resultStateObserver.onChanged(any()) }
-      }
-    } else {
-      assertEquals(
-          createdQueueId,
-          _viewModel.resultState.value?.createdQueueId,
-          "Return result with the correct ID after success save")
-    }
+    assertAll(
+        {
+          assertDoesNotThrow("Return result with the correct ID after success save") {
+            verify(exactly = if (createdQueueId == 0L) 0 else 1) {
+              _resultStateObserver.onChanged(eq(CreateQueueResultState(createdQueueId)))
+            }
+          }
+        },
+        {
+          assertDoesNotThrow("Notify the result via snackbar") {
+            verify { _snackbarStateObserver.onChanged(any()) }
+          }
+        })
   }
 
-  @Test
-  fun `select customer by id`() {
-    coEvery { _customerRepository.selectById(any<Long>()) } returns _customer
-    assertEquals(
-        _customer,
-        _viewModel.selectCustomerById(_customer.id).value,
-        "Return the correct customer for the given ID")
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `select customer by id`(isCustomerNull: Boolean) {
+    coEvery { _customerRepository.selectById(any<Long>()) } returns
+        if (!isCustomerNull) _customer else null
+    assertAll(
+        {
+          assertEquals(
+              if (!isCustomerNull) _customer else null,
+              _viewModel.selectCustomerById(_customer.id).value,
+              "Return the correct customer for the given ID")
+        },
+        {
+          assertDoesNotThrow("Notify any error via snackbar") {
+            verify(exactly = if (isCustomerNull) 1 else 0) {
+              _snackbarStateObserver.onChanged(any())
+            }
+          }
+        })
   }
 
-  @Test
-  fun `select product by id`() {
-    coEvery { _productRepository.selectById(any<Long>()) } returns _product
-    assertEquals(
-        _product,
-        _viewModel.selectProductById(_product.id).value,
-        "Return the correct product for the given ID")
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `select product by id`(isProductNull: Boolean) {
+    coEvery { _productRepository.selectById(any<Long>()) } returns
+        if (!isProductNull) _product else null
+    assertAll(
+        {
+          assertEquals(
+              if (!isProductNull) _product else null,
+              _viewModel.selectProductById(_product.id).value,
+              "Return the correct product for the given ID")
+        },
+        {
+          assertDoesNotThrow("Notify any error via snackbar") {
+            verify(exactly = if (isProductNull) 1 else 0) {
+              _snackbarStateObserver.onChanged(any())
+            }
+          }
+        })
   }
 }

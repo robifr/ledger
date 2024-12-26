@@ -22,6 +22,7 @@ import com.robifr.ledger.LifecycleOwnerExtension
 import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.repository.CustomerRepository
+import com.robifr.ledger.ui.SnackbarState
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -51,14 +52,17 @@ class CreateCustomerViewModelTest(
 ) {
   private lateinit var _customerRepository: CustomerRepository
   private lateinit var _viewModel: CreateCustomerViewModel
+  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
   private lateinit var _resultStateObserver: Observer<CreateCustomerResultState>
 
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
     _customerRepository = mockk()
+    _snackbarStateObserver = mockk(relaxed = true)
     _resultStateObserver = mockk(relaxed = true)
     _viewModel = CreateCustomerViewModel(_dispatcher, _customerRepository)
+    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
     _viewModel.resultState.observe(_lifecycleOwner, _resultStateObserver)
   }
 
@@ -125,15 +129,18 @@ class CreateCustomerViewModelTest(
 
     coEvery { _customerRepository.add(any()) } returns createdCustomerId
     _viewModel.onSave()
-    if (createdCustomerId == 0L) {
-      assertDoesNotThrow("Don't return result for a failed save") {
-        verify(exactly = 0) { _resultStateObserver.onChanged(any()) }
-      }
-    } else {
-      assertEquals(
-          createdCustomerId,
-          _viewModel.resultState.value?.createdCustomerId,
-          "Return result with the correct ID after success save")
-    }
+    assertAll(
+        {
+          assertDoesNotThrow("Return result with the correct ID after success save") {
+            verify(exactly = if (createdCustomerId == 0L) 0 else 1) {
+              _resultStateObserver.onChanged(eq(CreateCustomerResultState(createdCustomerId)))
+            }
+          }
+        },
+        {
+          assertDoesNotThrow("Notify the result via snackbar") {
+            verify { _snackbarStateObserver.onChanged(any()) }
+          }
+        })
   }
 }

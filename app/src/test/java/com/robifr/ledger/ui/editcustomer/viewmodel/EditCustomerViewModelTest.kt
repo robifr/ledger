@@ -24,6 +24,7 @@ import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.repository.CustomerRepository
+import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerState
 import com.robifr.ledger.ui.editcustomer.EditCustomerFragment
 import io.mockk.clearAllMocks
@@ -33,7 +34,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -57,6 +57,7 @@ class EditCustomerViewModelTest(
 ) {
   private lateinit var _customerRepository: CustomerRepository
   private lateinit var _viewModel: EditCustomerViewModel
+  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
   private lateinit var _resultStateObserver: Observer<EditCustomerResultState>
 
   private val _customerToEdit: CustomerModel =
@@ -66,6 +67,7 @@ class EditCustomerViewModelTest(
   fun beforeEach() {
     clearAllMocks()
     _customerRepository = mockk()
+    _snackbarStateObserver = mockk(relaxed = true)
     _resultStateObserver = mockk(relaxed = true)
 
     coEvery { _customerRepository.add(any()) } returns 0L
@@ -79,6 +81,7 @@ class EditCustomerViewModelTest(
                   EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key(),
                   _customerToEdit.id)
             })
+    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
     _viewModel.editResultState.observe(_lifecycleOwner, _resultStateObserver)
   }
 
@@ -106,7 +109,6 @@ class EditCustomerViewModelTest(
                 SavedStateHandle().apply {
                   set(EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key(), null)
                 })
-        advanceUntilIdle()
       }
     }
   }

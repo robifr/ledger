@@ -35,7 +35,6 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -107,7 +106,6 @@ class EditProductViewModelTest(
                 SavedStateHandle().apply {
                   set(EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key(), null)
                 })
-        advanceUntilIdle()
       }
     }
   }

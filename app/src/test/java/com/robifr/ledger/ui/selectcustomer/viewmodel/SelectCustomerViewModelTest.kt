@@ -16,17 +16,22 @@
 
 package com.robifr.ledger.ui.selectcustomer.viewmodel
 
+import androidx.lifecycle.Observer
 import androidx.lifecycle.SavedStateHandle
 import com.robifr.ledger.InstantTaskExecutorExtension
+import com.robifr.ledger.LifecycleOwnerExtension
+import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ModelSyncListener
+import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.selectcustomer.SelectCustomerFragment
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.clearAllMocks
+import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
@@ -35,21 +40,33 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExperimentalCoroutinesApi
-@ExtendWith(InstantTaskExecutorExtension::class, MainCoroutineExtension::class)
-class SelectCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
+@ExtendWith(
+    InstantTaskExecutorExtension::class,
+    MainCoroutineExtension::class,
+    LifecycleOwnerExtension::class)
+class SelectCustomerViewModelTest(
+    private val _dispatcher: TestDispatcher,
+    private val _lifecycleOwner: LifecycleTestOwner
+) {
   private lateinit var _customerRepository: CustomerRepository
   private val _customerChangedListenerCaptor: CapturingSlot<ModelSyncListener<CustomerModel>> =
       slot()
   private lateinit var _viewModel: SelectCustomerViewModel
+  private lateinit var _recyclerAdapterStateObserver: Observer<RecyclerAdapterState>
 
   private val _firstCustomer: CustomerModel = CustomerModel(id = 111L, name = "Amy")
   private val _secondCustomer: CustomerModel = CustomerModel(id = 222L, name = "Ben")
@@ -59,6 +76,7 @@ class SelectCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
   fun beforeEach() {
     clearAllMocks()
     _customerRepository = mockk()
+    _recyclerAdapterStateObserver = mockk(relaxed = true)
 
     every {
       _customerRepository.addModelChangedListener(capture(_customerChangedListenerCaptor))
@@ -67,6 +85,7 @@ class SelectCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
         listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
     coEvery { _customerRepository.selectById(any<Long>()) } returns _firstCustomer
     _viewModel = SelectCustomerViewModel(SavedStateHandle(), _dispatcher, _customerRepository)
+    _viewModel.recyclerAdapterState.observe(_lifecycleOwner, _recyclerAdapterStateObserver)
   }
 
   @Test
@@ -106,6 +125,13 @@ class SelectCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
   }
 
   @Test
+  fun `on initialize result notify recycler adapter item changes`() = runTest {
+    assertDoesNotThrow("Notify recycler adapter of header holder changes") {
+      verify { _recyclerAdapterStateObserver.onChanged(eq(RecyclerAdapterState.ItemChanged(0))) }
+    }
+  }
+
+  @Test
   fun `on cleared`() {
     every { _customerRepository.removeModelChangedListener(any()) } just Runs
     _viewModel.onLifecycleOwnerDestroyed()
@@ -118,22 +144,55 @@ class SelectCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
   @ValueSource(booleans = [true, false])
   fun `on selected customer preview expanded`(isExpanded: Boolean) {
     _viewModel.onSelectedCustomerPreviewExpanded(isExpanded)
-    assertEquals(
-        isExpanded,
-        _viewModel.uiState.safeValue.isSelectedCustomerPreviewExpanded,
-        "Update whether selected customer preview is expanded")
+    assertAll(
+        {
+          assertEquals(
+              isExpanded,
+              _viewModel.uiState.safeValue.isSelectedCustomerPreviewExpanded,
+              "Update whether selected customer preview is expanded")
+        },
+        {
+          assertDoesNotThrow("Notify recycler adapter of header holder changes") {
+            verify {
+              _recyclerAdapterStateObserver.onChanged(eq(RecyclerAdapterState.ItemChanged(0)))
+            }
+          }
+        })
   }
 
-  @ParameterizedTest
-  @ValueSource(booleans = [true, false])
-  fun `on expanded customer index changed`(isSameIndexSelected: Boolean) {
-    _viewModel.onExpandedCustomerIndexChanged(0)
+  private fun `_on expanded customer index changed cases`(): Array<Array<Any>> =
+      arrayOf(
+          // The updated indexes have +1 offset due to header holder.
+          arrayOf(0, 0, listOf(1), -1),
+          arrayOf(-1, 0, listOf(1), 0),
+          arrayOf(0, 1, listOf(1, 2), 1))
 
-    _viewModel.onExpandedCustomerIndexChanged(if (isSameIndexSelected) 0 else 1)
-    assertEquals(
-        if (isSameIndexSelected) -1 else 1,
-        _viewModel.uiState.safeValue.expandedCustomerIndex,
-        "Update expanded customer index and reset when selecting the same one")
+  @ParameterizedTest
+  @MethodSource("_on expanded customer index changed cases")
+  fun `on expanded customer index changed`(
+      oldIndex: Int,
+      newIndex: Int,
+      updatedIndexes: List<Int>,
+      expandedIndex: Int
+  ) {
+    _viewModel.onExpandedCustomerIndexChanged(oldIndex)
+
+    _viewModel.onExpandedCustomerIndexChanged(newIndex)
+    assertAll(
+        {
+          assertEquals(
+              expandedIndex,
+              _viewModel.uiState.safeValue.expandedCustomerIndex,
+              "Update expanded customer index and reset when selecting the same one")
+        },
+        {
+          assertDoesNotThrow("Notify recycler adapter of item changes") {
+            verify {
+              _recyclerAdapterStateObserver.onChanged(
+                  eq(RecyclerAdapterState.ItemChanged(updatedIndexes)))
+            }
+          }
+        })
   }
 
   @ParameterizedTest
@@ -159,5 +218,16 @@ class SelectCustomerViewModelTest(private val _dispatcher: TestDispatcher) {
         updatedCustomers,
         _viewModel.uiState.safeValue.customers,
         "Sync customers when any are updated in the database")
+  }
+
+  @Test
+  fun `on state changed result notify recycler adapter dataset changes`() {
+    clearMocks(_recyclerAdapterStateObserver)
+    _customerChangedListenerCaptor.captured.onModelAdded(listOf(_firstCustomer))
+    assertDoesNotThrow("Notify recycler adapter of dataset changes") {
+      verify(exactly = 1) {
+        _recyclerAdapterStateObserver.onChanged(eq(RecyclerAdapterState.DataSetChanged))
+      }
+    }
   }
 }

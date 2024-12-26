@@ -28,10 +28,12 @@ import com.robifr.ledger.network.NetworkState
 import com.robifr.ledger.repository.SettingsRepository
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.util.VersionComparator
+import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.mockkStatic
@@ -62,6 +64,7 @@ class SettingsViewModelTest(
   private lateinit var _settingsRepository: SettingsRepository
   private lateinit var _viewModel: SettingsViewModel
   private lateinit var _snackbarStateObserver: Observer<SnackbarState>
+  private lateinit var _appUpdateModelObserver: Observer<GithubReleaseModel>
 
   private val _githubRelease: GithubReleaseModel =
       GithubReleaseModel("v1.1.1", "2024-01-01T00:00:00Z", "https://example.com")
@@ -72,11 +75,13 @@ class SettingsViewModelTest(
     _networkState = mockk()
     _settingsRepository = mockk()
     _snackbarStateObserver = mockk(relaxed = true)
+    _appUpdateModelObserver = mockk(relaxed = true)
 
     every { _settingsRepository.languageUsed() } returns LanguageOption.ENGLISH_US
     every { _settingsRepository.lastCheckedTimeForAppUpdate() } returns Instant.now()
     _viewModel = SettingsViewModel(_dispatcher, _settingsRepository)
     _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
+    _viewModel.appUpdateModel.observe(_lifecycleOwner, _appUpdateModelObserver)
   }
 
   @Test
@@ -106,8 +111,8 @@ class SettingsViewModelTest(
     _viewModel.onCheckForAppUpdate(mockk())
     assertAll(
         {
-          assertDoesNotThrow("Notify via snackbar if the internet is unavailable") {
-            coVerify { _snackbarStateObserver.onChanged(any()) }
+          assertDoesNotThrow("Notify unavailable internet via snackbar") {
+            verify { _snackbarStateObserver.onChanged(any()) }
           }
         },
         {
@@ -155,14 +160,21 @@ class SettingsViewModelTest(
     _viewModel.onCheckForAppUpdate(mockk())
     assertAll(
         {
+          assertDoesNotThrow("Update app update model with the fetched data") {
+            verify(exactly = if (isNewVersionNewer) 1 else 0) {
+              _appUpdateModelObserver.onChanged(eq(_githubRelease))
+            }
+          }
+        },
+        {
           if (isNewVersionNewer) {
             assertTrue(
                 _viewModel.uiState.safeValue.lastCheckedTimeForAppUpdate.isAfter(
                     oldUiState.lastCheckedTimeForAppUpdate),
                 "Update last checked time for app update")
           } else {
-            assertDoesNotThrow("Notify via snackbar if no updates were available") {
-              coVerify { _snackbarStateObserver.onChanged(any()) }
+            assertDoesNotThrow("Notify unavailable app update via snackbar") {
+              verify { _snackbarStateObserver.onChanged(any()) }
             }
           }
         },
@@ -171,5 +183,22 @@ class SettingsViewModelTest(
             coVerify { _settingsRepository.saveLastCheckedTimeForAppUpdate(any()) }
           }
         })
+  }
+
+  @Test
+  fun `on update app`() {
+    mockkObject(NetworkState)
+    every { NetworkState.isInternetAvailable(any()) } returns true
+    mockkObject(VersionComparator)
+    every { VersionComparator.isNewVersionNewer(any(), any()) } returns true
+    coEvery { _settingsRepository.obtainLatestAppRelease() } returns _githubRelease
+    coEvery { _settingsRepository.saveLastCheckedTimeForAppUpdate(any()) } returns true
+    _viewModel.onCheckForAppUpdate(mockk())
+
+    coEvery { _settingsRepository.downloadAndInstallApp(any()) } just Runs
+    _viewModel.onUpdateApp()
+    assertDoesNotThrow("Update app from the obtained latest app release URL") {
+      coVerify { _settingsRepository.downloadAndInstallApp(eq(_githubRelease.browserDownloadUrl)) }
+    }
   }
 }

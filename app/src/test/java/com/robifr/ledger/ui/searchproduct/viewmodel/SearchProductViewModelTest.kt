@@ -16,13 +16,18 @@
 
 package com.robifr.ledger.ui.searchproduct.viewmodel
 
+import androidx.lifecycle.Observer
 import androidx.lifecycle.SavedStateHandle
 import com.robifr.ledger.InstantTaskExecutorExtension
+import com.robifr.ledger.LifecycleOwnerExtension
+import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.ProductRepository
+import com.robifr.ledger.ui.RecyclerAdapterState
+import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
 import io.mockk.CapturingSlot
@@ -42,27 +47,43 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExperimentalCoroutinesApi
-@ExtendWith(InstantTaskExecutorExtension::class, MainCoroutineExtension::class)
-class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
+@ExtendWith(
+    InstantTaskExecutorExtension::class,
+    MainCoroutineExtension::class,
+    LifecycleOwnerExtension::class)
+class SearchProductViewModelTest(
+    private val _dispatcher: TestDispatcher,
+    private val _lifecycleOwner: LifecycleTestOwner
+) {
   private lateinit var _productRepository: ProductRepository
   private val _productChangedListenerCaptor: CapturingSlot<ModelSyncListener<ProductModel>> = slot()
   private lateinit var _viewModel: SearchProductViewModel
+  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
+  private lateinit var _recyclerAdapterStateObserver: Observer<RecyclerAdapterState>
 
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
     _productRepository = mockk()
+    _snackbarStateObserver = mockk(relaxed = true)
+    _recyclerAdapterStateObserver = mockk(relaxed = true)
 
     every {
       _productRepository.addModelChangedListener(capture(_productChangedListenerCaptor))
     } just Runs
     _viewModel = SearchProductViewModel(SavedStateHandle(), _dispatcher, _productRepository)
+    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
+    _viewModel.recyclerAdapterState.observe(_lifecycleOwner, _recyclerAdapterStateObserver)
   }
 
   @Test
@@ -140,16 +161,39 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
         "Update products based from the queried search result")
   }
 
-  @ParameterizedTest
-  @ValueSource(booleans = [true, false])
-  fun `on expanded product index changed`(isSameIndexSelected: Boolean) {
-    _viewModel.onExpandedProductIndexChanged(0)
+  private fun `_on expanded product index changed cases`(): Array<Array<Any>> =
+      arrayOf(
+          // The updated indexes have +1 offset due to header holder.
+          arrayOf(0, 0, listOf(1), -1),
+          arrayOf(-1, 0, listOf(1), 0),
+          arrayOf(0, 1, listOf(1, 2), 1))
 
-    _viewModel.onExpandedProductIndexChanged(if (isSameIndexSelected) 0 else 1)
-    assertEquals(
-        if (isSameIndexSelected) -1 else 1,
-        _viewModel.uiState.safeValue.expandedProductIndex,
-        "Update expanded product index and reset when selecting the same one")
+  @ParameterizedTest
+  @MethodSource("_on expanded product index changed cases")
+  fun `on expanded product index changed`(
+      oldIndex: Int,
+      newIndex: Int,
+      updatedIndexes: List<Int>,
+      expandedIndex: Int
+  ) {
+    _viewModel.onExpandedProductIndexChanged(oldIndex)
+
+    _viewModel.onExpandedProductIndexChanged(newIndex)
+    assertAll(
+        {
+          assertEquals(
+              expandedIndex,
+              _viewModel.uiState.safeValue.expandedProductIndex,
+              "Update expanded product index and reset when selecting the same one")
+        },
+        {
+          assertDoesNotThrow("Notify recycler adapter of item changes") {
+            verify {
+              _recyclerAdapterStateObserver.onChanged(
+                  eq(RecyclerAdapterState.ItemChanged(updatedIndexes)))
+            }
+          }
+        })
   }
 
   @ParameterizedTest
@@ -162,6 +206,15 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
         SearchProductResultState(product?.id),
         _viewModel.resultState.value,
         "Update result state based from the selected product")
+  }
+
+  @Test
+  fun `on delete product`() {
+    coEvery { _productRepository.delete(any()) } returns 1
+    _viewModel.onDeleteProduct(ProductModel(id = 111L, name = "Apple"))
+    assertDoesNotThrow("Notify the delete result via snackbar") {
+      verify { _snackbarStateObserver.onChanged(any()) }
+    }
   }
 
   @Test
@@ -190,5 +243,20 @@ class SearchProductViewModelTest(private val _dispatcher: TestDispatcher) {
         listOf(updatedProduct),
         _viewModel.uiState.safeValue.products,
         "Sync products when any are updated in the database")
+  }
+
+  @Test
+  fun `on state changed result notify recycler adapter dataset changes`() = runTest {
+    _productChangedListenerCaptor.captured.onModelAdded(
+        listOf(ProductModel(id = 111L, name = "Apple")))
+    coEvery { _productRepository.search(any()) } returns listOf()
+    _viewModel.onSearch(_viewModel.uiState.safeValue.query)
+    advanceUntilIdle()
+    _viewModel.onSearchUiStateChanged(SearchState(listOf(), listOf(), ""))
+    assertDoesNotThrow("Notify recycler adapter of dataset changes") {
+      verify(exactly = 3) {
+        _recyclerAdapterStateObserver.onChanged(eq(RecyclerAdapterState.DataSetChanged))
+      }
+    }
   }
 }
