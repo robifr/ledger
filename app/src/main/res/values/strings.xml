@@ -91,8 +91,8 @@
     <![CDATA[<b>Unknown source installation permission required</b>]]>
   </string>
   <string name="main_unknownSourceInstallationPermission_description">
-    This permission is required to allow the app to notify when a new version is available on GitHub
-    and update itself automatically.
+    This permission is required to allow the app to install the update when a new version is
+    available on GitHub.
   </string>
   <!-- Navigation. -->
   <string name="main_navigation_dashboard">Dashboard</string>

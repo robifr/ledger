@@ -82,8 +82,7 @@
     <![CDATA[<b>Izin pemasangan sumber tidak dikenal diperlukan</b>]]>
   </string>
   <string name="main_unknownSourceInstallationPermission_description">
-    Izin ini diperlukan agar aplikasi dapat memberi notifikasi ketika versi baru tersedia di GitHub
-    dan memperbaruinya secara otomatis.
+    Izin ini diperlukan agar aplikasi dapat memasang pembaruan ketika versi baru tersedia di GitHub.
   </string>
   <!-- Navigation. -->
   <string name="main_navigation_dashboard">Dasbor</string>
