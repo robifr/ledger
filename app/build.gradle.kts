@@ -64,7 +64,7 @@ android {
   buildTypes {
     release {
       isMinifyEnabled = true
-      manifestPlaceholders["app_name"] = "@string/appName"
+      manifestPlaceholders["appLabel"] = "@string/appName"
       signingConfig = signingConfigs.getByName("release")
       proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
     }
@@ -72,7 +72,7 @@ android {
     debug {
       applicationIdSuffix = ".debug"
       isDebuggable = true
-      manifestPlaceholders["app_name"] = "@string/appName_debug"
+      manifestPlaceholders["appLabel"] = "@string/appName_debug"
     }
   }
 
@@ -122,9 +122,9 @@ dependencies {
   implementation(libs.jetbrains.kotlinx.coroutines.core)
 
   testImplementation(libs.androidx.arch.core.testing)
-  testImplementation(libs.io.mockk)
   testImplementation(libs.jetbrains.kotlinx.coroutines.test)
   testImplementation(libs.junit.jupiter)
+  testImplementation(libs.mockk)
 
   debugImplementation(libs.squareup.leakcanary.android)
 }

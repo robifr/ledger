@@ -15,8 +15,8 @@
  -->
 
 <resources>
-  <string name="appName">Ledger</string>
-  <string name="appName_debug">Ledger (Debug)</string>
+  <string name="appName" translatable="false">Ledger</string>
+  <string name="appName_debug" translatable="false">Ledger (Debug)</string>
 
   <!-- Enum. -->
   <!-- `QueueSortMethod#SortBy`. -->

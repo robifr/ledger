@@ -36,12 +36,12 @@ androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "androidxWe
 google-android-material = { module = "com.google.android.material:material", version.ref = "materialComponents" }
 google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 google-dagger-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
-io-mockk = { module = "io.mockk:mockk", version.ref = "mockK" }
 jetbrains-kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 jetbrains-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 jetbrains-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jUnit" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockK" }
 squareup-leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
 squareup-okhttp3-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okHttp" }
 
