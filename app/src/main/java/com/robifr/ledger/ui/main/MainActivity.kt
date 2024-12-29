@@ -139,6 +139,7 @@ class MainActivity :
                     ZonedDateTime.parse(
                             state.githubRelease.publishedAt, DateTimeFormatter.ISO_DATE_TIME)
                         .format(dateFormat),
+                updateSize = state.githubRelease.sizeInMb(),
                 onUpdate = { _settingsViewModel.onUpdateApp() })
       }
       is UnknownSourceInstallationDialogState -> {

@@ -53,6 +53,7 @@ class SettingsAppUpdate(private val _fragment: SettingsFragment) {
             updateDate =
                 ZonedDateTime.parse(githubRelease.publishedAt, DateTimeFormatter.ISO_DATE_TIME)
                     .format(DateTimeFormatter.ofPattern(_fragment.getString(dateFormat))),
+            updateSize = githubRelease.sizeInMb(),
             onUpdate = { _fragment.settingsViewModel.onUpdateApp() })
   }
 

@@ -45,6 +45,7 @@ class AppUpdater(private val _context: Context, private val _client: OkHttpClien
       if (downloadUrl.endsWith(".apk")) {
         return GithubReleaseModel(
             tagName = jsonObject.getString("tag_name"),
+            size = asset.getInt("size"),
             publishedAt = jsonObject.getString("published_at"),
             browserDownloadUrl = downloadUrl)
       }

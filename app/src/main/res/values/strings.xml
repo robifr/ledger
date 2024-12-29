@@ -105,14 +105,6 @@
   <string name="main_createNew_queue">Queue</string>
   <string name="main_createNew_customer">Customer</string>
   <string name="main_createNew_product">Product</string>
-  <!-- App update. -->
-  <string name="main_appUpdate_updateAvailable_x"><![CDATA[<b>Update available: %s</b>]]></string>
-  <string name="main_appUpdate_updateAvailable_description">
-    <![CDATA[
-      Updated on %s. See what\'s new
-      <a href="https://github.com/robifr/ledger/releases/latest">here</a>.
-    ]]>
-  </string>
 
   <!-- Settings fragment. -->
   <string name="settings">Settings</string>
@@ -120,8 +112,16 @@
   <string name="settings_general">General</string>
   <string name="settings_language">Language</string>
   <string name="settings_selectLanguage">Select language</string>
+  <!-- App update. -->
   <string name="settings_checkForAppUpdate">Check for app update</string>
   <string name="settings_lastChecked_x">Last checked: %s</string>
+  <string name="settings_updateAvailable_x"><![CDATA[<b>Update available: %s</b>]]></string>
+  <string name="settings_updateAvailable_description">
+    <![CDATA[
+      Updated on %s. See what\'s new <a href="https://github.com/robifr/ledger/releases/latest">here</a>.<br>
+      Size: %.2f MB
+    ]]>
+  </string>
   <!-- Snackbar. -->
   <string name="settings_noUpdatesWereAvailable">No updates were available</string>
   <string name="settings_noInternetConnectionForAppUpdates">No internet connection, unable to check for app updates</string>

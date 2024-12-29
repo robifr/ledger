@@ -95,14 +95,6 @@
   <string name="main_createNew_queue">Antrean</string>
   <string name="main_createNew_customer">Pelanggan</string>
   <string name="main_createNew_product">Produk</string>
-  <!-- App update. -->
-  <string name="main_appUpdate_updateAvailable_x"><![CDATA[<b>Pembaruan tersedia: %s</b>]]></string>
-  <string name="main_appUpdate_updateAvailable_description">
-    <![CDATA[
-      Diperbarui pada %s. Lihat apa saja yang baru
-      <a href="https://github.com/robifr/ledger/releases/latest">di sini</a>.
-    ]]>
-  </string>
 
   <!-- Settings fragment. -->
   <string name="settings">Pengaturan</string>
@@ -110,8 +102,16 @@
   <string name="settings_general">Umum</string>
   <string name="settings_language">Bahasa</string>
   <string name="settings_selectLanguage">Pilih bahasa</string>
+  <!-- App update. -->
   <string name="settings_checkForAppUpdate">Periksa pembaruan aplikasi</string>
   <string name="settings_lastChecked_x">Terakhir diperiksa: %s</string>
+  <string name="settings_updateAvailable_x"><![CDATA[<b>Pembaruan tersedia: %s</b>]]></string>
+  <string name="settings_updateAvailable_description">
+    <![CDATA[
+      Diperbarui pada %s. Lihat apa saja yang baru <a href="https://github.com/robifr/ledger/releases/latest">di sini</a>.<br>
+      Ukuran: %.2f MB
+    ]]>
+  </string>
   <!-- Snackbar. -->
   <string name="settings_noUpdatesWereAvailable">Tidak ada pembaruan yang tersedia</string>
   <string name="settings_noInternetConnectionForAppUpdates">Tidak ada koneksi internet, tidak dapat memeriksa pembaruan aplikasi</string>

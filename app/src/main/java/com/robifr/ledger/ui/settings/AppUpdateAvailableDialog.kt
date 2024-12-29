@@ -24,15 +24,21 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.robifr.ledger.R
 
 class AppUpdateAvailableDialog(private val _context: Context) {
-  fun openDialog(updateVersion: String, updateDate: String, onUpdate: () -> Unit) {
+  fun openDialog(
+      updateVersion: String,
+      updateDate: String,
+      updateSize: Double,
+      onUpdate: () -> Unit
+  ) {
     MaterialAlertDialogBuilder(_context)
         .setTitle(
             HtmlCompat.fromHtml(
-                _context.getString(R.string.main_appUpdate_updateAvailable_x, updateVersion),
+                _context.getString(R.string.settings_updateAvailable_x, updateVersion),
                 HtmlCompat.FROM_HTML_MODE_LEGACY))
         .setMessage(
             HtmlCompat.fromHtml(
-                _context.getString(R.string.main_appUpdate_updateAvailable_description, updateDate),
+                _context.getString(
+                    R.string.settings_updateAvailable_description, updateDate, updateSize),
                 HtmlCompat.FROM_HTML_MODE_LEGACY))
         .setNegativeButton(_context.getString(R.string.action_ignore)) { _, _ -> }
         .setPositiveButton(_context.getString(R.string.action_update)) { _, _ -> onUpdate() }

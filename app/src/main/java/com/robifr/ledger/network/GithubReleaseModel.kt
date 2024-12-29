@@ -18,6 +18,9 @@ package com.robifr.ledger.network
 
 data class GithubReleaseModel(
     val tagName: String,
+    val size: Int,
     val publishedAt: String,
     val browserDownloadUrl: String
-)
+) {
+  fun sizeInMb(): Double = size.toDouble() / (1024.0 * 1024.0)
+}

@@ -71,7 +71,11 @@ class SettingsViewModelTest(
   private lateinit var _dialogStateObserver: Observer<SettingsDialogState>
 
   private val _githubRelease: GithubReleaseModel =
-      GithubReleaseModel("v1.1.1", "2024-01-01T00:00:00Z", "https://example.com")
+      GithubReleaseModel(
+          tagName = "v1.1.1",
+          size = 100,
+          publishedAt = "2024-01-01T00:00:00Z",
+          browserDownloadUrl = "https://example.com")
 
   @BeforeEach
   fun beforeEach() {
