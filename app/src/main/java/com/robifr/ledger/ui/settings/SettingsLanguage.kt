@@ -23,20 +23,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.robifr.ledger.R
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.databinding.SettingsDialogLanguageBinding
-import com.robifr.ledger.databinding.SettingsGeneralBinding
 
 class SettingsLanguage(private val _fragment: SettingsFragment) {
-  private val _generalBinding: SettingsGeneralBinding =
-      SettingsGeneralBinding.bind(_fragment.fragmentBinding.root).apply {
-        languageLayout.setOnClickListener {
-          _dialogBinding.radioGroup
-              .findViewWithTag<RadioButton>(
-                  _fragment.settingsViewModel.uiState.safeValue.languageUsed.toString())
-              ?.id
-              ?.let { _dialogBinding.radioGroup.check(it) }
-          _dialog.show()
-        }
-      }
   private val _dialogBinding: SettingsDialogLanguageBinding =
       SettingsDialogLanguageBinding.inflate(_fragment.layoutInflater).apply {
         radioGroup.setOnCheckedChangeListener { group: RadioGroup?, radioId ->
@@ -52,7 +40,18 @@ class SettingsLanguage(private val _fragment: SettingsFragment) {
         setContentView(_dialogBinding.root)
       }
 
+  init {
+    _fragment.generalBinding.languageLayout.setOnClickListener {
+      _dialogBinding.radioGroup
+          .findViewWithTag<RadioButton>(
+              _fragment.settingsViewModel.uiState.safeValue.languageUsed.toString())
+          ?.id
+          ?.let { _dialogBinding.radioGroup.check(it) }
+      _dialog.show()
+    }
+  }
+
   fun setLanguageUsed(language: LanguageOption) {
-    _generalBinding.language.setText(language.stringRes)
+    _fragment.generalBinding.language.setText(language.stringRes)
   }
 }
