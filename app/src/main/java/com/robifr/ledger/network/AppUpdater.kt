@@ -18,6 +18,7 @@ package com.robifr.ledger.network
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
 import androidx.core.content.FileProvider
 import com.robifr.ledger.BuildConfig
 import java.io.File
@@ -51,15 +52,34 @@ class AppUpdater(private val _context: Context, private val _client: OkHttpClien
     return null
   }
 
-  fun downloadAndInstallApp(appUrl: String) {
-    val response: Response = _client.newCall(Request.Builder().url(appUrl).build()).execute()
-    val body: ResponseBody = response.body?.takeIf { response.isSuccessful } ?: return
-    val apkFile: File = _saveApp(body.byteStream())
+  fun downloadAndInstallApp(githubRelease: GithubReleaseModel) {
+    val apkFile: File =
+        if (!_isAppFileWithSameVersionAlreadyExists(githubRelease.tagName)) {
+          val response: Response =
+              _client
+                  .newCall(Request.Builder().url(githubRelease.browserDownloadUrl).build())
+                  .execute()
+          val body: ResponseBody = response.body?.takeIf { response.isSuccessful } ?: return
+          _saveApp(body.byteStream())
+        } else {
+          _cachedAppFile()
+        }
     _installApp(apkFile)
   }
 
+  private fun _cachedAppFile(): File = File(_context.cacheDir, "ledger.apk")
+
+  private fun _isAppFileWithSameVersionAlreadyExists(versionName: String): Boolean {
+    val apkFile: File = _cachedAppFile()
+    if (!apkFile.exists()) return false
+
+    val packageInfo: PackageInfo? =
+        _context.packageManager.getPackageArchiveInfo(apkFile.absolutePath, 0)
+    return packageInfo != null && packageInfo.versionName == versionName.removePrefix("v")
+  }
+
   private fun _saveApp(inputStream: InputStream): File {
-    val apkFile: File = File(_context.externalCacheDir, "ledger.apk")
+    val apkFile: File = _cachedAppFile()
     FileOutputStream(apkFile).use { output -> inputStream.copyTo(output) }
     return apkFile
   }

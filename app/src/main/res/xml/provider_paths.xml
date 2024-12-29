@@ -15,7 +15,7 @@
  -->
 
 <paths>
-  <external-cache-path
-      name="cache"
+  <cache-path
+      name="internal_cache"
       path="." />
 </paths>

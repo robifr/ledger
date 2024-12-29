@@ -53,8 +53,8 @@ class SettingsRepository(
 
   suspend fun obtainLatestAppRelease(): GithubReleaseModel? = _appUpdater.obtainLatestRelease()
 
-  suspend fun downloadAndInstallApp(appUrl: String) {
-    _appUpdater.downloadAndInstallApp(appUrl)
+  suspend fun downloadAndInstallApp(githubRelease: GithubReleaseModel) {
+    _appUpdater.downloadAndInstallApp(githubRelease)
   }
 
   companion object {

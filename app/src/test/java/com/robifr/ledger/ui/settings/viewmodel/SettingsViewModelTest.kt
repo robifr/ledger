@@ -198,7 +198,7 @@ class SettingsViewModelTest(
     coEvery { _settingsRepository.downloadAndInstallApp(any()) } just Runs
     _viewModel.onUpdateApp()
     assertDoesNotThrow("Update app from the obtained latest app release URL") {
-      coVerify { _settingsRepository.downloadAndInstallApp(eq(_githubRelease.browserDownloadUrl)) }
+      coVerify { _settingsRepository.downloadAndInstallApp(eq(_githubRelease)) }
     }
   }
 }

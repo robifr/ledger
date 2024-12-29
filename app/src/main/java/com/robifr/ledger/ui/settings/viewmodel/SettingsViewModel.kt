@@ -96,9 +96,7 @@ constructor(
 
   fun onUpdateApp() {
     viewModelScope.launch(_dispatcher) {
-      _appUpdateModel.value?.let {
-        _settingsRepository.downloadAndInstallApp(it.browserDownloadUrl)
-      }
+      _appUpdateModel.value?.let { _settingsRepository.downloadAndInstallApp(it) }
     }
   }
 }
