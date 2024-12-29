@@ -16,18 +16,10 @@
 
 package com.robifr.ledger.ui.settings.viewmodel
 
-import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.network.GithubReleaseModel
-import java.time.ZoneId
-import java.time.ZonedDateTime
 
-data class SettingsState(
-    val languageUsed: LanguageOption,
-    val lastCheckedTimeForAppUpdate: ZonedDateTime,
-    val githubRelease: GithubReleaseModel?,
-) {
-  fun isLastCheckedTimeForAppUpdatePastMidNight(): Boolean {
-    val now: ZonedDateTime = ZonedDateTime.now(ZoneId.systemDefault())
-    return lastCheckedTimeForAppUpdate.isBefore(now.toLocalDate().atStartOfDay(now.zone))
-  }
-}
+sealed interface SettingsDialogState
+
+data class UpdateAvailableDialogState(val githubRelease: GithubReleaseModel) : SettingsDialogState
+
+object UnknownSourceInstallationDialogState : SettingsDialogState

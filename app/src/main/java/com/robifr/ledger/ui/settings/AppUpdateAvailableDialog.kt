@@ -36,7 +36,6 @@ class AppUpdateAvailableDialog(private val _context: Context) {
                 HtmlCompat.FROM_HTML_MODE_LEGACY))
         .setNegativeButton(_context.getString(R.string.action_ignore)) { _, _ -> }
         .setPositiveButton(_context.getString(R.string.action_update)) { _, _ -> onUpdate() }
-        .setCancelable(false)
         .show()
         .apply {
           // Enable hyperlink.

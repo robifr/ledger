@@ -59,6 +59,7 @@
   <string name="action_add">Add</string>
   <string name="action_cancel">Cancel</string>
   <string name="action_delete">Delete</string>
+  <string name="action_deny">Deny</string>
   <string name="action_denyAndQuit">Deny and quit</string>
   <string name="action_discardAndLeave">Discard and leave</string>
   <string name="action_edit">Edit</string>

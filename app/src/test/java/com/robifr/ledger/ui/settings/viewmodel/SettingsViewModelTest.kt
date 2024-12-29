@@ -27,6 +27,7 @@ import com.robifr.ledger.network.GithubReleaseModel
 import com.robifr.ledger.network.NetworkState
 import com.robifr.ledger.repository.SettingsRepository
 import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.main.RequiredPermission
 import com.robifr.ledger.util.VersionComparator
 import io.mockk.Runs
 import io.mockk.clearAllMocks
@@ -45,12 +46,14 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.params.provider.MethodSource
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExperimentalCoroutinesApi
 @ExtendWith(
     InstantTaskExecutorExtension::class,
@@ -62,9 +65,10 @@ class SettingsViewModelTest(
 ) {
   private lateinit var _networkState: NetworkState
   private lateinit var _settingsRepository: SettingsRepository
+  private lateinit var _permission: RequiredPermission
   private lateinit var _viewModel: SettingsViewModel
   private lateinit var _snackbarStateObserver: Observer<SnackbarState>
-  private lateinit var _appUpdateModelObserver: Observer<GithubReleaseModel>
+  private lateinit var _dialogStateObserver: Observer<SettingsDialogState>
 
   private val _githubRelease: GithubReleaseModel =
       GithubReleaseModel("v1.1.1", "2024-01-01T00:00:00Z", "https://example.com")
@@ -74,14 +78,15 @@ class SettingsViewModelTest(
     clearAllMocks()
     _networkState = mockk()
     _settingsRepository = mockk()
+    _permission = mockk()
     _snackbarStateObserver = mockk(relaxed = true)
-    _appUpdateModelObserver = mockk(relaxed = true)
+    _dialogStateObserver = mockk(relaxed = true)
 
     every { _settingsRepository.languageUsed() } returns LanguageOption.ENGLISH_US
     every { _settingsRepository.lastCheckedTimeForAppUpdate() } returns Instant.now()
-    _viewModel = SettingsViewModel(_dispatcher, _settingsRepository)
+    _viewModel = SettingsViewModel(_dispatcher, _settingsRepository, _permission)
     _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
-    _viewModel.appUpdateModel.observe(_lifecycleOwner, _appUpdateModelObserver)
+    _viewModel.dialogState.observe(_lifecycleOwner, _dialogStateObserver)
   }
 
   @Test
@@ -144,14 +149,25 @@ class SettingsViewModelTest(
         })
   }
 
+  private fun `_on check for app update with internet and latest release available cases`():
+      Array<Array<Any>> =
+      arrayOf(
+          arrayOf(true, 1, 0, true, _githubRelease, 1),
+          arrayOf(false, 0, 1, true, _githubRelease, 1))
+
   @ParameterizedTest
-  @ValueSource(booleans = [true, false])
+  @MethodSource("_on check for app update with internet and latest release available cases")
   fun `on check for app update with internet and latest release available`(
-      isNewVersionNewer: Boolean
+      isNewVersionNewer: Boolean,
+      updateAvailableDialogNotifyCount: Int,
+      noUpdateAvailableSnackbarNotifyCount: Int,
+      isLastCheckedTimeUpdated: Boolean,
+      githubRelease: GithubReleaseModel,
+      saveLastCheckedTimeCallCount: Int
   ) {
     mockkObject(NetworkState)
     every { NetworkState.isInternetAvailable(any()) } returns true
-    coEvery { _settingsRepository.obtainLatestAppRelease() } returns _githubRelease
+    coEvery { _settingsRepository.obtainLatestAppRelease() } returns githubRelease
     val oldUiState: SettingsState = _viewModel.uiState.safeValue
 
     coEvery { _settingsRepository.saveLastCheckedTimeForAppUpdate(any()) } returns true
@@ -160,33 +176,51 @@ class SettingsViewModelTest(
     _viewModel.onCheckForAppUpdate(mockk())
     assertAll(
         {
-          assertDoesNotThrow("Update app update model with the fetched data") {
-            verify(exactly = if (isNewVersionNewer) 1 else 0) {
-              _appUpdateModelObserver.onChanged(eq(_githubRelease))
+          assertDoesNotThrow("Show available app update via alert dialog") {
+            verify(exactly = updateAvailableDialogNotifyCount) {
+              _dialogStateObserver.onChanged(eq(UpdateAvailableDialogState(githubRelease)))
             }
           }
         },
         {
-          if (isNewVersionNewer) {
-            assertTrue(
-                _viewModel.uiState.safeValue.lastCheckedTimeForAppUpdate.isAfter(
-                    oldUiState.lastCheckedTimeForAppUpdate),
-                "Update last checked time for app update")
-          } else {
-            assertDoesNotThrow("Notify unavailable app update via snackbar") {
-              verify { _snackbarStateObserver.onChanged(any()) }
+          assertDoesNotThrow("Notify unavailable app update via snackbar") {
+            verify(exactly = noUpdateAvailableSnackbarNotifyCount) {
+              _snackbarStateObserver.onChanged(any())
             }
           }
+        },
+        {
+          assertEquals(
+              isLastCheckedTimeUpdated,
+              _viewModel.uiState.safeValue.lastCheckedTimeForAppUpdate.isAfter(
+                  oldUiState.lastCheckedTimeForAppUpdate),
+              "Update last checked time for app update whenever ")
+        },
+        {
+          assertEquals(
+              githubRelease,
+              _viewModel.uiState.safeValue.githubRelease,
+              "Update GitHub release model with the fetched data")
         },
         {
           assertDoesNotThrow("Immediately save the last checked time for app update") {
-            coVerify { _settingsRepository.saveLastCheckedTimeForAppUpdate(any()) }
+            coVerify(exactly = saveLastCheckedTimeCallCount) {
+              _settingsRepository.saveLastCheckedTimeForAppUpdate(any())
+            }
           }
         })
   }
 
-  @Test
-  fun `on update app`() {
+  private fun `_on update app with fetched data cases`(): Array<Array<Any>> =
+      arrayOf(arrayOf(true, 0, 1), arrayOf(false, 1, 0))
+
+  @ParameterizedTest
+  @MethodSource("_on update app with fetched data cases")
+  fun `on update app with fetched data`(
+      isUnknownSourceInstallationPermissionGranted: Boolean,
+      unknownSourceInstallationDialogNotifyCount: Int,
+      downloadAppCallCount: Int
+  ) {
     mockkObject(NetworkState)
     every { NetworkState.isInternetAvailable(any()) } returns true
     mockkObject(VersionComparator)
@@ -195,10 +229,42 @@ class SettingsViewModelTest(
     coEvery { _settingsRepository.saveLastCheckedTimeForAppUpdate(any()) } returns true
     _viewModel.onCheckForAppUpdate(mockk())
 
+    every { _permission.isUnknownSourceInstallationGranted() } returns
+        isUnknownSourceInstallationPermissionGranted
     coEvery { _settingsRepository.downloadAndInstallApp(any()) } just Runs
     _viewModel.onUpdateApp()
-    assertDoesNotThrow("Update app from the obtained latest app release URL") {
-      coVerify { _settingsRepository.downloadAndInstallApp(eq(_githubRelease)) }
+    assertAll(
+        {
+          assertDoesNotThrow("Show unknown source installation permission dialog if not granted") {
+            verify(exactly = unknownSourceInstallationDialogNotifyCount) {
+              _dialogStateObserver.onChanged(eq(UnknownSourceInstallationDialogState))
+            }
+          }
+        },
+        {
+          assertDoesNotThrow("Update app using the fetched GitHub release data") {
+            coVerify(exactly = downloadAppCallCount) {
+              _settingsRepository.downloadAndInstallApp(eq(_githubRelease))
+            }
+          }
+        })
+  }
+
+  @Test
+  fun `on activity result for unknown source installation with fetched data`() {
+    mockkObject(NetworkState)
+    every { NetworkState.isInternetAvailable(any()) } returns true
+    mockkObject(VersionComparator)
+    every { VersionComparator.isNewVersionNewer(any(), any()) } returns true
+    coEvery { _settingsRepository.obtainLatestAppRelease() } returns _githubRelease
+    coEvery { _settingsRepository.saveLastCheckedTimeForAppUpdate(any()) } returns true
+    _viewModel.onCheckForAppUpdate(mockk())
+
+    _viewModel.onActivityResultForUnknownSourceInstallation()
+    assertDoesNotThrow("Re-show app update dialog after returning from settings activity") {
+      verify(exactly = 2) {
+        _dialogStateObserver.onChanged(eq(UpdateAvailableDialogState(_githubRelease)))
+      }
     }
   }
 }

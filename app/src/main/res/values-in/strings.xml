@@ -50,6 +50,7 @@
   <string name="action_add">Tambah</string>
   <string name="action_cancel">Batal</string>
   <string name="action_delete">Hapus</string>
+  <string name="action_deny">Tolak</string>
   <string name="action_denyAndQuit">Tolak dan keluar</string>
   <string name="action_discardAndLeave">Buang dan keluar</string>
   <string name="action_edit">Edit</string>

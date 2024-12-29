@@ -26,7 +26,6 @@ import com.robifr.ledger.BuildConfig
 import com.robifr.ledger.R
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.di.IoDispatcher
-import com.robifr.ledger.network.GithubReleaseModel
 import com.robifr.ledger.network.NetworkState
 import com.robifr.ledger.repository.SettingsRepository
 import com.robifr.ledger.ui.SafeLiveData
@@ -34,6 +33,7 @@ import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.main.RequiredPermission
 import com.robifr.ledger.util.VersionComparator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZoneId
@@ -47,7 +47,8 @@ class SettingsViewModel
 @Inject
 constructor(
     @IoDispatcher private val _dispatcher: CoroutineDispatcher,
-    private val _settingsRepository: SettingsRepository
+    private val _settingsRepository: SettingsRepository,
+    private val _permission: RequiredPermission
 ) : ViewModel() {
   private val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
   val snackbarState: LiveData<SnackbarState>
@@ -58,13 +59,14 @@ constructor(
           SettingsState(
               languageUsed = _settingsRepository.languageUsed(),
               lastCheckedTimeForAppUpdate =
-                  _settingsRepository.lastCheckedTimeForAppUpdate().atZone(ZoneId.systemDefault())))
+                  _settingsRepository.lastCheckedTimeForAppUpdate().atZone(ZoneId.systemDefault()),
+              githubRelease = null))
   val uiState: SafeLiveData<SettingsState>
     get() = _uiState
 
-  private val _appUpdateModel: SingleLiveEvent<GithubReleaseModel> = SingleLiveEvent()
-  val appUpdateModel: LiveData<GithubReleaseModel>
-    get() = _appUpdateModel
+  private val _dialogState: SingleLiveEvent<SettingsDialogState> = SingleLiveEvent()
+  val dialogState: SingleLiveEvent<SettingsDialogState>
+    get() = _dialogState
 
   fun onLanguageChanged(language: LanguageOption) {
     _uiState.setValue(_uiState.safeValue.copy(languageUsed = language))
@@ -82,21 +84,30 @@ constructor(
       _settingsRepository.obtainLatestAppRelease()?.let {
         if (VersionComparator.isNewVersionNewer(
             BuildConfig.VERSION_NAME, it.tagName.removePrefix("v"))) {
-          _appUpdateModel.postValue(it)
+          _dialogState.postValue(UpdateAvailableDialogState(it))
         } else {
           _snackbarState.postValue(
               SnackbarState(StringResource(R.string.settings_noUpdatesWereAvailable)))
         }
         val now: ZonedDateTime = ZonedDateTime.now(ZoneId.systemDefault())
-        _uiState.postValue(_uiState.safeValue.copy(lastCheckedTimeForAppUpdate = now))
+        _uiState.postValue(
+            _uiState.safeValue.copy(lastCheckedTimeForAppUpdate = now, githubRelease = it))
         _settingsRepository.saveLastCheckedTimeForAppUpdate(now.toInstant())
       }
     }
   }
 
   fun onUpdateApp() {
-    viewModelScope.launch(_dispatcher) {
-      _appUpdateModel.value?.let { _settingsRepository.downloadAndInstallApp(it) }
+    if (!_permission.isUnknownSourceInstallationGranted()) {
+      _dialogState.setValue(UnknownSourceInstallationDialogState)
+      return
     }
+    viewModelScope.launch(_dispatcher) {
+      _uiState.safeValue.githubRelease?.let { _settingsRepository.downloadAndInstallApp(it) }
+    }
+  }
+
+  fun onActivityResultForUnknownSourceInstallation() {
+    _uiState.safeValue.githubRelease?.let { _dialogState.postValue(UpdateAvailableDialogState(it)) }
   }
 }

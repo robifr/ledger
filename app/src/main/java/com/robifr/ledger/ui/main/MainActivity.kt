@@ -29,20 +29,20 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import androidx.core.text.HtmlCompat
 import androidx.core.view.isVisible
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationBarView
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.MainActivityBinding
-import com.robifr.ledger.network.GithubReleaseModel
 import com.robifr.ledger.ui.settings.AppUpdateAvailableDialog
+import com.robifr.ledger.ui.settings.viewmodel.SettingsDialogState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsViewModel
+import com.robifr.ledger.ui.settings.viewmodel.UnknownSourceInstallationDialogState
+import com.robifr.ledger.ui.settings.viewmodel.UpdateAvailableDialogState
 import com.robifr.ledger.util.hideTooltipText
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.ZonedDateTime
@@ -59,7 +59,7 @@ class MainActivity :
     get() = _activityBinding!!
 
   private val _settingsViewModel: SettingsViewModel by viewModels()
-  private val _permission: RequiredPermission = RequiredPermission(this)
+  private lateinit var _permission: RequiredPermission
   private lateinit var _permissionLauncher: ActivityResultLauncher<Intent>
   private lateinit var _create: MainCreate
 
@@ -97,6 +97,7 @@ class MainActivity :
     _activityBinding = MainActivityBinding.inflate(layoutInflater)
     setContentView(activityBinding.root)
 
+    _permission = RequiredPermission(this)
     _create = MainCreate(this)
     activityBinding.bottomNavigation.setOnItemSelectedListener(this)
     (supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? NavHostFragment)
@@ -113,61 +114,39 @@ class MainActivity :
     _permissionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult(), this)
     if (!_permission.isStorageAccessGranted()) {
-      _requireStorageAccessPermission()
-    } else if (!_permission.isUnknownSourceInstallationGranted()) {
-      _requireUnknownSourceInstallationPermission()
+      _permission.openStorageAccessDialog(
+          onDeny = { finish() },
+          onGrant = { _permissionLauncher.launch(_permission.storageAccessIntent()) })
     } else {
       // Only automatically check for app update once a day.
       if (_settingsViewModel.uiState.safeValue.isLastCheckedTimeForAppUpdatePastMidNight()) {
-        _settingsViewModel.appUpdateModel.observe(this, ::_onAppUpdateModel)
+        _settingsViewModel.dialogState.observe(this, ::_onSettingsDialogState)
         _settingsViewModel.onCheckForAppUpdate(this)
       }
     }
   }
 
-  private fun _requireStorageAccessPermission() {
-    MaterialAlertDialogBuilder(this)
-        .setTitle(
-            HtmlCompat.fromHtml(
-                getString(R.string.main_storageAccessPermission), HtmlCompat.FROM_HTML_MODE_LEGACY))
-        .setMessage(
-            HtmlCompat.fromHtml(
-                getString(R.string.main_storageAccessPermission_description),
-                HtmlCompat.FROM_HTML_MODE_LEGACY))
-        .setNegativeButton(R.string.action_denyAndQuit) { _, _ -> finish() }
-        .setPositiveButton(R.string.action_grant) { _, _ ->
-          _permissionLauncher.launch(_permission.storageAccessIntent())
-        }
-        .setCancelable(false)
-        .show()
-  }
-
-  private fun _requireUnknownSourceInstallationPermission() {
-    MaterialAlertDialogBuilder(this)
-        .setTitle(
-            HtmlCompat.fromHtml(
-                getString(R.string.main_unknownSourceInstallationPermission),
-                HtmlCompat.FROM_HTML_MODE_LEGACY))
-        .setMessage(getString(R.string.main_unknownSourceInstallationPermission_description))
-        .setNegativeButton(R.string.action_denyAndQuit) { _, _ -> finish() }
-        .setPositiveButton(R.string.action_grant) { _, _ ->
+  private fun _onSettingsDialogState(state: SettingsDialogState) {
+    when (state) {
+      is UpdateAvailableDialogState -> {
+        val dateFormat: DateTimeFormatter =
+            DateTimeFormatter.ofPattern(
+                getString(_settingsViewModel.uiState.safeValue.languageUsed.fullDateFormat))
+        AppUpdateAvailableDialog(this)
+            .openDialog(
+                updateVersion = state.githubRelease.tagName,
+                updateDate =
+                    ZonedDateTime.parse(
+                            state.githubRelease.publishedAt, DateTimeFormatter.ISO_DATE_TIME)
+                        .format(dateFormat),
+                onUpdate = { _settingsViewModel.onUpdateApp() })
+      }
+      is UnknownSourceInstallationDialogState -> {
+        _permission.openUnknownSourceInstallationDialog {
           _permissionLauncher.launch(_permission.unknownSourceInstallationIntent())
         }
-        .setCancelable(false)
-        .show()
-  }
-
-  private fun _onAppUpdateModel(model: GithubReleaseModel) {
-    val dateFormat: DateTimeFormatter =
-        DateTimeFormatter.ofPattern(
-            getString(_settingsViewModel.uiState.safeValue.languageUsed.fullDateFormat))
-    AppUpdateAvailableDialog(this)
-        .openDialog(
-            updateVersion = model.tagName,
-            updateDate =
-                ZonedDateTime.parse(model.publishedAt, DateTimeFormatter.ISO_DATE_TIME)
-                    .format(dateFormat),
-            onUpdate = { _settingsViewModel.onUpdateApp() })
+      }
+    }
   }
 }
 
