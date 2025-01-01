@@ -16,6 +16,9 @@
 
 package com.robifr.ledger.network
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class GithubReleaseModel(
     val tagName: String,
     val size: Int,

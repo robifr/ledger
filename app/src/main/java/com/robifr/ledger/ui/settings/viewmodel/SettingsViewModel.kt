@@ -37,7 +37,6 @@ import com.robifr.ledger.ui.main.RequiredPermission
 import com.robifr.ledger.util.VersionComparator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZoneId
-import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.launch
@@ -89,10 +88,13 @@ constructor(
           _snackbarState.postValue(
               SnackbarState(StringResource(R.string.settings_noUpdatesWereAvailable)))
         }
-        val now: ZonedDateTime = ZonedDateTime.now(ZoneId.systemDefault())
         _uiState.postValue(
-            _uiState.safeValue.copy(lastCheckedTimeForAppUpdate = now, githubRelease = it))
-        _settingsRepository.saveLastCheckedTimeForAppUpdate(now.toInstant())
+            _uiState.safeValue.copy(
+                lastCheckedTimeForAppUpdate =
+                    _settingsRepository
+                        .lastCheckedTimeForAppUpdate()
+                        .atZone(ZoneId.systemDefault()),
+                githubRelease = it))
       }
     }
   }

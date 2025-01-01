@@ -13,6 +13,7 @@ jUnit = "5.11.3"
 kotlin = "2.0.20"
 kotlinxCoroutines = "1.9.0"
 kotlinxKover = "0.8.3"
+kotlinxSerializationJson = "1.7.3"
 ksp = "2.0.20-1.0.24" # The initial version must correspond to the Kotlin version.
 leakcanary = "2.14"
 materialComponents = "1.12.0"
@@ -40,6 +41,7 @@ jetbrains-kotlin-gradle-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-
 jetbrains-kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
 jetbrains-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 jetbrains-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
+jetbrains-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "jUnit" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockK" }
 squareup-leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
@@ -53,4 +55,5 @@ google-dagger-hilt-android = { id = "com.google.dagger.hilt.android", version.re
 google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android" }
 jetbrains-kotlin-plugin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize" }
+jetbrains-kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 jetbrains-kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kotlinxKover" }

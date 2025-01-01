@@ -22,6 +22,9 @@ import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.network.AppUpdater
 import com.robifr.ledger.network.GithubReleaseModel
 import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 
 class SettingsRepository(
@@ -30,6 +33,7 @@ class SettingsRepository(
 ) {
   private val _KEY_LANGUAGE_USED = "language_used"
   private val _KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE = "last_checked_time_for_app_update"
+  private val _KEY_CACHED_GITHUB_RELEASE = "cached_github_release"
 
   fun languageUsed(): LanguageOption {
     val languagePrefs: String? = _sharedPreferences.getString(_KEY_LANGUAGE_USED, null)
@@ -45,13 +49,37 @@ class SettingsRepository(
     return if (time != null) Instant.parse(time) else Instant.now()
   }
 
-  suspend fun saveLastCheckedTimeForAppUpdate(time: Instant): Boolean =
+  private suspend fun _saveLastCheckedTimeForAppUpdate(time: Instant): Boolean =
       _sharedPreferences
           .edit()
           .putString(_KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE, time.toString())
           .commit()
 
-  suspend fun obtainLatestAppRelease(): GithubReleaseModel? = _appUpdater.obtainLatestRelease()
+  private fun _cachedGithubRelease(): GithubReleaseModel? =
+      _sharedPreferences.getString(_KEY_CACHED_GITHUB_RELEASE, null)?.let {
+        Json.decodeFromString(it)
+      }
+
+  private suspend fun _saveCachedGithubRelease(githubRelease: GithubReleaseModel): Boolean =
+      _sharedPreferences
+          .edit()
+          .putString(
+              _KEY_CACHED_GITHUB_RELEASE,
+              Json.encodeToString(GithubReleaseModel.serializer(), githubRelease))
+          .commit()
+
+  suspend fun obtainLatestAppRelease(): GithubReleaseModel? =
+      // GitHub's API rate limit for unauthenticated requests is 60 per hour.
+      // The network check here is performed only once every 15 minutes.
+      if (lastCheckedTimeForAppUpdate()
+          .isBefore(ZonedDateTime.now(ZoneId.systemDefault()).minusMinutes(15).toInstant())) {
+        _appUpdater.obtainLatestRelease()?.also {
+          _saveLastCheckedTimeForAppUpdate(ZonedDateTime.now(ZoneId.systemDefault()).toInstant())
+          _saveCachedGithubRelease(it)
+        }
+      } else {
+        _cachedGithubRelease()
+      }
 
   suspend fun downloadAndInstallApp(githubRelease: GithubReleaseModel) {
     _appUpdater.downloadAndInstallApp(githubRelease)

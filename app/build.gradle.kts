@@ -19,6 +19,7 @@ import java.util.Properties
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
+  alias(libs.plugins.jetbrains.kotlin.plugin.serialization)
   id(libs.plugins.android.application.get().pluginId)
   id(libs.plugins.google.dagger.hilt.android.get().pluginId)
   id(libs.plugins.google.devtools.ksp.get().pluginId)
@@ -120,6 +121,7 @@ dependencies {
 
   implementation(libs.jetbrains.kotlin.stdlib)
   implementation(libs.jetbrains.kotlinx.coroutines.core)
+  implementation(libs.jetbrains.kotlinx.serialization.json)
 
   testImplementation(libs.androidx.arch.core.testing)
   testImplementation(libs.jetbrains.kotlinx.coroutines.test)

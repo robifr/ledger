@@ -40,10 +40,10 @@ import io.mockk.mockkObject
 import io.mockk.mockkStatic
 import io.mockk.verify
 import java.time.Instant
+import java.time.ZoneId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -139,25 +139,17 @@ class SettingsViewModelTest(
 
     coEvery { _settingsRepository.obtainLatestAppRelease() } returns null
     _viewModel.onCheckForAppUpdate(mockk())
-    assertAll(
-        {
-          assertTrue(
-              _viewModel.uiState.safeValue.lastCheckedTimeForAppUpdate.isEqual(
-                  oldUiState.lastCheckedTimeForAppUpdate),
-              "Don't update last checked time for app update")
-        },
-        {
-          assertDoesNotThrow("Don't save the last checked time for app update") {
-            coVerify(exactly = 0) { _settingsRepository.saveLastCheckedTimeForAppUpdate(any()) }
-          }
-        })
+    assertEquals(
+        oldUiState,
+        _viewModel.uiState.safeValue,
+        "Preserve all values when the latest release is null")
   }
 
   private fun `_on check for app update with internet and latest release available cases`():
       Array<Array<Any>> =
       arrayOf(
-          arrayOf(true, 1, 0, true, _githubRelease, 1),
-          arrayOf(false, 0, 1, true, _githubRelease, 1))
+          arrayOf(true, 1, 0, Instant.now(), _githubRelease),
+          arrayOf(false, 0, 1, Instant.now(), _githubRelease))
 
   @ParameterizedTest
   @MethodSource("_on check for app update with internet and latest release available cases")
@@ -165,18 +157,17 @@ class SettingsViewModelTest(
       isNewVersionNewer: Boolean,
       updateAvailableDialogNotifyCount: Int,
       noUpdateAvailableSnackbarNotifyCount: Int,
-      isLastCheckedTimeUpdated: Boolean,
-      githubRelease: GithubReleaseModel,
-      saveLastCheckedTimeCallCount: Int
+      lastCheckedTime: Instant,
+      githubRelease: GithubReleaseModel
   ) {
     mockkObject(NetworkState)
     every { NetworkState.isInternetAvailable(any()) } returns true
     coEvery { _settingsRepository.obtainLatestAppRelease() } returns githubRelease
     val oldUiState: SettingsState = _viewModel.uiState.safeValue
 
-    coEvery { _settingsRepository.saveLastCheckedTimeForAppUpdate(any()) } returns true
     mockkObject(VersionComparator)
     every { VersionComparator.isNewVersionNewer(any(), any()) } returns isNewVersionNewer
+    coEvery { _settingsRepository.lastCheckedTimeForAppUpdate() } returns lastCheckedTime
     _viewModel.onCheckForAppUpdate(mockk())
     assertAll(
         {
@@ -195,23 +186,11 @@ class SettingsViewModelTest(
         },
         {
           assertEquals(
-              isLastCheckedTimeUpdated,
-              _viewModel.uiState.safeValue.lastCheckedTimeForAppUpdate.isAfter(
-                  oldUiState.lastCheckedTimeForAppUpdate),
-              "Update last checked time for app update whenever ")
-        },
-        {
-          assertEquals(
-              githubRelease,
-              _viewModel.uiState.safeValue.githubRelease,
-              "Update GitHub release model with the fetched data")
-        },
-        {
-          assertDoesNotThrow("Immediately save the last checked time for app update") {
-            coVerify(exactly = saveLastCheckedTimeCallCount) {
-              _settingsRepository.saveLastCheckedTimeForAppUpdate(any())
-            }
-          }
+              oldUiState.copy(
+                  lastCheckedTimeForAppUpdate = lastCheckedTime.atZone(ZoneId.systemDefault()),
+                  githubRelease = githubRelease),
+              _viewModel.uiState.safeValue,
+              "Update last checked time and GitHub release model")
         })
   }
 
@@ -230,7 +209,6 @@ class SettingsViewModelTest(
     mockkObject(VersionComparator)
     every { VersionComparator.isNewVersionNewer(any(), any()) } returns true
     coEvery { _settingsRepository.obtainLatestAppRelease() } returns _githubRelease
-    coEvery { _settingsRepository.saveLastCheckedTimeForAppUpdate(any()) } returns true
     _viewModel.onCheckForAppUpdate(mockk())
 
     every { _permission.isUnknownSourceInstallationGranted() } returns
@@ -261,7 +239,6 @@ class SettingsViewModelTest(
     mockkObject(VersionComparator)
     every { VersionComparator.isNewVersionNewer(any(), any()) } returns true
     coEvery { _settingsRepository.obtainLatestAppRelease() } returns _githubRelease
-    coEvery { _settingsRepository.saveLastCheckedTimeForAppUpdate(any()) } returns true
     _viewModel.onCheckForAppUpdate(mockk())
 
     _viewModel.onActivityResultForUnknownSourceInstallation()
