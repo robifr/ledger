@@ -120,6 +120,8 @@ class MainActivity :
     } else {
       // Only automatically check for app update once a day.
       if (_settingsViewModel.uiState.safeValue.isLastCheckedTimeForAppUpdatePastMidNight()) {
+        // Consume snackbar state to prevent it from showing when the settings fragment launches.
+        _settingsViewModel.snackbarState.observe(this) {}
         _settingsViewModel.dialogState.observe(this, ::_onSettingsDialogState)
         _settingsViewModel.onCheckForAppUpdate(this)
       }

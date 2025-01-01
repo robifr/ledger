@@ -22,7 +22,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.databinding.SettingsFragmentBinding
@@ -46,7 +46,7 @@ class SettingsFragment : Fragment() {
   val generalBinding: SettingsGeneralBinding
     get() = _generalBinding!!
 
-  val settingsViewModel: SettingsViewModel by viewModels()
+  val settingsViewModel: SettingsViewModel by activityViewModels()
   private lateinit var _language: SettingsLanguage
   private lateinit var _appUpdate: SettingsAppUpdate
   private lateinit var _onBackPressed: OnBackPressedHandler
