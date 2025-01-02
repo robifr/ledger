@@ -21,8 +21,7 @@ import com.robifr.ledger.local.access.ProductDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class ProductRepository(private val _localDao: ProductDao) :
-    QueryReadable<ProductModel>, QueryModifiable<ProductModel> {
+class ProductRepository(private val _localDao: ProductDao) : Queryable<ProductModel> {
   private val _modelChangedListeners: HashSet<ModelChangedListener<ProductModel>> = hashSetOf()
 
   fun addModelChangedListener(listener: ModelChangedListener<ProductModel>) {

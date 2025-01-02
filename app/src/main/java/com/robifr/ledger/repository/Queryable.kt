@@ -23,7 +23,16 @@ import com.robifr.ledger.data.model.QueueModel
  * Every method with ID as a parameter should be using an object instead of its primitive type. So
  * that we can easily query a foreign-key (nullable). Like when querying [QueueModel.customerId].
  */
-sealed interface QueryReadable<M : Model> {
+sealed interface Queryable<M : Model> {
+  /** @return Inserted model ID. 0 for a failed operation. */
+  suspend fun add(model: M): Long
+
+  /** @return Number of row effected. 0 for a failed operation. */
+  suspend fun update(model: M): Int
+
+  /** @return Number of row effected. 0 for a failed operation. */
+  suspend fun delete(model: M): Int
+
   /** @return List of selected models. Empty list for a failed operation. */
   suspend fun selectAll(): List<M>
 

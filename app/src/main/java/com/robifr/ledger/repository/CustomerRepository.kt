@@ -23,8 +23,7 @@ import com.robifr.ledger.local.access.CustomerDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-class CustomerRepository(private val _localDao: CustomerDao) :
-    QueryReadable<CustomerModel>, QueryModifiable<CustomerModel> {
+class CustomerRepository(private val _localDao: CustomerDao) : Queryable<CustomerModel> {
   private val _modelChangedListeners: HashSet<ModelChangedListener<CustomerModel>> = hashSetOf()
 
   fun addModelChangedListener(listener: ModelChangedListener<CustomerModel>) {

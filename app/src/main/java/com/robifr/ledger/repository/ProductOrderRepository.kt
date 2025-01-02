@@ -22,7 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class ProductOrderRepository(private val _localDao: ProductOrderDao) :
-    QueryReadable<ProductOrderModel>, QueryModifiable<ProductOrderModel> {
+    Queryable<ProductOrderModel> {
   private val _modelChangedListeners: HashSet<ModelChangedListener<ProductOrderModel>> = hashSetOf()
 
   fun addModelChangedListener(listener: ModelChangedListener<ProductOrderModel>) {

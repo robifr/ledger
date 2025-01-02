@@ -30,7 +30,7 @@ class QueueRepository(
     private val _transactionProvider: TransactionProvider,
     private val _customerRepository: CustomerRepository,
     private val _productOrderRepository: ProductOrderRepository
-) : QueryReadable<QueueModel>, QueryModifiable<QueueModel> {
+) : Queryable<QueueModel> {
   private val _modelChangedListeners: HashSet<ModelChangedListener<QueueModel>> = hashSetOf()
 
   fun addModelChangedListener(listener: ModelChangedListener<QueueModel>) {
