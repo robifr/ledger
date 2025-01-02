@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.dashboard.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
@@ -24,8 +23,6 @@ import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.QueueRepository
-import com.robifr.ledger.ui.SingleLiveEvent
-import com.robifr.ledger.ui.SnackbarState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZonedDateTime
 import javax.inject.Inject
@@ -39,10 +36,6 @@ constructor(
     private val _queueRepository: QueueRepository,
     private val _customerRepository: CustomerRepository
 ) : ViewModel() {
-  private val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
-  val snackbarState: LiveData<SnackbarState>
-    get() = _snackbarState
-
   val summaryView: DashboardSummaryViewModel =
       DashboardSummaryViewModel(
           _viewModel = this,

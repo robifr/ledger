@@ -25,10 +25,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.DashboardFragmentBinding
-import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.dashboard.chart.RevenueChartModel
 import com.robifr.ledger.ui.dashboard.chart.SummaryChartModel
 import com.robifr.ledger.ui.dashboard.chart.TotalQueuesChartModel
@@ -68,7 +66,6 @@ class DashboardFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         requireContext().getColorAttr(android.R.attr.colorBackground)
     requireActivity().window.navigationBarColor = requireContext().getColor(R.color.surface)
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
-    dashboardViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
     dashboardViewModel.summaryView.uiState.observe(viewLifecycleOwner, ::_onSummaryState)
     dashboardViewModel.summaryView.chartModel.observe(viewLifecycleOwner, ::_onSummaryChartModel)
     dashboardViewModel.revenueView.uiState.observe(viewLifecycleOwner, ::_onRevenueState)
@@ -84,14 +81,6 @@ class DashboardFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         else -> false
       }
-
-  private fun _onSnackbarState(state: SnackbarState) {
-    Snackbar.make(
-            fragmentBinding.root as View,
-            state.messageRes.toStringValue(requireContext()),
-            Snackbar.LENGTH_LONG)
-        .show()
-  }
 
   private fun _onSummaryState(state: DashboardSummaryState) {
     _summaryOverview.setDate(state.date, state.dateFormat())
