@@ -219,17 +219,27 @@ function _drawBarChart(svg, layout, xScale, yScale, data, color) {
     .attr("y", (d) => yScale.scale(d.value))
     .attr("width", xScale.scale.bandwidth())
     .attr("height", (d) => layout.height - layout.marginBottom - yScale.scale(d.value))
-    .attr(
-      "d",
-      (d) => `
-        M${xScale.scale(d.key)},${yScale.scale(d.value) + barCornerRadius}
-        a${barCornerRadius},${barCornerRadius} 0 0 1 ${barCornerRadius},${-barCornerRadius}
-        h${xScale.scale.bandwidth() - 2 * barCornerRadius}
-        a${barCornerRadius},${barCornerRadius} 0 0 1 ${barCornerRadius},${barCornerRadius}
-        v${layout.height - layout.marginBottom - yScale.scale(d.value) - barCornerRadius}
-        h${-xScale.scale.bandwidth()}Z
-      `
-    );
+    .attr("d", (d) => {
+      if (d.value === 0) {
+        // Draw flat rectangle for zero values to avoid unintended corners below the X-axis.
+        return `
+          M${xScale.scale(d.key)},${yScale.scale(d.value)}
+          h${xScale.scale.bandwidth()}
+          v0
+          h${-xScale.scale.bandwidth()}Z
+        `;
+      } else {
+        // Draw rounded rectangle.
+        return `
+          M${xScale.scale(d.key)},${yScale.scale(d.value) + barCornerRadius}
+          a${barCornerRadius},${barCornerRadius} 0 0 1 ${barCornerRadius},${-barCornerRadius}
+          h${xScale.scale.bandwidth() - 2 * barCornerRadius}
+          a${barCornerRadius},${barCornerRadius} 0 0 1 ${barCornerRadius},${barCornerRadius}
+          v${layout.height - layout.marginBottom - yScale.scale(d.value) - barCornerRadius}
+          h${-xScale.scale.bandwidth()}Z
+        `;
+      }
+    });
 }
 
 /**
