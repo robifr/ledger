@@ -24,6 +24,7 @@ import com.robifr.ledger.network.GithubReleaseModel
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 
@@ -63,9 +64,7 @@ class SettingsRepository(
   private suspend fun _saveCachedGithubRelease(githubRelease: GithubReleaseModel): Boolean =
       _sharedPreferences
           .edit()
-          .putString(
-              _KEY_CACHED_GITHUB_RELEASE,
-              Json.encodeToString(GithubReleaseModel.serializer(), githubRelease))
+          .putString(_KEY_CACHED_GITHUB_RELEASE, Json.encodeToString(githubRelease))
           .commit()
 
   suspend fun obtainLatestAppRelease(): GithubReleaseModel? =
