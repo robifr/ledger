@@ -46,7 +46,7 @@ class SettingsRepository(
 
   fun lastCheckedTimeForAppUpdate(): Instant {
     val time: String? = _sharedPreferences.getString(_KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE, null)
-    return if (time != null) Instant.parse(time) else Instant.now()
+    return if (time != null) Instant.parse(time) else Instant.EPOCH
   }
 
   private suspend fun _saveLastCheckedTimeForAppUpdate(time: Instant): Boolean =
