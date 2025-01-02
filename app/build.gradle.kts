@@ -19,12 +19,12 @@ import java.util.Properties
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-  alias(libs.plugins.jetbrains.kotlin.plugin.serialization)
   id(libs.plugins.android.application.get().pluginId)
   id(libs.plugins.google.dagger.hilt.android.get().pluginId)
   id(libs.plugins.google.devtools.ksp.get().pluginId)
   id(libs.plugins.jetbrains.kotlin.android.get().pluginId)
   id(libs.plugins.jetbrains.kotlin.plugin.parcelize.get().pluginId)
+  id(libs.plugins.jetbrains.kotlin.plugin.serialization.get().pluginId)
   id(libs.plugins.jetbrains.kotlinx.kover.get().pluginId)
 }
 
@@ -38,7 +38,7 @@ android {
     minSdk = 30
     targetSdk = 35
     versionCode = 1
-    versionName = "1.2.1"
+    versionName = "1.2.2"
     multiDexEnabled = true
     setProperty("archivesBaseName", "ledger-v${versionName}")
 
