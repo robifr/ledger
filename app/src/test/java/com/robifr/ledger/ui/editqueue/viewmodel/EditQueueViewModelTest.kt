@@ -26,6 +26,7 @@ import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.repository.QueueRepository
+import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueState
 import com.robifr.ledger.ui.editqueue.EditQueueFragment
 import io.mockk.clearAllMocks
@@ -41,6 +42,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
@@ -58,6 +60,7 @@ class EditQueueViewModelTest(
 ) {
   private lateinit var _queueRepository: QueueRepository
   private lateinit var _viewModel: EditQueueViewModel
+  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
   private lateinit var _resultStateObserver: Observer<EditQueueResultState>
 
   private val _customer: CustomerModel = CustomerModel(id = 111L, name = "Amy", balance = 500L)
@@ -83,6 +86,7 @@ class EditQueueViewModelTest(
   fun beforeEach() {
     clearAllMocks()
     _queueRepository = mockk()
+    _snackbarStateObserver = mockk(relaxed = true)
     _resultStateObserver = mockk(relaxed = true)
 
     coEvery { _queueRepository.add(any()) } returns 0L
@@ -99,6 +103,7 @@ class EditQueueViewModelTest(
                       EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key(),
                       _queueToEdit.id)
                 })
+    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
     _viewModel.editResultState.observe(_lifecycleOwner, _resultStateObserver)
   }
 
@@ -239,15 +244,18 @@ class EditQueueViewModelTest(
   fun `on save with edited queue`(effectedRows: Int) {
     coEvery { _queueRepository.update(any()) } returns effectedRows
     _viewModel.onSave()
-    if (effectedRows == 0) {
-      assertDoesNotThrow("Don't return result for a failed save") {
-        verify(exactly = 0) { _resultStateObserver.onChanged(any()) }
-      }
-    } else {
-      assertEquals(
-          _queueToEdit.id,
-          _viewModel.editResultState.value?.editedQueueId,
-          "Return result with the correct ID after success save")
-    }
+    assertAll(
+        {
+          assertDoesNotThrow("Return result with the correct ID after success update") {
+            verify(exactly = if (effectedRows == 0) 0 else 1) {
+              _resultStateObserver.onChanged(eq(EditQueueResultState(_queueToEdit.id)))
+            }
+          }
+        },
+        {
+          assertDoesNotThrow("Notify the result via snackbar") {
+            verify { _snackbarStateObserver.onChanged(any()) }
+          }
+        })
   }
 }

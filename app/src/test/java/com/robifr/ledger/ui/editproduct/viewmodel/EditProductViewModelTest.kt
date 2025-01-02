@@ -26,6 +26,7 @@ import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.repository.ProductRepository
+import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductState
 import com.robifr.ledger.ui.editproduct.EditProductFragment
 import io.mockk.clearAllMocks
@@ -58,6 +59,7 @@ class EditProductViewModelTest(
 ) {
   private lateinit var _productRepository: ProductRepository
   private lateinit var _viewModel: EditProductViewModel
+  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
   private lateinit var _resultStateObserver: Observer<EditProductResultState>
 
   private val _productToEdit: ProductModel = ProductModel(id = 111L, name = "Apple", price = 100)
@@ -66,6 +68,7 @@ class EditProductViewModelTest(
   fun beforeEach() {
     clearAllMocks()
     _productRepository = mockk()
+    _snackbarStateObserver = mockk(relaxed = true)
     _resultStateObserver = mockk(relaxed = true)
     AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-us"))
 
@@ -80,6 +83,7 @@ class EditProductViewModelTest(
                   EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key(),
                   _productToEdit.id)
             })
+    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
     _viewModel.editResultState.observe(_lifecycleOwner, _resultStateObserver)
   }
 
@@ -144,15 +148,18 @@ class EditProductViewModelTest(
   fun `on save with edited product`(effectedRows: Int) {
     coEvery { _productRepository.update(any()) } returns effectedRows
     _viewModel.onSave()
-    if (effectedRows == 0) {
-      assertDoesNotThrow("Don't return result for a failed save") {
-        verify(exactly = 0) { _resultStateObserver.onChanged(any()) }
-      }
-    } else {
-      assertEquals(
-          _productToEdit.id,
-          _viewModel.editResultState.value?.editedProductId,
-          "Return result with the correct ID after success save")
-    }
+    assertAll(
+        {
+          assertDoesNotThrow("Return result with the correct ID after success update") {
+            verify(exactly = if (effectedRows == 0) 0 else 1) {
+              _resultStateObserver.onChanged(eq(EditProductResultState(_productToEdit.id)))
+            }
+          }
+        },
+        {
+          assertDoesNotThrow("Notify the result via snackbar") {
+            verify { _snackbarStateObserver.onChanged(any()) }
+          }
+        })
   }
 }

@@ -147,15 +147,18 @@ class EditCustomerViewModelTest(
   fun `on save with edited customer`(effectedRows: Int) {
     coEvery { _customerRepository.update(any()) } returns effectedRows
     _viewModel.onSave()
-    if (effectedRows == 0) {
-      assertDoesNotThrow("Don't return result for a failed save") {
-        verify(exactly = 0) { _resultStateObserver.onChanged(any()) }
-      }
-    } else {
-      assertEquals(
-          _customerToEdit.id,
-          _viewModel.editResultState.value?.editedCustomerId,
-          "Return result with the correct ID after success save")
-    }
+    assertAll(
+        {
+          assertDoesNotThrow("Return result with the correct ID after success update") {
+            verify(exactly = if (effectedRows == 0) 0 else 1) {
+              _resultStateObserver.onChanged(eq(EditCustomerResultState(_customerToEdit.id)))
+            }
+          }
+        },
+        {
+          assertDoesNotThrow("Notify the result via snackbar") {
+            verify { _snackbarStateObserver.onChanged(any()) }
+          }
+        })
   }
 }
