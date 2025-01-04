@@ -20,10 +20,16 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Fts4
 import androidx.room.PrimaryKey
+import com.robifr.ledger.local.FtsStringConverter
 
 @Fts4
 @Entity(tableName = "customer_fts")
 data class CustomerFtsModel(
     @PrimaryKey @ColumnInfo(name = "rowid") val rowId: Long,
     @ColumnInfo(name = "name") val name: String
-)
+) {
+  constructor(
+      rowId: Long,
+      customer: CustomerModel
+  ) : this(rowId, FtsStringConverter.toFtsSpacedString(customer.name))
+}

@@ -17,6 +17,7 @@
 package com.robifr.ledger.local.access
 
 import com.robifr.ledger.data.model.CustomerBalanceInfo
+import com.robifr.ledger.data.model.CustomerFtsModel
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
@@ -89,5 +90,5 @@ data class FakeCustomerDao(
 
   override fun _deleteFts(rowId: Long) {}
 
-  override fun _insertFts(rowId: Long, customerName: String): Long = -1L
+  override fun _insertFts(customerFts: CustomerFtsModel): Long = -1L
 }

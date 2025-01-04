@@ -16,6 +16,7 @@
 
 package com.robifr.ledger.local.access
 
+import com.robifr.ledger.data.model.ProductFtsModel
 import com.robifr.ledger.data.model.ProductModel
 
 data class FakeProductDao(
@@ -61,5 +62,5 @@ data class FakeProductDao(
 
   override fun _deleteFts(rowId: Long) {}
 
-  override fun _insertFts(rowId: Long, productName: String): Long = -1L
+  override fun _insertFts(productFts: ProductFtsModel): Long = -1L
 }

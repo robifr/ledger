@@ -25,6 +25,7 @@ import androidx.room.TypeConverters
 import androidx.room.Update
 import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
+import com.robifr.ledger.data.model.CustomerFtsModel
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.local.BigDecimalConverter
 import com.robifr.ledger.local.FtsStringConverter
@@ -35,7 +36,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   @Transaction
   override fun insert(customer: CustomerModel): Long {
     val rowId: Long = _insert(customer)
-    _insertFts(rowId, FtsStringConverter.toFtsSpacedString(customer.name))
+    _insertFts(CustomerFtsModel(rowId, customer))
     return rowId
   }
 
@@ -44,7 +45,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
     val rowId: Long = selectRowIdById(customer.id)
     _deleteFts(rowId)
     val effectedRow: Int = _update(customer)
-    _insertFts(rowId, FtsStringConverter.toFtsSpacedString(customer.name))
+    _insertFts(CustomerFtsModel(rowId, customer))
     return effectedRow
   }
 
@@ -145,6 +146,5 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
    *
    * @return Inserted row ID.
    */
-  @Query("INSERT INTO customer_fts(docid, name) VALUES (:rowId, :customerName)")
-  protected abstract fun _insertFts(rowId: Long, customerName: String): Long
+  @Insert protected abstract fun _insertFts(customerFts: CustomerFtsModel): Long
 }

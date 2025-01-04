@@ -22,6 +22,7 @@ import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.robifr.ledger.data.model.ProductFtsModel
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.local.FtsStringConverter
 
@@ -30,7 +31,7 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
   @Transaction
   override fun insert(product: ProductModel): Long {
     val rowId: Long = _insert(product)
-    _insertFts(rowId, FtsStringConverter.toFtsSpacedString(product.name))
+    _insertFts(ProductFtsModel(rowId, product))
     return rowId
   }
 
@@ -39,7 +40,7 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
     val rowId: Long = selectRowIdById(product.id)
     _deleteFts(rowId)
     val effectedRow: Int = _update(product)
-    _insertFts(rowId, FtsStringConverter.toFtsSpacedString(product.name))
+    _insertFts(ProductFtsModel(rowId, product))
     return effectedRow
   }
 
@@ -110,6 +111,5 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
    *
    * @return Inserted row ID.
    */
-  @Query("INSERT INTO product_fts(docid, name) VALUES (:rowId, :productName)")
-  protected abstract fun _insertFts(rowId: Long, productName: String): Long
+  @Insert protected abstract fun _insertFts(productFts: ProductFtsModel): Long
 }
