@@ -216,9 +216,6 @@ class DashboardSummary(private val _fragment: DashboardFragment) : View.OnClickL
     _fragment.fragmentBinding.summary.listContainer.isVisible = true
     _fragment.fragmentBinding.summary.listContainer.removeAllViews()
     for ((product, amountSold) in products) {
-      val formattedAmount: String =
-          CurrencyFormat.format(
-              amountSold, AppCompatDelegate.getApplicationLocales().toLanguageTags(), "")
       _fragment.fragmentBinding.summary.listContainer.addView(
           DashboardCardSummaryListItemBinding.inflate(
                   _fragment.layoutInflater, _fragment.fragmentBinding.summary.listContainer, false)
@@ -227,10 +224,12 @@ class DashboardSummary(private val _fragment: DashboardFragment) : View.OnClickL
                 description.isGone = true
                 amount.text =
                     HtmlCompat.fromHtml(
-                        _fragment.resources.getQuantityString(
-                            R.plurals.dashboard_productsSold_n_item,
-                            amountSold.toInt(),
-                            formattedAmount),
+                        _fragment.getString(
+                            R.string.dashboard_productsSold_n,
+                            CurrencyFormat.format(
+                                amountSold,
+                                AppCompatDelegate.getApplicationLocales().toLanguageTags(),
+                                "")),
                         HtmlCompat.FROM_HTML_MODE_LEGACY)
                 image.shapeableImage.shapeAppearanceModel =
                     ShapeAppearanceModel.builder(

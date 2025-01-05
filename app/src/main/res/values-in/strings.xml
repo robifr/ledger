@@ -138,10 +138,6 @@
     <item quantity="other"><![CDATA[<b>%d</b> antrean]]></item>
   </plurals>
   <string name="dashboard_productsSold">Produk terjual</string>
-  <plurals name="dashboard_productsSold_n_item">
-    <item quantity="one"><![CDATA[<b>%s</b> item]]></item>
-    <item quantity="other"><![CDATA[<b>%s</b> item]]></item>
-  </plurals>
   <!-- Revenue. -->
   <string name="dashboard_revenue">Pendapatan</string>
   <string name="dashboard_receivedIncome">Pemasukan diterima</string>

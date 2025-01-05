@@ -149,10 +149,7 @@
     <item quantity="other"><![CDATA[<b>%d</b> queues]]></item>
   </plurals>
   <string name="dashboard_productsSold">Products sold</string>
-  <plurals name="dashboard_productsSold_n_item">
-    <item quantity="one"><![CDATA[<b>%s</b> item]]></item>
-    <item quantity="other"><![CDATA[<b>%s</b> items]]></item>
-  </plurals>
+  <string name="dashboard_productsSold_n" translatable="false"><![CDATA[<b>%s</b>]]></string>
   <!-- Revenue. -->
   <string name="dashboard_revenue">Revenue</string>
   <string name="dashboard_receivedIncome">Received income</string>
