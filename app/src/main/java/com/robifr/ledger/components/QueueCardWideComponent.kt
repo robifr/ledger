@@ -70,7 +70,7 @@ class QueueCardWideComponent(
     _setStatus(queue.status, false)
     _setGrandTotalPrice(queue.grandTotalPrice(), false)
     _setCustomer(queue.customer, false)
-    _setPaymentMethod(queue.paymentMethod)
+    _setPaymentMethod(queue.paymentMethod, queue.status)
     _setTotalDiscount(queue.totalDiscount())
     _setProductOrders(queue.productOrders)
   }
@@ -167,8 +167,14 @@ class QueueCardWideComponent(
     }
   }
 
-  private fun _setPaymentMethod(paymentMethod: QueueModel.PaymentMethod) {
+  private fun _setPaymentMethod(
+      paymentMethod: QueueModel.PaymentMethod,
+      status: QueueModel.Status
+  ) {
+    val isStatusCompleted: Boolean = status == QueueModel.Status.COMPLETED
+    _binding.expandedCard.paymentMethodTitle.isVisible = isStatusCompleted
     _binding.expandedCard.paymentMethod.setText(paymentMethod.stringRes)
+    _binding.expandedCard.paymentMethod.isVisible = isStatusCompleted
   }
 
   private fun _setTotalDiscount(totalDiscount: BigDecimal) {
