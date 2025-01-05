@@ -35,34 +35,17 @@ object ChartUtil {
   fun toDateTime(
       dateToConvert: ZonedDateTime,
       dateStartEnd: Pair<ZonedDateTime, ZonedDateTime>
-  ): String {
-    // Determine how the data will be grouped based on the date range.
-    val groupBy: ChronoUnit =
-        if (dateStartEnd.first.year != dateStartEnd.second.year) {
-          ChronoUnit.YEARS
-        } else if (dateStartEnd.first.monthValue != dateStartEnd.second.monthValue) {
-          ChronoUnit.MONTHS
-        } else {
-          ChronoUnit.DAYS
-        }
-    return when (groupBy) {
-      ChronoUnit.DAYS -> dateToConvert.dayOfMonth.toString()
-      ChronoUnit.MONTHS -> dateToConvert.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())
-      else -> dateToConvert.year.toString()
-    }
-  }
+  ): String =
+      when (_dateTimeGroup(dateStartEnd)) {
+        ChronoUnit.DAYS -> dateToConvert.dayOfMonth.toString()
+        ChronoUnit.MONTHS ->
+            dateToConvert.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+        else -> dateToConvert.year.toString()
+      }
 
   fun toDateTimeDomain(dateStartEnd: Pair<ZonedDateTime, ZonedDateTime>): List<String> {
     val result: MutableList<String> = mutableListOf()
-    // Determine how the data will be grouped based on the date range.
-    val groupBy: ChronoUnit =
-        if (dateStartEnd.first.year != dateStartEnd.second.year) {
-          ChronoUnit.YEARS
-        } else if (dateStartEnd.first.monthValue != dateStartEnd.second.monthValue) {
-          ChronoUnit.MONTHS
-        } else {
-          ChronoUnit.DAYS
-        }
+    val groupBy: ChronoUnit = _dateTimeGroup(dateStartEnd)
     // Fill the map with summed values for each key in the date range.
     var date: ZonedDateTime = dateStartEnd.first
     while (!date.isAfter(dateStartEnd.second)) {
@@ -126,6 +109,13 @@ object ChartUtil {
     val niceMin: Double = floor(minPoint / tickSpacing) * tickSpacing
     val niceMax: Double = ceil(maxPoint / tickSpacing) * tickSpacing
     return doubleArrayOf(niceMin, niceMax, tickSpacing)
+  }
+
+  /** Determine how the data will be grouped based on the date range. */
+  private fun _dateTimeGroup(dateStartEnd: Pair<ZonedDateTime, ZonedDateTime>): ChronoUnit {
+    val totalDays: Long = ChronoUnit.DAYS.between(dateStartEnd.first, dateStartEnd.second)
+    return if (totalDays < 31L) ChronoUnit.DAYS
+    else if (totalDays < 365L) ChronoUnit.MONTHS else ChronoUnit.YEARS
   }
 
   private fun _ceilToNearestNiceNumber(amount: BigDecimal, ticks: Int): BigDecimal {
