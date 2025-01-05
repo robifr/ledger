@@ -150,8 +150,12 @@ class ModelGenerator(private val _faker: Faker = Faker()) {
   ): List<ProductOrderModel> =
       mutableListOf<ProductOrderModel>().apply {
         for (i in 0 until (1..5).random()) {
-          val weightedProduct: WeightedProductModel =
-              _randomWeightedOf(weightedProducts.map { it to it.weight })
+          var weightedProduct: WeightedProductModel
+          do {
+            weightedProduct = _randomWeightedOf(weightedProducts.map { it to it.weight })
+            // Only add products that haven't been previously added.
+          } while (weightedProduct.product in map { it.referencedProduct() })
+
           val quantity: Double =
               _faker
                   .number()
