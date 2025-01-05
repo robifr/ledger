@@ -45,6 +45,9 @@ interface FakeQueryAccessible<M : Model> : QueryAccessible<M> {
 
   override fun selectById(id: Long?): M? = data.find { it.id != null && id != null && it.id == id }
 
+  override fun selectById(ids: List<Long>): List<M> =
+      data.filter { it.id != null && ids.contains(it.id) }
+
   override fun selectByRowId(rowId: Long): M? = data.getOrNull(rowId.toInt())
 
   override fun selectIdByRowId(rowId: Long): Long = data.getOrNull(rowId.toInt())?.id ?: 0L

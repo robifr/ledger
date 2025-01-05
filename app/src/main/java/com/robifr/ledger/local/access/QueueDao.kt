@@ -20,7 +20,6 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.TypeConverters
 import androidx.room.Update
 import com.robifr.ledger.data.model.QueueModel
@@ -40,9 +39,8 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
   @Query("SELECT * FROM queue WHERE id = :queueId")
   abstract override fun selectById(queueId: Long?): QueueModel?
 
-  @Transaction
-  override fun selectById(queueIds: List<Long>): List<QueueModel> =
-      queueIds.mapNotNull { selectById(it) }
+  @Query("SELECT * FROM queue WHERE id IN (:queueIds)")
+  abstract override fun selectById(queueIds: List<Long>): List<QueueModel>
 
   @Query("SELECT * FROM queue WHERE rowid = :rowId")
   abstract override fun selectByRowId(rowId: Long): QueueModel?

@@ -42,6 +42,9 @@ data class FakeCustomerDao(
   override fun selectById(customerId: Long?): CustomerModel? =
       super<FakeQueryAccessible>.selectById(customerId)
 
+  override fun selectById(ids: List<Long>): List<CustomerModel> =
+      super<FakeQueryAccessible>.selectById(ids)
+
   override fun selectByRowId(rowId: Long): CustomerModel? =
       super<FakeQueryAccessible>.selectByRowId(rowId)
 

@@ -36,6 +36,9 @@ data class FakeProductDao(
   override fun selectById(productId: Long?): ProductModel? =
       super<FakeQueryAccessible>.selectById(productId)
 
+  override fun selectById(ids: List<Long>): List<ProductModel> =
+      super<FakeQueryAccessible>.selectById(ids)
+
   override fun selectByRowId(rowId: Long): ProductModel? =
       super<FakeQueryAccessible>.selectByRowId(rowId)
 

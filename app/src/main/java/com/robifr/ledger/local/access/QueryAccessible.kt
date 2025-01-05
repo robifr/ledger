@@ -41,10 +41,10 @@ interface QueryAccessible<M : Model> {
 
   fun selectByRowId(rowId: Long): M?
 
-  /** @return Model ID for the specified row ID. 0 for a failed operation */
+  /** @return Model ID for the specified row ID. 0 for a failed operation. */
   fun selectIdByRowId(rowId: Long): Long
 
-  /** @return Row ID (hidden column) for the specified model ID. -1 for a failed operation */
+  /** @return Row ID (hidden column) for the specified model ID. -1 for a failed operation. */
   fun selectRowIdById(id: Long?): Long
 
   fun isExistsById(id: Long?): Boolean

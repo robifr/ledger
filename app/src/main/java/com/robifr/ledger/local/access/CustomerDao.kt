@@ -60,9 +60,8 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   @Query("SELECT * FROM customer WHERE id = :customerId")
   abstract override fun selectById(customerId: Long?): CustomerModel?
 
-  @Transaction
-  override fun selectById(customerIds: List<Long>): List<CustomerModel> =
-      customerIds.mapNotNull { selectById(it) }
+  @Query("SELECT * FROM customer WHERE id IN (:customerIds)")
+  abstract override fun selectById(customerIds: List<Long>): List<CustomerModel>
 
   @Query("SELECT * FROM customer WHERE rowid = :rowId")
   abstract override fun selectByRowId(rowId: Long): CustomerModel?

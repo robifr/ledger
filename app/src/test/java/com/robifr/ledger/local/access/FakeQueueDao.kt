@@ -40,6 +40,9 @@ data class FakeQueueDao(
   override fun selectById(queueId: Long?): QueueModel? =
       super<FakeQueryAccessible>.selectById(queueId)
 
+  override fun selectById(ids: List<Long>): List<QueueModel> =
+      super<FakeQueryAccessible>.selectById(ids)
+
   override fun selectByRowId(rowId: Long): QueueModel? =
       super<FakeQueryAccessible>.selectByRowId(rowId)
 

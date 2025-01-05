@@ -55,9 +55,8 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
   @Query("SELECT * FROM product WHERE id = :productId")
   abstract override fun selectById(productId: Long?): ProductModel?
 
-  @Transaction
-  override fun selectById(productIds: List<Long>): List<ProductModel> =
-      productIds.mapNotNull { selectById(it) }
+  @Query("SELECT * FROM product WHERE id IN (:productIds)")
+  abstract override fun selectById(productIds: List<Long>): List<ProductModel>
 
   @Query("SELECT * FROM product WHERE rowid = :rowId")
   abstract override fun selectByRowId(rowId: Long): ProductModel?

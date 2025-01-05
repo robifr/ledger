@@ -20,7 +20,6 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Transaction
 import androidx.room.Update
 import androidx.room.Upsert
 import com.robifr.ledger.data.model.ProductOrderModel
@@ -47,22 +46,20 @@ abstract class ProductOrderDao : QueryAccessible<ProductOrderModel> {
   @Query("SELECT * FROM product_order WHERE id = :productOrderId")
   abstract override fun selectById(productOrderId: Long?): ProductOrderModel?
 
-  @Transaction
-  override fun selectById(productOrderIds: List<Long>): List<ProductOrderModel> =
-      productOrderIds.mapNotNull { selectById(it) }
+  @Query("SELECT * FROM product_order WHERE id IN (:productOrderIds)")
+  abstract override fun selectById(productOrderIds: List<Long>): List<ProductOrderModel>
 
   @Query("SELECT * FROM product_order WHERE rowid = :rowId")
   abstract override fun selectByRowId(rowId: Long): ProductOrderModel?
 
-  @Transaction
-  open fun selectByRowId(rowIds: List<Long>): List<ProductOrderModel> =
-      rowIds.mapNotNull { selectByRowId(it) }
+  @Query("SELECT * FROM product_order WHERE rowid IN (:rowIds)")
+  abstract fun selectByRowId(rowIds: List<Long>): List<ProductOrderModel>
 
   @Query("SELECT id FROM product_order WHERE rowid = :rowId")
   abstract override fun selectIdByRowId(rowId: Long): Long
 
-  @Transaction
-  open fun selectIdByRowId(rowIds: List<Long>): List<Long> = rowIds.map { selectIdByRowId(it) }
+  @Query("SELECT id FROM product_order WHERE rowid IN (:rowIds)")
+  abstract fun selectIdByRowId(rowIds: List<Long>): List<Long>
 
   @Query("SELECT rowid FROM product_order WHERE id = :productOrderId")
   abstract override fun selectRowIdById(productOrderId: Long?): Long

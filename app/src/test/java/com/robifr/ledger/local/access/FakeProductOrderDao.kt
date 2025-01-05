@@ -47,11 +47,20 @@ data class FakeProductOrderDao(
   override fun selectById(productOrderId: Long?): ProductOrderModel? =
       super<FakeQueryAccessible>.selectById(productOrderId)
 
+  override fun selectById(ids: List<Long>): List<ProductOrderModel> =
+      super<FakeQueryAccessible>.selectById(ids)
+
   override fun selectByRowId(rowId: Long): ProductOrderModel? =
       super<FakeQueryAccessible>.selectByRowId(rowId)
 
+  override fun selectByRowId(rowIds: List<Long>): List<ProductOrderModel> =
+      rowIds.asSequence().mapNotNull { selectByRowId(it) }.toList()
+
   override fun selectIdByRowId(rowId: Long): Long =
       super<FakeQueryAccessible>.selectIdByRowId(rowId)
+
+  override fun selectIdByRowId(rowIds: List<Long>): List<Long> =
+      rowIds.asSequence().map { selectIdByRowId(it) }.filter { it != 0L }.toList()
 
   override fun selectRowIdById(productOrderId: Long?): Long =
       super<FakeQueryAccessible>.selectRowIdById(productOrderId)
