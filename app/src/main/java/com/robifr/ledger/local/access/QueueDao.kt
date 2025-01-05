@@ -54,6 +54,8 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
   @Query("SELECT EXISTS(SELECT id FROM queue WHERE id = :queueId)")
   abstract override fun isExistsById(queueId: Long?): Boolean
 
+  @Query("SELECT NOT EXISTS(SELECT 1 FROM queue)") abstract override fun isTableEmpty(): Boolean
+
   @Query("SELECT * FROM queue WHERE date >= :startDate AND date <= :endDate")
   @TypeConverters(InstantConverter::class)
   abstract fun selectAllInRange(startDate: Instant, endDate: Instant): List<QueueModel>

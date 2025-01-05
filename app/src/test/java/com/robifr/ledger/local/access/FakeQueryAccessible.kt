@@ -57,5 +57,7 @@ interface FakeQueryAccessible<M : Model> : QueryAccessible<M> {
 
   override fun isExistsById(id: Long?): Boolean = selectById(id) != null
 
+  override fun isTableEmpty(): Boolean = data.isEmpty()
+
   fun assignId(model: M, id: Long): M
 }

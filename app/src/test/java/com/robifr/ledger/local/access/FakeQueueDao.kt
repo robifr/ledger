@@ -55,6 +55,8 @@ data class FakeQueueDao(
   override fun isExistsById(queueId: Long?): Boolean =
       super<FakeQueryAccessible>.isExistsById(queueId)
 
+  override fun isTableEmpty(): Boolean = super<FakeQueryAccessible>.isTableEmpty()
+
   override fun selectAllInRange(startDate: Instant, endDate: Instant): List<QueueModel> =
       QueueFilterer()
           .apply {

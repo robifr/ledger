@@ -39,7 +39,7 @@
         android:value="true" />
 
     <activity
-        android:name=".ui.main.MainActivity"
+        android:name="${activityLauncherName}"
         android:configChanges="orientation|keyboardHidden|screenSize|uiMode"
         android:exported="true"
         android:windowSoftInputMode="adjustNothing">

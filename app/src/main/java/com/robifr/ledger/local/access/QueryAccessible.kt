@@ -48,4 +48,6 @@ interface QueryAccessible<M : Model> {
   fun selectRowIdById(id: Long?): Long
 
   fun isExistsById(id: Long?): Boolean
+
+  fun isTableEmpty(): Boolean
 }

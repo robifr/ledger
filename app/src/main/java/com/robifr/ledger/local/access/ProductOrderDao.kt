@@ -67,6 +67,9 @@ abstract class ProductOrderDao : QueryAccessible<ProductOrderModel> {
   @Query("SELECT EXISTS(SELECT id FROM product_order WHERE id = :productOrderId)")
   abstract override fun isExistsById(productOrderId: Long?): Boolean
 
+  @Query("SELECT NOT EXISTS(SELECT 1 FROM product_order)")
+  abstract override fun isTableEmpty(): Boolean
+
   /** @return Upserted row ID. -1 for a failed insert operation. */
   @Upsert abstract fun upsert(productOrder: ProductOrderModel): Long
 

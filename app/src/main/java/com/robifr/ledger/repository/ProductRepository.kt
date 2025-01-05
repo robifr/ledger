@@ -40,6 +40,8 @@ class ProductRepository(private val _localDao: ProductDao) : Queryable<ProductMo
 
   override suspend fun isExistsById(id: Long?): Boolean = _localDao.isExistsById(id)
 
+  override suspend fun isTableEmpty(): Boolean = _localDao.isTableEmpty()
+
   override suspend fun add(model: ProductModel): Long =
       _localDao
           .insert(model)

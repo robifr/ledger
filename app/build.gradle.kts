@@ -66,14 +66,26 @@ android {
     release {
       isMinifyEnabled = true
       manifestPlaceholders["appLabel"] = "@string/appName"
+      manifestPlaceholders["activityLauncherName"] = ".ui.main.MainActivity"
       signingConfig = signingConfigs.getByName("release")
       proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+      buildConfigField("String", "DATABASE_FILE_NAME", "\"data.db\"")
     }
 
     debug {
       applicationIdSuffix = ".debug"
       isDebuggable = true
       manifestPlaceholders["appLabel"] = "@string/appName_debug"
+      manifestPlaceholders["activityLauncherName"] = ".ui.main.MainActivity"
+      buildConfigField("String", "DATABASE_FILE_NAME", "\"data.db\"")
+    }
+
+    create("qa") {
+      initWith(getByName("release"))
+      applicationIdSuffix = ".qa"
+      manifestPlaceholders["appLabel"] = "@string/appName_qa"
+      manifestPlaceholders["activityLauncherName"] = ".ui.main.QaMainActivity"
+      buildConfigField("String", "DATABASE_FILE_NAME", "\"qa/data.db\"")
     }
   }
 
@@ -129,6 +141,8 @@ dependencies {
   testImplementation(libs.mockk)
 
   debugImplementation(libs.squareup.leakcanary.android)
+
+  "qaImplementation"(libs.datafaker)
 }
 
 kover {

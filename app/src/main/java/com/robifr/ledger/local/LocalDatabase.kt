@@ -22,6 +22,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.robifr.ledger.BuildConfig
 import com.robifr.ledger.data.model.CustomerFtsModel
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductFtsModel
@@ -66,7 +67,7 @@ abstract class LocalDatabase : RoomDatabase() {
                 .build()
                 .apply { _instance = this }
 
-    private fun _fileName(): String = "${_fileDir()}/data.db"
+    private fun _fileName(): String = "${_fileDir()}/${BuildConfig.DATABASE_FILE_NAME}"
 
     private fun _fileDir(): String? {
       val directory: String =

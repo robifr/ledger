@@ -75,6 +75,8 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   @Query("SELECT EXISTS(SELECT id FROM customer WHERE id = :customerId)")
   abstract override fun isExistsById(customerId: Long?): Boolean
 
+  @Query("SELECT NOT EXISTS(SELECT 1 FROM customer)") abstract override fun isTableEmpty(): Boolean
+
   @Query("SELECT id, balance FROM customer WHERE balance > 0")
   abstract fun selectAllInfoWithBalance(): List<CustomerBalanceInfo>
 

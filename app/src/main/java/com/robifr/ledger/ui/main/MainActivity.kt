@@ -49,7 +49,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 @AndroidEntryPoint
-class MainActivity :
+open class MainActivity :
     AppCompatActivity(),
     NavigationBarView.OnItemSelectedListener,
     NavController.OnDestinationChangedListener,
@@ -59,7 +59,7 @@ class MainActivity :
     get() = _activityBinding!!
 
   private val _settingsViewModel: SettingsViewModel by viewModels()
-  private lateinit var _permission: RequiredPermission
+  protected lateinit var _permission: RequiredPermission
   private lateinit var _permissionLauncher: ActivityResultLauncher<Intent>
   private lateinit var _create: MainCreate
 

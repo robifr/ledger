@@ -51,6 +51,8 @@ data class FakeProductDao(
   override fun isExistsById(productId: Long?): Boolean =
       super<FakeQueryAccessible>.isExistsById(productId)
 
+  override fun isTableEmpty(): Boolean = super<FakeQueryAccessible>.isTableEmpty()
+
   override fun search(query: String): List<ProductModel> =
       _search(query.replace("\"".toRegex(), "\"\""))
 

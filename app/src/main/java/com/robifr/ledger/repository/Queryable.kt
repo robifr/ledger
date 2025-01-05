@@ -43,4 +43,6 @@ sealed interface Queryable<M : Model> {
   suspend fun selectById(ids: List<Long>): List<M>
 
   suspend fun isExistsById(id: Long?): Boolean
+
+  suspend fun isTableEmpty(): Boolean
 }

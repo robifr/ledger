@@ -70,6 +70,8 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
   @Query("SELECT EXISTS(SELECT id FROM product WHERE id = :productId)")
   abstract override fun isExistsById(productId: Long?): Boolean
 
+  @Query("SELECT NOT EXISTS(SELECT 1 FROM product)") abstract override fun isTableEmpty(): Boolean
+
   @Transaction
   open fun search(query: String): List<ProductModel> {
     val escapedQuery: String = query.replace("\"".toRegex(), "\"\"")

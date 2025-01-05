@@ -51,6 +51,8 @@ class QueueRepository(
 
   override suspend fun isExistsById(id: Long?): Boolean = _localDao.isExistsById(id)
 
+  override suspend fun isTableEmpty(): Boolean = _localDao.isTableEmpty()
+
   override suspend fun add(model: QueueModel): Long =
       _transactionProvider.withTransaction {
         _localDao

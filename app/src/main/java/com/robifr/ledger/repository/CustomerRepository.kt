@@ -44,6 +44,8 @@ class CustomerRepository(private val _localDao: CustomerDao) : Queryable<Custome
 
   override suspend fun isExistsById(id: Long?): Boolean = _localDao.isExistsById(id)
 
+  override suspend fun isTableEmpty(): Boolean = _localDao.isTableEmpty()
+
   override suspend fun add(model: CustomerModel): Long =
       _localDao
           .insert(model)

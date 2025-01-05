@@ -68,6 +68,8 @@ data class FakeProductOrderDao(
   override fun isExistsById(productOrderId: Long?): Boolean =
       super<FakeQueryAccessible>.isExistsById(productOrderId)
 
+  override fun isTableEmpty(): Boolean = super<FakeQueryAccessible>.isTableEmpty()
+
   override fun upsert(productOrder: ProductOrderModel): Long =
       if (isExistsById(productOrder.id)) {
         update(productOrder)

@@ -35,31 +35,28 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 @InstallIn(ViewModelComponent::class, ActivityComponent::class)
 object RepositoryModule {
   @Provides
-  fun provideCustomerRepository(@ApplicationContext context: Context): CustomerRepository =
-      CustomerRepository.instance(LocalDatabase.instance(context.applicationContext).customerDao())
+  fun provideCustomerRepository(localDb: LocalDatabase): CustomerRepository =
+      CustomerRepository.instance(localDb.customerDao())
 
   @Provides
-  fun provideProductRepository(@ApplicationContext context: Context): ProductRepository =
-      ProductRepository.instance(LocalDatabase.instance(context.applicationContext).productDao())
+  fun provideProductRepository(localDb: LocalDatabase): ProductRepository =
+      ProductRepository.instance(localDb.productDao())
 
   @Provides
-  fun provideProductOrderRepository(@ApplicationContext context: Context): ProductOrderRepository =
-      ProductOrderRepository.instance(
-          LocalDatabase.instance(context.applicationContext).productOrderDao())
+  fun provideProductOrderRepository(localDb: LocalDatabase): ProductOrderRepository =
+      ProductOrderRepository.instance(localDb.productOrderDao())
 
   @Provides
   fun provideQueueRepository(
-      @ApplicationContext context: Context,
+      localDb: LocalDatabase,
       customerRepository: CustomerRepository,
       productOrderRepository: ProductOrderRepository
-  ): QueueRepository {
-    val localDb: LocalDatabase = LocalDatabase.instance(context.applicationContext)
-    return QueueRepository.instance(
-        localDb.queueDao(),
-        TransactionProvider(localDb),
-        customerRepository,
-        productOrderRepository)
-  }
+  ): QueueRepository =
+      QueueRepository.instance(
+          localDb.queueDao(),
+          TransactionProvider(localDb),
+          customerRepository,
+          productOrderRepository)
 
   @Provides
   fun provideSettingsRepository(@ApplicationContext context: Context): SettingsRepository =

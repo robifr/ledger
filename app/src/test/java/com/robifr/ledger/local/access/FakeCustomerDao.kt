@@ -57,6 +57,8 @@ data class FakeCustomerDao(
   override fun isExistsById(customerId: Long?): Boolean =
       super<FakeQueryAccessible>.isExistsById(customerId)
 
+  override fun isTableEmpty(): Boolean = super<FakeQueryAccessible>.isTableEmpty()
+
   override fun selectAllInfoWithBalance(): List<CustomerBalanceInfo> =
       data
           .asSequence()
