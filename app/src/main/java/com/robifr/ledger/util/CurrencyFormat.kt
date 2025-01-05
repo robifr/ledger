@@ -116,7 +116,8 @@ object CurrencyFormat {
         // Found any character before negative sign.
         """([^\-]+)(?=-)""".toRegex().findAll(amount).count() > 0 ||
         // Found the digit occurrence in decimal place is more than max allowed.
-        ("""(?<=\.)\d+""".toRegex().find(amount)?.value?.length ?: 0) > MAXIMUM_FRACTION_DIGITS)
+        ("""(?<=${Regex.escape(decimalSeparator)})\d+""".toRegex().find(amount)?.value?.length
+            ?: 0) > MAXIMUM_FRACTION_DIGITS)
   }
 
   fun symbol(languageTag: String): String =
