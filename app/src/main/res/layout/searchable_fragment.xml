@@ -20,24 +20,31 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-  <androidx.appcompat.widget.Toolbar
-      android:id="@+id/toolbar"
+  <com.google.android.material.appbar.AppBarLayout
+      android:id="@+id/appBarLayout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:background="?actionModeBackground"
-      app:navigationIcon="@drawable/icon_arrow_back">
+      android:background="?actionModeBackground">
 
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/searchView"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        app:iconifiedByDefault="false"
-        app:queryBackground="@null"
-        app:searchHintIcon="@null"
-        app:searchIcon="@null" />
-  </androidx.appcompat.widget.Toolbar>
+        android:background="?actionModeBackground"
+        app:navigationIcon="@drawable/icon_arrow_back">
+
+      <androidx.appcompat.widget.SearchView
+          android:id="@+id/searchView"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:focusable="true"
+          android:focusableInTouchMode="true"
+          app:iconifiedByDefault="false"
+          app:queryBackground="@null"
+          app:searchHintIcon="@null"
+          app:searchIcon="@null" />
+    </androidx.appcompat.widget.Toolbar>
+  </com.google.android.material.appbar.AppBarLayout>
 
   <androidx.core.widget.NestedScrollView
       android:layout_width="match_parent"

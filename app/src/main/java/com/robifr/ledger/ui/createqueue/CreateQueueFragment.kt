@@ -23,6 +23,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -74,10 +78,11 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    requireActivity().window.statusBarColor =
-        requireContext().getColorAttr(android.R.attr.colorBackground)
-    requireActivity().window.navigationBarColor =
-        requireContext().getColorAttr(android.R.attr.colorBackground)
+    ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.appBarLayout) { view, insets ->
+      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+      view.updatePadding(top = windowInsets.top)
+      WindowInsetsCompat.CONSUMED
+    }
     requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
     fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
     fragmentBinding.toolbar.menu.clear()
@@ -175,9 +180,18 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onSelectProductOrderState(state: SelectProductOrderState) {
-    requireActivity().window.statusBarColor =
-        if (state.isContextualModeActive) requireContext().getColor(R.color.surface)
-        else requireContext().getColorAttr(android.R.attr.colorBackground)
+    val toolbarColor: Int =
+        if (state.isContextualModeActive) {
+          requireContext().getColorAttr(androidx.appcompat.R.attr.actionModeBackground)
+        } else {
+          requireContext().getColor(android.R.color.transparent)
+        }
+    // Edge-to-edge doesn't work well with contextual mode on Android 13.
+    requireActivity().window.statusBarColor = toolbarColor
+    // FIXME: It doesn't work at all on Android 15.
+    fragmentBinding.appBarLayout.setBackgroundColor(toolbarColor)
+    fragmentBinding.toolbar.setBackgroundColor(toolbarColor)
+
     _inputProductOrder.setContextualMode(state.isContextualModeActive)
     _inputProductOrder.setSelectedProductOrderByIndexes(state.selectedIndexes)
     // Disable every possible irrelevant action when contextual mode is on.

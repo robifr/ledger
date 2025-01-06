@@ -20,13 +20,21 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-  <androidx.appcompat.widget.Toolbar
-      android:id="@+id/toolbar"
+  <com.google.android.material.appbar.AppBarLayout
+      android:id="@+id/appBarLayout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      app:menu="@menu/reusable_toolbar_edit"
-      app:navigationIcon="@drawable/icon_arrow_back"
-      app:title="@string/createQueue" />
+      android:background="?android:colorBackground">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:colorBackground"
+        app:menu="@menu/reusable_toolbar_edit"
+        app:navigationIcon="@drawable/icon_arrow_back"
+        app:title="@string/createQueue" />
+  </com.google.android.material.appbar.AppBarLayout>
 
   <androidx.core.widget.NestedScrollView
       android:layout_width="match_parent"

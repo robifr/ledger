@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
@@ -28,8 +29,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.graphics.Insets
 import androidx.core.os.LocaleListCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
@@ -93,6 +99,7 @@ open class MainActivity :
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
+    enableEdgeToEdge()
     super.onCreate(savedInstanceState)
     _activityBinding = MainActivityBinding.inflate(layoutInflater)
     setContentView(activityBinding.root)
@@ -100,10 +107,16 @@ open class MainActivity :
     _permission = RequiredPermission(this)
     _create = MainCreate(this)
     activityBinding.bottomNavigation.setOnItemSelectedListener(this)
+    ViewCompat.setOnApplyWindowInsetsListener(activityBinding.bottomNavigation) { view, insets ->
+      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+      view.updatePadding(bottom = windowInsets.bottom)
+      WindowInsetsCompat.CONSUMED
+    }
     (supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? NavHostFragment)
         ?.navController
         ?.addOnDestinationChangedListener(this)
     onBackPressedDispatcher.addCallback(this, OnBackPressedHandler(this))
+    WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     AppCompatDelegate.setApplicationLocales(
         LocaleListCompat.forLanguageTags(

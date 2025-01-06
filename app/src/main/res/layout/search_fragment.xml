@@ -21,13 +21,16 @@
     android:orientation="vertical">
 
   <com.google.android.material.appbar.AppBarLayout
+      android:id="@+id/appBarLayout"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
+      android:layout_height="wrap_content"
+      android:background="?actionModeBackground">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="?actionModeBackground"
         app:navigationIcon="@drawable/icon_arrow_back">
 
       <androidx.appcompat.widget.SearchView

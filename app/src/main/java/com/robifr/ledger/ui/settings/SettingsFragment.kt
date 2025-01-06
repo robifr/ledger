@@ -21,6 +21,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -33,7 +37,6 @@ import com.robifr.ledger.ui.settings.viewmodel.SettingsState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsViewModel
 import com.robifr.ledger.ui.settings.viewmodel.UnknownSourceInstallationDialogState
 import com.robifr.ledger.ui.settings.viewmodel.UpdateAvailableDialogState
-import com.robifr.ledger.util.getColorAttr
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -65,10 +68,11 @@ class SettingsFragment : Fragment() {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    requireActivity().window.statusBarColor =
-        requireContext().getColorAttr(android.R.attr.colorBackground)
-    requireActivity().window.navigationBarColor =
-        requireContext().getColorAttr(android.R.attr.colorBackground)
+    ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.root) { view, insets ->
+      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+      view.updatePadding(top = windowInsets.top)
+      WindowInsetsCompat.CONSUMED
+    }
     // Use the activity's lifecycle owner to prevent the app from closing when the system
     // back button is pressed after a configuration change. Just ensure that it's removed
     // when this fragment is finished, to avoid a crash when closing the app.

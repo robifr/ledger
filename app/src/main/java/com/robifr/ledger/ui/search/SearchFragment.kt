@@ -22,7 +22,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -34,7 +38,6 @@ import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.search.viewmodel.SearchViewModel
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
-import com.robifr.ledger.util.getColorAttr
 import com.robifr.ledger.util.hideKeyboard
 import com.robifr.ledger.util.hideTooltipText
 import com.robifr.ledger.util.showKeyboard
@@ -76,9 +79,11 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    requireActivity().window.statusBarColor = requireContext().getColor(R.color.surface)
-    requireActivity().window.navigationBarColor =
-        requireContext().getColorAttr(android.R.attr.colorBackground)
+    ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.appBarLayout) { view, insets ->
+      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+      view.updatePadding(top = windowInsets.top)
+      WindowInsetsCompat.CONSUMED
+    }
     requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
     fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
     fragmentBinding.searchView.queryHint = getString(R.string.searchCustomersAndProducts)

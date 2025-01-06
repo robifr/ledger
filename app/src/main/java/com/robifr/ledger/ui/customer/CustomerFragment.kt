@@ -22,6 +22,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.Toolbar
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -35,7 +39,6 @@ import com.robifr.ledger.ui.customer.filter.CustomerFilter
 import com.robifr.ledger.ui.customer.recycler.CustomerAdapter
 import com.robifr.ledger.ui.customer.viewmodel.CustomerFilterState
 import com.robifr.ledger.ui.customer.viewmodel.CustomerViewModel
-import com.robifr.ledger.util.getColorAttr
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -62,9 +65,11 @@ class CustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    requireActivity().window.statusBarColor =
-        requireContext().getColorAttr(android.R.attr.colorBackground)
-    requireActivity().window.navigationBarColor = requireContext().getColor(R.color.surface)
+    ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.root) { view, insets ->
+      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+      view.updatePadding(top = windowInsets.top)
+      WindowInsetsCompat.CONSUMED
+    }
     fragmentBinding.toolbar.menu.clear()
     fragmentBinding.toolbar.inflateMenu(R.menu.reusable_toolbar_main)
     fragmentBinding.toolbar.navigationIcon = null

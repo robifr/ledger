@@ -49,10 +49,8 @@
   <com.google.android.material.bottomnavigation.BottomNavigationView
       android:id="@+id/bottomNavigation"
       android:layout_width="match_parent"
-      android:layout_height="65dp"
+      android:layout_height="wrap_content"
       android:background="?colorSurface"
-      app:itemPaddingBottom="@dimen/space_smallMedium"
-      app:itemPaddingTop="@dimen/space_smallMedium"
       app:itemTextAppearanceActive="@style/BottomNavigationView.TextAppearanceActive"
       app:itemTextAppearanceInactive="@style/TextAppearance.Material3.LabelSmall"
       app:labelVisibilityMode="labeled"

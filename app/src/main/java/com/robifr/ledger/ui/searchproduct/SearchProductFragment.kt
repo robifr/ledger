@@ -22,7 +22,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.NavHostFragment
@@ -40,7 +44,6 @@ import com.robifr.ledger.ui.searchproduct.recycler.SearchProductAdapter
 import com.robifr.ledger.ui.searchproduct.viewmodel.SearchProductResultState
 import com.robifr.ledger.ui.searchproduct.viewmodel.SearchProductState
 import com.robifr.ledger.ui.searchproduct.viewmodel.SearchProductViewModel
-import com.robifr.ledger.util.getColorAttr
 import com.robifr.ledger.util.hideKeyboard
 import com.robifr.ledger.util.showKeyboard
 import dagger.hilt.android.AndroidEntryPoint
@@ -69,11 +72,14 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    requireActivity().window.statusBarColor = requireContext().getColor(R.color.surface)
-    requireActivity().window.navigationBarColor =
-        requireContext().getColorAttr(android.R.attr.colorBackground)
+    ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.appBarLayout) { view, insets ->
+      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+      view.updatePadding(top = windowInsets.top)
+      WindowInsetsCompat.CONSUMED
+    }
     requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
-    fragmentBinding.toolbar.isVisible = searchProductViewModel.uiState.safeValue.isToolbarVisible
+    fragmentBinding.appBarLayout.isVisible =
+        searchProductViewModel.uiState.safeValue.isToolbarVisible
     fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
     fragmentBinding.searchView.queryHint = getString(R.string.searchProduct)
     fragmentBinding.searchView.setOnQueryTextListener(this)
