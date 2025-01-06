@@ -19,7 +19,6 @@ package com.robifr.ledger.ui.createqueue
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.LinearLayout
-import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -37,8 +36,6 @@ import java.util.TreeSet
 class CreateQueueProductOrder(private val _fragment: CreateQueueFragment) {
   val makeProductOrder: CreateQueueMakeProductOrder = CreateQueueMakeProductOrder(_fragment)
   private var _contextualMode: ActionMode? = null
-  @ColorInt
-  private val _normalStatusBarColor: Int = _fragment.requireActivity().window.statusBarColor
 
   init {
     _fragment.fragmentBinding.productOrder.addButton.setOnClickListener {
@@ -68,14 +65,9 @@ class CreateQueueProductOrder(private val _fragment: CreateQueueFragment) {
       _contextualMode =
           (_fragment.requireActivity() as AppCompatActivity).startSupportActionMode(
               SelectProductOrderActionModeCallback(_fragment))
-      // Match status bar color with the contextual toolbar background color.
-      _fragment.requireActivity().window.statusBarColor =
-          _fragment.requireContext().getColor(R.color.surface)
     } else if (!isActive && _contextualMode != null) {
       _contextualMode?.finish()
       _contextualMode = null
-      // Re-apply original status bar color.
-      _fragment.requireActivity().window.statusBarColor = _normalStatusBarColor
     }
   }
 
@@ -170,7 +162,7 @@ class CreateQueueProductOrder(private val _fragment: CreateQueueFragment) {
 private class SelectProductOrderActionModeCallback(private val _fragment: CreateQueueFragment) :
     ActionMode.Callback {
   override fun onCreateActionMode(mode: ActionMode?, menu: Menu?): Boolean {
-    mode?.menuInflater?.inflate(R.menu.createqueue_contextualtoolbar, menu)
+    mode?.menuInflater?.inflate(R.menu.create_queue_contextualtoolbar_delete, menu)
     return true
   }
 

@@ -175,6 +175,9 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onSelectProductOrderState(state: SelectProductOrderState) {
+    requireActivity().window.statusBarColor =
+        if (state.isContextualModeActive) requireContext().getColor(R.color.surface)
+        else requireContext().getColorAttr(android.R.attr.colorBackground)
     _inputProductOrder.setContextualMode(state.isContextualModeActive)
     _inputProductOrder.setSelectedProductOrderByIndexes(state.selectedIndexes)
     // Disable every possible irrelevant action when contextual mode is on.
