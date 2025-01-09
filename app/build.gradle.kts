@@ -58,6 +58,7 @@ android {
         keyPassword = properties.getProperty("key.password")
         storeFile = file("${rootDir}/${properties.getProperty("key.storeFile")}")
         storePassword = properties.getProperty("key.storePassword")
+        storeType = "PKCS12"
       }
     }
   }

@@ -45,9 +45,9 @@ jobs:
           EOF
 
       # Generate the base64-encoded keystore with:
-      # $ base64 -i keystore.jks
-      - name: Decode and create keystore.jks
-        run: echo "${{ secrets.KEYSTORE_JKS_BASE64 }}" | base64 --decode > keystore.jks
+      # $ base64 -i keystore.p12
+      - name: Decode and create keystore.p12
+        run: echo "${{ secrets.KEYSTORE_PKCS12_BASE64 }}" | base64 --decode > keystore.p12
 
       - name: Build release APK
         run: ./gradlew assembleRelease --stacktrace
