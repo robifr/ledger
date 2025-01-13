@@ -73,10 +73,12 @@ constructor(
     viewModelScope.launch(_dispatcher) { _settingsRepository.saveLanguageUsed(language) }
   }
 
-  fun onCheckForAppUpdate(context: Context) {
+  fun onCheckForAppUpdate(context: Context, shouldSnackbarShown: Boolean = true) {
     if (!NetworkState.isInternetAvailable(context)) {
-      _snackbarState.setValue(
-          SnackbarState(StringResource(R.string.settings_noInternetConnectionForAppUpdates)))
+      if (shouldSnackbarShown) {
+        _snackbarState.setValue(
+            SnackbarState(StringResource(R.string.settings_noInternetConnectionForAppUpdates)))
+      }
       return
     }
     viewModelScope.launch(_dispatcher) {
@@ -85,8 +87,10 @@ constructor(
             BuildConfig.VERSION_NAME, it.tagName.removePrefix("v"))) {
           _dialogState.postValue(UpdateAvailableDialogState(it))
         } else {
-          _snackbarState.postValue(
-              SnackbarState(StringResource(R.string.settings_noUpdatesWereAvailable)))
+          if (shouldSnackbarShown) {
+            _snackbarState.postValue(
+                SnackbarState(StringResource(R.string.settings_noUpdatesWereAvailable)))
+          }
         }
         _uiState.postValue(
             _uiState.safeValue.copy(

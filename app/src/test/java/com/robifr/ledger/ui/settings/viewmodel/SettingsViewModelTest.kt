@@ -52,6 +52,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExperimentalCoroutinesApi
@@ -113,15 +114,18 @@ class SettingsViewModelTest(
         })
   }
 
-  @Test
-  fun `on check for app update with internet not available`() {
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on check for app update with internet not available`(shouldSnackbarShown: Boolean) {
     mockkObject(NetworkState)
     every { NetworkState.isInternetAvailable(any()) } returns false
-    _viewModel.onCheckForAppUpdate(mockk())
+    _viewModel.onCheckForAppUpdate(mockk(), shouldSnackbarShown)
     assertAll(
         {
           assertDoesNotThrow("Notify unavailable internet via snackbar") {
-            verify { _snackbarStateObserver.onChanged(any()) }
+            verify(exactly = if (shouldSnackbarShown) 1 else 0) {
+              _snackbarStateObserver.onChanged(any())
+            }
           }
         },
         {
@@ -148,14 +152,16 @@ class SettingsViewModelTest(
   private fun `_on check for app update with internet and latest release available cases`():
       Array<Array<Any>> =
       arrayOf(
-          arrayOf(true, 1, 0, Instant.now(), _githubRelease),
-          arrayOf(false, 0, 1, Instant.now(), _githubRelease))
+          arrayOf(true, 1, true, 0, Instant.now(), _githubRelease),
+          arrayOf(false, 0, true, 1, Instant.now(), _githubRelease),
+          arrayOf(false, 0, false, 0, Instant.now(), _githubRelease))
 
   @ParameterizedTest
   @MethodSource("_on check for app update with internet and latest release available cases")
   fun `on check for app update with internet and latest release available`(
       isNewVersionNewer: Boolean,
       updateAvailableDialogNotifyCount: Int,
+      shouldSnackbarShown: Boolean,
       noUpdateAvailableSnackbarNotifyCount: Int,
       lastCheckedTime: Instant,
       githubRelease: GithubReleaseModel
@@ -168,7 +174,7 @@ class SettingsViewModelTest(
     mockkObject(VersionComparator)
     every { VersionComparator.isNewVersionNewer(any(), any()) } returns isNewVersionNewer
     coEvery { _settingsRepository.lastCheckedTimeForAppUpdate() } returns lastCheckedTime
-    _viewModel.onCheckForAppUpdate(mockk())
+    _viewModel.onCheckForAppUpdate(mockk(), shouldSnackbarShown)
     assertAll(
         {
           assertDoesNotThrow("Show available app update via alert dialog") {
