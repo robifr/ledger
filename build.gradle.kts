@@ -76,10 +76,10 @@ allprojects {
     format("xml") {
       target("**/src/**/*.xml")
       targetExclude("${layout.buildDirectory}/**")
-
       // Set delimiter to match either xml tag or comment, to prevent comment being removed when
       // placed below xml header tag.
-      // <xml .../><!-- Any comment here shouldn't be replaced with header license -->
+      // <xml .../>
+      // <!-- Any comment here shouldn't be replaced with header license. -->
       licenseHeaderFile(file("${rootDir}/gradle/spotless/license_header_xml.txt"), "^(<\\w+|<!--)")
     }
 
