@@ -32,9 +32,9 @@ class SettingsRepository(
     private val _sharedPreferences: SharedPreferences,
     private val _appUpdater: AppUpdater
 ) {
-  private val _KEY_LANGUAGE_USED = "language_used"
-  private val _KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE = "last_checked_time_for_app_update"
-  private val _KEY_CACHED_GITHUB_RELEASE = "cached_github_release"
+  private val _KEY_LANGUAGE_USED: String = "language_used"
+  private val _KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE: String = "last_checked_time_for_app_update"
+  private val _KEY_CACHED_GITHUB_RELEASE: String = "cached_github_release"
 
   fun languageUsed(): LanguageOption {
     val languagePrefs: String? = _sharedPreferences.getString(_KEY_LANGUAGE_USED, null)
