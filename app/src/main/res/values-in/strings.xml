@@ -98,13 +98,11 @@
 
   <!-- Settings fragment. -->
   <string name="settings">Pengaturan</string>
-  <!-- General. -->
-  <string name="settings_general">Umum</string>
   <string name="settings_language">Bahasa</string>
   <string name="settings_selectLanguage">Pilih bahasa</string>
   <!-- App update. -->
   <string name="settings_checkForAppUpdate">Periksa pembaruan aplikasi</string>
-  <string name="settings_lastChecked_x">Terakhir diperiksa: %s</string>
+  <string name="settings_lastChecked_x">Terakhir diperiksa pada %s</string>
   <string name="settings_updateAvailable_x"><![CDATA[<b>Pembaruan tersedia: %s</b>]]></string>
   <string name="settings_updateAvailable_description">
     <![CDATA[

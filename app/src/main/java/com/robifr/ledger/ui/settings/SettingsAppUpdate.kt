@@ -34,13 +34,13 @@ class SettingsAppUpdate(private val _fragment: SettingsFragment) {
       }
 
   init {
-    _fragment.generalBinding.appUpdateLayout.setOnClickListener {
+    _fragment.fragmentBinding.appUpdateLayer.setOnClickListener {
       _fragment.settingsViewModel.onCheckForAppUpdate(_fragment.requireContext())
     }
   }
 
   fun setLastChecked(lastCheckedTime: ZonedDateTime, @StringRes dateFormat: Int) {
-    _fragment.generalBinding.appUpdateLastChecked.text =
+    _fragment.fragmentBinding.appUpdateLastChecked.text =
         _fragment.getString(
             R.string.settings_lastChecked_x,
             lastCheckedTime.format(DateTimeFormatter.ofPattern(_fragment.getString(dateFormat))))

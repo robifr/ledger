@@ -30,7 +30,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.databinding.SettingsFragmentBinding
-import com.robifr.ledger.databinding.SettingsGeneralBinding
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsDialogState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsState
@@ -45,10 +44,6 @@ class SettingsFragment : Fragment() {
   val fragmentBinding: SettingsFragmentBinding
     get() = _fragmentBinding!!
 
-  private var _generalBinding: SettingsGeneralBinding? = null
-  val generalBinding: SettingsGeneralBinding
-    get() = _generalBinding!!
-
   val settingsViewModel: SettingsViewModel by activityViewModels()
   private lateinit var _language: SettingsLanguage
   private lateinit var _appUpdate: SettingsAppUpdate
@@ -60,7 +55,6 @@ class SettingsFragment : Fragment() {
       savedInstanceState: Bundle?
   ): View {
     _fragmentBinding = SettingsFragmentBinding.inflate(inflater, container, false)
-    _generalBinding = SettingsGeneralBinding.bind(fragmentBinding.root)
     _language = SettingsLanguage(this)
     _appUpdate = SettingsAppUpdate(this)
     _onBackPressed = OnBackPressedHandler(this)

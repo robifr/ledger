@@ -41,7 +41,7 @@ class SettingsLanguage(private val _fragment: SettingsFragment) {
       }
 
   init {
-    _fragment.generalBinding.languageLayout.setOnClickListener {
+    _fragment.fragmentBinding.languageLayer.setOnClickListener {
       _dialogBinding.radioGroup
           .findViewWithTag<RadioButton>(
               _fragment.settingsViewModel.uiState.safeValue.languageUsed.toString())
@@ -52,6 +52,6 @@ class SettingsLanguage(private val _fragment: SettingsFragment) {
   }
 
   fun setLanguageUsed(language: LanguageOption) {
-    _fragment.generalBinding.language.setText(language.stringRes)
+    _fragment.fragmentBinding.language.setText(language.stringRes)
   }
 }

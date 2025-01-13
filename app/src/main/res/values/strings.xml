@@ -109,13 +109,11 @@
 
   <!-- Settings fragment. -->
   <string name="settings">Settings</string>
-  <!-- General. -->
-  <string name="settings_general">General</string>
   <string name="settings_language">Language</string>
   <string name="settings_selectLanguage">Select language</string>
   <!-- App update. -->
   <string name="settings_checkForAppUpdate">Check for app update</string>
-  <string name="settings_lastChecked_x">Last checked: %s</string>
+  <string name="settings_lastChecked_x">Last checked at %s</string>
   <string name="settings_updateAvailable_x"><![CDATA[<b>Update available: %s</b>]]></string>
   <string name="settings_updateAvailable_description">
     <![CDATA[
