@@ -43,6 +43,7 @@
     <!-- Text style. -->
     <item name="android:textColor">@color/text</item>
     <item name="android:textColorHint">@color/text_disabled</item>
+    <item name="android:textColorHighlight">?colorSecondaryContainer</item>
     <item name="android:textSize">@dimen/text_medium</item>
     <item name="android:textAllCaps">false</item>
     <item name="android:fontFamily">@font/roboto</item>
