@@ -109,6 +109,7 @@
 
   <!-- Settings fragment. -->
   <string name="settings">Settings</string>
+  <!-- Language. -->
   <string name="settings_language">Language</string>
   <string name="settings_selectLanguage">Select language</string>
   <!-- App update. -->
@@ -121,6 +122,9 @@
       Size: %.2f MB
     ]]>
   </string>
+  <!-- About app. -->
+  <string name="settings_aboutApp">About Ledger</string>
+  <string name="settings_aboutApp_description">Details about the application and its licenses</string>
   <!-- Snackbar. -->
   <string name="settings_noUpdatesWereAvailable">No updates were available</string>
   <string name="settings_noInternetConnectionForAppUpdates">No internet connection, unable to check for app updates</string>
@@ -427,4 +431,22 @@
     <item quantity="one">@string/_product_deleted_n_product_one</item>
     <item quantity="other">@string/_product_deleted_n_product_other</item>
   </plurals>
+
+  <!-- About fragment. -->
+  <string name="about">About</string>
+  <string name="about_info">Info</string>
+  <string name="about_info_description"><![CDATA[Version %s<br>Updated at %s]]></string>
+  <string name="about_license">License</string>
+  <string name="about_license_description">Ledger is open-source software and distributed under the
+    terms of the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.
+    \n\nCopyright 2024 Robi
+  </string>
+  <string name="about_thirdPartyLicenses">Third-party licenses</string>
+  <string name="about_thirdPartyLicenses_description">Ledger also uses open-source libraries.
+    <a href="licenses">Learn more about the licenses</a>.
+  </string>
+  <string name="about_viewSourceCode">View source code</string>
+
+  <!-- Third party licenses activity. -->
+  <string name="thirdPartyLicense">Third-party licenses</string>
 </resources>

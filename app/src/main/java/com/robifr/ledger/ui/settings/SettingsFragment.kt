@@ -29,6 +29,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import com.robifr.ledger.R
 import com.robifr.ledger.databinding.SettingsFragmentBinding
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsDialogState
@@ -72,6 +73,9 @@ class SettingsFragment : Fragment() {
     // when this fragment is finished, to avoid a crash when closing the app.
     requireActivity().onBackPressedDispatcher.addCallback(requireActivity(), _onBackPressed)
     fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
+    fragmentBinding.aboutAppLayer.setOnClickListener {
+      findNavController().navigate(R.id.aboutFragment)
+    }
     settingsViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
     settingsViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
     settingsViewModel.dialogState.observe(viewLifecycleOwner, ::_onDialogState)

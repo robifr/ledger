@@ -20,6 +20,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
   id(libs.plugins.android.application.get().pluginId)
+  id(libs.plugins.app.cash.licensee.get().pluginId)
   id(libs.plugins.google.dagger.hilt.android.get().pluginId)
   id(libs.plugins.google.devtools.ksp.get().pluginId)
   id(libs.plugins.jetbrains.kotlin.android.get().pluginId)
@@ -146,6 +147,8 @@ dependencies {
   "qaImplementation"(libs.datafaker)
 }
 
+licensee { allow("Apache-2.0") }
+
 kover {
   reports.filters.excludes {
     packages("**.databinding", "dagger.hilt.*", "hilt_aggregated_deps")
@@ -175,3 +178,26 @@ tasks.register<Exec>("downloadD3Js") {
 }
 
 tasks.named("preBuild").dependsOn("downloadD3Js")
+
+tasks.register<Exec>("setupPythonEnvironment") {
+  val python: String =
+      if (System.getProperty("os.name").lowercase().contains("windows")) "python" else "python3"
+  commandLine(python, "-m", "venv", "${rootDir}/venv")
+}
+
+tasks.register<Exec>("updateThirdPartyLicenses") {
+  val python: String =
+      if (System.getProperty("os.name").lowercase().contains("windows")) "venv\\Scripts\\python"
+      else "./venv/bin/python"
+  commandLine(
+      python,
+      "./../scripts/format_licensee.py",
+      "--input-file",
+      "./build/reports/licensee/androidRelease/artifacts.json",
+      "--output-file",
+      "./src/main/res/raw/third_party_licenses.txt")
+}
+
+tasks.named("updateThirdPartyLicenses") { dependsOn("setupPythonEnvironment") }
+
+tasks.named("licensee") { finalizedBy("updateThirdPartyLicenses") }

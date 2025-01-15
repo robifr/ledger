@@ -23,12 +23,16 @@ buildscript {
     mavenCentral()
   }
 
-  dependencies { classpath(libs.jetbrains.kotlin.gradle.plugin) }
+  dependencies {
+    classpath(libs.app.cash.licensee.gradle.plugin)
+    classpath(libs.jetbrains.kotlin.gradle.plugin)
+  }
 }
 
 plugins {
   alias(libs.plugins.android.application) apply false
   alias(libs.plugins.android.library) apply false
+  alias(libs.plugins.app.cash.licensee) apply false
   alias(libs.plugins.diffplug.spotless) apply false
   alias(libs.plugins.google.dagger.hilt.android) apply false
   alias(libs.plugins.google.devtools.ksp) apply false
@@ -40,7 +44,7 @@ allprojects {
   apply<SpotlessPlugin>()
   extensions.configure<SpotlessExtension> {
     java {
-      target("**/*.java")
+      target("src/**/*.java")
       targetExclude("${layout.buildDirectory}/**")
       googleJavaFormat()
       toggleOffOn()
@@ -50,7 +54,7 @@ allprojects {
     }
 
     kotlin {
-      target("**/*.kt")
+      target("src/**/*.kt")
       targetExclude("${layout.buildDirectory}/**")
       ktfmt()
       toggleOffOn()
@@ -71,6 +75,11 @@ allprojects {
       prettier().config(mapOf("tabWidth" to 2, "useTabs" to false, "printWidth" to 100))
       licenseHeaderFile(
           file("${rootDir}/gradle/spotless/license_header.txt"), "\"use strict\"|^\\w+")
+    }
+
+    python {
+      target("scripts/**/*.py")
+      licenseHeaderFile(file("${rootDir}/gradle/spotless/license_header_py.txt"), "^\\w+")
     }
 
     format("xml") {

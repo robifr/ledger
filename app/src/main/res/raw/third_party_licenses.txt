@@ -1,0 +1,390 @@
+activity v1.8.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+activity-ktx v1.8.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+annotation v1.8.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+annotation-experimental v1.4.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+annotation-jvm v1.8.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+appcompat v1.7.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+appcompat-resources v1.7.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+core-common v2.2.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+core-runtime v2.2.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+cardview v1.0.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+collection v1.4.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+collection-jvm v1.4.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+collection-ktx v1.4.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+concurrent-futures v1.1.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+constraintlayout v2.2.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+constraintlayout-core v1.1.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+coordinatorlayout v1.1.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+core v1.15.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+core-ktx v1.15.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+cursoradapter v1.0.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+customview v1.1.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+customview-poolingcontainer v1.0.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+viewbinding v8.7.2
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+documentfile v1.0.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+drawerlayout v1.1.1
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+dynamicanimation v1.0.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+emoji2 v1.3.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+emoji2-views-helper v1.3.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+fragment v1.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+fragment-ktx v1.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+interpolator v1.0.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+legacy-support-core-utils v1.0.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+lifecycle-common v2.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+lifecycle-livedata v2.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+lifecycle-livedata-core v2.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+lifecycle-livedata-core-ktx v2.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+lifecycle-process v2.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+lifecycle-runtime v2.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+lifecycle-runtime-ktx v2.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+lifecycle-viewmodel v2.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+lifecycle-viewmodel-ktx v2.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+lifecycle-viewmodel-savedstate v2.6.2
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+loader v1.0.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+localbroadcastmanager v1.0.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+navigation-common v2.8.4
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+navigation-fragment v2.8.4
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+navigation-runtime v2.8.4
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+navigation-ui v2.8.4
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+print v1.0.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+profileinstaller v1.4.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+recyclerview v1.3.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+resourceinspection-annotation v1.0.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+room-common v2.6.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+room-ktx v2.6.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+room-runtime v2.6.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+savedstate v1.2.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+savedstate-ktx v1.2.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+slidingpanelayout v1.2.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+sqlite v2.4.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+sqlite-framework v2.4.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+startup-runtime v1.1.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+tracing v1.2.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+transition v1.5.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+vectordrawable v1.1.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+vectordrawable-animated v1.1.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+versionedparcelable v1.1.1
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+viewpager v1.0.0
+http://source.android.com
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+viewpager2 v1.1.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+webkit v1.12.1
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+window v1.0.0
+https://cs.android.com/androidx/platform/frameworks/support
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+material v1.12.0
+https://github.com/material-components/material-components-android
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+jsr305 v3.0.2
+https://code.google.com/p/jsr-305/
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+dagger v2.51.1
+https://github.com/google/dagger/
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+dagger-lint-aar v2.51.1
+https://github.com/google/dagger/
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+hilt-android v2.51.1
+https://github.com/google/dagger/
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+hilt-core v2.51.1
+https://github.com/google/dagger/
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+error_prone_annotations v2.15.0
+https://github.com/google/error-prone
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+listenablefuture v1.0
+https://github.com/google/guava
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+okhttp v4.12.0
+https://github.com/square/okhttp
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+okio v3.6.0
+https://github.com/square/okio/
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+okio-jvm v3.6.0
+https://github.com/square/okio/
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+javax.inject v1
+http://code.google.com/p/atinject/source/checkout
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+annotations v23.0.0
+https://github.com/JetBrains/java-annotations
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlin-android-extensions-runtime v2.0.20
+https://github.com/JetBrains/kotlin
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlin-parcelize-runtime v2.0.20
+https://github.com/JetBrains/kotlin
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlin-stdlib v2.0.20
+https://github.com/JetBrains/kotlin
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlin-stdlib-common v2.0.20
+https://github.com/JetBrains/kotlin
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlin-stdlib-jdk7 v1.9.10
+https://github.com/JetBrains/kotlin
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlin-stdlib-jdk8 v1.9.10
+https://github.com/JetBrains/kotlin
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlinx-coroutines-android v1.9.0
+https://github.com/Kotlin/kotlinx.coroutines
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlinx-coroutines-core v1.9.0
+https://github.com/Kotlin/kotlinx.coroutines
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlinx-coroutines-core-jvm v1.9.0
+https://github.com/Kotlin/kotlinx.coroutines
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlinx-serialization-core v1.7.3
+https://github.com/Kotlin/kotlinx.serialization
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlinx-serialization-core-jvm v1.7.3
+https://github.com/Kotlin/kotlinx.serialization
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlinx-serialization-json v1.7.3
+https://github.com/Kotlin/kotlinx.serialization
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+kotlinx-serialization-json-jvm v1.7.3
+https://github.com/Kotlin/kotlinx.serialization
+ * Apache License 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+
+d3 v7.9.0
+https://github.com/d3/d3
+ * ISC License (https://www.isc.org/licenses)
+
+roboto
+https://fonts.google.com/specimen/Roboto
+ * SIL Open Font License 1.1 (https://openfontlicense.org)

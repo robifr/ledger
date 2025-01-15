@@ -109,4 +109,14 @@
       android:id="@+id/filterCustomerFragment"
       android:name="com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment"
       tools:layout="@layout/listable_fragment" />
+
+  <fragment
+      android:id="@+id/aboutFragment"
+      android:name="com.robifr.ledger.ui.about.AboutFragment"
+      tools:layout="@layout/about_fragment" />
+
+  <fragment
+      android:id="@+id/thirdPartyLicensesFragment"
+      android:name="com.robifr.ledger.ui.thirdpartylicenses.ThirdPartyLicensesFragment"
+      tools:layout="@layout/third_party_licenses_fragment" />
 </navigation>

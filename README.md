@@ -38,6 +38,7 @@ reliable performance even without an internet connection.
         <ul>
           <li><a href="#build-instructions">2.1. Build Instructions</a></li>
           <li><a href="#build-variants">2.2. Build Variants</a></li>
+          <li><a href="#updating-third-party-licenses">2.3. Updating Third-Party Licenses</a></li>
         </ul>
       </li>
       <li><a href="#architecture">3. Architecture</a></li>
@@ -113,14 +114,20 @@ Optional:
     cd ledger
     ```
 
-4. Create `keystore.p12` file to sign the app:
+4. Install [Python 3](https://www.python.org/downloads/) and set up the virtual environment for
+  generating third-party licenses:
+    ```
+    ./gradlew setupPythonEnvironment
+    ```
+
+5. Create `keystore.p12` file to sign the app:
     ```
     keytool -genkeypair -v -keystore <keystore_path> -storetype PKCS12 -keyalg RSA -keysize 2048 -validity 10000 -alias <keystore_alias>
     ```
     Replace `<keystore_path>` with a relative path like `./keystore.p12` and `<keystore_alias>` with
     your chosen alias. Use a secure password when prompted.
 
-5. Create a `keystore.properties` file in the project root directory and add the following content:
+6. Create a `keystore.properties` file in the project root directory and add the following content:
     ```properties
     key.alias=<keystore_alias>
     key.password=<keystore_password>
@@ -134,13 +141,13 @@ Optional:
 > Keep the `keystore.p12`, `keystore.properties` file, and its credentials private. Don't commit
   them to version control.
 
-6. Sync dependencies and run tests:
+7. Sync dependencies and run tests:
     ```
     ./gradlew build
     ./gradlew test
     ```
 
-7. If everything is successful, build the app:
+8. If everything is successful, build the app:
     ```
     ./gradlew assembleRelease
     ```
@@ -149,11 +156,26 @@ Optional:
 ### Build Variants
 - **debug**: The default for development. It's fully debuggable and includes tools like [LeakCanary](https://github.com/square/leakcanary)
   for troubleshooting.
-- **qa**: Similar to the release build, but with a different database location and prepopulated data for testing in a near-production setup.
+- **qa**: Similar to the release build, but with a different database location and prepopulated data
+  for testing in a near-production setup.
 - **release**: The final production version, optimized for stability and performance. This build is
   signed and minified.
 
 Use `./gradlew assemble<VariantName>` to build different variants: `Debug`, `Qa`, or `Release`.
+
+### Updating Third-Party Licenses
+A Python script is used to generate a raw formatted text file for third-party licenses, which is
+displayed on the **About** > **Third-Party Licenses** screen.
+
+Always ensure that third-party licenses are up-to-date whenever the dependencies change:  
+```
+./gradlew licensee
+```
+This command collects licenses for the dependencies. However, some third-party licenses that fall
+outside the Gradle ecosystem can't be obtained by [Licensee](https://github.com/cashapp/licensee).
+To address this, you need to manually add those licenses in the `unlisted_libraries()` function
+within [`format_licensee.py`](./scripts/format_licensee.py). Then, re-run the above command to
+reflect the updates.
 
 ## Architecture
 This project follows the **MVVM (Model-View-ViewModel)** architecture pattern. Detailed information
@@ -192,7 +214,8 @@ format all files according to the project's style, run:
 ./gradlew spotlessApply
 ```
 This will format the code and add the header license to files with the following extensions:
-`.java`, `.kt`, `.gradle.kts`, `.js`, and `.html`.
+`.java`, `.kt`, `.gradle.kts`, `.js`, and `.html`. While for `.py` files, only the header license
+will be added, due to Spotless requirement to install `black` formatter.
 
 ### XML Formatting
 For `.xml` files, only the header license will be added by Spotless. We use the Android Studio

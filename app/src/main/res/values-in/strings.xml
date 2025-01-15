@@ -98,6 +98,7 @@
 
   <!-- Settings fragment. -->
   <string name="settings">Pengaturan</string>
+  <!-- Language. -->
   <string name="settings_language">Bahasa</string>
   <string name="settings_selectLanguage">Pilih bahasa</string>
   <!-- App update. -->
@@ -110,6 +111,9 @@
       Ukuran: %.2f MB
     ]]>
   </string>
+  <!-- About app. -->
+  <string name="settings_aboutApp">Tentang Ledger</string>
+  <string name="settings_aboutApp_description">Detail tentang aplikasi dan lisensinya</string>
   <!-- Snackbar. -->
   <string name="settings_noUpdatesWereAvailable">Tidak ada pembaruan yang tersedia</string>
   <string name="settings_noInternetConnectionForAppUpdates">Tidak ada koneksi internet, tidak dapat memeriksa pembaruan aplikasi</string>
@@ -415,4 +419,22 @@
     <item quantity="one">@string/_product_deleted_n_product_one</item>
     <item quantity="other">@string/_product_deleted_n_product_other</item>
   </plurals>
+
+  <!-- About fragment. -->
+  <string name="about">Tentang</string>
+  <string name="about_info">Info</string>
+  <string name="about_info_description"><![CDATA[Versi %s<br>Diperbarui pada %s]]></string>
+  <string name="about_license">Lisensi</string>
+  <string name="about_license_description">Ledger adalah perangkat lunak sumber terbuka dan
+    didistribusikan di bawah ketentuan <a href="https://www.apache.org/licenses/LICENSE-2.0">Lisensi Apache, Versi 2.0</a>.
+    \n\nHak Cipta 2024 Robi
+  </string>
+  <string name="about_thirdPartyLicenses">Lisensi pihak ketiga</string>
+  <string name="about_thirdPartyLicenses_description">Ledger juga menggunakan pustaka sumber terbuka.
+    <a href="licenses">Pelajari lebih lanjut tentang lisensinya</a>.
+  </string>
+  <string name="about_viewSourceCode">Lihat kode sumber</string>
+
+  <!-- Third party licenses fragment. -->
+  <string name="thirdPartyLicense">Lisensi pihak ketiga</string>
 </resources>
