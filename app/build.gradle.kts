@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import com.android.build.gradle.internal.tasks.factory.dependsOn
 import java.util.Properties
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
@@ -177,7 +176,7 @@ tasks.register<Exec>("downloadD3Js") {
   commandLine("curl", url, "-o", file.absolutePath)
 }
 
-tasks.named("preBuild").dependsOn("downloadD3Js")
+tasks.named("preBuild") { dependsOn("downloadD3Js") }
 
 tasks.register<Exec>("setupPythonEnvironment") {
   val python: String =
