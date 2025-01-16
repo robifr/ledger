@@ -1,7 +1,6 @@
-<h1>
-  &nbsp;&nbsp;<img src="./docs/icon_app_raw.svg" alt="App icon" width="30"/>&nbsp;&nbsp;
-  <sup>Ledger for Android</sup>
-</h1>
+<img src="./docs/icon_app_raw.svg" alt="App icon" width="50"/>
+
+# Ledger for Android
 
 [![build](https://github.com/robifr/ledger/actions/workflows/build.yaml/badge.svg)](https://github.com/robifr/ledger/actions/workflows/build.yaml)
 [![codecov](https://codecov.io/github/robifr/ledger/graph/badge.svg)](https://codecov.io/github/robifr/ledger)
@@ -25,7 +24,7 @@ reliable performance even without an internet connection.
   <div id="user-content-toc">
     <ul>
       <li>
-        <a href="#----ledger-for-android">1. Overview</a>
+        <a href="#ledger-for-android">1. Overview</a>
         <ul>
           <li><a href="#screenshots">1.1. Screenshots</a></li>
           <li><a href="#features">1.2. Features</a></li>
