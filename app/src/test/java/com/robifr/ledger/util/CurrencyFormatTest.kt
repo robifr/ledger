@@ -43,7 +43,8 @@ class CurrencyFormatTest {
           arrayOf(_france, "10\u202F000,5\u00A0€"),
           arrayOf(_german, "10.000,5\u00A0€"),
           arrayOf(_indonesia, "Rp10.000,5"),
-          arrayOf(_japan, "￥10,000.5"))
+          // Japanese Yen doesn't have fractional values.
+          arrayOf(_japan, "￥10,000"))
 
   @ParameterizedTest
   @MethodSource("_format currency cases")
@@ -52,15 +53,6 @@ class CurrencyFormatTest {
         formattedAmount,
         CurrencyFormat.format(_amount, languageTag),
         "Correctly format amount with locale ${languageTag}")
-  }
-
-  @ParameterizedTest
-  @MethodSource("_format currency cases")
-  fun `parse currency with valid argument`(languageTag: String, formattedAmount: String) {
-    assertEquals(
-        _amount,
-        CurrencyFormat.parse(formattedAmount, languageTag),
-        "Correctly parse amount with locale ${languageTag}")
   }
 
   private fun `_format currency unit with different digits cases`(): Array<Array<Any>> =
@@ -109,6 +101,28 @@ class CurrencyFormatTest {
         formattedAmount,
         CurrencyFormat.formatWithUnit(context, amount, _us),
         "Correctly format amount with different digits")
+  }
+
+  private fun `_parse currency with valid argument cases`(): Array<Array<Any>> =
+      arrayOf(
+          arrayOf(_us, "$10,000.5", _amount),
+          arrayOf(_uk, "£10,000.5", _amount),
+          arrayOf(_france, "10\u202F000,5\u00A0€", _amount),
+          arrayOf(_german, "10.000,5\u00A0€", _amount),
+          arrayOf(_indonesia, "Rp10.000,5", _amount),
+          arrayOf(_japan, "￥10,000", 10_000.toBigDecimal()))
+
+  @ParameterizedTest
+  @MethodSource("_parse currency with valid argument cases")
+  fun `parse currency with valid argument`(
+      languageTag: String,
+      formattedAmount: String,
+      parsedAmount: BigDecimal
+  ) {
+    assertEquals(
+        parsedAmount,
+        CurrencyFormat.parse(formattedAmount, languageTag),
+        "Correctly parse amount with locale ${languageTag}")
   }
 
   private fun `_parse currency cases`(): Array<Array<Any>> =

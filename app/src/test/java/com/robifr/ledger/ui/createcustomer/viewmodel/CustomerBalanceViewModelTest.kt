@@ -16,6 +16,8 @@
 
 package com.robifr.ledger.ui.createcustomer.viewmodel
 
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.robifr.ledger.InstantTaskExecutorExtension
 import com.robifr.ledger.MainCoroutineExtension
 import io.mockk.clearAllMocks
@@ -39,6 +41,7 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
+    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-us"))
     _createCustomerViewModel = CreateCustomerViewModel(_dispatcher, mockk())
     _viewModel = _createCustomerViewModel.balanceView
   }

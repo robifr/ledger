@@ -28,20 +28,18 @@ import java.util.Locale
 import kotlin.math.max
 
 object CurrencyFormat {
-  const val MINIMUM_FRACTION_DIGITS: Int = 0
-  const val MAXIMUM_FRACTION_DIGITS: Int = 5
-
   /** @return Formatted amount into local specific currency. */
   fun format(
       amount: BigDecimal,
       languageTag: String,
-      symbol: String = symbol(languageTag)
+      symbol: String = symbol(languageTag),
+      fractionDigits: Int = decimalFractionDigits(languageTag)
   ): String =
       (NumberFormat.getCurrencyInstance(Locale.forLanguageTag(languageTag)) as DecimalFormat)
           .apply {
             roundingMode = RoundingMode.DOWN
-            minimumFractionDigits = MINIMUM_FRACTION_DIGITS
-            maximumFractionDigits = MAXIMUM_FRACTION_DIGITS
+            minimumFractionDigits = 0
+            maximumFractionDigits = fractionDigits
             // Directly modifying `currencySymbol` may not work due to immutability.
             decimalFormatSymbols = decimalFormatSymbols.apply { currencySymbol = symbol }
           }
@@ -55,7 +53,8 @@ object CurrencyFormat {
       context: Context,
       amount: BigDecimal,
       languageTag: String,
-      symbol: String = symbol(languageTag)
+      symbol: String = symbol(languageTag),
+      fractionDigits: Int = decimalFractionDigits(languageTag)
   ): String {
     val thousand: BigDecimal = 1000.toBigDecimal()
     val million: BigDecimal = 1_000_000.toBigDecimal()
@@ -66,22 +65,38 @@ object CurrencyFormat {
     val negativePrefix: String = if (amount.compareTo(0.toBigDecimal()) < 0) "-" else ""
     val positiveAmount: BigDecimal = amount.abs()
     return if (positiveAmount.compareTo(thousand) < 0) {
-      negativePrefix + format(positiveAmount, languageTag, symbol)
+      negativePrefix + format(positiveAmount, languageTag, symbol, fractionDigits)
     } else if (positiveAmount.compareTo(million) < 0) {
       negativePrefix +
-          format(positiveAmount.divide(thousand, 1, RoundingMode.DOWN), languageTag, symbol) +
+          format(
+              positiveAmount.divide(thousand, 1, RoundingMode.DOWN),
+              languageTag,
+              symbol,
+              fractionDigits) +
           context.getString(R.string.symbol_thousand)
     } else if (positiveAmount.compareTo(billion) < 0) {
       negativePrefix +
-          format(positiveAmount.divide(million, 1, RoundingMode.DOWN), languageTag, symbol) +
+          format(
+              positiveAmount.divide(million, 1, RoundingMode.DOWN),
+              languageTag,
+              symbol,
+              fractionDigits) +
           context.getString(R.string.symbol_million)
     } else if (positiveAmount.compareTo(trillion) < 0) {
       negativePrefix +
-          format(positiveAmount.divide(billion, 1, RoundingMode.DOWN), languageTag, symbol) +
+          format(
+              positiveAmount.divide(billion, 1, RoundingMode.DOWN),
+              languageTag,
+              symbol,
+              fractionDigits) +
           context.getString(R.string.symbol_billion)
     } else {
       negativePrefix +
-          format(positiveAmount.divide(trillion, 1, RoundingMode.DOWN), languageTag, symbol) +
+          format(
+              positiveAmount.divide(trillion, 1, RoundingMode.DOWN),
+              languageTag,
+              symbol,
+              fractionDigits) +
           context.getString(R.string.symbol_trillion)
     }
   }
@@ -101,7 +116,11 @@ object CurrencyFormat {
     return (format.parse(amountToParse) as BigDecimal).stripTrailingZeros()
   }
 
-  fun isValidToParseAndFormat(amount: String, languageTag: String): Boolean {
+  fun isValidToParseAndFormat(
+      amount: String,
+      languageTag: String,
+      fractionDigits: Int = decimalFractionDigits(languageTag)
+  ): Boolean {
     val decimalSeparator: String = decimalSeparator(languageTag)
     // Replace every character except those that can be edited by the user
     // (digits, negative sign, and decimal separator).
@@ -117,7 +136,7 @@ object CurrencyFormat {
         """([^\-]+)(?=-)""".toRegex().findAll(amount).count() > 0 ||
         // Found the digit occurrence in decimal place is more than max allowed.
         ("""(?<=${Regex.escape(decimalSeparator)})\d+""".toRegex().find(amount)?.value?.length
-            ?: 0) > MAXIMUM_FRACTION_DIGITS)
+            ?: 0) > fractionDigits)
   }
 
   fun symbol(languageTag: String): String =
@@ -133,6 +152,11 @@ object CurrencyFormat {
 
   fun decimalSeparator(languageTag: String): String =
       DecimalFormatSymbols(Locale.forLanguageTag(languageTag)).decimalSeparator.toString()
+
+  fun decimalFractionDigits(languageTag: String): Int =
+      NumberFormat.getCurrencyInstance(Locale.forLanguageTag(languageTag))
+          .currency
+          ?.defaultFractionDigits ?: -1
 
   fun countDecimalPlace(amount: BigDecimal): Int =
       max(0.0, amount.stripTrailingZeros().scale().toDouble()).toInt()
