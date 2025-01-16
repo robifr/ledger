@@ -5,7 +5,7 @@
 [![build](https://github.com/robifr/ledger/actions/workflows/build.yaml/badge.svg)](https://github.com/robifr/ledger/actions/workflows/build.yaml)
 [![codecov](https://codecov.io/github/robifr/ledger/graph/badge.svg)](https://codecov.io/github/robifr/ledger)
 
-Ledger is an Android app designed to streamline sales management by handling orders, customer
+Ledger is an Android app designed to streamline sales order management by handling orders, customer
 deposits, and debts automatically. This reduces manual work and errors, ensuring smooth and accurate
 bookkeeping.
 
