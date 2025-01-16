@@ -42,7 +42,7 @@
         android:id="@+id/amount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:imeOptions="actionSend"
+        android:imeOptions="actionDone"
         android:inputType="number"
         android:paddingStart="0dp"
         android:paddingEnd="0dp"
