@@ -28,9 +28,9 @@ import kotlin.math.min
 open class CurrencyTextWatcher(
     view: EditText,
     protected val _maximumAmount: BigDecimal = Int.MAX_VALUE.toBigDecimal(),
-    protected val _isSymbolHidden: Boolean = false
+    protected val _isSymbolHidden: Boolean = false,
+    protected val _fractionDigits: Int? = null,
 ) : EditTextWatcher(view) {
-
   override fun afterTextChanged(editable: Editable) {
     // WARNING! Never ever mess with this method unless you know what you do.
     //    This method is the center of all edge cases demon.
@@ -41,16 +41,18 @@ open class CurrencyTextWatcher(
     val languageTag: String = AppCompatDelegate.getApplicationLocales().toLanguageTags()
     val decimalSeparator: String = CurrencyFormat.decimalSeparator(languageTag)
     val symbol: String = if (_isSymbolHidden) "" else CurrencyFormat.symbol(languageTag)
+    val fractionDigits: Int = _fractionDigits ?: CurrencyFormat.decimalFractionDigits(languageTag)
     val parsedAmount: BigDecimal =
         try {
-          CurrencyFormat.parse(newText(), languageTag)
+          CurrencyFormat.parse(newText(), languageTag, fractionDigits)
         } catch (_: ParseException) {
           0.toBigDecimal()
         }
-    val formattedText: String = CurrencyFormat.format(parsedAmount, languageTag, symbol)
+    val formattedText: String =
+        CurrencyFormat.format(parsedAmount, languageTag, symbol, fractionDigits)
 
     // Handle any invalid input.
-    if (!CurrencyFormat.isValidToParseAndFormat(newText(), languageTag) ||
+    if (!CurrencyFormat.isValidToParseAndFormat(newText(), languageTag, fractionDigits) ||
         // Or when the parsed amount is more than maximum allowed.
         parsedAmount.compareTo(_maximumAmount) >= 0) {
       // The entire text should be cleared when deleting "1" in "$1|" (the bar is cursor).

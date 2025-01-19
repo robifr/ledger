@@ -73,74 +73,74 @@ class ModelGenerator(private val _faker: Faker = Faker()) {
           add(
               CustomerModel(
                   name = _faker.name().fullName(),
-                  balance = _faker.number().randomDouble(0, 0, 300).toLong()))
+                  balance = _faker.number().randomDouble(0, 0, 30_000).toLong()))
         }
       }
 
   fun generateWeightedProducts(): List<WeightedProductModel> =
       listOf(
           WeightedProductModel(
-              product = ProductModel(name = "Regular Clean & Fold (lb)", price = 2L),
+              product = ProductModel(name = "Regular Clean & Fold (lb)", price = 200L),
               weight = 20,
               quantityRange = 10 to 30,
-              quantityDecimalCount = 1),
+              quantityDecimalCount = 2),
           WeightedProductModel(
-              product = ProductModel(name = "Express Clean & Fold (lb)", price = 4L),
+              product = ProductModel(name = "Express Clean & Fold (lb)", price = 400L),
               weight = 15,
               quantityRange = 5 to 20,
-              quantityDecimalCount = 1),
+              quantityDecimalCount = 2),
           WeightedProductModel(
-              product = ProductModel(name = "Blouse (piece)", price = 6L),
+              product = ProductModel(name = "Blouse (piece)", price = 600L),
               weight = 12,
               quantityRange = 1 to 5,
               quantityDecimalCount = 0),
           WeightedProductModel(
-              product = ProductModel(name = "Sweater (piece)", price = 8L),
+              product = ProductModel(name = "Sweater (piece)", price = 800L),
               weight = 8,
               quantityRange = 1 to 4,
               quantityDecimalCount = 0),
           WeightedProductModel(
-              product = ProductModel(name = "Jeans (piece)", price = 9L),
+              product = ProductModel(name = "Jeans (piece)", price = 900L),
               weight = 10,
               quantityRange = 1 to 5,
               quantityDecimalCount = 0),
           WeightedProductModel(
-              product = ProductModel(name = "Dress (piece)", price = 12L),
+              product = ProductModel(name = "Dress (piece)", price = 1200L),
               weight = 7,
               quantityRange = 1 to 3,
               quantityDecimalCount = 0),
           WeightedProductModel(
-              product = ProductModel(name = "Light Jacket (piece)", price = 12L),
+              product = ProductModel(name = "Light Jacket (piece)", price = 1200L),
               weight = 6,
               quantityRange = 1 to 3,
               quantityDecimalCount = 0),
           WeightedProductModel(
-              product = ProductModel(name = "Coat (piece)", price = 15L),
+              product = ProductModel(name = "Coat (piece)", price = 1500L),
               weight = 5,
               quantityRange = 1 to 2,
               quantityDecimalCount = 0),
           WeightedProductModel(
-              product = ProductModel(name = "Suit (piece)", price = 18L),
+              product = ProductModel(name = "Suit (piece)", price = 1800L),
               weight = 4,
               quantityRange = 1 to 2,
               quantityDecimalCount = 0),
           WeightedProductModel(
-              product = ProductModel(name = "Curtains (piece)", price = 20L),
+              product = ProductModel(name = "Curtains (piece)", price = 2000L),
               weight = 6,
               quantityRange = 1 to 2,
               quantityDecimalCount = 0),
           WeightedProductModel(
-              product = ProductModel(name = "Bed Sheets (piece)", price = 20L),
+              product = ProductModel(name = "Bed Sheets (piece)", price = 2000L),
               weight = 8,
               quantityRange = 1 to 3,
               quantityDecimalCount = 0),
           WeightedProductModel(
-              product = ProductModel(name = "Rug (piece)", price = 25L),
+              product = ProductModel(name = "Rug (piece)", price = 2500L),
               weight = 3,
               quantityRange = 1 to 2,
               quantityDecimalCount = 0),
           WeightedProductModel(
-              product = ProductModel(name = "Leather Jacket (piece)", price = 35L),
+              product = ProductModel(name = "Leather Jacket (piece)", price = 3500L),
               weight = 3,
               quantityRange = 1 to 2,
               quantityDecimalCount = 0))

@@ -64,9 +64,9 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   @Test
   fun `on state changed`() {
     _viewModel.onMinPriceTextChanged("$0")
-    _viewModel.onMaxPriceTextChanged("$100")
+    _viewModel.onMaxPriceTextChanged("$1.00")
     assertEquals(
-        ProductFilterState(formattedMinPrice = "$0", formattedMaxPrice = "$100"),
+        ProductFilterState(formattedMinPrice = "$0", formattedMaxPrice = "$1.00"),
         _viewModel.uiState.safeValue,
         "Preserve all values except for the changed field")
   }
@@ -74,8 +74,8 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   @Test
   fun `on dialog closed with sorted products`() {
     _productViewModel.onSortMethodChanged(ProductSortMethod(ProductSortMethod.SortBy.PRICE, false))
-    _viewModel.onMinPriceTextChanged("$200")
-    _viewModel.onMaxPriceTextChanged("$300")
+    _viewModel.onMinPriceTextChanged("$2.00")
+    _viewModel.onMaxPriceTextChanged("$3.00")
 
     _viewModel.onDialogClosed()
     assertEquals(
@@ -87,8 +87,8 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   private fun `_on dialog closed with unbounded price range cases`(): Array<Array<Any>> =
       arrayOf(
           arrayOf("$0", "$0", "", "", listOf(_firstProduct, _secondProduct, _thirdProduct)),
-          arrayOf("$0", "$0", "$200", "", listOf(_secondProduct, _thirdProduct)),
-          arrayOf("$0", "$0", "", "$200", listOf(_firstProduct, _secondProduct)))
+          arrayOf("$0", "$0", "$2.00", "", listOf(_secondProduct, _thirdProduct)),
+          arrayOf("$0", "$0", "", "$2.00", listOf(_firstProduct, _secondProduct)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with unbounded price range cases")
@@ -117,9 +117,9 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
       Array<Array<Any>> =
       arrayOf(
           // `_firstProduct` was previously excluded.
-          arrayOf("$200", "", "", "", listOf(_firstProduct, _secondProduct, _thirdProduct)),
+          arrayOf("$2.00", "", "", "", listOf(_firstProduct, _secondProduct, _thirdProduct)),
           // `_firstProduct` was previously excluded, but then exclude `_thirdProduct`.
-          arrayOf("$200", "", "", "$200", listOf(_firstProduct, _secondProduct)))
+          arrayOf("$2.00", "", "", "$2.00", listOf(_firstProduct, _secondProduct)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with product excluded from previous filter cases")

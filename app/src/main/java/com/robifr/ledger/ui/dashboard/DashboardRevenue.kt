@@ -99,12 +99,14 @@ class DashboardRevenue(private val _fragment: DashboardFragment) : View.OnClickL
 
   fun setTotalProjectedIncome(amount: BigDecimal) {
     _fragment.fragmentBinding.revenue.projectedIncomeCard.amount.text =
-        CurrencyFormat.format(amount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        CurrencyFormat.formatCents(
+            amount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
   }
 
   fun setTotalReceivedIncome(amount: BigDecimal) {
     _fragment.fragmentBinding.revenue.receivedIncomeCard.amount.text =
-        CurrencyFormat.format(amount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        CurrencyFormat.formatCents(
+            amount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
   }
 
   fun displayRevenueChart(model: RevenueChartModel) {

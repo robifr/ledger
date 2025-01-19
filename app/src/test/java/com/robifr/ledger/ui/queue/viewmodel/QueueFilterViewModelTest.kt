@@ -132,7 +132,7 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onDateChanged(QueueDate(QueueDate.Range.TODAY))
     _viewModel.onStatusChanged(setOf(QueueModel.Status.UNPAID))
     _viewModel.onMinTotalPriceTextChanged("$0")
-    _viewModel.onMaxTotalPriceTextChanged("$100")
+    _viewModel.onMaxTotalPriceTextChanged("$1.00")
     assertEquals(
         QueueFilterState(
             isNullCustomerShown = false,
@@ -140,7 +140,7 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
             date = QueueDate(QueueDate.Range.TODAY),
             status = setOf(QueueModel.Status.UNPAID),
             formattedMinTotalPrice = "$0",
-            formattedMaxTotalPrice = "$100"),
+            formattedMaxTotalPrice = "$1.00"),
         _viewModel.uiState.safeValue,
         "Preserve all values except for the changed field")
   }
@@ -162,8 +162,8 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
       Array<Array<Any>> =
       arrayOf(
           arrayOf("$0", "$0", "", "", listOf(_firstQueue, _secondQueue, _thirdQueue)),
-          arrayOf("$0", "$0", "$200", "", listOf(_secondQueue, _thirdQueue)),
-          arrayOf("$0", "$0", "", "$200", listOf(_firstQueue, _secondQueue)))
+          arrayOf("$0", "$0", "$2.00", "", listOf(_secondQueue, _thirdQueue)),
+          arrayOf("$0", "$0", "", "$2.00", listOf(_firstQueue, _secondQueue)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with unbounded grand total price range cases")
@@ -192,9 +192,9 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
       Array<Array<Any>> =
       arrayOf(
           // `_firstQueue` was previously excluded.
-          arrayOf("$200", "", "", "", listOf(_firstQueue, _secondQueue, _thirdQueue)),
+          arrayOf("$2.00", "", "", "", listOf(_firstQueue, _secondQueue, _thirdQueue)),
           // `_firstQueue` was previously excluded, but then exclude `_thirdQueue`.
-          arrayOf("$200", "", "", "$200", listOf(_firstQueue, _secondQueue)))
+          arrayOf("$2.00", "", "", "$2.00", listOf(_firstQueue, _secondQueue)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with queue excluded from previous filter cases")

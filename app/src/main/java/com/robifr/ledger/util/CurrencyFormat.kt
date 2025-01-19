@@ -28,7 +28,16 @@ import java.util.Locale
 import kotlin.math.max
 
 object CurrencyFormat {
-  /** @return Formatted amount into local specific currency. */
+  /**
+   * Formats the given amount into a locale-specific currency string. Use [formatCents] to format
+   * cents amount to its biggest currency unit.
+   *
+   * @param amount The amount to format.
+   * @param languageTag The IETF BCP 47 language tag for locale formatting.
+   * @param symbol The currency symbol to use.
+   * @param fractionDigits The number of fraction digits to display.
+   * @return A formatted currency string.
+   */
   fun format(
       amount: BigDecimal,
       languageTag: String,
@@ -46,8 +55,37 @@ object CurrencyFormat {
           .format(amount)
 
   /**
-   * @return Formatted amount into local specific currency with an appropriate suffix (such as K for
-   *   thousands or M for millions) appended at the end of the string.
+   * Formats the given cents amount into a biggest locale-specific currency string. e.g. `1234`
+   * becomes `"$12.34"`.
+   *
+   * @param amount The amount to format.
+   * @param languageTag The IETF BCP 47 language tag for locale formatting.
+   * @param symbol The currency symbol to use.
+   * @return A formatted currency string.
+   */
+  fun formatCents(
+      amount: BigDecimal,
+      languageTag: String,
+      symbol: String = symbol(languageTag)
+  ): String {
+    val fractionDigits: Int = decimalFractionDigits(languageTag)
+    return format(
+        amount.divide(10.toBigDecimal().pow(fractionDigits), fractionDigits, RoundingMode.DOWN),
+        languageTag,
+        symbol,
+        fractionDigits)
+  }
+
+  /**
+   * Formats the given amount into a locale-specific currency string with an appropriate suffix
+   * appended at the end of the string. e.g. "K" for thousands or "M" for millions).
+   *
+   * @param context The context for accessing resources or configuration.
+   * @param amount The amount to format.
+   * @param languageTag The IETF BCP 47 language tag for locale formatting.
+   * @param symbol The currency symbol to use.
+   * @param fractionDigits The number of fraction digits to display.
+   * @return A formatted currency string.
    */
   fun formatWithUnit(
       context: Context,
@@ -101,9 +139,22 @@ object CurrencyFormat {
     }
   }
 
-  /** @return Parsed amount from local specific currency. */
+  /**
+   * Parses a locale-specific currency string into a numeric amount. Use [parseToCents] to parse
+   * amount as cents.
+   *
+   * @param amount The currency string to parse.
+   * @param languageTag The IETF BCP 47 language tag for locale parsing.
+   * @param fractionDigits The number of fraction digits to display.
+   * @return The parsed amount as a [BigDecimal].
+   * @throws ParseException If the input string can't be parsed.
+   */
   @Throws(ParseException::class)
-  fun parse(amount: String, languageTag: String): BigDecimal {
+  fun parse(
+      amount: String,
+      languageTag: String,
+      fractionDigits: Int = decimalFractionDigits(languageTag)
+  ): BigDecimal {
     val format: DecimalFormat =
         (NumberFormat.getNumberInstance(Locale.forLanguageTag(languageTag)) as DecimalFormat)
             .apply { isParseBigDecimal = true }
@@ -112,9 +163,24 @@ object CurrencyFormat {
     val amountToParse: String =
         amount
             .replace("""[^\d\-${Regex.escape(decimalSeparator(languageTag))}]""".toRegex(), "")
-            .let { if (!isValidToParseAndFormat(amount, languageTag)) "0" else it }
+            .let { if (!isValidToParseAndFormat(amount, languageTag, fractionDigits)) "0" else it }
     return (format.parse(amountToParse) as BigDecimal).stripTrailingZeros()
   }
+
+  /**
+   * Parses a locale-specific currency string into a numeric cents amount. e.g. `"$123"` becomes
+   * `12300`.
+   *
+   * @param amount The currency string to parse.
+   * @param languageTag The IETF BCP 47 language tag for locale parsing.
+   * @return The parsed amount as a [BigDecimal].
+   * @throws ParseException If the input string can't be parsed.
+   */
+  @Throws(ParseException::class)
+  fun parseToCents(amount: String, languageTag: String): BigDecimal =
+      parse(amount, languageTag, decimalFractionDigits(languageTag))
+          .multiply(10.toBigDecimal().pow(decimalFractionDigits(languageTag)))
+          .stripTrailingZeros()
 
   fun isValidToParseAndFormat(
       amount: String,

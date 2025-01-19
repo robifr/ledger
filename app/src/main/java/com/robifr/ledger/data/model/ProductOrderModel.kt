@@ -36,9 +36,9 @@ import kotlinx.parcelize.Parcelize
  * @property productName Referenced product name if [productId] exists from [ProductModel.name].
  * @property productPrice Referenced product price if [productId] exists from [ProductModel.price].
  * @property quantity Product order quantity.
- * @property discount Product order discount.
- * @property totalPrice Product order total price. Use [ProductOrderModel.calculateTotalPrice] to do
- *   the calculation.
+ * @property discount Product order discount in the lowest currency unit.
+ * @property totalPrice Product order total price in the lowest currency unit. Use
+ *   [ProductOrderModel.calculateTotalPrice] to do the calculation.
  * @see Model.id
  */
 @Parcelize

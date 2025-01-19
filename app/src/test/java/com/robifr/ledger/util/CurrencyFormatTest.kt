@@ -34,25 +34,42 @@ class CurrencyFormatTest {
   private val _german = "de-DE"
   private val _indonesia = "id-ID"
   private val _japan = "ja-JP"
-  private val _amount: BigDecimal = 10_000.50.toBigDecimal()
 
   private fun `_format currency cases`(): Array<Array<Any>> =
       arrayOf(
-          arrayOf(_us, "$10,000.5"),
-          arrayOf(_uk, "£10,000.5"),
-          arrayOf(_france, "10\u202F000,5\u00A0€"),
-          arrayOf(_german, "10.000,5\u00A0€"),
-          arrayOf(_indonesia, "Rp10.000,5"),
+          arrayOf(_us, 10_000.50.toBigDecimal(), "$10,000.5"),
+          arrayOf(_uk, 10_000.50.toBigDecimal(), "£10,000.5"),
+          arrayOf(_france, 10_000.50.toBigDecimal(), "10\u202F000,5\u00A0€"),
+          arrayOf(_german, 10_000.50.toBigDecimal(), "10.000,5\u00A0€"),
+          arrayOf(_indonesia, 10_000.50.toBigDecimal(), "Rp10.000,5"),
           // Japanese Yen doesn't have fractional values.
-          arrayOf(_japan, "￥10,000"))
+          arrayOf(_japan, 10_000.50.toBigDecimal(), "￥10,000"))
 
   @ParameterizedTest
   @MethodSource("_format currency cases")
-  fun `format currency`(languageTag: String, formattedAmount: String) {
+  fun `format currency`(languageTag: String, amount: BigDecimal, formattedAmount: String) {
     assertEquals(
         formattedAmount,
-        CurrencyFormat.format(_amount, languageTag),
+        CurrencyFormat.format(amount, languageTag),
         "Correctly format amount with locale ${languageTag}")
+  }
+
+  private fun `_format cents currency cases`(): Array<Array<Any>> =
+      arrayOf(
+          arrayOf(_us, 1_000_050, "$10,000.5"),
+          arrayOf(_uk, 1_000_050, "£10,000.5"),
+          arrayOf(_france, 1_000_050, "10\u202F000,5\u00A0€"),
+          arrayOf(_german, 1_000_050, "10.000,5\u00A0€"),
+          arrayOf(_indonesia, 1_000_050, "Rp10.000,5"),
+          arrayOf(_japan, 1_000_050, "￥1,000,050"))
+
+  @ParameterizedTest
+  @MethodSource("_format cents currency cases")
+  fun `format cents currency`(languageTag: String, amount: Int, formattedAmount: String) {
+    assertEquals(
+        formattedAmount,
+        CurrencyFormat.formatCents(amount.toBigDecimal(), languageTag),
+        "Correctly format cents amount with locale ${languageTag}")
   }
 
   private fun `_format currency unit with different digits cases`(): Array<Array<Any>> =
@@ -103,24 +120,24 @@ class CurrencyFormatTest {
         "Correctly format amount with different digits")
   }
 
-  private fun `_parse currency with valid argument cases`(): Array<Array<Any>> =
+  private fun `_parse currency with formatted amount cases`(): Array<Array<Any>> =
       arrayOf(
-          arrayOf(_us, "$10,000.5", _amount),
-          arrayOf(_uk, "£10,000.5", _amount),
-          arrayOf(_france, "10\u202F000,5\u00A0€", _amount),
-          arrayOf(_german, "10.000,5\u00A0€", _amount),
-          arrayOf(_indonesia, "Rp10.000,5", _amount),
+          arrayOf(_us, "$10,000.5", 10_000.50.toBigDecimal()),
+          arrayOf(_uk, "£10,000.5", 10_000.50.toBigDecimal()),
+          arrayOf(_france, "10\u202F000,5\u00A0€", 10_000.50.toBigDecimal()),
+          arrayOf(_german, "10.000,5\u00A0€", 10_000.50.toBigDecimal()),
+          arrayOf(_indonesia, "Rp10.000,5", 10_000.50.toBigDecimal()),
           arrayOf(_japan, "￥10,000", 10_000.toBigDecimal()))
 
   @ParameterizedTest
-  @MethodSource("_parse currency with valid argument cases")
-  fun `parse currency with valid argument`(
+  @MethodSource("_parse currency with formatted amount cases")
+  fun `parse currency with formatted amount`(
       languageTag: String,
       formattedAmount: String,
       parsedAmount: BigDecimal
   ) {
     assertEquals(
-        parsedAmount,
+        parsedAmount.stripTrailingZeros(),
         CurrencyFormat.parse(formattedAmount, languageTag),
         "Correctly parse amount with locale ${languageTag}")
   }
@@ -141,6 +158,28 @@ class CurrencyFormatTest {
         parsedAmount,
         CurrencyFormat.parse(amount, languageTag),
         "Fallback to zero for anything that can't be parsed")
+  }
+
+  private fun `_parse currency to cents cases`(): Array<Array<Any>> =
+      arrayOf(
+          arrayOf(_us, "$10,000.5", 1_000_050.toBigDecimal()),
+          arrayOf(_uk, "£10,000.5", 1_000_050.toBigDecimal()),
+          arrayOf(_france, "10\u202F000,5\u00A0€", 1_000_050.toBigDecimal()),
+          arrayOf(_german, "10.000,5\u00A0€", 1_000_050.toBigDecimal()),
+          arrayOf(_indonesia, "Rp10.000,5", 1_000_050.toBigDecimal()),
+          arrayOf(_japan, "￥10,000", 10_000.toBigDecimal()))
+
+  @ParameterizedTest
+  @MethodSource("_parse currency to cents cases")
+  fun `parse currency to cents`(
+      languageTag: String,
+      formattedAmount: String,
+      parsedAmount: BigDecimal
+  ) {
+    assertEquals(
+        parsedAmount.stripTrailingZeros(),
+        CurrencyFormat.parseToCents(formattedAmount, languageTag),
+        "Correctly parse amount to cents with locale ${languageTag}")
   }
 
   private fun `_is valid to parse and format cases`(): Array<Array<Any>> =

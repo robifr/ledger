@@ -24,7 +24,8 @@ import java.math.BigDecimal
 class CreateCustomerDebt(private val _fragment: CreateCustomerFragment) {
   fun setInputtedDebt(debt: BigDecimal, @ColorRes textColor: Int) {
     _fragment.fragmentBinding.debt.setText(
-        CurrencyFormat.format(debt, AppCompatDelegate.getApplicationLocales().toLanguageTags()))
+        CurrencyFormat.formatCents(
+            debt, AppCompatDelegate.getApplicationLocales().toLanguageTags()))
     _fragment.fragmentBinding.debt.setTextColor(_fragment.requireContext().getColor(textColor))
   }
 }

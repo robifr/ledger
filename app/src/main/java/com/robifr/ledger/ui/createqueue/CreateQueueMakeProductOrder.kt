@@ -82,7 +82,7 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
         product?.let {
           val productName: String = it.name + "\n"
           val productPrice: String =
-              CurrencyFormat.format(
+              CurrencyFormat.formatCents(
                   it.price.toBigDecimal(),
                   AppCompatDelegate.getApplicationLocales().toLanguageTags())
           SpannableString(productName + productPrice).apply {
@@ -120,7 +120,7 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
 
   fun setInputtedTotalPrice(totalPrice: BigDecimal) {
     _dialogBinding.totalPrice.text =
-        CurrencyFormat.format(
+        CurrencyFormat.formatCents(
             totalPrice, AppCompatDelegate.getApplicationLocales().toLanguageTags())
   }
 
@@ -141,7 +141,10 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
 
 private class QuantityTextWatcher(private val _fragment: CreateQueueFragment, view: EditText) :
     CurrencyTextWatcher(
-        view = view, _maximumAmount = 10_000.toBigDecimal(), _isSymbolHidden = true) {
+        view = view,
+        _maximumAmount = 10_000.toBigDecimal(),
+        _isSymbolHidden = true,
+        _fractionDigits = 2) {
   override fun afterTextChanged(editable: Editable) {
     super.afterTextChanged(editable)
     _fragment.createQueueViewModel.makeProductOrderView.onQuantityTextChanged(newText())

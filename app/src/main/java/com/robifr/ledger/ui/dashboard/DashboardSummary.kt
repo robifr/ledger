@@ -205,7 +205,10 @@ class DashboardSummary(private val _fragment: DashboardFragment) : View.OnClickL
   fun setTotalProductsSold(amount: BigDecimal) {
     _fragment.fragmentBinding.summary.productsSoldCard.amount.text =
         CurrencyFormat.format(
-            amount, AppCompatDelegate.getApplicationLocales().toLanguageTags(), "")
+            amount,
+            AppCompatDelegate.getApplicationLocales().toLanguageTags(),
+            "",
+            CurrencyFormat.countDecimalPlace(amount))
   }
 
   /** @param products [DashboardSummaryState.mostProductsSold] */
@@ -229,7 +232,8 @@ class DashboardSummary(private val _fragment: DashboardFragment) : View.OnClickL
                             CurrencyFormat.format(
                                 amountSold,
                                 AppCompatDelegate.getApplicationLocales().toLanguageTags(),
-                                "")),
+                                "",
+                                CurrencyFormat.countDecimalPlace(amountSold))),
                         HtmlCompat.FROM_HTML_MODE_LEGACY)
                 image.shapeableImage.shapeAppearanceModel =
                     ShapeAppearanceModel.builder(

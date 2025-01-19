@@ -115,7 +115,7 @@ class CustomerCardWideComponent(
 
   private fun _setBalance(balance: Long, isNormalCard: Boolean) {
     val formattedBalance: String =
-        CurrencyFormat.format(
+        CurrencyFormat.formatCents(
             balance.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
     if (isNormalCard) _binding.normalCard.balance.text = formattedBalance
     else _binding.expandedCard.balance.text = formattedBalance
@@ -123,7 +123,7 @@ class CustomerCardWideComponent(
 
   private fun _setDebt(debt: BigDecimal, isNormalCard: Boolean) {
     val debtText: String =
-        CurrencyFormat.format(debt, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        CurrencyFormat.formatCents(debt, AppCompatDelegate.getApplicationLocales().toLanguageTags())
     // Negative debt will be shown red.
     val debtTextColor: Int =
         if (debt.compareTo(0.toBigDecimal()) < 0) _context.getColor(R.color.red)

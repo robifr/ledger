@@ -65,12 +65,12 @@ class ProductFilterViewModel(
     _filterer.filters = filters
     onMinPriceTextChanged(
         filters.filteredPrice.first?.let {
-          CurrencyFormat.format(
+          CurrencyFormat.formatCents(
               it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } ?: "")
     onMaxPriceTextChanged(
         filters.filteredPrice.second?.let {
-          CurrencyFormat.format(
+          CurrencyFormat.formatCents(
               it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } ?: "")
     _viewModel.onProductsChanged(_filterer.filter(products))
@@ -82,7 +82,7 @@ class ProductFilterViewModel(
     try {
       if (_uiState.safeValue.formattedMinPrice.isNotBlank()) {
         minPrice =
-            CurrencyFormat.parse(
+            CurrencyFormat.parseToCents(
                     _uiState.safeValue.formattedMinPrice,
                     AppCompatDelegate.getApplicationLocales().toLanguageTags())
                 .toLong()
@@ -93,7 +93,7 @@ class ProductFilterViewModel(
     try {
       if (_uiState.safeValue.formattedMaxPrice.isNotBlank()) {
         maxPrice =
-            CurrencyFormat.parse(
+            CurrencyFormat.parseToCents(
                     _uiState.safeValue.formattedMaxPrice,
                     AppCompatDelegate.getApplicationLocales().toLanguageTags())
                 .toLong()

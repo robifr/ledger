@@ -73,13 +73,13 @@ class CreateQueueProductOrder(private val _fragment: CreateQueueFragment) {
 
   fun setGrandTotalPrice(grandTotalPrice: BigDecimal) {
     _fragment.fragmentBinding.productOrder.grandTotalPrice.text =
-        CurrencyFormat.format(
+        CurrencyFormat.formatCents(
             grandTotalPrice, AppCompatDelegate.getApplicationLocales().toLanguageTags())
   }
 
   fun setTotalDiscount(totalDiscount: BigDecimal) {
     _fragment.fragmentBinding.productOrder.totalDiscount.text =
-        CurrencyFormat.format(
+        CurrencyFormat.formatCents(
             totalDiscount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
   }
 
@@ -92,7 +92,7 @@ class CreateQueueProductOrder(private val _fragment: CreateQueueFragment) {
   fun setTemporalCustomerBalance(balance: Long?, isVisible: Boolean) {
     _fragment.fragmentBinding.productOrder.customerBalance.text =
         balance?.let {
-          CurrencyFormat.format(
+          CurrencyFormat.formatCents(
               it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
         }
     _fragment.fragmentBinding.productOrder.customerBalance.isVisible = isVisible
@@ -107,7 +107,7 @@ class CreateQueueProductOrder(private val _fragment: CreateQueueFragment) {
   fun setTemporalCustomerDebt(debt: BigDecimal?, @ColorRes textColor: Int, isVisible: Boolean) {
     _fragment.fragmentBinding.productOrder.customerDebt.text =
         debt?.let {
-          CurrencyFormat.format(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
         }
     _fragment.fragmentBinding.productOrder.customerDebt.setTextColor(
         _fragment.requireContext().getColor(textColor))

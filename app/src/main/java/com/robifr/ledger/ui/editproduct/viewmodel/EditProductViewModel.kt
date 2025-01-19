@@ -106,7 +106,7 @@ constructor(
               _initialProductToEdit = it
               onNameTextChanged(it.name)
               onPriceTextChanged(
-                  CurrencyFormat.format(
+                  CurrencyFormat.formatCents(
                       it.price.toBigDecimal(),
                       AppCompatDelegate.getApplicationLocales().toLanguageTags()))
             }

@@ -94,11 +94,11 @@ class QueueFilterViewModel(
     onDateChanged(filters.filteredDate)
     onMinTotalPriceTextChanged(
         filters.filteredTotalPrice.first?.let {
-          CurrencyFormat.format(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } ?: "")
     onMaxTotalPriceTextChanged(
         filters.filteredTotalPrice.second?.let {
-          CurrencyFormat.format(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } ?: "")
     _viewModel.onQueuesChanged(_filterer.filter(queues))
   }
@@ -109,7 +109,7 @@ class QueueFilterViewModel(
     try {
       if (_uiState.safeValue.formattedMinTotalPrice.isNotBlank()) {
         minTotalPrice =
-            CurrencyFormat.parse(
+            CurrencyFormat.parseToCents(
                 _uiState.safeValue.formattedMinTotalPrice,
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
       }
@@ -119,7 +119,7 @@ class QueueFilterViewModel(
     try {
       if (_uiState.safeValue.formattedMaxTotalPrice.isNotBlank()) {
         maxTotalPrice =
-            CurrencyFormat.parse(
+            CurrencyFormat.parseToCents(
                 _uiState.safeValue.formattedMaxTotalPrice,
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
       }
