@@ -164,6 +164,6 @@ open class MainActivity :
 private class OnBackPressedHandler(private val _activity: MainActivity) :
     OnBackPressedCallback(true) {
   override fun handleOnBackPressed() {
-    _activity.finish()
+    if (!_activity.findNavController(R.id.fragmentContainer).navigateUp()) _activity.finish()
   }
 }
