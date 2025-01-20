@@ -75,13 +75,6 @@ reliable performance even without an internet connection.
 - Full offline capabilities.
 - Auto-updates with new releases from GitHub.
 
-> [!NOTE]  
-> Although the app supports English and USD, it doesn't handle fractional values (such as cents)
-  for certain fields like customer balances, product prices, and order discounts. Currencies like
-  Indonesian Rupiah or Japanese Yen (which aren't supported yet) don't have this issue, as
-  fractional values aren't commonly used. The problem can be addressed by using the smallest
-  currency unit.
-
 ### Compatibility
 - Minimum SDK: 30 (Android 11)
 - Target SDK: 35 (Android 15)
