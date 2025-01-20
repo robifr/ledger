@@ -40,7 +40,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
-import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationBarView
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.MainActivityBinding
@@ -112,9 +111,6 @@ open class MainActivity :
       view.updatePadding(bottom = windowInsets.bottom)
       WindowInsetsCompat.CONSUMED
     }
-    (supportFragmentManager.findFragmentById(R.id.fragmentContainer) as? NavHostFragment)
-        ?.navController
-        ?.addOnDestinationChangedListener(this)
     onBackPressedDispatcher.addCallback(this, OnBackPressedHandler(this))
     WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -137,6 +133,11 @@ open class MainActivity :
         _settingsViewModel.onCheckForAppUpdate(this, false)
       }
     }
+  }
+
+  override fun onStart() {
+    super.onStart()
+    findNavController(R.id.fragmentContainer).addOnDestinationChangedListener(this)
   }
 
   private fun _onSettingsDialogState(state: SettingsDialogState) {
