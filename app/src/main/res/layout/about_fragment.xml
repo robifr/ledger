@@ -87,6 +87,7 @@
           android:paddingEnd="@dimen/space_medium"
           android:paddingBottom="@dimen/space_medium"
           android:text="@string/about_info_description"
+          android:textColor="?colorOnSurfaceVariant"
           android:textSize="@dimen/text_small"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toBottomOf="@id/infoTitle" />
@@ -111,6 +112,7 @@
           android:paddingEnd="@dimen/space_medium"
           android:paddingBottom="@dimen/space_medium"
           android:text="@string/about_license_description"
+          android:textColor="?colorOnSurfaceVariant"
           android:textSize="@dimen/text_small"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toBottomOf="@id/licenseTitle" />
@@ -136,6 +138,7 @@
           android:paddingEnd="@dimen/space_medium"
           android:paddingBottom="@dimen/space_medium"
           android:text="@string/about_thirdPartyLicenses_description"
+          android:textColor="?colorOnSurfaceVariant"
           android:textSize="@dimen/text_small"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toBottomOf="@id/thirdPartyLicensesTitle" />
@@ -157,6 +160,7 @@
           app:iconGravity="textStart"
           app:iconPadding="@dimen/space_medium"
           app:iconSize="@dimen/icon_large"
+          app:iconTint="?colorOnSecondary"
           app:layout_constraintEnd_toEndOf="parent"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toBottomOf="@+id/thirdPartyLicenses"

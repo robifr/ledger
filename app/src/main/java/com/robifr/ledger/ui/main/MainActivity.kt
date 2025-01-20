@@ -32,7 +32,6 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.graphics.Insets
 import androidx.core.os.LocaleListCompat
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
@@ -116,8 +115,6 @@ open class MainActivity :
         ?.navController
         ?.addOnDestinationChangedListener(this)
     onBackPressedDispatcher.addCallback(this, OnBackPressedHandler(this))
-    WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
-    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
     AppCompatDelegate.setApplicationLocales(
         LocaleListCompat.forLanguageTags(
             _settingsViewModel.uiState.safeValue.languageUsed.languageTag))

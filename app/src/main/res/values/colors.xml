@@ -62,8 +62,13 @@
   <color name="secondary_ripple">@color/white_10</color>
 
   <color name="surface">@color/dark_white</color>
+  <color name="surface_variant_text">@color/light_black</color>
 
-  <color name="stroke">@color/gray</color>
+  <color name="background">@color/white</color>
+
+  <color name="ripple">@color/black_10</color>
+
+  <color name="stroke">@color/light_gray</color>
 
   <color name="image">@color/darker_white</color>
 </resources>

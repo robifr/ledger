@@ -96,10 +96,11 @@ export function renderBarChart(layout, xScale, yScale, data, color) {
     .attr("transform", `translate(${layout.marginLeft}, 0)`)
     .style("font-size", `${layout.fontSize}`)
     .call(yScale.axis)
-    .call((g) => g.select(".domain").remove()) // Remove y-axis line.
-    .selectAll("line")
-    .style("stroke", Android.colorHex("stroke"))
-    .attr("stroke-width", 0.3);
+    .call((g) => {
+      g.select(".domain").remove(); // Remove y-axis line.
+      g.selectAll("line").style("stroke", Android.colorHex("stroke")).attr("stroke-width", 0.5);
+      g.selectAll("text").style("fill", Android.colorHex("android:textColor"));
+    });
 
   _drawBarChart(svg, layout, xScale, yScale, data, color);
 
@@ -108,7 +109,12 @@ export function renderBarChart(layout, xScale, yScale, data, color) {
     .append("g")
     .attr("transform", `translate(0, ${layout.height - layout.marginBottom})`)
     .style("font-size", `${layout.fontSize}`)
-    .call(xScale.axis);
+    .call(xScale.axis)
+    .call((g) => {
+      g.select(".domain").style("stroke", Android.colorHex("stroke"));
+      g.selectAll("line").style("stroke", Android.colorHex("stroke"));
+      g.selectAll("text").style("fill", Android.colorHex("android:textColor"));
+    });
 }
 
 /**
@@ -141,10 +147,11 @@ export function renderStackedBarChart(layout, xScale, yScale, data, colors, grou
     .attr("transform", `translate(${layout.marginLeft}, 0)`)
     .style("font-size", `${layout.fontSize}`)
     .call(yScale.axis)
-    .call((g) => g.select(".domain").remove()) // Remove y-axis line.
-    .selectAll("line")
-    .style("stroke", Android.colorHex("stroke"))
-    .attr("stroke-width", 0.3);
+    .call((g) => {
+      g.select(".domain").remove(); // Remove y-axis line.
+      g.selectAll("line").style("stroke", Android.colorHex("stroke")).attr("stroke-width", 0.5);
+      g.selectAll("text").style("fill", Android.colorHex("android:textColor"));
+    });
 
   const groupedData = new Map();
   // Group the data so that we can render them in order.
@@ -165,7 +172,12 @@ export function renderStackedBarChart(layout, xScale, yScale, data, colors, grou
     .append("g")
     .attr("transform", `translate(0, ${layout.height - layout.marginBottom})`)
     .style("font-size", `${layout.fontSize}`)
-    .call(xScale.axis);
+    .call(xScale.axis)
+    .call((g) => {
+      g.select(".domain").style("stroke", Android.colorHex("stroke"));
+      g.selectAll("line").style("stroke", Android.colorHex("stroke"));
+      g.selectAll("text").style("fill", Android.colorHex("android:textColor"));
+    });
 }
 
 /**
@@ -292,6 +304,7 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
     .style("stroke-width", "1px");
   chart
     .append("g")
+    .style("fill", Android.colorHex("android:textColor"))
     .attr("text-anchor", "middle")
     .attr("dominant-baseline", "middle")
     .html(svgTextInCenter);
@@ -309,6 +322,7 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
   legend
     .append("text")
     .text((d) => (d.data.key !== NO_DATA_KEY ? d.data.key : ""))
+    .style("fill", Android.colorHex("android:textColor"))
     .style("font-size", 12)
     .attr("x", legendRectSize + legendItemPadding)
     .attr("y", legendRectSize / 2)
@@ -320,6 +334,7 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
         ? Android.formatCurrencyWithUnit(d.value, Android.localeLanguageTag(), "")
         : ""
     )
+    .style("fill", Android.colorHex("android:textColor"))
     .style("font-size", 14)
     .style("font-weight", "bold")
     .attr("x", legendRectSize + legendItemPadding)

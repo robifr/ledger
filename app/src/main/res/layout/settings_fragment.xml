@@ -75,6 +75,7 @@
           android:paddingStart="@dimen/space_medium"
           android:paddingBottom="@dimen/space_medium"
           android:text="@string/enum_languageOption_englishUs"
+          android:textColor="?colorOnSurfaceVariant"
           android:textSize="@dimen/text_small"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toBottomOf="@id/languageTitle" />
@@ -108,6 +109,7 @@
           android:paddingStart="@dimen/space_medium"
           android:paddingBottom="@dimen/space_medium"
           android:text="@string/settings_lastChecked_x"
+          android:textColor="?colorOnSurfaceVariant"
           android:textSize="@dimen/text_small"
           app:layout_constraintEnd_toStartOf="@id/appUpdateIcon"
           app:layout_constraintStart_toStartOf="parent"
@@ -152,6 +154,7 @@
           android:paddingStart="@dimen/space_medium"
           android:paddingBottom="@dimen/space_medium"
           android:text="@string/settings_aboutApp_description"
+          android:textColor="?colorOnSurfaceVariant"
           android:textSize="@dimen/text_small"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toBottomOf="@id/aboutAppTitle" />

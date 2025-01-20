@@ -90,6 +90,7 @@
       android:layout_marginTop="@dimen/space_smallMedium"
       android:gravity="end"
       android:text="@string/createQueue_productOrders_totalDiscount"
+      android:textColor="?colorOnSurfaceVariant"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@id/grandTotalPrice"
       app:layout_constraintWidth_percent="0.45" />
@@ -101,6 +102,7 @@
       android:layout_marginStart="@dimen/space_smallMedium"
       android:layout_marginEnd="@dimen/space_medium"
       android:gravity="end"
+      android:textColor="?colorOnSurfaceVariant"
       app:layout_constraintBottom_toBottomOf="@id/totalDiscountTitle"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toEndOf="@id/totalDiscountTitle"
@@ -114,6 +116,7 @@
       android:layout_marginTop="@dimen/space_smallMedium"
       android:gravity="end"
       android:text="@string/createQueue_productOrders_x_balance"
+      android:textColor="?colorOnSurfaceVariant"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@id/totalDiscount"
       app:layout_constraintWidth_percent="0.45" />
@@ -125,6 +128,7 @@
       android:layout_marginStart="@dimen/space_smallMedium"
       android:layout_marginEnd="@dimen/space_medium"
       android:gravity="end"
+      android:textColor="?colorOnSurfaceVariant"
       app:layout_constraintBottom_toBottomOf="@id/customerBalanceTitle"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toEndOf="@id/customerBalanceTitle"
@@ -138,6 +142,7 @@
       android:layout_marginTop="@dimen/space_smallMedium"
       android:gravity="end"
       android:text="@string/createQueue_productOrders_x_debt"
+      android:textColor="?colorOnSurfaceVariant"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@id/customerBalance"
       app:layout_constraintWidth_percent="0.45" />
@@ -149,6 +154,7 @@
       android:layout_marginStart="@dimen/space_smallMedium"
       android:layout_marginEnd="@dimen/space_medium"
       android:gravity="end"
+      android:textColor="?colorOnSurfaceVariant"
       app:layout_constraintBottom_toBottomOf="@id/customerDebtTitle"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toEndOf="@id/customerDebtTitle"

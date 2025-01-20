@@ -32,6 +32,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/dashboard_summary"
+        android:textColor="?colorOnSurfaceVariant"
         android:textSize="@dimen/text_mediumLarge"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/dateChip"

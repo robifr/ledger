@@ -70,12 +70,9 @@
     <item name="android:drawableTint">@color/text_selectable</item>
   </style>
 
-  <style name="ContextualToolbar" parent="Widget.AppCompat.ActionMode">
-    <item name="titleTextStyle">@style/ContextualToolbar.Title</item>
-  </style>
-
-  <style name="ContextualToolbar.Title" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
-    <item name="android:textColor">?android:textColor</item>
+  <style name="ContextualToolbar" parent="Widget.Material3.ActionMode">
+    <!-- Somehow setting the `actionModeBackground` alone doesn't work. -->
+    <item name="background">?actionModeBackground</item>
   </style>
 
   <style name="Divider" parent="Widget.Material3.MaterialDivider">

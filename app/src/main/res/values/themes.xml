@@ -16,21 +16,27 @@
 
 <resources>
 
-  <style name="AppTheme.Light" parent="Theme.Material3.Light">
+  <style name="AppTheme.Light" parent="Theme.Material3.DayNight">
     <!-- Branding. -->
+    <!-- Main button, chart. etc. -->
     <item name="colorPrimary">@color/primary_toggleable</item>
     <item name="colorOnPrimary">@color/primary_text_toggleable</item>
     <item name="colorPrimaryContainer">@color/primary_toggleable</item>
     <item name="colorOnPrimaryContainer">@color/primary_text_toggleable</item>
+    <!-- Secondary button, chart, etc. -->
     <item name="colorSecondary">@color/secondary_toggleable</item>
     <item name="colorOnSecondary">@color/secondary_text_toggleable</item>
+    <!-- Selected radio, text, and icon. -->
     <item name="colorSecondaryContainer">@color/blue_20</item>
-    <item name="colorSurface">@color/dark_white</item>
+    <item name="colorOnSecondaryContainer">?android:textColor</item>
+    <!-- Secondary background like card. -->
+    <item name="colorSurface">@color/surface</item>
     <item name="colorOnSurface">?android:textColor</item>
+    <item name="colorOnSurfaceVariant">@color/surface_variant_text</item> <!-- Secondary text. -->
 
-    <!-- Background color. -->
-    <item name="android:colorBackground">@color/white</item>
-    <item name="colorSurfaceContainerHigh">@color/white</item> <!-- Dialog. -->
+    <!-- Primary background. -->
+    <item name="android:colorBackground">@color/background</item>
+    <item name="colorSurfaceContainerHigh">@color/background</item> <!-- Dialog. -->
 
     <!-- Cursor on text input. -->
     <item name="colorAccent">@color/primary</item>
@@ -55,7 +61,7 @@
       Note: Each material widgets use their own ripple color.
         Ensure to correctly set `app:rippleColor` on the widget.
     -->
-    <item name="colorControlHighlight">@color/black_10</item>
+    <item name="colorControlHighlight">@color/ripple</item>
 
     <!-- Toolbar. -->
     <item name="toolbarStyle">@style/Toolbar</item>
@@ -74,8 +80,6 @@
 
     <!-- Disable annoying material things. The one that make every color looks weird. -->
     <item name="elevationOverlayEnabled">false</item>
-
-    <item name="android:forceDarkAllowed">false</item>
 
     <item name="windowNoTitle">true</item>
     <item name="windowActionBar">false</item>
