@@ -94,6 +94,8 @@ data class ProductOrderModel(
   }
 
   companion object {
+    const val QUANTITY_MAX_FRACTION_DIGITS: Int = 5
+
     fun calculateTotalPrice(productPrice: Long?, quantity: Double, discount: Long): BigDecimal {
       val totalPrice: BigDecimal =
           productPrice?.let {

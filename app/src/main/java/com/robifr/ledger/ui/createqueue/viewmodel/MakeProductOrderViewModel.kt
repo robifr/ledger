@@ -121,7 +121,7 @@ class MakeProductOrderViewModel(private val _viewModel: CreateQueueViewModel) {
             CurrencyFormat.parse(
                     _uiState.safeValue.formattedQuantity,
                     AppCompatDelegate.getApplicationLocales().toLanguageTags(),
-                    2)
+                    ProductOrderModel.QUANTITY_MAX_FRACTION_DIGITS)
                 .stripTrailingZeros()
                 .toDouble()
       }

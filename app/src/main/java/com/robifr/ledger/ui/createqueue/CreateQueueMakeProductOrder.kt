@@ -31,6 +31,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.robifr.ledger.R
 import com.robifr.ledger.components.CurrencyTextWatcher
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.databinding.CreateQueueDialogProductOrderBinding
 import com.robifr.ledger.ui.selectproduct.SelectProductFragment
 import com.robifr.ledger.util.CurrencyFormat
@@ -144,7 +145,7 @@ private class QuantityTextWatcher(private val _fragment: CreateQueueFragment, vi
         view = view,
         _maximumAmount = 10_000.toBigDecimal(),
         _isSymbolHidden = true,
-        _fractionDigits = 2) {
+        _fractionDigits = ProductOrderModel.QUANTITY_MAX_FRACTION_DIGITS) {
   override fun afterTextChanged(editable: Editable) {
     super.afterTextChanged(editable)
     _fragment.createQueueViewModel.makeProductOrderView.onQuantityTextChanged(newText())
