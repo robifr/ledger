@@ -16,6 +16,8 @@
 
 package com.robifr.ledger.ui.customer.viewmodel
 
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.robifr.ledger.InstantTaskExecutorExtension
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.display.CustomerSortMethod
@@ -55,6 +57,7 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   fun beforeEach() {
     clearAllMocks()
     _customerRepository = mockk()
+    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-US"))
 
     every { _customerRepository.addModelChangedListener(any()) } just Runs
     coEvery { _customerRepository.selectAll() } returns
@@ -66,15 +69,15 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   @Test
   fun `on state changed`() {
     _viewModel.onMinBalanceTextChanged("$0")
-    _viewModel.onMaxBalanceTextChanged("$100")
+    _viewModel.onMaxBalanceTextChanged("$1.00")
     _viewModel.onMinDebtTextChanged("$0")
-    _viewModel.onMaxDebtTextChanged("-$100")
+    _viewModel.onMaxDebtTextChanged("-$1.00")
     assertEquals(
         CustomerFilterState(
             formattedMinBalance = "$0",
-            formattedMaxBalance = "$100",
+            formattedMaxBalance = "$1.00",
             formattedMinDebt = "$0",
-            formattedMaxDebt = "-$100"),
+            formattedMaxDebt = "-$1.00"),
         _viewModel.uiState.safeValue,
         "Preserve all values except for the changed field")
   }
@@ -83,8 +86,8 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   fun `on dialog closed with sorted customers`() {
     _customerViewModel.onSortMethodChanged(
         CustomerSortMethod(CustomerSortMethod.SortBy.BALANCE, false))
-    _viewModel.onMinBalanceTextChanged("$100")
-    _viewModel.onMaxBalanceTextChanged("$200")
+    _viewModel.onMinBalanceTextChanged("$1.00")
+    _viewModel.onMaxBalanceTextChanged("$2.00")
 
     _viewModel.onDialogClosed()
     assertEquals(
@@ -96,8 +99,8 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   private fun `_on dialog closed with unbounded balance range cases`(): Array<Array<Any>> =
       arrayOf(
           arrayOf("$0", "$0", "", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
-          arrayOf("$0", "$0", "$100", "", listOf(_secondCustomer, _thirdCustomer)),
-          arrayOf("$0", "$0", "", "$100", listOf(_firstCustomer, _secondCustomer)))
+          arrayOf("$0", "$0", "$1.00", "", listOf(_secondCustomer, _thirdCustomer)),
+          arrayOf("$0", "$0", "", "$1.00", listOf(_firstCustomer, _secondCustomer)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with unbounded balance range cases")
@@ -125,10 +128,10 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   private fun `_on dialog closed with unbounded debt range cases`(): Array<Array<Any>> =
       arrayOf(
           arrayOf("$0", "$0", "", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
-          arrayOf("$0", "$0", "-$100", "", listOf(_firstCustomer, _secondCustomer)),
-          arrayOf("$0", "$0", "$100", "", listOf(_firstCustomer, _secondCustomer)),
-          arrayOf("$0", "$0", "", "-$100", listOf(_secondCustomer, _thirdCustomer)),
-          arrayOf("$0", "$0", "", "$100", listOf(_secondCustomer, _thirdCustomer)))
+          arrayOf("$0", "$0", "-$1.00", "", listOf(_firstCustomer, _secondCustomer)),
+          arrayOf("$0", "$0", "$1.00", "", listOf(_firstCustomer, _secondCustomer)),
+          arrayOf("$0", "$0", "", "-$1.00", listOf(_secondCustomer, _thirdCustomer)),
+          arrayOf("$0", "$0", "", "$1.00", listOf(_secondCustomer, _thirdCustomer)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with unbounded debt range cases")
@@ -157,9 +160,9 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
       Array<Array<Any>> =
       arrayOf(
           // `_firstCustomer` was previously excluded.
-          arrayOf("$100", "", "", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
+          arrayOf("$1.00", "", "", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
           // `_firstCustomer` was previously excluded, but then exclude `_thirdCustomer`.
-          arrayOf("$100", "", "", "$100", listOf(_firstCustomer, _secondCustomer)))
+          arrayOf("$1.00", "", "", "$1.00", listOf(_firstCustomer, _secondCustomer)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with customer excluded from previous filter cases")

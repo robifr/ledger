@@ -69,9 +69,9 @@ class CreateProductViewModelTest(
   @Test
   fun `on state changed`() {
     _viewModel.onNameTextChanged("Apple")
-    _viewModel.onPriceTextChanged("$100")
+    _viewModel.onPriceTextChanged("$1.00")
     assertEquals(
-        CreateProductState(name = "Apple", nameErrorMessageRes = null, formattedPrice = "$100"),
+        CreateProductState(name = "Apple", nameErrorMessageRes = null, formattedPrice = "$1.00"),
         _viewModel.uiState.safeValue,
         "Preserve all values except for the one changed")
   }
@@ -122,7 +122,7 @@ class CreateProductViewModelTest(
   @ValueSource(longs = [0L, 111L])
   fun `on save with created product`(createdProductId: Long) {
     _viewModel.onNameTextChanged("Apple")
-    _viewModel.onPriceTextChanged("$100")
+    _viewModel.onPriceTextChanged("$1.00")
 
     coEvery { _productRepository.add(any()) } returns createdProductId
     _viewModel.onSave()

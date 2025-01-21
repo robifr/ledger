@@ -78,11 +78,12 @@ class MakeProductOrderViewModel(private val _viewModel: CreateQueueViewModel) {
                   CurrencyFormat.format(
                       it.quantity.toBigDecimal(),
                       AppCompatDelegate.getApplicationLocales().toLanguageTags(),
-                      "")
+                      "",
+                      CurrencyFormat.countDecimalPlace(it.quantity.toBigDecimal()))
                 } ?: "",
             formattedDiscount =
                 productOrder?.let {
-                  CurrencyFormat.format(
+                  CurrencyFormat.formatCents(
                       it.discount.toBigDecimal(),
                       AppCompatDelegate.getApplicationLocales().toLanguageTags())
                 } ?: "",
@@ -119,7 +120,8 @@ class MakeProductOrderViewModel(private val _viewModel: CreateQueueViewModel) {
         quantity =
             CurrencyFormat.parse(
                     _uiState.safeValue.formattedQuantity,
-                    AppCompatDelegate.getApplicationLocales().toLanguageTags())
+                    AppCompatDelegate.getApplicationLocales().toLanguageTags(),
+                    ProductOrderModel.QUANTITY_MAX_FRACTION_DIGITS)
                 .stripTrailingZeros()
                 .toDouble()
       }
@@ -129,7 +131,7 @@ class MakeProductOrderViewModel(private val _viewModel: CreateQueueViewModel) {
     try {
       if (_uiState.safeValue.formattedDiscount.isNotBlank()) {
         discount =
-            CurrencyFormat.parse(
+            CurrencyFormat.parseToCents(
                     _uiState.safeValue.formattedDiscount,
                     AppCompatDelegate.getApplicationLocales().toLanguageTags())
                 .toLong()

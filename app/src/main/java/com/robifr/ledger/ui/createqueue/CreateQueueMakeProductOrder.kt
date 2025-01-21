@@ -31,6 +31,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.robifr.ledger.R
 import com.robifr.ledger.components.CurrencyTextWatcher
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.databinding.CreateQueueDialogProductOrderBinding
 import com.robifr.ledger.ui.selectproduct.SelectProductFragment
 import com.robifr.ledger.util.CurrencyFormat
@@ -81,7 +82,7 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
         product?.let {
           val productName: String = it.name + "\n"
           val productPrice: String =
-              CurrencyFormat.format(
+              CurrencyFormat.formatCents(
                   it.price.toBigDecimal(),
                   AppCompatDelegate.getApplicationLocales().toLanguageTags())
           SpannableString(productName + productPrice).apply {
@@ -119,7 +120,7 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
 
   fun setInputtedTotalPrice(totalPrice: BigDecimal) {
     _dialogBinding.totalPrice.text =
-        CurrencyFormat.format(
+        CurrencyFormat.formatCents(
             totalPrice, AppCompatDelegate.getApplicationLocales().toLanguageTags())
   }
 
@@ -145,7 +146,10 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
 
 private class QuantityTextWatcher(private val _fragment: CreateQueueFragment, view: EditText) :
     CurrencyTextWatcher(
-        view = view, _maximumAmount = 10_000.toBigDecimal(), _isSymbolHidden = true) {
+        view = view,
+        _maximumAmount = 10_000.toBigDecimal(),
+        _isSymbolHidden = true,
+        _fractionDigits = ProductOrderModel.QUANTITY_MAX_FRACTION_DIGITS) {
   override fun afterTextChanged(editable: Editable) {
     super.afterTextChanged(editable)
     _fragment.createQueueViewModel.makeProductOrderView.onQuantityTextChanged(newText())

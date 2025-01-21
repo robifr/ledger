@@ -80,7 +80,7 @@ class CreateCustomerBalance(private val _fragment: CreateCustomerFragment) {
 
   fun setInputtedBalance(balance: Long) {
     _fragment.fragmentBinding.balance.setText(
-        CurrencyFormat.format(
+        CurrencyFormat.formatCents(
             balance.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags()))
   }
 
@@ -130,7 +130,7 @@ class CreateCustomerBalance(private val _fragment: CreateCustomerFragment) {
     _withdrawBalanceDialogBinding.amountLayout.helperText =
         _fragment.getString(
             R.string.createCustomer_balance_withdraw_n_available,
-            CurrencyFormat.format(
+            CurrencyFormat.formatCents(
                 amount.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags()))
   }
 }

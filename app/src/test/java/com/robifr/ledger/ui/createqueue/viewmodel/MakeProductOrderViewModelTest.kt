@@ -53,7 +53,7 @@ class MakeProductOrderViewModelTest(private val _dispatcher: TestDispatcher) {
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-us"))
+    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-US"))
     _createQueueViewModel = CreateQueueViewModel(_dispatcher, mockk(), mockk(), mockk())
     _viewModel = _createQueueViewModel.makeProductOrderView
   }
@@ -62,13 +62,13 @@ class MakeProductOrderViewModelTest(private val _dispatcher: TestDispatcher) {
   fun `on state changed`() {
     _viewModel.onProductChanged(_product)
     _viewModel.onQuantityTextChanged(_productOrder.quantity.toString())
-    _viewModel.onDiscountTextChanged("$${_productOrder.discount}")
+    _viewModel.onDiscountTextChanged("$${_productOrder.discount / 100L}")
     assertEquals(
         MakeProductOrderState(
             isDialogShown = false,
             product = _product,
             formattedQuantity = _productOrder.quantity.toString(),
-            formattedDiscount = "$${_productOrder.discount}",
+            formattedDiscount = "$${_productOrder.discount / 100L}",
             totalPrice = _productOrder.totalPrice,
             productOrderToEdit = null),
         _viewModel.uiState.safeValue,
@@ -89,7 +89,8 @@ class MakeProductOrderViewModelTest(private val _dispatcher: TestDispatcher) {
                 } else {
                   ""
                 },
-            formattedDiscount = if (!isProductOrderNull) "$${_productOrder.discount}" else "",
+            formattedDiscount =
+                if (!isProductOrderNull) "$${_productOrder.discount / 100L}" else "",
             totalPrice = if (!isProductOrderNull) _productOrder.totalPrice else 0.toBigDecimal(),
             productOrderToEdit = if (!isProductOrderNull) _productOrder else null),
         _viewModel.uiState.safeValue,
@@ -117,7 +118,7 @@ class MakeProductOrderViewModelTest(private val _dispatcher: TestDispatcher) {
     _createQueueViewModel.onProductOrdersChanged(
         if (isEditingProductOrder) listOf(_productOrder) else listOf())
     _viewModel.onDialogShown(_productOrder)
-    _viewModel.onDiscountTextChanged("$${_productOrder.discount + 100L}")
+    _viewModel.onDiscountTextChanged("$${(_productOrder.discount + 100L) / 100L}") // Add 100 cents.
 
     _viewModel.onSave()
     assertEquals(

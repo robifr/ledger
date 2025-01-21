@@ -17,10 +17,10 @@
 package com.robifr.ledger.repository
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.network.AppUpdater
 import com.robifr.ledger.network.GithubReleaseModel
+import com.robifr.ledger.preferences.SettingsPreferences
 import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -29,42 +29,46 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 
 class SettingsRepository(
-    private val _sharedPreferences: SharedPreferences,
+    private val _settingsPreferences: SettingsPreferences,
     private val _appUpdater: AppUpdater
 ) {
-  private val _KEY_LANGUAGE_USED: String = "language_used"
-  private val _KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE: String = "last_checked_time_for_app_update"
-  private val _KEY_CACHED_GITHUB_RELEASE: String = "cached_github_release"
-
   fun languageUsed(): LanguageOption {
-    val languagePrefs: String? = _sharedPreferences.getString(_KEY_LANGUAGE_USED, null)
-    return LanguageOption.entries.find { it.languageTag == languagePrefs }
+    val languageUsed: String? =
+        _settingsPreferences.sharedPreferences.getString(
+            SettingsPreferences.KEY_LANGUAGE_USED, null)
+    return LanguageOption.entries.find { it.languageTag == languageUsed }
         ?: LanguageOption.ENGLISH_US
   }
 
   suspend fun saveLanguageUsed(language: LanguageOption): Boolean =
-      _sharedPreferences.edit().putString(_KEY_LANGUAGE_USED, language.languageTag).commit()
+      _settingsPreferences.sharedPreferences
+          .edit()
+          .putString(SettingsPreferences.KEY_LANGUAGE_USED, language.languageTag)
+          .commit()
 
   fun lastCheckedTimeForAppUpdate(): Instant {
-    val time: String? = _sharedPreferences.getString(_KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE, null)
+    val time: String? =
+        _settingsPreferences.sharedPreferences.getString(
+            SettingsPreferences.KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE, null)
     return if (time != null) Instant.parse(time) else Instant.EPOCH
   }
 
   private suspend fun _saveLastCheckedTimeForAppUpdate(time: Instant): Boolean =
-      _sharedPreferences
+      _settingsPreferences.sharedPreferences
           .edit()
-          .putString(_KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE, time.toString())
+          .putString(SettingsPreferences.KEY_LAST_CHECKED_TIME_FOR_APP_UPDATE, time.toString())
           .commit()
 
   private fun _cachedGithubRelease(): GithubReleaseModel? =
-      _sharedPreferences.getString(_KEY_CACHED_GITHUB_RELEASE, null)?.let {
-        Json.decodeFromString(it)
-      }
+      _settingsPreferences.sharedPreferences
+          .getString(SettingsPreferences.KEY_CACHED_GITHUB_RELEASE, null)
+          ?.let { Json.decodeFromString(it) }
 
   private suspend fun _saveCachedGithubRelease(githubRelease: GithubReleaseModel): Boolean =
-      _sharedPreferences
+      _settingsPreferences.sharedPreferences
           .edit()
-          .putString(_KEY_CACHED_GITHUB_RELEASE, Json.encodeToString(githubRelease))
+          .putString(
+              SettingsPreferences.KEY_CACHED_GITHUB_RELEASE, Json.encodeToString(githubRelease))
           .commit()
 
   suspend fun obtainLatestAppRelease(): GithubReleaseModel? =
@@ -90,12 +94,7 @@ class SettingsRepository(
     @Synchronized
     fun instance(context: Context): SettingsRepository =
         _instance
-            ?: SettingsRepository(
-                    _settingsPreferences(context), AppUpdater(context, OkHttpClient()))
+            ?: SettingsRepository(SettingsPreferences(context), AppUpdater(context, OkHttpClient()))
                 .apply { _instance = this }
-
-    private fun _settingsPreferences(context: Context): SharedPreferences =
-        context.applicationContext.getSharedPreferences(
-            "com.robifr.ledger.settingsprefs", Context.MODE_PRIVATE)
   }
 }

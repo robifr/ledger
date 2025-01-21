@@ -57,12 +57,15 @@ class ProductOrderCardComponent(
   private fun _setProductPriceAndQuantity(productPrice: Long?, quantity: Double) {
     val formattedProductPrice: String =
         productPrice?.let {
-          CurrencyFormat.format(
+          CurrencyFormat.formatCents(
               it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } ?: _context.getString(R.string.symbol_notAvailable)
     val formattedQuantity: String =
         CurrencyFormat.format(
-            quantity.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags(), "")
+            quantity.toBigDecimal(),
+            AppCompatDelegate.getApplicationLocales().toLanguageTags(),
+            "",
+            CurrencyFormat.countDecimalPlace(quantity.toBigDecimal()))
     _binding.productPriceQuantity.text =
         _context.getString(
             R.string.createQueue_productOrders_n_multiply_n,
@@ -72,7 +75,7 @@ class ProductOrderCardComponent(
 
   private fun _setTotalPrice(totalPrice: BigDecimal) {
     _binding.totalPrice.text =
-        CurrencyFormat.format(
+        CurrencyFormat.formatCents(
             totalPrice, AppCompatDelegate.getApplicationLocales().toLanguageTags())
   }
 

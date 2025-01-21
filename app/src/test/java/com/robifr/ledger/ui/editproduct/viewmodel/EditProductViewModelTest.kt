@@ -62,7 +62,7 @@ class EditProductViewModelTest(
   private lateinit var _snackbarStateObserver: Observer<SnackbarState>
   private lateinit var _resultStateObserver: Observer<EditProductResultState>
 
-  private val _productToEdit: ProductModel = ProductModel(id = 111L, name = "Apple", price = 100)
+  private val _productToEdit: ProductModel = ProductModel(id = 111L, name = "Apple", price = 100L)
 
   @BeforeEach
   fun beforeEach() {
@@ -70,7 +70,7 @@ class EditProductViewModelTest(
     _productRepository = mockk()
     _snackbarStateObserver = mockk(relaxed = true)
     _resultStateObserver = mockk(relaxed = true)
-    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-us"))
+    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-US"))
 
     coEvery { _productRepository.add(any()) } returns 0L
     coEvery { _productRepository.selectById(_productToEdit.id) } returns _productToEdit
@@ -93,7 +93,7 @@ class EditProductViewModelTest(
         CreateProductState(
             name = _productToEdit.name,
             nameErrorMessageRes = null,
-            formattedPrice = "$${_productToEdit.price}"),
+            formattedPrice = "$${_productToEdit.price / 100L}"),
         _viewModel.uiState.safeValue,
         "Match state with the retrieved data from the fragment arguments")
   }

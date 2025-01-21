@@ -59,7 +59,7 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
   fun onBalanceAmountTextChanged(formattedAmount: String) {
     val amountToAdd: BigDecimal =
         try {
-          CurrencyFormat.parse(
+          CurrencyFormat.parseToCents(
               formattedAmount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } catch (_: ParseException) {
           0.toBigDecimal()
@@ -97,7 +97,7 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
   fun onWithdrawAmountTextChanged(formattedAmount: String) {
     val amountToWithdraw: BigDecimal =
         try {
-          CurrencyFormat.parse(
+          CurrencyFormat.parseToCents(
               formattedAmount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } catch (_: ParseException) {
           0.toBigDecimal()
@@ -118,7 +118,7 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
 
   private fun _parseInputtedBalanceAmount(): Long =
       try {
-        CurrencyFormat.parse(
+        CurrencyFormat.parseToCents(
                 _addBalanceState.safeValue.formattedAmount,
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
             .toLong()
@@ -128,7 +128,7 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
 
   private fun _parseInputtedWithdrawAmount(): Long =
       try {
-        CurrencyFormat.parse(
+        CurrencyFormat.parseToCents(
                 _withdrawBalanceState.safeValue.formattedAmount,
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
             .toLong()

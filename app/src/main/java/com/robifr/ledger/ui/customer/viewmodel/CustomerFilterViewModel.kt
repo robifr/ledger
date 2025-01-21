@@ -85,21 +85,21 @@ class CustomerFilterViewModel(
     _filterer.filters = filters
     onMinBalanceTextChanged(
         filters.filteredBalance.first?.let {
-          CurrencyFormat.format(
+          CurrencyFormat.formatCents(
               it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } ?: "")
     onMaxBalanceTextChanged(
         filters.filteredBalance.second?.let {
-          CurrencyFormat.format(
+          CurrencyFormat.formatCents(
               it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } ?: "")
     onMinDebtTextChanged(
         filters.filteredDebt.first?.let {
-          CurrencyFormat.format(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } ?: "")
     onMaxDebtTextChanged(
         filters.filteredDebt.second?.let {
-          CurrencyFormat.format(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } ?: "")
     _viewModel.onCustomersChanged(_filterer.filter(customers))
   }
@@ -110,7 +110,7 @@ class CustomerFilterViewModel(
     try {
       if (_uiState.safeValue.formattedMinBalance.isNotBlank()) {
         minBalance =
-            CurrencyFormat.parse(
+            CurrencyFormat.parseToCents(
                     _uiState.safeValue.formattedMinBalance,
                     AppCompatDelegate.getApplicationLocales().toLanguageTags())
                 .toLong()
@@ -121,7 +121,7 @@ class CustomerFilterViewModel(
     try {
       if (_uiState.safeValue.formattedMaxBalance.isNotBlank()) {
         maxBalance =
-            CurrencyFormat.parse(
+            CurrencyFormat.parseToCents(
                     _uiState.safeValue.formattedMaxBalance,
                     AppCompatDelegate.getApplicationLocales().toLanguageTags())
                 .toLong()
@@ -132,7 +132,7 @@ class CustomerFilterViewModel(
     try {
       if (_uiState.safeValue.formattedMinDebt.isNotBlank()) {
         minDebt =
-            CurrencyFormat.parse(
+            CurrencyFormat.parseToCents(
                 _uiState.safeValue.formattedMinDebt,
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
       }
@@ -142,7 +142,7 @@ class CustomerFilterViewModel(
     try {
       if (_uiState.safeValue.formattedMaxDebt.isNotBlank()) {
         maxDebt =
-            CurrencyFormat.parse(
+            CurrencyFormat.parseToCents(
                 _uiState.safeValue.formattedMaxDebt,
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
       }

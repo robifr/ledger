@@ -37,6 +37,7 @@ import java.math.BigDecimal
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.toBigDecimal
 
 class QueueCardWideComponent(
     private val _context: Context,
@@ -179,13 +180,13 @@ class QueueCardWideComponent(
 
   private fun _setTotalDiscount(totalDiscount: BigDecimal) {
     _productOrderBinding.totalDiscount.text =
-        CurrencyFormat.format(
+        CurrencyFormat.formatCents(
             totalDiscount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
   }
 
   private fun _setGrandTotalPrice(grandTotalPrice: BigDecimal, isNormalCard: Boolean) {
     val formattedGrandTotalPrice: String =
-        CurrencyFormat.format(
+        CurrencyFormat.formatCents(
             grandTotalPrice, AppCompatDelegate.getApplicationLocales().toLanguageTags())
     if (isNormalCard) _binding.normalCard.grandTotalPrice.text = formattedGrandTotalPrice
     else _productOrderBinding.grandTotalPrice.text = formattedGrandTotalPrice
@@ -210,7 +211,7 @@ class QueueCardWideComponent(
       _productOrderBinding.customerBalanceTitle.isVisible = customer != null
       _productOrderBinding.customerBalance.text =
           customer?.let {
-            CurrencyFormat.format(
+            CurrencyFormat.formatCents(
                 it.balance.toBigDecimal(),
                 AppCompatDelegate.getApplicationLocales().toLanguageTags())
           }
@@ -220,7 +221,7 @@ class QueueCardWideComponent(
       _productOrderBinding.customerDebtTitle.isVisible = customer != null
       _productOrderBinding.customerDebt.text =
           customer?.let {
-            CurrencyFormat.format(
+            CurrencyFormat.formatCents(
                 it.debt, AppCompatDelegate.getApplicationLocales().toLanguageTags())
           }
       _productOrderBinding.customerDebt.setTextColor(
@@ -245,7 +246,7 @@ class QueueCardWideComponent(
                     productOrder.productName != null && productOrder.productPrice != null
                 productPrice.text =
                     productOrder.productPrice?.let {
-                      CurrencyFormat.format(
+                      CurrencyFormat.formatCents(
                           it.toBigDecimal(),
                           AppCompatDelegate.getApplicationLocales().toLanguageTags())
                     } ?: _context.getString(R.string.symbol_notAvailable)
@@ -253,9 +254,10 @@ class QueueCardWideComponent(
                     CurrencyFormat.format(
                         productOrder.quantity.toBigDecimal(),
                         AppCompatDelegate.getApplicationLocales().toLanguageTags(),
-                        "")
+                        "",
+                        CurrencyFormat.countDecimalPlace(productOrder.quantity.toBigDecimal()))
                 totalPrice.text =
-                    CurrencyFormat.format(
+                    CurrencyFormat.formatCents(
                         productOrder.totalPrice,
                         AppCompatDelegate.getApplicationLocales().toLanguageTags())
                 discount.text =

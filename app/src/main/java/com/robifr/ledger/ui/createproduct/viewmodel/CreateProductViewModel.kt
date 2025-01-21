@@ -84,7 +84,7 @@ constructor(
   protected open fun _parseInputtedProduct(): ProductModel {
     val price: Long =
         try {
-          CurrencyFormat.parse(
+          CurrencyFormat.parseToCents(
                   _uiState.safeValue.formattedPrice,
                   AppCompatDelegate.getApplicationLocales().toLanguageTags())
               .toLong()

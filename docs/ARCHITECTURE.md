@@ -120,4 +120,4 @@ as local databases, remote APIs, or in-memory data structures.
   class that contains information about app updates retrieved from GitHub.
 - Data Stored in `SharedPreferences`: User configurations, such as the user's language preference,
   are stored in `SharedPreferences`. The data is accessed using specific keys, which are typically
-  defined as constants within the `Repository`, like those in the [`SettingsRepository`](../app/src/main/java/com/robifr/ledger/repository/SettingsRepository.kt).
+  defined as constants, like those in the [`SettingsPreferences`](../app/src/main/java/com/robifr/ledger/preferences/SettingsPreferences.kt).

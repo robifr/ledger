@@ -108,7 +108,7 @@ class ProductCardWideComponent(
 
   private fun _setPrice(price: Long, isNormalCard: Boolean) {
     val formattedPrice: String =
-        CurrencyFormat.format(
+        CurrencyFormat.formatCents(
             price.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
     if (isNormalCard) _binding.normalCard.price.text = formattedPrice
     else _binding.expandedCard.price.text = formattedPrice

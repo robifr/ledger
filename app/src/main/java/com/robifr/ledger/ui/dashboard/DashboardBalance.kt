@@ -26,7 +26,8 @@ import java.math.BigDecimal
 class DashboardBalance(private val _fragment: DashboardFragment) {
   fun setTotalBalance(amount: BigDecimal, totalCustomers: Int) {
     _fragment.fragmentBinding.balance.totalBalance.text =
-        CurrencyFormat.format(amount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        CurrencyFormat.formatCents(
+            amount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
     _fragment.fragmentBinding.balance.totalCustomersWithBalanceTitle.text =
         HtmlCompat.fromHtml(
             _fragment.resources.getQuantityString(
@@ -36,7 +37,8 @@ class DashboardBalance(private val _fragment: DashboardFragment) {
 
   fun setTotalDebt(amount: BigDecimal, @ColorRes amountTextColor: Int, totalCustomers: Int) {
     _fragment.fragmentBinding.balance.totalDebt.text =
-        CurrencyFormat.format(amount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        CurrencyFormat.formatCents(
+            amount, AppCompatDelegate.getApplicationLocales().toLanguageTags())
     _fragment.fragmentBinding.balance.totalDebt.setTextColor(
         _fragment.requireContext().getColor(amountTextColor))
     _fragment.fragmentBinding.balance.totalCustomersWithDebtTitle.text =

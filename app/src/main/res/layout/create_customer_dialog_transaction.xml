@@ -42,8 +42,9 @@
         android:id="@+id/amount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:imeOptions="actionSend"
-        android:inputType="number"
+        android:digits="0123456789,."
+        android:imeOptions="actionDone"
+        android:inputType="numberDecimal"
         android:paddingStart="0dp"
         android:paddingEnd="0dp"
         app:backgroundTint="@android:color/transparent" />

@@ -16,6 +16,8 @@
 
 package com.robifr.ledger.ui.createcustomer.viewmodel
 
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.robifr.ledger.InstantTaskExecutorExtension
 import com.robifr.ledger.MainCoroutineExtension
 import io.mockk.clearAllMocks
@@ -39,6 +41,7 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
+    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-US"))
     _createCustomerViewModel = CreateCustomerViewModel(_dispatcher, mockk())
     _viewModel = _createCustomerViewModel.balanceView
   }
@@ -51,7 +54,7 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
     _createCustomerViewModel.onBalanceChanged(currentBalance)
 
     val amountToAdd: Long = 100L
-    val formattedAmountToAdd: String = "$${amountToAdd}"
+    val formattedAmountToAdd: String = "$1.00"
     _viewModel.onBalanceAmountTextChanged(formattedAmountToAdd)
     assertEquals(
         if ((currentBalance.toBigDecimal() + amountToAdd.toBigDecimal()).compareTo(
@@ -75,7 +78,7 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
 
   @Test
   fun `on add balance submitted`() {
-    _viewModel.onBalanceAmountTextChanged("$100")
+    _viewModel.onBalanceAmountTextChanged("$1.00")
     _viewModel.onAddBalanceSubmitted()
     assertEquals(
         _createCustomerViewModel.uiState.safeValue.copy(balance = 100L),
@@ -91,7 +94,7 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onWithdrawAmountTextChanged(currentFormattedAmount)
 
     val withdrawAmount: Long = 100L
-    val formattedAmountToReduce: String = "$${withdrawAmount}"
+    val formattedAmountToReduce: String = "$1.00"
     val balanceAfter: BigDecimal = (currentBalance - withdrawAmount).toBigDecimal()
     val isBalanceSufficient: Boolean = balanceAfter.compareTo(0.toBigDecimal()) >= 0
     _viewModel.onWithdrawAmountTextChanged(formattedAmountToReduce)
@@ -121,7 +124,7 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
   @Test
   fun `on withdraw balance submitted`() {
     _createCustomerViewModel.onBalanceChanged(100L)
-    _viewModel.onWithdrawAmountTextChanged("$100")
+    _viewModel.onWithdrawAmountTextChanged("$1.00")
 
     _viewModel.onWithdrawBalanceSubmitted()
     assertEquals(
