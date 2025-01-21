@@ -20,7 +20,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultCallback
@@ -110,7 +109,6 @@ open class MainActivity :
       view.updatePadding(bottom = windowInsets.bottom)
       WindowInsetsCompat.CONSUMED
     }
-    onBackPressedDispatcher.addCallback(this, OnBackPressedHandler(this))
     AppCompatDelegate.setApplicationLocales(
         LocaleListCompat.forLanguageTags(
             _settingsViewModel.uiState.safeValue.languageUsed.languageTag))
@@ -159,12 +157,5 @@ open class MainActivity :
         }
       }
     }
-  }
-}
-
-private class OnBackPressedHandler(private val _activity: MainActivity) :
-    OnBackPressedCallback(true) {
-  override fun handleOnBackPressed() {
-    if (!_activity.findNavController(R.id.fragmentContainer).navigateUp()) _activity.finish()
   }
 }
