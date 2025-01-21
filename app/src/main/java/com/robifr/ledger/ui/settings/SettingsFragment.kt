@@ -101,7 +101,8 @@ class SettingsFragment : Fragment() {
     if (state.isAppThemeDialogShown) _appTheme.showDialog(state.appTheme)
     else _appTheme.dismissDialog()
     _language.setLanguageUsed(state.languageUsed)
-    if (state.isLanguageDialogShown) _language.showDialog() else _language.dismissDialog()
+    if (state.isLanguageDialogShown) _language.showDialog(state.languageUsed)
+    else _language.dismissDialog()
     _appUpdate.setLastChecked(
         state.lastCheckedTimeForAppUpdate, state.languageUsed.detailedDateFormat)
   }

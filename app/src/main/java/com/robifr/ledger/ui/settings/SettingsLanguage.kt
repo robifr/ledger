@@ -44,12 +44,10 @@ class SettingsLanguage(private val _fragment: SettingsFragment) {
     _fragment.fragmentBinding.language.setText(language.stringRes)
   }
 
-  fun showDialog() {
-    _dialogBinding.radioGroup
-        .findViewWithTag<RadioButton>(
-            _fragment.settingsViewModel.uiState.safeValue.languageUsed.toString())
-        ?.id
-        ?.let { _dialogBinding.radioGroup.check(it) }
+  fun showDialog(selectedLanguage: LanguageOption) {
+    _dialogBinding.radioGroup.findViewWithTag<RadioButton>(selectedLanguage.toString())?.id?.let {
+      _dialogBinding.radioGroup.check(it)
+    }
     _dialogBinding.radioGroup.setOnCheckedChangeListener { group: RadioGroup?, radioId ->
       group?.findViewById<RadioButton>(radioId)?.tag?.let {
         _fragment.settingsViewModel.onLanguageChanged(LanguageOption.valueOf(it.toString()))
