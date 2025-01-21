@@ -21,7 +21,7 @@
   <color name="text_disabled">@color/gray</color>
   <color name="text_selected">@color/light_blue</color>
 
-  <color name="secondary">@color/light_gray</color>
+  <color name="secondary">@color/darker_white</color>
   <color name="secondary_disabled">@color/dark_gray</color>
   <color name="secondary_text">@color/darker_gray</color>
   <color name="secondary_text_disabled">@color/darker_white</color>
