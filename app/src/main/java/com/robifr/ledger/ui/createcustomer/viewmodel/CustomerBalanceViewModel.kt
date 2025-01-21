@@ -56,7 +56,7 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
         _createCustomerViewModel.uiState.safeValue.balance + _parseInputtedBalanceAmount())
   }
 
-  fun onBalanceAmountTextChanged(formattedAmount: String) {
+  fun onAddBalanceAmountTextChanged(formattedAmount: String) {
     val amountToAdd: BigDecimal =
         try {
           CurrencyFormat.parseToCents(

@@ -141,7 +141,7 @@ private class AddBalanceTextWatcher(
 ) : CurrencyTextWatcher(editText) {
   override fun afterTextChanged(editable: Editable) {
     super.afterTextChanged(editable)
-    _fragment.createCustomerViewModel.balanceView.onBalanceAmountTextChanged(newText())
+    _fragment.createCustomerViewModel.balanceView.onAddBalanceAmountTextChanged(newText())
   }
 }
 
