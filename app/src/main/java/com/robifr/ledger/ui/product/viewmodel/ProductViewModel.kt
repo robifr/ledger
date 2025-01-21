@@ -60,7 +60,12 @@ constructor(
   private val _uiState: SafeMutableLiveData<ProductState> =
       SafeMutableLiveData(
           ProductState(
-              products = listOf(), expandedProductIndex = -1, sortMethod = _sorter.sortMethod))
+              products = listOf(),
+              expandedProductIndex = -1,
+              isProductMenuDialogShown = false,
+              selectedProductMenu = null,
+              sortMethod = _sorter.sortMethod,
+              isSortMethodDialogShown = false))
   val uiState: SafeLiveData<ProductState>
     get() = _uiState
 
@@ -102,6 +107,17 @@ constructor(
                 if (_uiState.safeValue.expandedProductIndex != index) index else -1))
   }
 
+  fun onProductMenuDialogShown(selectedProduct: ProductModel) {
+    _uiState.setValue(
+        _uiState.safeValue.copy(
+            isProductMenuDialogShown = true, selectedProductMenu = selectedProduct))
+  }
+
+  fun onProductMenuDialogClosed() {
+    _uiState.setValue(
+        _uiState.safeValue.copy(isProductMenuDialogShown = false, selectedProductMenu = null))
+  }
+
   fun onSortMethodChanged(
       sortMethod: ProductSortMethod,
       products: List<ProductModel> = _uiState.safeValue.products
@@ -130,6 +146,14 @@ constructor(
               _uiState.safeValue.sortMethod.isAscending
             }),
         products)
+  }
+
+  fun onSortMethodDialogShown() {
+    _uiState.setValue(_uiState.safeValue.copy(isSortMethodDialogShown = true))
+  }
+
+  fun onSortMethodDialogClosed() {
+    _uiState.setValue(_uiState.safeValue.copy(isSortMethodDialogShown = false))
   }
 
   fun onDeleteProduct(product: ProductModel) {

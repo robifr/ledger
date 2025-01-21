@@ -29,16 +29,24 @@ class CustomerFilter(private val _fragment: CustomerFragment) {
       BottomSheetDialog(_fragment.requireContext(), R.style.BottomSheetDialog).apply {
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         setContentView(_dialogBinding.root)
-        setOnDismissListener {
-          _fragment.customerViewModel.filterView.onDialogClosed()
-          currentFocus?.clearFocus()
-        }
+        setOnDismissListener { _fragment.customerViewModel.filterView.onDialogClosed() }
       }
   val filterBalance: CustomerFilterBalance = CustomerFilterBalance(_fragment, _dialogBinding)
   val filterDebt: CustomerFilterDebt = CustomerFilterDebt(_fragment, _dialogBinding)
 
   init {
     _fragment.fragmentBinding.filtersChip.setText(R.string.customer_filters)
-    _fragment.fragmentBinding.filtersChip.setOnClickListener { _dialog.show() }
+    _fragment.fragmentBinding.filtersChip.setOnClickListener {
+      _fragment.customerViewModel.filterView.onDialogShown()
+    }
+  }
+
+  fun showDialog() {
+    _dialog.show()
+  }
+
+  fun dismissDialog() {
+    _dialog.dismiss()
+    _dialog.currentFocus?.clearFocus()
   }
 }

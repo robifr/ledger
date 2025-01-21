@@ -42,7 +42,6 @@ class CreateCustomerBalance(private val _fragment: CreateCustomerFragment) {
           .apply {
             setOnDismissListener {
               _fragment.createCustomerViewModel.balanceView.onWithdrawBalanceDialogClosed()
-              currentFocus?.clearFocus()
             }
           }
   private val _withdrawTextWatcher: WithdrawBalanceTextWatcher =
@@ -63,15 +62,18 @@ class CreateCustomerBalance(private val _fragment: CreateCustomerFragment) {
           .apply {
             setOnDismissListener {
               _fragment.createCustomerViewModel.balanceView.onAddBalanceDialogClosed()
-              currentFocus?.clearFocus()
             }
           }
   private val _addBalanceTextWatcher: AddBalanceTextWatcher =
       AddBalanceTextWatcher(_fragment, _addBalanceDialogBinding.amount)
 
   init {
-    _fragment.fragmentBinding.withdrawButton.setOnClickListener { _withdrawBalanceDialog.show() }
-    _fragment.fragmentBinding.addBalanceButton.setOnClickListener { _addBalanceDialog.show() }
+    _fragment.fragmentBinding.withdrawButton.setOnClickListener {
+      _fragment.createCustomerViewModel.balanceView.onWithdrawBalanceDialogShown()
+    }
+    _fragment.fragmentBinding.addBalanceButton.setOnClickListener {
+      _fragment.createCustomerViewModel.balanceView.onAddBalanceDialogShown()
+    }
     _withdrawBalanceDialogBinding.amount.addTextChangedListener(_withdrawTextWatcher)
     _addBalanceDialogBinding.amount.addTextChangedListener(_addBalanceTextWatcher)
   }
@@ -82,8 +84,26 @@ class CreateCustomerBalance(private val _fragment: CreateCustomerFragment) {
             balance.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags()))
   }
 
+  fun showAddBalanceDialog() {
+    _addBalanceDialog.show()
+  }
+
+  fun dismissAddBalanceDialog() {
+    _addBalanceDialog.dismiss()
+    _addBalanceDialog.currentFocus?.clearFocus()
+  }
+
   fun setAddBalanceButtonEnabled(isEnabled: Boolean) {
     _fragment.fragmentBinding.addBalanceButton.isEnabled = isEnabled
+  }
+
+  fun showWithdrawBalanceDialog() {
+    _withdrawBalanceDialog.show()
+  }
+
+  fun dismissWithdrawBalanceDialog() {
+    _withdrawBalanceDialog.dismiss()
+    _withdrawBalanceDialog.currentFocus?.clearFocus()
   }
 
   fun setWithdrawBalanceButtonEnabled(isEnabled: Boolean) {

@@ -17,6 +17,7 @@
 package com.robifr.ledger.ui.createcustomer.viewmodel
 
 data class CustomerBalanceWithdrawState(
+    val isDialogShown: Boolean,
     val formattedAmount: String,
     val availableAmountToWithdraw: Long
 )

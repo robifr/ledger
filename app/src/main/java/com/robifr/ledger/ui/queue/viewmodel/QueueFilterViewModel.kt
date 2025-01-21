@@ -42,6 +42,7 @@ class QueueFilterViewModel(
   private val _uiState: SafeMutableLiveData<QueueFilterState> =
       SafeMutableLiveData(
           QueueFilterState(
+              isDialogShown = false,
               isNullCustomerShown = _filterer.filters.isNullCustomerShown,
               customerIds = _filterer.filters.filteredCustomerIds,
               date = _filterer.filters.filteredDate,
@@ -75,7 +76,12 @@ class QueueFilterViewModel(
     _uiState.setValue(_uiState.safeValue.copy(formattedMaxTotalPrice = formattedMaxTotalPrice))
   }
 
+  fun onDialogShown() {
+    _uiState.setValue(uiState.safeValue.copy(isDialogShown = true))
+  }
+
   fun onDialogClosed() {
+    _uiState.setValue(uiState.safeValue.copy(isDialogShown = false))
     _viewModel.viewModelScope.launch(_dispatcher) {
       _selectAllQueues().let {
         withContext(Dispatchers.Main) { _onFiltersChanged(_parseInputtedFilters(), it) }

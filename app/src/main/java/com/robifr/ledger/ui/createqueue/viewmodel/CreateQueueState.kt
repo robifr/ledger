@@ -35,6 +35,7 @@ data class CreateQueueState(
     val temporalCustomer: CustomerModel?,
     val date: ZonedDateTime,
     val status: QueueModel.Status,
+    val isStatusDialogShown: Boolean,
     val paymentMethod: QueueModel.PaymentMethod,
     val allowedPaymentMethods: Set<QueueModel.PaymentMethod>,
     val productOrders: List<ProductOrderModel>

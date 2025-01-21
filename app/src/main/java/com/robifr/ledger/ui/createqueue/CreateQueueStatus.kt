@@ -26,32 +26,38 @@ import com.robifr.ledger.databinding.CreateQueueDialogStatusBinding
 
 class CreateQueueStatus(private val _fragment: CreateQueueFragment) {
   private val _dialogBinding: CreateQueueDialogStatusBinding =
-      CreateQueueDialogStatusBinding.inflate(_fragment.layoutInflater).apply {
-        radioGroup.setOnCheckedChangeListener { group: RadioGroup?, radioId ->
-          group?.findViewById<RadioButton>(radioId)?.tag?.let {
-            _fragment.createQueueViewModel.onStatusChanged(QueueModel.Status.valueOf(it.toString()))
-          }
-          _dialog.dismiss()
-        }
-      }
+      CreateQueueDialogStatusBinding.inflate(_fragment.layoutInflater)
   private val _dialog: BottomSheetDialog =
       BottomSheetDialog(_fragment.requireContext(), R.style.BottomSheetDialog).apply {
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         setContentView(_dialogBinding.root)
+        setOnDismissListener { _fragment.createQueueViewModel.onStatusDialogClosed() }
       }
 
   init {
     _fragment.fragmentBinding.status.setOnClickListener {
-      _dialogBinding.radioGroup
-          .findViewWithTag<RadioButton>(
-              _fragment.createQueueViewModel.uiState.safeValue.status.toString())
-          ?.id
-          ?.let { _dialogBinding.radioGroup.check(it) }
-      _dialog.show()
+      _fragment.createQueueViewModel.onStatusDialogShown()
     }
   }
 
   fun setInputtedStatus(status: QueueModel.Status) {
     _fragment.fragmentBinding.status.setText(status.stringRes)
+  }
+
+  fun showDialog(selectedStatus: QueueModel.Status) {
+    _dialogBinding.radioGroup.findViewWithTag<RadioButton>(selectedStatus.toString())?.id?.let {
+      _dialogBinding.radioGroup.check(it)
+    }
+    _dialogBinding.radioGroup.setOnCheckedChangeListener { group: RadioGroup?, radioId ->
+      group?.findViewById<RadioButton>(radioId)?.tag?.let {
+        _fragment.createQueueViewModel.onStatusChanged(QueueModel.Status.valueOf(it.toString()))
+      }
+      _fragment.createQueueViewModel.onStatusDialogClosed()
+    }
+    _dialog.show()
+  }
+
+  fun dismissDialog() {
+    _dialog.dismiss()
   }
 }

@@ -26,32 +26,40 @@ import com.robifr.ledger.databinding.SettingsDialogLanguageBinding
 
 class SettingsLanguage(private val _fragment: SettingsFragment) {
   private val _dialogBinding: SettingsDialogLanguageBinding =
-      SettingsDialogLanguageBinding.inflate(_fragment.layoutInflater).apply {
-        radioGroup.setOnCheckedChangeListener { group: RadioGroup?, radioId ->
-          group?.findViewById<RadioButton>(radioId)?.tag?.let {
-            _fragment.settingsViewModel.onLanguageChanged(LanguageOption.valueOf(it.toString()))
-          }
-          _dialog.dismiss()
-        }
-      }
+      SettingsDialogLanguageBinding.inflate(_fragment.layoutInflater)
   private val _dialog: BottomSheetDialog =
       BottomSheetDialog(_fragment.requireContext(), R.style.BottomSheetDialog).apply {
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         setContentView(_dialogBinding.root)
+        setOnDismissListener { _fragment.settingsViewModel.onLanguageDialogClosed() }
       }
 
   init {
     _fragment.fragmentBinding.languageLayer.setOnClickListener {
-      _dialogBinding.radioGroup
-          .findViewWithTag<RadioButton>(
-              _fragment.settingsViewModel.uiState.safeValue.languageUsed.toString())
-          ?.id
-          ?.let { _dialogBinding.radioGroup.check(it) }
-      _dialog.show()
+      _fragment.settingsViewModel.onLanguageDialogShown()
     }
   }
 
   fun setLanguageUsed(language: LanguageOption) {
     _fragment.fragmentBinding.language.setText(language.stringRes)
+  }
+
+  fun showDialog() {
+    _dialogBinding.radioGroup
+        .findViewWithTag<RadioButton>(
+            _fragment.settingsViewModel.uiState.safeValue.languageUsed.toString())
+        ?.id
+        ?.let { _dialogBinding.radioGroup.check(it) }
+    _dialogBinding.radioGroup.setOnCheckedChangeListener { group: RadioGroup?, radioId ->
+      group?.findViewById<RadioButton>(radioId)?.tag?.let {
+        _fragment.settingsViewModel.onLanguageChanged(LanguageOption.valueOf(it.toString()))
+      }
+      _fragment.settingsViewModel.onLanguageDialogClosed()
+    }
+    _dialog.show()
+  }
+
+  fun dismissDialog() {
+    _dialog.dismiss()
   }
 }

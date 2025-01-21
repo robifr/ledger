@@ -156,6 +156,8 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
     val inputtedQueue: QueueModel = createQueueViewModel.parseInputtedQueue()
     _inputDate.setInputtedDate(state.date, state.dateFormat())
+    if (state.isStatusDialogShown) _inputStatus.showDialog(state.status)
+    else _inputStatus.dismissDialog()
     _inputStatus.setInputtedStatus(state.status)
     _inputPaymentMethod.setInputtedPaymentMethod(state.paymentMethod)
     _inputPaymentMethod.setEnabledButtons(state.allowedPaymentMethods)
@@ -167,11 +169,10 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   private fun _onMakeProductOrderState(state: MakeProductOrderState) {
     if (state.isDialogShown) {
-      if (state.productOrderToEdit != null) {
-        _inputProductOrder.makeProductOrder.openEditDialog()
-      } else {
-        _inputProductOrder.makeProductOrder.openCreateDialog(state.isAddButtonEnabled)
-      }
+      if (state.productOrderToEdit != null) _inputProductOrder.makeProductOrder.showEditDialog()
+      else _inputProductOrder.makeProductOrder.showCreateDialog(state.isAddButtonEnabled)
+    } else {
+      _inputProductOrder.makeProductOrder.dismissDialog()
     }
     _inputProductOrder.makeProductOrder.setInputtedProduct(state.product)
     _inputProductOrder.makeProductOrder.setInputtedQuantityText(state.formattedQuantity)

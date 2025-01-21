@@ -24,24 +24,22 @@ import com.robifr.ledger.ui.RecyclerViewHolder
 class CustomerListHolder(
     private val _cardBinding: CustomerCardWideBinding,
     private val _customers: () -> List<CustomerModel>,
-    private val _onDeleteCustomer: (CustomerModel) -> Unit,
     private val _expandedCustomerIndex: () -> Int,
-    private val _onExpandedCustomerIndexChanged: (Int) -> Unit
+    private val _onExpandedCustomerIndexChanged: (Int) -> Unit,
+    private val _onCustomerMenuDialogShown: (selectedCustomer: CustomerModel) -> Unit
 ) : RecyclerViewHolder(_cardBinding.root) {
   private var _customerIndex: Int = -1
   private val _card: CustomerCardWideComponent =
       CustomerCardWideComponent(itemView.context, _cardBinding)
-  private val _menu: CustomerListMenu =
-      CustomerListMenu(
-          holder = this,
-          customers = _customers,
-          onDeleteCustomer = _onDeleteCustomer,
-          customerIndex = { _customerIndex })
 
   init {
     _cardBinding.cardView.setOnClickListener { _onExpandedCustomerIndexChanged(_customerIndex) }
-    _cardBinding.normalCard.menuButton.setOnClickListener { _menu.openDialog() }
-    _cardBinding.expandedCard.menuButton.setOnClickListener { _menu.openDialog() }
+    _cardBinding.normalCard.menuButton.setOnClickListener {
+      _onCustomerMenuDialogShown(_customers()[_customerIndex])
+    }
+    _cardBinding.expandedCard.menuButton.setOnClickListener {
+      _onCustomerMenuDialogShown(_customers()[_customerIndex])
+    }
   }
 
   override fun bind(itemIndex: Int) {

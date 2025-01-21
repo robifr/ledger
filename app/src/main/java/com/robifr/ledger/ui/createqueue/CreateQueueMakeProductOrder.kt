@@ -64,7 +64,6 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
           .apply {
             setOnDismissListener {
               _fragment.createQueueViewModel.makeProductOrderView.onDialogClosed()
-              currentFocus?.clearFocus()
             }
           }
   private val _quantityTextWatcher: QuantityTextWatcher =
@@ -124,18 +123,23 @@ class CreateQueueMakeProductOrder(private val _fragment: CreateQueueFragment) {
             totalPrice, AppCompatDelegate.getApplicationLocales().toLanguageTags())
   }
 
-  fun openCreateDialog(isAddButtonEnabled: Boolean) {
+  fun showCreateDialog(isAddButtonEnabled: Boolean) {
     _dialogBinding.title.setText(R.string.createQueue_productOrders_makeProductOrders)
     _dialog.show()
     _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setText(R.string.action_add)
     _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = isAddButtonEnabled
   }
 
-  fun openEditDialog() {
+  fun showEditDialog() {
     _dialogBinding.title.setText(R.string.createQueue_productOrders_editProductOrders)
     _dialog.show()
     _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setText(R.string.action_save)
     _dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = true
+  }
+
+  fun dismissDialog() {
+    _dialog.dismiss()
+    _dialog.currentFocus?.clearFocus()
   }
 }
 

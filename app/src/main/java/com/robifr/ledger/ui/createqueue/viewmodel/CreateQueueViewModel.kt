@@ -62,6 +62,7 @@ constructor(
               temporalCustomer = null,
               date = ZonedDateTime.now(ZoneId.systemDefault()),
               status = QueueModel.Status.IN_QUEUE,
+              isStatusDialogShown = false,
               paymentMethod = QueueModel.PaymentMethod.CASH,
               allowedPaymentMethods = setOf(QueueModel.PaymentMethod.CASH),
               productOrders = listOf()))
@@ -102,6 +103,14 @@ constructor(
     _onUpdateAllowedPaymentMethods()
     // Update after allowed payment methods updated, in case payment method changed.
     _onUpdateTemporalCustomer()
+  }
+
+  fun onStatusDialogShown() {
+    _uiState.setValue(_uiState.safeValue.copy(isStatusDialogShown = true))
+  }
+
+  fun onStatusDialogClosed() {
+    _uiState.setValue(_uiState.safeValue.copy(isStatusDialogShown = false))
   }
 
   fun onProductOrdersChanged(productOrders: List<ProductOrderModel>) {

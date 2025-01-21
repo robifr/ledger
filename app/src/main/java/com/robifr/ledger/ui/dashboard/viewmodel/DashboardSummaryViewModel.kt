@@ -59,6 +59,7 @@ class DashboardSummaryViewModel(
   private val _uiState: SafeMutableLiveData<DashboardSummaryState> =
       SafeMutableLiveData(
           DashboardSummaryState(
+              isDateDialogShown = false,
               date = QueueDate(QueueDate.Range.ALL_TIME),
               queues = listOf(),
               displayedChart = DashboardSummary.OverviewType.TOTAL_QUEUES))
@@ -90,6 +91,14 @@ class DashboardSummaryViewModel(
   fun onDateChanged(date: QueueDate) {
     _uiState.setValue(_uiState.safeValue.copy(date = date))
     _loadAllQueuesInRange(_uiState.safeValue.date)
+  }
+
+  fun onDateDialogShown() {
+    _uiState.setValue(_uiState.safeValue.copy(isDateDialogShown = true))
+  }
+
+  fun onDateDialogClosed() {
+    _uiState.setValue(_uiState.safeValue.copy(isDateDialogShown = false))
   }
 
   fun _onQueuesChanged(queues: List<QueueModel>) {

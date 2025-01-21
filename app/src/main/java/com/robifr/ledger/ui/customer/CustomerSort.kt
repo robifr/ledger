@@ -32,7 +32,7 @@ class CustomerSort(private val _fragment: CustomerFragment) {
           // cause that wouldn't work when user re-select same radio to revert sort order.
           radioGroup.findViewWithTag<RadioButton>(sortBy.toString())?.setOnClickListener {
             _fragment.customerViewModel.onSortMethodChanged(sortBy)
-            _dialog.dismiss()
+            _fragment.customerViewModel.onSortMethodDialogClosed()
           }
         }
       }
@@ -40,21 +40,28 @@ class CustomerSort(private val _fragment: CustomerFragment) {
       BottomSheetDialog(_fragment.requireContext(), R.style.BottomSheetDialog).apply {
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         setContentView(_dialogBinding.root)
+        setOnDismissListener { _fragment.customerViewModel.onSortMethodDialogClosed() }
       }
 
   init {
     _fragment.fragmentBinding.sortByChip.setText(R.string.customer_sortBy)
     _fragment.fragmentBinding.sortByChip.setOnClickListener {
-      _dialogBinding.radioGroup
-          .findViewWithTag<RadioButton>(
-              _fragment.customerViewModel.uiState.safeValue.sortMethod.sortBy.toString())
-          ?.let {
-            _dialogBinding.radioGroup.check(it.id)
-            _updateRadioIcon(
-                it, _fragment.customerViewModel.uiState.safeValue.sortMethod.isAscending)
-          }
-      _dialog.show()
+      _fragment.customerViewModel.onSortMethodDialogShown()
     }
+  }
+
+  fun showDialog(selectedSortMethod: CustomerSortMethod) {
+    _dialogBinding.radioGroup
+        .findViewWithTag<RadioButton>(selectedSortMethod.sortBy.toString())
+        ?.let {
+          _dialogBinding.radioGroup.check(it.id)
+          _updateRadioIcon(it, selectedSortMethod.isAscending)
+        }
+    _dialog.show()
+  }
+
+  fun dismissDialog() {
+    _dialog.dismiss()
   }
 
   private fun _updateRadioIcon(radio: RadioButton, isAscending: Boolean) {

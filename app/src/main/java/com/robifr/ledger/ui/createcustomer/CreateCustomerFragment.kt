@@ -130,10 +130,14 @@ open class CreateCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener 
   }
 
   private fun _onInputBalanceAmountState(state: CustomerBalanceAddState) {
+    if (state.isDialogShown) _inputBalance.showAddBalanceDialog()
+    else _inputBalance.dismissAddBalanceDialog()
     _inputBalance.setInputtedBalanceAmountText(state.formattedAmount)
   }
 
   private fun _onInputWithdrawAmountState(state: CustomerBalanceWithdrawState) {
+    if (state.isDialogShown) _inputBalance.showWithdrawBalanceDialog()
+    else _inputBalance.dismissWithdrawBalanceDialog()
     _inputBalance.setInputtedWithdrawAmountText(state.formattedAmount)
     _inputBalance.setAvailableAmountToWithdraw(state.availableAmountToWithdraw)
   }

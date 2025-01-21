@@ -56,6 +56,7 @@ class QueueFilterCustomer(
           _fragment.queueViewModel.filterView.onNullCustomerShown(isChecked)
     }
   }
+
   /** @param isShown [QueueFilters.isNullCustomerShown] */
   fun setNullCustomerShown(isShown: Boolean) {
     // Remove listener to prevent unintended updates to both view model

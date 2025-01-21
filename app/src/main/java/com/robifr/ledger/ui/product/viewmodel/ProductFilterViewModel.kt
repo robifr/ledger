@@ -38,7 +38,8 @@ class ProductFilterViewModel(
   private val _filterer: ProductFilterer = ProductFilterer()
 
   private val _uiState: SafeMutableLiveData<ProductFilterState> =
-      SafeMutableLiveData(ProductFilterState(formattedMinPrice = "", formattedMaxPrice = ""))
+      SafeMutableLiveData(
+          ProductFilterState(isDialogShown = false, formattedMinPrice = "", formattedMaxPrice = ""))
   val uiState: SafeLiveData<ProductFilterState>
     get() = _uiState
 
@@ -50,7 +51,12 @@ class ProductFilterViewModel(
     _uiState.setValue(_uiState.safeValue.copy(formattedMaxPrice = formattedMaxPrice))
   }
 
+  fun onDialogShown() {
+    _uiState.setValue(_uiState.safeValue.copy(isDialogShown = true))
+  }
+
   fun onDialogClosed() {
+    _uiState.setValue(_uiState.safeValue.copy(isDialogShown = false))
     _viewModel.viewModelScope.launch(_dispatcher) {
       _selectAllProducts().let {
         withContext(Dispatchers.Main) { _onFiltersChanged(_parseInputtedFilters(), it) }

@@ -26,5 +26,8 @@ import com.robifr.ledger.data.model.QueueModel
 data class QueueState(
     val queues: List<QueueModel>,
     val expandedQueueIndex: Int,
-    val sortMethod: QueueSortMethod
+    val isQueueMenuDialogShown: Boolean,
+    val selectedQueueMenu: QueueModel?,
+    val sortMethod: QueueSortMethod,
+    val isSortMethodDialogShown: Boolean
 )

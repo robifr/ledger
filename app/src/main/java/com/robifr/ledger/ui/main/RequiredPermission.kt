@@ -33,7 +33,7 @@ class RequiredPermission(private val _context: Context) {
           Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
           Uri.fromParts("package", _context.packageName, null))
 
-  fun openStorageAccessDialog(onDeny: () -> Unit, onGrant: () -> Unit) {
+  fun showStorageAccessDialog(onDeny: () -> Unit, onGrant: () -> Unit) {
     MaterialAlertDialogBuilder(_context)
         .setTitle(
             HtmlCompat.fromHtml(
@@ -57,7 +57,7 @@ class RequiredPermission(private val _context: Context) {
           Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
           Uri.fromParts("package", _context.packageName, null))
 
-  fun openUnknownSourceInstallationDialog(onGrant: () -> Unit) {
+  fun showUnknownSourceInstallationDialog(onGrant: () -> Unit) {
     MaterialAlertDialogBuilder(_context)
         .setTitle(
             HtmlCompat.fromHtml(

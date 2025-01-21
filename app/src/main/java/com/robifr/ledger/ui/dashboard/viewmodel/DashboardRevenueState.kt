@@ -25,6 +25,7 @@ import com.robifr.ledger.ui.dashboard.DashboardRevenue
 import java.math.BigDecimal
 
 data class DashboardRevenueState(
+    val isDateDialogShown: Boolean,
     val date: QueueDate,
     val queues: List<QueueModel>,
     val displayedChart: DashboardRevenue.OverviewType

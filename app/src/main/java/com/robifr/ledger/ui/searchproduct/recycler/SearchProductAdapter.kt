@@ -54,12 +54,13 @@ class SearchProductAdapter(private val _fragment: SearchProductFragment) :
             ProductListHolder(
                 _cardBinding = cardBinding,
                 _products = { _fragment.searchProductViewModel.uiState.safeValue.products },
-                _onDeleteProduct = _fragment.searchProductViewModel::onDeleteProduct,
                 _expandedProductIndex = {
                   _fragment.searchProductViewModel.uiState.safeValue.expandedProductIndex
                 },
                 _onExpandedProductIndexChanged =
-                    _fragment.searchProductViewModel::onExpandedProductIndexChanged)
+                    _fragment.searchProductViewModel::onExpandedProductIndexChanged,
+                _onProductMenuDialogShown =
+                    _fragment.searchProductViewModel::onProductMenuDialogShown)
           }
         }
       }

@@ -45,13 +45,12 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 class DashboardSummary(private val _fragment: DashboardFragment) : View.OnClickListener {
-  private val _date: DashboardDate =
+  val date: DashboardDate =
       DashboardDate(
           dateChip = { _fragment.fragmentBinding.summary.dateChip },
           fragment = _fragment,
-          _selectedDateRange = {
-            _fragment.dashboardViewModel.summaryView.uiState.safeValue.date.range
-          },
+          onDialogShown = _fragment.dashboardViewModel.summaryView::onDateDialogShown,
+          _onDialogClosed = _fragment.dashboardViewModel.summaryView::onDateDialogClosed,
           _onDateChanged = _fragment.dashboardViewModel.summaryView::onDateChanged)
   private val _chart: Chart =
       Chart(

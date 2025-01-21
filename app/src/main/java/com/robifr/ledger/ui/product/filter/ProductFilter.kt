@@ -29,15 +29,23 @@ class ProductFilter(private val _fragment: ProductFragment) {
       BottomSheetDialog(_fragment.requireContext(), R.style.BottomSheetDialog).apply {
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         setContentView(_dialogBinding.root)
-        setOnDismissListener {
-          _fragment.productViewModel.filterView.onDialogClosed()
-          currentFocus?.clearFocus()
-        }
+        setOnDismissListener { _fragment.productViewModel.filterView.onDialogClosed() }
       }
   val filterPrice: ProductFilterPrice = ProductFilterPrice(_fragment, _dialogBinding)
 
   init {
     _fragment.fragmentBinding.filtersChip.setText(R.string.product_filters)
-    _fragment.fragmentBinding.filtersChip.setOnClickListener { _dialog.show() }
+    _fragment.fragmentBinding.filtersChip.setOnClickListener {
+      _fragment.productViewModel.filterView.onDialogShown()
+    }
+  }
+
+  fun showDialog() {
+    _dialog.show()
+  }
+
+  fun dismissDialog() {
+    _dialog.dismiss()
+    _dialog.currentFocus?.clearFocus()
   }
 }

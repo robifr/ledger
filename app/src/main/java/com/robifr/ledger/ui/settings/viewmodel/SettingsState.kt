@@ -23,6 +23,7 @@ import java.time.ZonedDateTime
 
 data class SettingsState(
     val languageUsed: LanguageOption,
+    val isLanguageDialogShown: Boolean,
     val lastCheckedTimeForAppUpdate: ZonedDateTime,
     val githubRelease: GithubReleaseModel?,
 ) {

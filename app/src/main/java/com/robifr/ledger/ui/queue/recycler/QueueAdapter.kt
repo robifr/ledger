@@ -37,12 +37,12 @@ class QueueAdapter(private val _fragment: QueueFragment) :
                 _cardBinding =
                     QueueCardWideBinding.inflate(_fragment.layoutInflater, parent, false),
                 _queues = { _fragment.queueViewModel.uiState.safeValue.queues },
-                _onDeleteQueue = _fragment.queueViewModel::onDeleteQueue,
                 _expandedQueueIndex = {
                   _fragment.queueViewModel.uiState.safeValue.expandedQueueIndex
                 },
                 _onExpandedQueueIndexChanged =
-                    _fragment.queueViewModel::onExpandedQueueIndexChanged)
+                    _fragment.queueViewModel::onExpandedQueueIndexChanged,
+                _onQueueMenuDialogShown = _fragment.queueViewModel::onQueueMenuDialogShown)
       }
 
   override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {

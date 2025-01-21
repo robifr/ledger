@@ -60,7 +60,12 @@ constructor(
   private val _uiState: SafeMutableLiveData<CustomerState> =
       SafeMutableLiveData(
           CustomerState(
-              customers = listOf(), expandedCustomerIndex = -1, sortMethod = _sorter.sortMethod))
+              customers = listOf(),
+              expandedCustomerIndex = -1,
+              isCustomerMenuDialogShown = false,
+              selectedCustomerMenu = null,
+              sortMethod = _sorter.sortMethod,
+              isSortMethodDialogShown = false))
   val uiState: SafeLiveData<CustomerState>
     get() = _uiState
 
@@ -102,6 +107,17 @@ constructor(
                 if (_uiState.safeValue.expandedCustomerIndex != index) index else -1))
   }
 
+  fun onCustomerMenuDialogShown(selectedCustomer: CustomerModel) {
+    _uiState.setValue(
+        _uiState.safeValue.copy(
+            isCustomerMenuDialogShown = true, selectedCustomerMenu = selectedCustomer))
+  }
+
+  fun onCustomerMenuDialogClosed() {
+    _uiState.setValue(
+        _uiState.safeValue.copy(isCustomerMenuDialogShown = false, selectedCustomerMenu = null))
+  }
+
   fun onSortMethodChanged(
       sortMethod: CustomerSortMethod,
       customers: List<CustomerModel> = _uiState.safeValue.customers
@@ -130,6 +146,14 @@ constructor(
               _uiState.safeValue.sortMethod.isAscending
             }),
         customers)
+  }
+
+  fun onSortMethodDialogShown() {
+    _uiState.setValue(_uiState.safeValue.copy(isSortMethodDialogShown = true))
+  }
+
+  fun onSortMethodDialogClosed() {
+    _uiState.setValue(_uiState.safeValue.copy(isSortMethodDialogShown = false))
   }
 
   fun onDeleteCustomer(customer: CustomerModel) {

@@ -37,12 +37,12 @@ class CustomerAdapter(private val _fragment: CustomerFragment) :
                 _cardBinding =
                     CustomerCardWideBinding.inflate(_fragment.layoutInflater, parent, false),
                 _customers = { _fragment.customerViewModel.uiState.safeValue.customers },
-                _onDeleteCustomer = _fragment.customerViewModel::onDeleteCustomer,
                 _expandedCustomerIndex = {
                   _fragment.customerViewModel.uiState.safeValue.expandedCustomerIndex
                 },
                 _onExpandedCustomerIndexChanged =
-                    _fragment.customerViewModel::onExpandedCustomerIndexChanged)
+                    _fragment.customerViewModel::onExpandedCustomerIndexChanged,
+                _onCustomerMenuDialogShown = _fragment.customerViewModel::onCustomerMenuDialogShown)
       }
 
   override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {

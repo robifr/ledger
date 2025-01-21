@@ -54,12 +54,13 @@ class SearchCustomerAdapter(private val _fragment: SearchCustomerFragment) :
             CustomerListHolder(
                 _cardBinding = cardBinding,
                 _customers = { _fragment.searchCustomerViewModel.uiState.safeValue.customers },
-                _onDeleteCustomer = _fragment.searchCustomerViewModel::onDeleteCustomer,
                 _expandedCustomerIndex = {
                   _fragment.searchCustomerViewModel.uiState.safeValue.expandedCustomerIndex
                 },
                 _onExpandedCustomerIndexChanged =
-                    _fragment.searchCustomerViewModel::onExpandedCustomerIndexChanged)
+                    _fragment.searchCustomerViewModel::onExpandedCustomerIndexChanged,
+                _onCustomerMenuDialogShown =
+                    _fragment.searchCustomerViewModel::onCustomerMenuDialogShown)
           }
         }
       }

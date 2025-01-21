@@ -78,7 +78,9 @@ constructor(
                               .key())
                       ?.toList() ?: listOf(),
               products = listOf(),
-              expandedProductIndex = -1))
+              expandedProductIndex = -1,
+              isProductMenuDialogShown = false,
+              selectedProductMenu = null))
   val uiState: SafeLiveData<SearchProductState>
     get() = _uiState
 
@@ -122,6 +124,17 @@ constructor(
         _uiState.safeValue.copy(
             expandedProductIndex =
                 if (_uiState.safeValue.expandedProductIndex != index) index else -1))
+  }
+
+  fun onProductMenuDialogShown(selectedProduct: ProductModel) {
+    _uiState.setValue(
+        _uiState.safeValue.copy(
+            isProductMenuDialogShown = true, selectedProductMenu = selectedProduct))
+  }
+
+  fun onProductMenuDialogClosed() {
+    _uiState.setValue(
+        _uiState.safeValue.copy(isProductMenuDialogShown = false, selectedProductMenu = null))
   }
 
   fun onProductSelected(product: ProductModel?) {

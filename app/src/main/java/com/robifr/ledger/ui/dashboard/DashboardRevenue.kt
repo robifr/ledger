@@ -30,13 +30,12 @@ import java.math.BigDecimal
 import java.time.format.DateTimeFormatter
 
 class DashboardRevenue(private val _fragment: DashboardFragment) : View.OnClickListener {
-  private val _date: DashboardDate =
+  val date: DashboardDate =
       DashboardDate(
           dateChip = { _fragment.fragmentBinding.revenue.dateChip },
           fragment = _fragment,
-          _selectedDateRange = {
-            _fragment.dashboardViewModel.revenueView.uiState.safeValue.date.range
-          },
+          onDialogShown = _fragment.dashboardViewModel.revenueView::onDateDialogShown,
+          _onDialogClosed = _fragment.dashboardViewModel.revenueView::onDateDialogClosed,
           _onDateChanged = _fragment.dashboardViewModel.revenueView::onDateChanged)
   private val _chart: Chart =
       Chart(

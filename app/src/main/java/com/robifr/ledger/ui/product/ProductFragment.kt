@@ -38,6 +38,7 @@ import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.product.filter.ProductFilter
 import com.robifr.ledger.ui.product.recycler.ProductAdapter
 import com.robifr.ledger.ui.product.viewmodel.ProductFilterState
+import com.robifr.ledger.ui.product.viewmodel.ProductState
 import com.robifr.ledger.ui.product.viewmodel.ProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -50,6 +51,7 @@ class ProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   val productViewModel: ProductViewModel by activityViewModels()
   private lateinit var _sort: ProductSort
   private lateinit var _filter: ProductFilter
+  private lateinit var _productMenu: ProductMenu
   private lateinit var _adapter: ProductAdapter
 
   override fun onCreateView(
@@ -60,6 +62,7 @@ class ProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     _fragmentBinding = ListableFragmentBinding.inflate(inflater, container, false)
     _sort = ProductSort(this)
     _filter = ProductFilter(this)
+    _productMenu = ProductMenu(this, productViewModel::onProductMenuDialogClosed)
     _adapter = ProductAdapter(this)
     return fragmentBinding.root
   }
@@ -79,6 +82,7 @@ class ProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
     productViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
+    productViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
     productViewModel.recyclerAdapterState.observe(viewLifecycleOwner, ::_onRecyclerAdapterState)
     productViewModel.filterView.uiState.observe(viewLifecycleOwner, ::_onFilterState)
   }
@@ -104,6 +108,17 @@ class ProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         .show()
   }
 
+  private fun _onUiState(state: ProductState) {
+    if (state.isSortMethodDialogShown) _sort.showDialog(state.sortMethod) else _sort.dismissDialog()
+    if (state.isProductMenuDialogShown) {
+      state.selectedProductMenu?.let {
+        _productMenu.showDialog(it, productViewModel::onDeleteProduct)
+      }
+    } else {
+      _productMenu.dismissDialog()
+    }
+  }
+
   private fun _onRecyclerAdapterState(state: RecyclerAdapterState) {
     when (state) {
       is RecyclerAdapterState.DataSetChanged -> _adapter.notifyDataSetChanged()
@@ -113,6 +128,7 @@ class ProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onFilterState(state: ProductFilterState) {
+    if (state.isDialogShown) _filter.showDialog() else _filter.dismissDialog()
     _filter.filterPrice.setFilteredMinPriceText(state.formattedMinPrice)
     _filter.filterPrice.setFilteredMaxPriceText(state.formattedMaxPrice)
   }

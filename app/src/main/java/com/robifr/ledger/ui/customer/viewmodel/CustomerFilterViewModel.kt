@@ -41,6 +41,7 @@ class CustomerFilterViewModel(
   private val _uiState: SafeMutableLiveData<CustomerFilterState> =
       SafeMutableLiveData(
           CustomerFilterState(
+              isDialogShown = false,
               formattedMinBalance = "",
               formattedMaxBalance = "",
               formattedMinDebt = "",
@@ -64,7 +65,12 @@ class CustomerFilterViewModel(
     _uiState.setValue(_uiState.safeValue.copy(formattedMaxDebt = formattedMaxDebt))
   }
 
+  fun onDialogShown() {
+    _uiState.setValue(_uiState.safeValue.copy(isDialogShown = true))
+  }
+
   fun onDialogClosed() {
+    _uiState.setValue(_uiState.safeValue.copy(isDialogShown = false))
     _viewModel.viewModelScope.launch(_dispatcher) {
       _selectAllCustomers().let {
         withContext(Dispatchers.Main) { _onFiltersChanged(customers = it) }

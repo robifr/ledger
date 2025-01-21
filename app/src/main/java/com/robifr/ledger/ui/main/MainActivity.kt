@@ -42,7 +42,7 @@ import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationBarView
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.MainActivityBinding
-import com.robifr.ledger.ui.settings.AppUpdateAvailableDialog
+import com.robifr.ledger.ui.settings.AppUpdateAvailable
 import com.robifr.ledger.ui.settings.viewmodel.SettingsDialogState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsViewModel
 import com.robifr.ledger.ui.settings.viewmodel.UnknownSourceInstallationDialogState
@@ -120,7 +120,7 @@ open class MainActivity :
     _permissionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult(), this)
     if (!_permission.isStorageAccessGranted()) {
-      _permission.openStorageAccessDialog(
+      _permission.showStorageAccessDialog(
           onDeny = { finish() },
           onGrant = { _permissionLauncher.launch(_permission.storageAccessIntent()) })
     } else {
@@ -143,8 +143,8 @@ open class MainActivity :
         val dateFormat: DateTimeFormatter =
             DateTimeFormatter.ofPattern(
                 getString(_settingsViewModel.uiState.safeValue.languageUsed.fullDateFormat))
-        AppUpdateAvailableDialog(this)
-            .openDialog(
+        AppUpdateAvailable(this)
+            .showDialog(
                 updateVersion = state.githubRelease.tagName,
                 updateDate =
                     ZonedDateTime.parse(
@@ -154,7 +154,7 @@ open class MainActivity :
                 onUpdate = { _settingsViewModel.onUpdateApp() })
       }
       is UnknownSourceInstallationDialogState -> {
-        _permission.openUnknownSourceInstallationDialog {
+        _permission.showUnknownSourceInstallationDialog {
           _permissionLauncher.launch(_permission.unknownSourceInstallationIntent())
         }
       }

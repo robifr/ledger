@@ -17,6 +17,7 @@
 package com.robifr.ledger.ui.customer.viewmodel
 
 data class CustomerFilterState(
+    val isDialogShown: Boolean,
     val formattedMinBalance: String,
     val formattedMaxBalance: String,
     val formattedMinDebt: String,

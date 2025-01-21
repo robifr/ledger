@@ -26,5 +26,8 @@ import com.robifr.ledger.data.model.ProductModel
 data class ProductState(
     val products: List<ProductModel>,
     val expandedProductIndex: Int,
-    val sortMethod: ProductSortMethod
+    val isProductMenuDialogShown: Boolean,
+    val selectedProductMenu: ProductModel?,
+    val sortMethod: ProductSortMethod,
+    val isSortMethodDialogShown: Boolean
 )

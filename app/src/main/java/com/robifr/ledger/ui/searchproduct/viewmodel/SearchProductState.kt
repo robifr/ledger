@@ -32,7 +32,9 @@ data class SearchProductState(
     val query: String,
     val initialSelectedProductIds: List<Long>,
     val products: List<ProductModel>,
-    val expandedProductIndex: Int
+    val expandedProductIndex: Int,
+    val isProductMenuDialogShown: Boolean,
+    val selectedProductMenu: ProductModel?
 ) {
   val isNoResultFoundIllustrationVisible: Boolean
     get() = query.isNotEmpty() && products.isEmpty()

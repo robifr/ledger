@@ -38,6 +38,7 @@ import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.customer.filter.CustomerFilter
 import com.robifr.ledger.ui.customer.recycler.CustomerAdapter
 import com.robifr.ledger.ui.customer.viewmodel.CustomerFilterState
+import com.robifr.ledger.ui.customer.viewmodel.CustomerState
 import com.robifr.ledger.ui.customer.viewmodel.CustomerViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -50,6 +51,7 @@ class CustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   val customerViewModel: CustomerViewModel by activityViewModels()
   private lateinit var _sort: CustomerSort
   private lateinit var _filter: CustomerFilter
+  private lateinit var _customerMenu: CustomerMenu
   private lateinit var _adapter: CustomerAdapter
 
   override fun onCreateView(
@@ -60,6 +62,7 @@ class CustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     _fragmentBinding = ListableFragmentBinding.inflate(inflater, container, false)
     _sort = CustomerSort(this)
     _filter = CustomerFilter(this)
+    _customerMenu = CustomerMenu(this, customerViewModel::onCustomerMenuDialogClosed)
     _adapter = CustomerAdapter(this)
     return fragmentBinding.root
   }
@@ -79,6 +82,7 @@ class CustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
     customerViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
+    customerViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
     customerViewModel.recyclerAdapterState.observe(viewLifecycleOwner, ::_onRecyclerAdapterState)
     customerViewModel.filterView.uiState.observe(viewLifecycleOwner, ::_onFilterState)
   }
@@ -104,6 +108,17 @@ class CustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         .show()
   }
 
+  private fun _onUiState(state: CustomerState) {
+    if (state.isSortMethodDialogShown) _sort.showDialog(state.sortMethod) else _sort.dismissDialog()
+    if (state.isCustomerMenuDialogShown) {
+      state.selectedCustomerMenu?.let {
+        _customerMenu.showDialog(it, customerViewModel::onDeleteCustomer)
+      }
+    } else {
+      _customerMenu.dismissDialog()
+    }
+  }
+
   private fun _onRecyclerAdapterState(state: RecyclerAdapterState) {
     when (state) {
       is RecyclerAdapterState.DataSetChanged -> _adapter.notifyDataSetChanged()
@@ -113,6 +128,7 @@ class CustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onFilterState(state: CustomerFilterState) {
+    if (state.isDialogShown) _filter.showDialog() else _filter.dismissDialog()
     _filter.filterBalance.setFilteredMinBalanceText(state.formattedMinBalance)
     _filter.filterBalance.setFilteredMaxBalanceText(state.formattedMaxBalance)
     _filter.filterDebt.setFilteredMinDebtText(state.formattedMinDebt)

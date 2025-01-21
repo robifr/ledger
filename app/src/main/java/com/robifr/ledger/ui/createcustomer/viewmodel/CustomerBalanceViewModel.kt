@@ -26,13 +26,14 @@ import java.text.ParseException
 
 class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCustomerViewModel) {
   private val _addBalanceState: SafeMutableLiveData<CustomerBalanceAddState> =
-      SafeMutableLiveData(CustomerBalanceAddState(""))
+      SafeMutableLiveData(CustomerBalanceAddState(false, ""))
   val addBalanceState: SafeLiveData<CustomerBalanceAddState>
     get() = _addBalanceState
 
   private val _withdrawBalanceState: SafeMediatorLiveData<CustomerBalanceWithdrawState> =
       SafeMediatorLiveData(
-              CustomerBalanceWithdrawState(formattedAmount = "", availableAmountToWithdraw = 0L))
+              CustomerBalanceWithdrawState(
+                  isDialogShown = false, formattedAmount = "", availableAmountToWithdraw = 0L))
           .apply {
             addSource(_createCustomerViewModel.uiState.toLiveData()) {
               _withdrawBalanceState.setValue(
@@ -42,8 +43,12 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
   val withdrawBalanceState: SafeLiveData<CustomerBalanceWithdrawState>
     get() = _withdrawBalanceState
 
+  fun onAddBalanceDialogShown() {
+    _addBalanceState.setValue(_addBalanceState.safeValue.copy(isDialogShown = true))
+  }
+
   fun onAddBalanceDialogClosed() {
-    _addBalanceState.setValue(CustomerBalanceAddState(""))
+    _addBalanceState.setValue(CustomerBalanceAddState(false, ""))
   }
 
   fun onAddBalanceSubmitted() {
@@ -72,9 +77,16 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
                 }))
   }
 
+  fun onWithdrawBalanceDialogShown() {
+    _withdrawBalanceState.setValue(_withdrawBalanceState.safeValue.copy(isDialogShown = true))
+  }
+
   fun onWithdrawBalanceDialogClosed() {
     _withdrawBalanceState.setValue(
-        CustomerBalanceWithdrawState("", _createCustomerViewModel.uiState.safeValue.balance))
+        CustomerBalanceWithdrawState(
+            isDialogShown = false,
+            formattedAmount = "",
+            availableAmountToWithdraw = _createCustomerViewModel.uiState.safeValue.balance))
   }
 
   fun onWithdrawBalanceSubmitted() {

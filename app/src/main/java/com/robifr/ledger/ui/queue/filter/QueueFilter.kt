@@ -29,10 +29,7 @@ class QueueFilter(private val _fragment: QueueFragment) {
       BottomSheetDialog(_fragment.requireContext(), R.style.BottomSheetDialog).apply {
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         setContentView(_dialogBinding.root)
-        setOnDismissListener {
-          _fragment.queueViewModel.filterView.onDialogClosed()
-          currentFocus?.clearFocus()
-        }
+        setOnDismissListener { _fragment.queueViewModel.filterView.onDialogClosed() }
       }
   val filterCustomer: QueueFilterCustomer = QueueFilterCustomer(_dialog, _fragment, _dialogBinding)
   val filterDate: QueueFilterDate = QueueFilterDate(_fragment, _dialogBinding)
@@ -41,10 +38,17 @@ class QueueFilter(private val _fragment: QueueFragment) {
 
   init {
     _fragment.fragmentBinding.filtersChip.setText(R.string.queue_filters)
-    _fragment.fragmentBinding.filtersChip.setOnClickListener { openDialog() }
+    _fragment.fragmentBinding.filtersChip.setOnClickListener {
+      _fragment.queueViewModel.filterView.onDialogShown()
+    }
   }
 
-  fun openDialog() {
+  fun showDialog() {
     _dialog.show()
+  }
+
+  fun dismissDialog() {
+    _dialog.dismiss()
+    _dialog.currentFocus?.clearFocus()
   }
 }

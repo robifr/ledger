@@ -23,8 +23,8 @@ import androidx.core.text.HtmlCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.robifr.ledger.R
 
-class AppUpdateAvailableDialog(private val _context: Context) {
-  fun openDialog(
+class AppUpdateAvailable(private val _context: Context) {
+  fun showDialog(
       updateVersion: String,
       updateDate: String,
       updateSize: Double,

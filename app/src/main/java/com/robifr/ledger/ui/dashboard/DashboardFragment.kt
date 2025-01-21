@@ -88,6 +88,8 @@ class DashboardFragment : Fragment(), Toolbar.OnMenuItemClickListener {
       }
 
   private fun _onSummaryState(state: DashboardSummaryState) {
+    if (state.isDateDialogShown) _summaryOverview.date.showDialog { state.date.range }
+    else _summaryOverview.date.dismissDialog()
     _summaryOverview.setDate(state.date, state.dateFormat())
     _summaryOverview.selectCard(state.displayedChart)
     _summaryOverview.setTotalQueues(state.queues.size)
@@ -112,6 +114,8 @@ class DashboardFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onRevenueState(state: DashboardRevenueState) {
+    if (state.isDateDialogShown) _revenueOverview.date.showDialog { state.date.range }
+    else _revenueOverview.date.dismissDialog()
     _revenueOverview.setDate(state.date, state.dateFormat())
     _revenueOverview.selectCard(state.displayedChart)
     _revenueOverview.setTotalReceivedIncome(state.receivedIncome())

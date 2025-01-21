@@ -33,9 +33,10 @@ import java.time.Instant
 import java.time.ZoneId
 
 class DashboardDate(
-    dateChip: () -> Chip,
     fragment: DashboardFragment,
-    private val _selectedDateRange: () -> QueueDate.Range,
+    dateChip: () -> Chip,
+    onDialogShown: () -> Unit,
+    private val _onDialogClosed: () -> Unit,
     private val _onDateChanged: (QueueDate) -> Unit
 ) {
   private val _dialogBinding: DashboardDialogDateBinding =
@@ -50,6 +51,7 @@ class DashboardDate(
       BottomSheetDialog(fragment.requireContext(), R.style.BottomSheetDialog).apply {
         behavior.state = BottomSheetBehavior.STATE_EXPANDED
         setContentView(_dialogBinding.root)
+        setOnDismissListener { _onDialogClosed() }
       }
   private val _customDatePickerDialog: MaterialDatePicker<Pair<Long, Long>> =
       MaterialDatePicker.Builder.dateRangePicker()
@@ -67,30 +69,36 @@ class DashboardDate(
                           Instant.ofEpochMilli(endDate).atZone(ZoneId.systemDefault())))
                 }
               }
-              _dialog.dismiss()
+              _onDialogClosed()
             }
           }
 
   init {
-    dateChip().setOnClickListener {
-      // Remove listener to prevent callback being called during `check()` and `clearCheck()`.
-      _dialogBinding.radioGroup.setOnCheckedChangeListener(null)
-      // Custom range uses classic button. They aren't supposed to get selected.
-      if (_selectedDateRange() != QueueDate.Range.CUSTOM) {
-        _dialogBinding.radioGroup.findViewWithTag<View>(_selectedDateRange().toString())?.id?.let {
-          _dialogBinding.radioGroup.check(it)
-        }
-      } else {
-        // When the custom range get selected (button), all the other radios have to be unchecked.
-        _dialogBinding.radioGroup.clearCheck()
+    dateChip().setOnClickListener { onDialogShown() }
+  }
+
+  fun showDialog(selectedDateRange: () -> QueueDate.Range) {
+    // Remove listener to prevent callback being called during `check()` and `clearCheck()`.
+    _dialogBinding.radioGroup.setOnCheckedChangeListener(null)
+    // Custom range uses classic button. They aren't supposed to get selected.
+    if (selectedDateRange() != QueueDate.Range.CUSTOM) {
+      _dialogBinding.radioGroup.findViewWithTag<View>(selectedDateRange().toString())?.id?.let {
+        _dialogBinding.radioGroup.check(it)
       }
-      _dialogBinding.radioGroup.setOnCheckedChangeListener { group: RadioGroup?, radioId ->
-        group?.findViewById<RadioButton>(radioId)?.tag?.let {
-          _onDateChanged(QueueDate(QueueDate.Range.valueOf(it.toString())))
-        }
-        _dialog.dismiss()
-      }
-      _dialog.show()
+    } else {
+      // When the custom range get selected (button), all the other radios have to be unchecked.
+      _dialogBinding.radioGroup.clearCheck()
     }
+    _dialogBinding.radioGroup.setOnCheckedChangeListener { group: RadioGroup?, radioId ->
+      group?.findViewById<RadioButton>(radioId)?.tag?.let {
+        _onDateChanged(QueueDate(QueueDate.Range.valueOf(it.toString())))
+      }
+      _onDialogClosed()
+    }
+    _dialog.show()
+  }
+
+  fun dismissDialog() {
+    _dialog.dismiss()
   }
 }

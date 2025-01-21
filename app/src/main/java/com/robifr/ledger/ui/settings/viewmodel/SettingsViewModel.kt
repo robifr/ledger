@@ -57,6 +57,7 @@ constructor(
       SafeMutableLiveData(
           SettingsState(
               languageUsed = _settingsRepository.languageUsed(),
+              isLanguageDialogShown = false,
               lastCheckedTimeForAppUpdate =
                   _settingsRepository.lastCheckedTimeForAppUpdate().atZone(ZoneId.systemDefault()),
               githubRelease = null))
@@ -71,6 +72,14 @@ constructor(
     _uiState.setValue(_uiState.safeValue.copy(languageUsed = language))
     AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(language.languageTag))
     viewModelScope.launch(_dispatcher) { _settingsRepository.saveLanguageUsed(language) }
+  }
+
+  fun onLanguageDialogShown() {
+    _uiState.setValue(_uiState.safeValue.copy(isLanguageDialogShown = true))
+  }
+
+  fun onLanguageDialogClosed() {
+    _uiState.setValue(_uiState.safeValue.copy(isLanguageDialogShown = false))
   }
 
   fun onCheckForAppUpdate(context: Context, shouldSnackbarShown: Boolean = true) {

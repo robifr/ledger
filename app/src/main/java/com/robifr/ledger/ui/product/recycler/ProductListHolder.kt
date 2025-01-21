@@ -24,24 +24,22 @@ import com.robifr.ledger.ui.RecyclerViewHolder
 class ProductListHolder(
     private val _cardBinding: ProductCardWideBinding,
     private val _products: () -> List<ProductModel>,
-    private val _onDeleteProduct: (ProductModel) -> Unit,
     private val _expandedProductIndex: () -> Int,
-    private val _onExpandedProductIndexChanged: (Int) -> Unit
+    private val _onExpandedProductIndexChanged: (Int) -> Unit,
+    private val _onProductMenuDialogShown: (selectedProduct: ProductModel) -> Unit
 ) : RecyclerViewHolder(_cardBinding.root) {
   private var _productIndex: Int = -1
   private val _card: ProductCardWideComponent =
       ProductCardWideComponent(itemView.context, _cardBinding)
-  private val _menu: ProductListMenu =
-      ProductListMenu(
-          holder = this,
-          products = _products,
-          onDeleteProduct = _onDeleteProduct,
-          productIndex = { _productIndex })
 
   init {
     _cardBinding.cardView.setOnClickListener { _onExpandedProductIndexChanged(_productIndex) }
-    _cardBinding.normalCard.menuButton.setOnClickListener { _menu.openDialog() }
-    _cardBinding.expandedCard.menuButton.setOnClickListener { _menu.openDialog() }
+    _cardBinding.normalCard.menuButton.setOnClickListener {
+      _onProductMenuDialogShown(_products()[_productIndex])
+    }
+    _cardBinding.expandedCard.menuButton.setOnClickListener {
+      _onProductMenuDialogShown(_products()[_productIndex])
+    }
   }
 
   override fun bind(itemIndex: Int) {

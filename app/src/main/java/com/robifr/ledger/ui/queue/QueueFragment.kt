@@ -39,6 +39,7 @@ import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 import com.robifr.ledger.ui.queue.filter.QueueFilter
 import com.robifr.ledger.ui.queue.recycler.QueueAdapter
 import com.robifr.ledger.ui.queue.viewmodel.QueueFilterState
+import com.robifr.ledger.ui.queue.viewmodel.QueueState
 import com.robifr.ledger.ui.queue.viewmodel.QueueViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -51,6 +52,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   val queueViewModel: QueueViewModel by activityViewModels()
   private lateinit var _sort: QueueSort
   private lateinit var _filter: QueueFilter
+  private lateinit var _queueMenu: QueueMenu
   private lateinit var _adapter: QueueAdapter
 
   override fun onCreateView(
@@ -61,6 +63,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     _fragmentBinding = ListableFragmentBinding.inflate(inflater, container, false)
     _sort = QueueSort(this)
     _filter = QueueFilter(this)
+    _queueMenu = QueueMenu(this, queueViewModel::onQueueMenuDialogClosed)
     _adapter = QueueAdapter(this)
     return fragmentBinding.root
   }
@@ -80,6 +83,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
     queueViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
+    queueViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
     queueViewModel.recyclerAdapterState.observe(viewLifecycleOwner, ::_onRecyclerAdapterState)
     queueViewModel.filterView.uiState.observe(viewLifecycleOwner, ::_onFilterState)
   }
@@ -114,6 +118,15 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         .show()
   }
 
+  private fun _onUiState(state: QueueState) {
+    if (state.isSortMethodDialogShown) _sort.showDialog(state.sortMethod) else _sort.dismissDialog()
+    if (state.isQueueMenuDialogShown) {
+      state.selectedQueueMenu?.let { _queueMenu.showDialog(it, queueViewModel::onDeleteQueue) }
+    } else {
+      _queueMenu.dismissDialog()
+    }
+  }
+
   private fun _onRecyclerAdapterState(state: RecyclerAdapterState) {
     when (state) {
       is RecyclerAdapterState.DataSetChanged -> _adapter.notifyDataSetChanged()
@@ -123,6 +136,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   private fun _onFilterState(state: QueueFilterState) {
+    if (state.isDialogShown) _filter.showDialog() else _filter.dismissDialog()
     _filter.filterCustomer.setNullCustomerShown(state.isNullCustomerShown)
     _filter.filterStatus.setFilteredStatus(state.status)
     _filter.filterDate.setFilteredDate(state.date, state.dateFormat())
@@ -138,7 +152,7 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
                 FilterCustomerFragment.Result.FILTERED_CUSTOMER_IDS_LONG_ARRAY.key())
                 ?: longArrayOf()
         queueViewModel.filterView.onCustomerIdsChanged(filteredCustomerIds.toList())
-        _filter.openDialog()
+        queueViewModel.filterView.onDialogShown()
       }
       null -> Unit
     }

@@ -37,12 +37,12 @@ class ProductAdapter(private val _fragment: ProductFragment) :
                 _cardBinding =
                     ProductCardWideBinding.inflate(_fragment.layoutInflater, parent, false),
                 _products = { _fragment.productViewModel.uiState.safeValue.products },
-                _onDeleteProduct = _fragment.productViewModel::onDeleteProduct,
                 _expandedProductIndex = {
                   _fragment.productViewModel.uiState.safeValue.expandedProductIndex
                 },
                 _onExpandedProductIndexChanged =
-                    _fragment.productViewModel::onExpandedProductIndexChanged)
+                    _fragment.productViewModel::onExpandedProductIndexChanged,
+                _onProductMenuDialogShown = _fragment.productViewModel::onProductMenuDialogShown)
       }
 
   override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {

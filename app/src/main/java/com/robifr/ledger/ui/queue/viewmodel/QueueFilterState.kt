@@ -23,6 +23,7 @@ import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.model.QueueModel
 
 data class QueueFilterState(
+    val isDialogShown: Boolean,
     val isNullCustomerShown: Boolean,
     val customerIds: List<Long>,
     val date: QueueDate,

@@ -32,7 +32,9 @@ data class SearchCustomerState(
     val query: String,
     val initialSelectedCustomerIds: List<Long>,
     val customers: List<CustomerModel>,
-    val expandedCustomerIndex: Int
+    val expandedCustomerIndex: Int,
+    val isCustomerMenuDialogShown: Boolean,
+    val selectedCustomerMenu: CustomerModel?
 ) {
   val isNoResultFoundIllustrationVisible: Boolean
     get() = query.isNotEmpty() && customers.isEmpty()

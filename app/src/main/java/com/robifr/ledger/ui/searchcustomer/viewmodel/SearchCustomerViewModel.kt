@@ -78,7 +78,9 @@ constructor(
                               .key())
                       ?.toList() ?: listOf(),
               customers = listOf(),
-              expandedCustomerIndex = -1))
+              expandedCustomerIndex = -1,
+              isCustomerMenuDialogShown = false,
+              selectedCustomerMenu = null))
   val uiState: SafeLiveData<SearchCustomerState>
     get() = _uiState
 
@@ -122,6 +124,17 @@ constructor(
         _uiState.safeValue.copy(
             expandedCustomerIndex =
                 if (_uiState.safeValue.expandedCustomerIndex != index) index else -1))
+  }
+
+  fun onCustomerMenuDialogShown(selectedCustomer: CustomerModel) {
+    _uiState.setValue(
+        _uiState.safeValue.copy(
+            isCustomerMenuDialogShown = true, selectedCustomerMenu = selectedCustomer))
+  }
+
+  fun onCustomerMenuDialogClosed() {
+    _uiState.setValue(
+        _uiState.safeValue.copy(isCustomerMenuDialogShown = false, selectedCustomerMenu = null))
   }
 
   fun onCustomerSelected(customer: CustomerModel?) {

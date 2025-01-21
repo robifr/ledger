@@ -26,5 +26,8 @@ import com.robifr.ledger.data.model.CustomerModel
 data class CustomerState(
     val customers: List<CustomerModel>,
     val expandedCustomerIndex: Int,
-    val sortMethod: CustomerSortMethod
+    val isCustomerMenuDialogShown: Boolean,
+    val selectedCustomerMenu: CustomerModel?,
+    val sortMethod: CustomerSortMethod,
+    val isSortMethodDialogShown: Boolean
 )

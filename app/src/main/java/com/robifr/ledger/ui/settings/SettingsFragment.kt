@@ -96,6 +96,7 @@ class SettingsFragment : Fragment() {
 
   private fun _onUiState(state: SettingsState) {
     _language.setLanguageUsed(state.languageUsed)
+    if (state.isLanguageDialogShown) _language.showDialog() else _language.dismissDialog()
     _appUpdate.setLastChecked(
         state.lastCheckedTimeForAppUpdate, state.languageUsed.detailedDateFormat)
   }
@@ -103,10 +104,10 @@ class SettingsFragment : Fragment() {
   private fun _onDialogState(state: SettingsDialogState) {
     when (state) {
       is UpdateAvailableDialogState ->
-          _appUpdate.openUpdateAvailableDialog(
+          _appUpdate.showUpdateAvailableDialog(
               state.githubRelease, settingsViewModel.uiState.safeValue.languageUsed.fullDateFormat)
       is UnknownSourceInstallationDialogState ->
-          _appUpdate.openUnknownSourceInstallationPermissionDialog()
+          _appUpdate.showUnknownSourceInstallationPermissionDialog()
     }
   }
 }

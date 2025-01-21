@@ -38,6 +38,7 @@ import com.robifr.ledger.databinding.SearchableFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
 import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.customer.CustomerMenu
 import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.search.viewmodel.SearchViewModel
 import com.robifr.ledger.ui.searchcustomer.recycler.SearchCustomerAdapter
@@ -57,6 +58,7 @@ class SearchCustomerFragment : Fragment(), SearchView.OnQueryTextListener {
   val searchCustomerViewModel: SearchCustomerViewModel by viewModels()
   private val _searchViewModel: SearchViewModel by
       viewModels({ if (parentFragment !is NavHostFragment) requireParentFragment() else this })
+  private lateinit var _customerMenu: CustomerMenu
   private lateinit var _adapter: SearchCustomerAdapter
   private lateinit var _onBackPressed: OnBackPressedHandler
 
@@ -66,6 +68,7 @@ class SearchCustomerFragment : Fragment(), SearchView.OnQueryTextListener {
       savedInstanceState: Bundle?
   ): View {
     _fragmentBinding = SearchableFragmentBinding.inflate(inflater, container, false)
+    _customerMenu = CustomerMenu(this, searchCustomerViewModel::onCustomerMenuDialogClosed)
     _adapter = SearchCustomerAdapter(this)
     _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
@@ -140,6 +143,14 @@ class SearchCustomerFragment : Fragment(), SearchView.OnQueryTextListener {
   }
 
   private fun _onUiState(state: SearchCustomerState) {
+    // FIXME: Customer menu dialog doesn't get retained (it close) when configuration changes.
+    if (state.isCustomerMenuDialogShown) {
+      state.selectedCustomerMenu?.let {
+        _customerMenu.showDialog(it, searchCustomerViewModel::onDeleteCustomer)
+      }
+    } else {
+      _customerMenu.dismissDialog()
+    }
     fragmentBinding.horizontalListContainer.isVisible = state.isNoResultFoundIllustrationVisible
     fragmentBinding.noResultsImage.root.isVisible = state.isNoResultFoundIllustrationVisible
     fragmentBinding.recyclerView.isVisible = state.isRecyclerViewVisible

@@ -66,7 +66,13 @@ constructor(
 
   private val _uiState: SafeMutableLiveData<QueueState> =
       SafeMutableLiveData(
-          QueueState(queues = listOf(), expandedQueueIndex = -1, sortMethod = _sorter.sortMethod))
+          QueueState(
+              queues = listOf(),
+              expandedQueueIndex = -1,
+              isQueueMenuDialogShown = false,
+              selectedQueueMenu = null,
+              sortMethod = _sorter.sortMethod,
+              isSortMethodDialogShown = false))
   val uiState: SafeLiveData<QueueState>
     get() = _uiState
 
@@ -107,6 +113,16 @@ constructor(
             expandedQueueIndex = if (_uiState.safeValue.expandedQueueIndex != index) index else -1))
   }
 
+  fun onQueueMenuDialogShown(selectedQueue: QueueModel) {
+    _uiState.setValue(
+        _uiState.safeValue.copy(isQueueMenuDialogShown = true, selectedQueueMenu = selectedQueue))
+  }
+
+  fun onQueueMenuDialogClosed() {
+    _uiState.setValue(
+        _uiState.safeValue.copy(isQueueMenuDialogShown = false, selectedQueueMenu = null))
+  }
+
   fun onSortMethodChanged(
       sortMethod: QueueSortMethod,
       queues: List<QueueModel> = _uiState.safeValue.queues
@@ -135,6 +151,14 @@ constructor(
               _uiState.safeValue.sortMethod.isAscending
             }),
         queues)
+  }
+
+  fun onSortMethodDialogShown() {
+    _uiState.setValue(_uiState.safeValue.copy(isSortMethodDialogShown = true))
+  }
+
+  fun onSortMethodDialogClosed() {
+    _uiState.setValue(_uiState.safeValue.copy(isSortMethodDialogShown = false))
   }
 
   fun onDeleteQueue(queue: QueueModel) {

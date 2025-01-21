@@ -16,4 +16,8 @@
 
 package com.robifr.ledger.ui.product.viewmodel
 
-data class ProductFilterState(val formattedMinPrice: String, val formattedMaxPrice: String)
+data class ProductFilterState(
+    val isDialogShown: Boolean,
+    val formattedMinPrice: String,
+    val formattedMaxPrice: String
+)
