@@ -47,6 +47,40 @@
         android:layout_marginBottom="@dimen/space_extraLarge">
 
       <androidx.constraintlayout.helper.widget.Layer
+          android:id="@+id/appThemeLayer"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:background="?selectableItemBackground"
+          android:clickable="true"
+          app:constraint_referenced_ids="appThemeTitle,appTheme"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
+
+      <TextView
+          android:id="@+id/appThemeTitle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:paddingStart="@dimen/space_medium"
+          android:paddingTop="@dimen/space_medium"
+          android:text="@string/settings_theme"
+          android:textStyle="bold"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
+
+      <TextView
+          android:id="@+id/appTheme"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="@dimen/space_tiny"
+          android:paddingStart="@dimen/space_medium"
+          android:paddingBottom="@dimen/space_medium"
+          android:text="@string/enum_appTheme_followSystem"
+          android:textColor="?colorOnSurfaceVariant"
+          android:textSize="@dimen/text_small"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@id/appThemeTitle" />
+
+      <androidx.constraintlayout.helper.widget.Layer
           android:id="@+id/languageLayer"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
@@ -54,7 +88,7 @@
           android:clickable="true"
           app:constraint_referenced_ids="languageTitle,language"
           app:layout_constraintStart_toStartOf="parent"
-          app:layout_constraintTop_toTopOf="parent" />
+          app:layout_constraintTop_toBottomOf="@id/appTheme" />
 
       <TextView
           android:id="@+id/languageTitle"
@@ -65,7 +99,7 @@
           android:text="@string/settings_language"
           android:textStyle="bold"
           app:layout_constraintStart_toStartOf="parent"
-          app:layout_constraintTop_toTopOf="parent" />
+          app:layout_constraintTop_toBottomOf="@id/appTheme" />
 
       <TextView
           android:id="@+id/language"

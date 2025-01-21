@@ -46,6 +46,7 @@ class SettingsFragment : Fragment() {
     get() = _fragmentBinding!!
 
   val settingsViewModel: SettingsViewModel by activityViewModels()
+  private lateinit var _appTheme: SettingsAppTheme
   private lateinit var _language: SettingsLanguage
   private lateinit var _appUpdate: SettingsAppUpdate
   private lateinit var _onBackPressed: OnBackPressedHandler
@@ -56,6 +57,7 @@ class SettingsFragment : Fragment() {
       savedInstanceState: Bundle?
   ): View {
     _fragmentBinding = SettingsFragmentBinding.inflate(inflater, container, false)
+    _appTheme = SettingsAppTheme(this)
     _language = SettingsLanguage(this)
     _appUpdate = SettingsAppUpdate(this)
     _onBackPressed = OnBackPressedHandler(this)
@@ -95,6 +97,9 @@ class SettingsFragment : Fragment() {
   }
 
   private fun _onUiState(state: SettingsState) {
+    _appTheme.setAppTheme(state.appTheme)
+    if (state.isAppThemeDialogShown) _appTheme.showDialog(state.appTheme)
+    else _appTheme.dismissDialog()
     _language.setLanguageUsed(state.languageUsed)
     if (state.isLanguageDialogShown) _language.showDialog() else _language.dismissDialog()
     _appUpdate.setLastChecked(

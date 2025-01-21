@@ -16,12 +16,15 @@
 
 package com.robifr.ledger.ui.settings.viewmodel
 
+import com.robifr.ledger.data.display.AppTheme
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.network.GithubReleaseModel
 import java.time.ZoneId
 import java.time.ZonedDateTime
 
 data class SettingsState(
+    val appTheme: AppTheme,
+    val isAppThemeDialogShown: Boolean,
     val languageUsed: LanguageOption,
     val isLanguageDialogShown: Boolean,
     val lastCheckedTimeForAppUpdate: ZonedDateTime,

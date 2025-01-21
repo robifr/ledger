@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.BuildConfig
 import com.robifr.ledger.R
+import com.robifr.ledger.data.display.AppTheme
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.network.NetworkState
@@ -56,6 +57,8 @@ constructor(
   private val _uiState: SafeMutableLiveData<SettingsState> =
       SafeMutableLiveData(
           SettingsState(
+              appTheme = _settingsRepository.appTheme(),
+              isAppThemeDialogShown = false,
               languageUsed = _settingsRepository.languageUsed(),
               isLanguageDialogShown = false,
               lastCheckedTimeForAppUpdate =
@@ -67,6 +70,20 @@ constructor(
   private val _dialogState: SingleLiveEvent<SettingsDialogState> = SingleLiveEvent()
   val dialogState: SingleLiveEvent<SettingsDialogState>
     get() = _dialogState
+
+  fun onAppThemeChanged(appTheme: AppTheme) {
+    _uiState.setValue(_uiState.safeValue.copy(appTheme = appTheme))
+    AppCompatDelegate.setDefaultNightMode(appTheme.defaultNightMode)
+    viewModelScope.launch(_dispatcher) { _settingsRepository.saveAppTheme(appTheme) }
+  }
+
+  fun onAppThemeDialogShown() {
+    _uiState.setValue(_uiState.safeValue.copy(isAppThemeDialogShown = true))
+  }
+
+  fun onAppThemeDialogClosed() {
+    _uiState.setValue(_uiState.safeValue.copy(isAppThemeDialogShown = false))
+  }
 
   fun onLanguageChanged(language: LanguageOption) {
     _uiState.setValue(_uiState.safeValue.copy(languageUsed = language))

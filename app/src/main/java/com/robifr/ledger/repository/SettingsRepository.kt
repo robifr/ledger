@@ -17,6 +17,7 @@
 package com.robifr.ledger.repository
 
 import android.content.Context
+import com.robifr.ledger.data.display.AppTheme
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.network.AppUpdater
 import com.robifr.ledger.network.GithubReleaseModel
@@ -32,6 +33,18 @@ class SettingsRepository(
     private val _settingsPreferences: SettingsPreferences,
     private val _appUpdater: AppUpdater
 ) {
+  fun appTheme(): AppTheme {
+    val appTheme: String? =
+        _settingsPreferences.sharedPreferences.getString(SettingsPreferences.KEY_APP_THEME, null)
+    return AppTheme.entries.find { it.toString() == appTheme } ?: AppTheme.FOLLOW_SYSTEM
+  }
+
+  suspend fun saveAppTheme(appTheme: AppTheme): Boolean =
+      _settingsPreferences.sharedPreferences
+          .edit()
+          .putString(SettingsPreferences.KEY_APP_THEME, appTheme.toString())
+          .commit()
+
   fun languageUsed(): LanguageOption {
     val languageUsed: String? =
         _settingsPreferences.sharedPreferences.getString(

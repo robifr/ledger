@@ -18,6 +18,7 @@ package com.robifr.ledger.preferences
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.robifr.ledger.data.display.AppTheme
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.network.GithubReleaseModel
 import java.time.Instant
@@ -28,6 +29,8 @@ class SettingsPreferences(val _context: Context) {
 
   companion object {
     const val FILE_NAME: String = "com.robifr.ledger.settingsprefs"
+    /** Key for the app theme in [AppTheme]. */
+    const val KEY_APP_THEME: String = "app_theme"
     /** Key for the IETF BCP 47 language tag from [LanguageOption.languageTag]. */
     const val KEY_LANGUAGE_USED: String = "language_used"
     /** Key for the last checked time in [Instant] for app update. */

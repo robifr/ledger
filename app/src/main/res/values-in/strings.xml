@@ -45,6 +45,10 @@
   <!-- `QueueModel#PaymentMethod`. -->
   <string name="enum_queuePaymentMethod_cash">Tunai</string>
   <string name="enum_queuePaymentMethod_accountBalance">Saldo akun</string>
+  <!-- `AppTheme`. -->
+  <string name="enum_appTheme_light">Terang</string>
+  <string name="enum_appTheme_dark">Gelap</string>
+  <string name="enum_appTheme_followSystem">Mengikuti sistem</string>
 
   <!-- Action button. -->
   <string name="action_add">Tambah</string>
@@ -98,6 +102,9 @@
 
   <!-- Settings fragment. -->
   <string name="settings">Pengaturan</string>
+  <!-- App theme. -->
+  <string name="settings_theme">Tema</string>
+  <string name="settings_chooseAppTheme">Pilih tema aplikasi</string>
   <!-- Language. -->
   <string name="settings_language">Bahasa</string>
   <string name="settings_selectLanguage">Pilih bahasa</string>

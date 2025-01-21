@@ -109,6 +109,8 @@ open class MainActivity :
       view.updatePadding(bottom = windowInsets.bottom)
       WindowInsetsCompat.CONSUMED
     }
+    AppCompatDelegate.setDefaultNightMode(
+        _settingsViewModel.uiState.safeValue.appTheme.defaultNightMode)
     AppCompatDelegate.setApplicationLocales(
         LocaleListCompat.forLanguageTags(
             _settingsViewModel.uiState.safeValue.languageUsed.languageTag))

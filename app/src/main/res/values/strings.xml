@@ -46,6 +46,10 @@
   <!-- `QueueModel#PaymentMethod`. -->
   <string name="enum_queuePaymentMethod_cash">Cash</string>
   <string name="enum_queuePaymentMethod_accountBalance">Account balance</string>
+  <!-- `AppTheme`. -->
+  <string name="enum_appTheme_light">Light</string>
+  <string name="enum_appTheme_dark">Dark</string>
+  <string name="enum_appTheme_followSystem">Follow system</string>
   <!-- `LanguageOption`. -->
   <string name="enum_languageOption_englishUs" translatable="false">English (US)</string>
   <string name="enum_languageOption_englishUs_shortDateFormat" translatable="false">MMM d, yyyy</string>
@@ -109,6 +113,9 @@
 
   <!-- Settings fragment. -->
   <string name="settings">Settings</string>
+  <!-- App theme. -->
+  <string name="settings_theme">Theme</string>
+  <string name="settings_chooseAppTheme">Choose app theme</string>
   <!-- Language. -->
   <string name="settings_language">Language</string>
   <string name="settings_selectLanguage">Select language</string>
