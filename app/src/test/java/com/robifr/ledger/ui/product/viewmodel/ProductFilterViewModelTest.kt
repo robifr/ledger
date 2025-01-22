@@ -36,6 +36,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExperimentalCoroutinesApi
@@ -63,12 +64,28 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
   @Test
   fun `on state changed`() {
+    _viewModel.onDialogShown()
     _viewModel.onMinPriceTextChanged("$0")
     _viewModel.onMaxPriceTextChanged("$1.00")
     assertEquals(
-        ProductFilterState(formattedMinPrice = "$0", formattedMaxPrice = "$1.00"),
+        ProductFilterState(
+            isDialogShown = true, formattedMinPrice = "$0", formattedMaxPrice = "$1.00"),
         _viewModel.uiState.safeValue,
         "Preserve all values except for the changed field")
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on dialog shown`(isShown: Boolean) {
+    _viewModel.onMinPriceTextChanged("$0")
+    _viewModel.onMaxPriceTextChanged("$1")
+
+    if (isShown) _viewModel.onDialogShown() else _viewModel.onDialogClosed()
+    assertEquals(
+        ProductFilterState(
+            isDialogShown = isShown, formattedMinPrice = "$0", formattedMaxPrice = "$1"),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
   }
 
   @Test

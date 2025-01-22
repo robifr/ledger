@@ -115,6 +115,7 @@ class EditQueueViewModelTest(
             temporalCustomer = _queueToEdit.customer,
             date = _queueToEdit.date.atZone(ZoneId.systemDefault()),
             status = _queueToEdit.status,
+            isStatusDialogShown = false,
             paymentMethod = _queueToEdit.paymentMethod,
             allowedPaymentMethods =
                 setOf(QueueModel.PaymentMethod.CASH, _queueToEdit.paymentMethod),

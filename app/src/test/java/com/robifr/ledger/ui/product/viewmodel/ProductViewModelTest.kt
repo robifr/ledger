@@ -49,6 +49,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExperimentalCoroutinesApi
@@ -117,6 +118,28 @@ class ProductViewModelTest(
         "Update products with the new sorted list")
   }
 
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on product menu dialog shown`(isShown: Boolean) {
+    _viewModel.onProductsChanged(listOf(_firstProduct))
+    _viewModel.onExpandedProductIndexChanged(0)
+    _viewModel.onSortMethodChanged(ProductSortMethod(ProductSortMethod.SortBy.NAME, true))
+    _viewModel.onSortMethodDialogClosed()
+
+    if (isShown) _viewModel.onProductMenuDialogShown(_firstProduct)
+    else _viewModel.onProductMenuDialogClosed()
+    assertEquals(
+        ProductState(
+            products = listOf(_firstProduct),
+            expandedProductIndex = 0,
+            isProductMenuDialogShown = isShown,
+            selectedProductMenu = if (isShown) _firstProduct else null,
+            sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, true),
+            isSortMethodDialogShown = false),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
+  }
+
   @Test
   fun `on sort method changed with different sort method`() {
     val sortMethod: ProductSortMethod = ProductSortMethod(ProductSortMethod.SortBy.PRICE, true)
@@ -149,6 +172,27 @@ class ProductViewModelTest(
             sortMethod = ProductSortMethod(ProductSortMethod.SortBy.PRICE, true)),
         _viewModel.uiState.safeValue,
         "Sort products based from the sorting method")
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on sort method dialog shown`(isShown: Boolean) {
+    _viewModel.onProductsChanged(listOf(_firstProduct))
+    _viewModel.onExpandedProductIndexChanged(-1)
+    _viewModel.onProductMenuDialogClosed()
+    _viewModel.onSortMethodChanged(ProductSortMethod(ProductSortMethod.SortBy.NAME, true))
+
+    if (isShown) _viewModel.onSortMethodDialogShown() else _viewModel.onSortMethodDialogClosed()
+    assertEquals(
+        ProductState(
+            products = listOf(_firstProduct),
+            expandedProductIndex = -1,
+            isProductMenuDialogShown = false,
+            selectedProductMenu = null,
+            sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, true),
+            isSortMethodDialogShown = isShown),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
   }
 
   private fun `_on expanded product index changed cases`(): Array<Array<Any>> =

@@ -185,6 +185,28 @@ class QueueViewModelTest(
         "Update queues with the new sorted list")
   }
 
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on queue menu dialog shown`(isShown: Boolean) {
+    _viewModel.onQueuesChanged(listOf(_firstQueue))
+    _viewModel.onExpandedQueueIndexChanged(-1)
+    _viewModel.onSortMethodChanged(QueueSortMethod(QueueSortMethod.SortBy.DATE, true))
+    _viewModel.onSortMethodDialogClosed()
+
+    if (isShown) _viewModel.onQueueMenuDialogShown(_firstQueue)
+    else _viewModel.onQueueMenuDialogClosed()
+    assertEquals(
+        QueueState(
+            queues = listOf(_firstQueue),
+            expandedQueueIndex = -1,
+            isQueueMenuDialogShown = isShown,
+            selectedQueueMenu = if (isShown) _firstQueue else null,
+            sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true),
+            isSortMethodDialogShown = false),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
+  }
+
   @Test
   fun `on sort method changed with different sort method`() {
     val sortMethod: QueueSortMethod = QueueSortMethod(QueueSortMethod.SortBy.CUSTOMER_NAME, false)
@@ -216,6 +238,27 @@ class QueueViewModelTest(
             sortMethod = QueueSortMethod(QueueSortMethod.SortBy.CUSTOMER_NAME, false)),
         _viewModel.uiState.safeValue,
         "Sort queues based from the sorting method")
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on sort method dialog shown`(isShown: Boolean) {
+    _viewModel.onQueuesChanged(listOf(_firstQueue))
+    _viewModel.onExpandedQueueIndexChanged(0)
+    _viewModel.onQueueMenuDialogClosed()
+    _viewModel.onSortMethodChanged(QueueSortMethod(QueueSortMethod.SortBy.DATE, true))
+
+    if (isShown) _viewModel.onSortMethodDialogShown() else _viewModel.onSortMethodDialogClosed()
+    assertEquals(
+        QueueState(
+            queues = listOf(_firstQueue),
+            expandedQueueIndex = 0,
+            isQueueMenuDialogShown = false,
+            selectedQueueMenu = null,
+            sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true),
+            isSortMethodDialogShown = isShown),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
   }
 
   private fun `_on expanded queue index changed cases`(): Array<Array<Any>> =

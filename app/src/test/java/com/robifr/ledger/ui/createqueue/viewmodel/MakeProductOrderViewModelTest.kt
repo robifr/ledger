@@ -60,12 +60,13 @@ class MakeProductOrderViewModelTest(private val _dispatcher: TestDispatcher) {
 
   @Test
   fun `on state changed`() {
+    _viewModel.onDialogShown()
     _viewModel.onProductChanged(_product)
     _viewModel.onQuantityTextChanged(_productOrder.quantity.toString())
     _viewModel.onDiscountTextChanged("$${_productOrder.discount / 100L}")
     assertEquals(
         MakeProductOrderState(
-            isDialogShown = false,
+            isDialogShown = true,
             product = _product,
             formattedQuantity = _productOrder.quantity.toString(),
             formattedDiscount = "$${_productOrder.discount / 100L}",
@@ -98,7 +99,7 @@ class MakeProductOrderViewModelTest(private val _dispatcher: TestDispatcher) {
   }
 
   @Test
-  fun `on dialog closed`() {
+  fun `on dialog closed result all fields reset`() {
     _viewModel.onDialogClosed()
     assertEquals(
         MakeProductOrderState(

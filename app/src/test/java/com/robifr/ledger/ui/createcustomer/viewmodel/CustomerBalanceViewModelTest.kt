@@ -50,12 +50,12 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
   @ValueSource(longs = [500L, Long.MAX_VALUE])
   fun `on balance amount text changed`(currentBalance: Long) {
     val currentFormattedAmount: String = "$0"
-    _viewModel.onBalanceAmountTextChanged(currentFormattedAmount)
+    _viewModel.onAddBalanceAmountTextChanged(currentFormattedAmount)
     _createCustomerViewModel.onBalanceChanged(currentBalance)
 
     val amountToAdd: Long = 100L
     val formattedAmountToAdd: String = "$1.00"
-    _viewModel.onBalanceAmountTextChanged(formattedAmountToAdd)
+    _viewModel.onAddBalanceAmountTextChanged(formattedAmountToAdd)
     assertEquals(
         if ((currentBalance.toBigDecimal() + amountToAdd.toBigDecimal()).compareTo(
             Long.MAX_VALUE.toBigDecimal()) > 0) {
@@ -67,18 +67,22 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
         "Revert the state if the added balance exceeds the maximum allowed")
   }
 
-  @Test
-  fun `on add dialog closed`() {
-    _viewModel.onAddBalanceDialogClosed()
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on add dialog shown`(isShown: Boolean) {
+    _viewModel.onAddBalanceAmountTextChanged("$1")
+
+    if (isShown) _viewModel.onAddBalanceDialogShown() else _viewModel.onAddBalanceDialogClosed()
     assertEquals(
-        CustomerBalanceAddState(formattedAmount = ""),
+        if (isShown) _viewModel.addBalanceState.safeValue.copy(isDialogShown = true)
+        else CustomerBalanceAddState(isDialogShown = false, formattedAmount = ""),
         _viewModel.addBalanceState.safeValue,
-        "Reset the add balance state when dialog closes")
+        "Preserve other fields when the dialog shown and reset when closed")
   }
 
   @Test
   fun `on add balance submitted`() {
-    _viewModel.onBalanceAmountTextChanged("$1.00")
+    _viewModel.onAddBalanceAmountTextChanged("$1.00")
     _viewModel.onAddBalanceSubmitted()
     assertEquals(
         _createCustomerViewModel.uiState.safeValue.copy(balance = 100L),
@@ -109,16 +113,22 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
   }
 
   @ParameterizedTest
-  @ValueSource(longs = [0, 100L])
-  fun `on withdraw dialog closed`(currentBalance: Long) {
-    _createCustomerViewModel.onBalanceChanged(currentBalance)
+  @ValueSource(booleans = [true, false])
+  fun `on withdraw dialog shown`(isShown: Boolean) {
+    _viewModel.onWithdrawAmountTextChanged("$100")
+    _createCustomerViewModel.onBalanceChanged(100L)
 
-    _viewModel.onWithdrawBalanceDialogClosed()
+    if (isShown) _viewModel.onWithdrawBalanceDialogShown()
+    else _viewModel.onWithdrawBalanceDialogClosed()
     assertEquals(
-        CustomerBalanceWithdrawState(
-            formattedAmount = "", availableAmountToWithdraw = currentBalance),
+        if (isShown) {
+          _viewModel.withdrawBalanceState.safeValue.copy(isDialogShown = true)
+        } else {
+          CustomerBalanceWithdrawState(
+              isDialogShown = false, formattedAmount = "", availableAmountToWithdraw = 100L)
+        },
         _viewModel.withdrawBalanceState.safeValue,
-        "Reset the withdraw balance state when dialog closes")
+        "Preserve other fields when the dialog shown and reset when closed")
   }
 
   @Test

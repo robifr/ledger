@@ -49,6 +49,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExperimentalCoroutinesApi
@@ -119,6 +120,28 @@ class CustomerViewModelTest(
         "Update customers with the new sorted list")
   }
 
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on customer menu dialog shown`(isShown: Boolean) {
+    _viewModel.onCustomersChanged(listOf(_firstCustomer))
+    _viewModel.onExpandedCustomerIndexChanged(0)
+    _viewModel.onSortMethodChanged(CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true))
+    _viewModel.onSortMethodDialogClosed()
+
+    if (isShown) _viewModel.onCustomerMenuDialogShown(_firstCustomer)
+    else _viewModel.onCustomerMenuDialogClosed()
+    assertEquals(
+        CustomerState(
+            customers = listOf(_firstCustomer),
+            expandedCustomerIndex = 0,
+            isCustomerMenuDialogShown = isShown,
+            selectedCustomerMenu = if (isShown) _firstCustomer else null,
+            sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
+            isSortMethodDialogShown = false),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
+  }
+
   @Test
   fun `on sort method changed with different sort method`() {
     val sortMethod: CustomerSortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.BALANCE, true)
@@ -151,6 +174,27 @@ class CustomerViewModelTest(
             sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.BALANCE, true)),
         _viewModel.uiState.safeValue,
         "Sort customers based from the sorting method")
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on sort method dialog shown`(isShown: Boolean) {
+    _viewModel.onCustomersChanged(listOf(_firstCustomer))
+    _viewModel.onExpandedCustomerIndexChanged(-1)
+    _viewModel.onCustomerMenuDialogClosed()
+    _viewModel.onSortMethodChanged(CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true))
+
+    if (isShown) _viewModel.onSortMethodDialogShown() else _viewModel.onSortMethodDialogClosed()
+    assertEquals(
+        CustomerState(
+            customers = listOf(_firstCustomer),
+            expandedCustomerIndex = -1,
+            isCustomerMenuDialogShown = false,
+            selectedCustomerMenu = null,
+            sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
+            isSortMethodDialogShown = isShown),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
   }
 
   private fun `_on expanded customer index changed cases`(): Array<Array<Any>> =

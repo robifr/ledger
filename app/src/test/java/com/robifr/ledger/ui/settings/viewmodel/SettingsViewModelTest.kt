@@ -22,6 +22,7 @@ import com.robifr.ledger.InstantTaskExecutorExtension
 import com.robifr.ledger.LifecycleOwnerExtension
 import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
+import com.robifr.ledger.data.display.AppTheme
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.network.GithubReleaseModel
 import com.robifr.ledger.network.NetworkState
@@ -87,11 +88,49 @@ class SettingsViewModelTest(
     _snackbarStateObserver = mockk(relaxed = true)
     _dialogStateObserver = mockk(relaxed = true)
 
+    every { _settingsRepository.appTheme() } returns AppTheme.FOLLOW_SYSTEM
     every { _settingsRepository.languageUsed() } returns LanguageOption.ENGLISH_US
     every { _settingsRepository.lastCheckedTimeForAppUpdate() } returns Instant.now()
     _viewModel = SettingsViewModel(_dispatcher, _settingsRepository, _permission)
     _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
     _viewModel.dialogState.observe(_lifecycleOwner, _dialogStateObserver)
+  }
+
+  @Test
+  fun `on app theme changed`() {
+    mockkStatic(AppCompatDelegate::class)
+    coEvery { _settingsRepository.saveAppTheme(any()) } returns true
+    _viewModel.onAppThemeChanged(AppTheme.DARK)
+    assertAll(
+        {
+          assertEquals(
+              AppTheme.DARK, _viewModel.uiState.safeValue.appTheme, "Update current app theme")
+        },
+        {
+          assertDoesNotThrow("Immediately apply and save the current app theme") {
+            verify { AppCompatDelegate.setDefaultNightMode(any()) }
+            coVerify { _settingsRepository.saveAppTheme(any()) }
+          }
+        })
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on app theme dialog shown`(isShown: Boolean) {
+    mockkStatic(AppCompatDelegate::class)
+    coEvery { _settingsRepository.saveAppTheme(any()) } returns true
+    _viewModel.onAppThemeChanged(AppTheme.DARK)
+    coEvery { _settingsRepository.saveLanguageUsed(any()) } returns true
+    _viewModel.onLanguageChanged(LanguageOption.INDONESIA)
+
+    if (isShown) _viewModel.onAppThemeDialogShown() else _viewModel.onAppThemeDialogClosed()
+    assertEquals(
+        _viewModel.uiState.safeValue.copy(
+            appTheme = AppTheme.DARK,
+            isAppThemeDialogShown = isShown,
+            languageUsed = LanguageOption.INDONESIA),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
   }
 
   @Test
@@ -112,6 +151,25 @@ class SettingsViewModelTest(
             coVerify { _settingsRepository.saveLanguageUsed(any()) }
           }
         })
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on language dialog shown`(isShown: Boolean) {
+    mockkStatic(AppCompatDelegate::class)
+    coEvery { _settingsRepository.saveAppTheme(any()) } returns true
+    _viewModel.onAppThemeChanged(AppTheme.DARK)
+    coEvery { _settingsRepository.saveLanguageUsed(any()) } returns true
+    _viewModel.onLanguageChanged(LanguageOption.INDONESIA)
+
+    if (isShown) _viewModel.onLanguageDialogShown() else _viewModel.onLanguageDialogClosed()
+    assertEquals(
+        _viewModel.uiState.safeValue.copy(
+            appTheme = AppTheme.DARK,
+            languageUsed = LanguageOption.INDONESIA,
+            isLanguageDialogShown = isShown),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
   }
 
   @ParameterizedTest

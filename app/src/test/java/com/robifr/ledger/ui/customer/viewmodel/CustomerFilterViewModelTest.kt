@@ -38,6 +38,7 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExperimentalCoroutinesApi
@@ -68,18 +69,40 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
   @Test
   fun `on state changed`() {
+    _viewModel.onDialogShown()
     _viewModel.onMinBalanceTextChanged("$0")
     _viewModel.onMaxBalanceTextChanged("$1.00")
     _viewModel.onMinDebtTextChanged("$0")
     _viewModel.onMaxDebtTextChanged("-$1.00")
     assertEquals(
         CustomerFilterState(
+            isDialogShown = true,
             formattedMinBalance = "$0",
             formattedMaxBalance = "$1.00",
             formattedMinDebt = "$0",
             formattedMaxDebt = "-$1.00"),
         _viewModel.uiState.safeValue,
         "Preserve all values except for the changed field")
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on dialog shown`(isShown: Boolean) {
+    _viewModel.onMinBalanceTextChanged("$0")
+    _viewModel.onMaxBalanceTextChanged("$1")
+    _viewModel.onMinDebtTextChanged("$0")
+    _viewModel.onMaxDebtTextChanged("-$1")
+
+    if (isShown) _viewModel.onDialogShown() else _viewModel.onDialogClosed()
+    assertEquals(
+        CustomerFilterState(
+            isDialogShown = isShown,
+            formattedMinBalance = "$0",
+            formattedMaxBalance = "$1",
+            formattedMinDebt = "$0",
+            formattedMaxDebt = "-$1"),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
   }
 
   @Test

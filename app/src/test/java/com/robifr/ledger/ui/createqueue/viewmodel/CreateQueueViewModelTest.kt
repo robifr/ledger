@@ -100,6 +100,7 @@ class CreateQueueViewModelTest(
     _viewModel.onCustomerChanged(_customer)
     _viewModel.onDateChanged(_queue.date.atZone(ZoneId.systemDefault()))
     _viewModel.onStatusChanged(_queue.status)
+    _viewModel.onStatusDialogShown()
     _viewModel.onPaymentMethodChanged(_queue.paymentMethod)
     _viewModel.onProductOrdersChanged(_queue.productOrders)
     assertEquals(
@@ -108,6 +109,7 @@ class CreateQueueViewModelTest(
             temporalCustomer = _customer,
             date = _queue.date.atZone(ZoneId.systemDefault()),
             status = _queue.status,
+            isStatusDialogShown = true,
             paymentMethod = _queue.paymentMethod,
             allowedPaymentMethods = setOf(_queue.paymentMethod),
             productOrders = _queue.productOrders),
@@ -184,6 +186,30 @@ class CreateQueueViewModelTest(
               _viewModel.uiState.safeValue.paymentMethod,
               "Fallback payment method to cash when the status is other than completed")
         })
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on status dialog shown`(isShown: Boolean) {
+    _viewModel.onCustomerChanged(_customer)
+    _viewModel.onDateChanged(_queue.date.atZone(ZoneId.systemDefault()))
+    _viewModel.onStatusChanged(_queue.status)
+    _viewModel.onPaymentMethodChanged(_queue.paymentMethod)
+    _viewModel.onProductOrdersChanged(_queue.productOrders)
+
+    if (isShown) _viewModel.onStatusDialogShown() else _viewModel.onStatusDialogClosed()
+    assertEquals(
+        CreateQueueState(
+            customer = _customer,
+            temporalCustomer = _customer,
+            date = _queue.date.atZone(ZoneId.systemDefault()),
+            status = _queue.status,
+            isStatusDialogShown = isShown,
+            paymentMethod = _queue.paymentMethod,
+            allowedPaymentMethods = setOf(_queue.paymentMethod),
+            productOrders = _queue.productOrders),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
   }
 
   @ParameterizedTest

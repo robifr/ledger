@@ -97,7 +97,9 @@ class SearchCustomerViewModelTest(
             query = "",
             initialSelectedCustomerIds = listOf(),
             customers = listOf(),
-            expandedCustomerIndex = -1),
+            expandedCustomerIndex = -1,
+            isCustomerMenuDialogShown = false,
+            selectedCustomerMenu = null),
         _viewModel.uiState.safeValue,
         "Apply the default state if no fragment arguments are provided")
   }
@@ -124,7 +126,9 @@ class SearchCustomerViewModelTest(
             query = "",
             initialSelectedCustomerIds = listOf(111L),
             customers = listOf(),
-            expandedCustomerIndex = -1),
+            expandedCustomerIndex = -1,
+            isCustomerMenuDialogShown = false,
+            selectedCustomerMenu = null),
         _viewModel.uiState.safeValue,
         "Match state with the retrieved data from the fragment arguments")
   }
@@ -216,6 +220,41 @@ class SearchCustomerViewModelTest(
     assertDoesNotThrow("Notify the delete result via snackbar") {
       verify { _snackbarStateObserver.onChanged(any()) }
     }
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on customer menu dialog shown`(isShown: Boolean) {
+    _viewModel =
+        SearchCustomerViewModel(
+            SavedStateHandle().apply {
+              set(SearchCustomerFragment.Arguments.IS_SELECTION_ENABLED_BOOLEAN.key(), true)
+              set(SearchCustomerFragment.Arguments.IS_TOOLBAR_VISIBLE_BOOLEAN.key(), false)
+              set(SearchCustomerFragment.Arguments.INITIAL_QUERY_STRING.key(), "Amy")
+              set(
+                  SearchCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_IDS_LONG_ARRAY.key(),
+                  longArrayOf(111L))
+            },
+            _dispatcher,
+            _customerRepository)
+    _viewModel.onExpandedCustomerIndexChanged(0)
+
+    val selectedCustomer: CustomerModel = CustomerModel(id = 111L, name = "Amy")
+    if (isShown) _viewModel.onCustomerMenuDialogShown(selectedCustomer)
+    else _viewModel.onCustomerMenuDialogClosed()
+    assertEquals(
+        SearchCustomerState(
+            isSelectionEnabled = true,
+            isToolbarVisible = false,
+            initialQuery = "Amy",
+            query = "",
+            initialSelectedCustomerIds = listOf(111L),
+            customers = listOf(),
+            expandedCustomerIndex = 0,
+            isCustomerMenuDialogShown = isShown,
+            selectedCustomerMenu = if (isShown) selectedCustomer else null),
+        _viewModel.uiState.safeValue,
+        "Preserve other fields when the dialog shown or closed")
   }
 
   @Test
