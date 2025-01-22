@@ -103,38 +103,49 @@ open class MainActivity :
 
     _permission = RequiredPermission(this)
     _create = MainCreate(this)
-    activityBinding.bottomNavigation.setOnItemSelectedListener(this)
-    ViewCompat.setOnApplyWindowInsetsListener(activityBinding.bottomNavigation) { view, insets ->
-      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-      view.updatePadding(bottom = windowInsets.bottom)
-      WindowInsetsCompat.CONSUMED
-    }
-    AppCompatDelegate.setDefaultNightMode(
-        _settingsViewModel.uiState.safeValue.appTheme.defaultNightMode)
-    AppCompatDelegate.setApplicationLocales(
-        LocaleListCompat.forLanguageTags(
-            _settingsViewModel.uiState.safeValue.languageUsed.languageTag))
-    listOf(R.id.dashboardFragment, R.id.queueFragment, R.id.customerFragment, R.id.productFragment)
-        .forEach { activityBinding.bottomNavigation.findViewById<View>(it)?.hideTooltipText() }
-
     _permissionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult(), this)
+    _setupBottomNavigation()
+    _applyUserPreferences()
     if (!_permission.isStorageAccessGranted()) {
       _permission.showStorageAccessDialog(
           onDeny = { finish() },
           onGrant = { _permissionLauncher.launch(_permission.storageAccessIntent()) })
     } else {
-      // Only automatically check for app update once a day.
-      if (_settingsViewModel.uiState.safeValue.isLastCheckedTimeForAppUpdatePastMidNight()) {
-        _settingsViewModel.dialogState.observe(this, ::_onSettingsDialogState)
-        _settingsViewModel.onCheckForAppUpdate(this, false)
-      }
+      _checkForAppUpdate()
     }
   }
 
   override fun onStart() {
     super.onStart()
     findNavController(R.id.fragmentContainer).addOnDestinationChangedListener(this)
+  }
+
+  private fun _setupBottomNavigation() {
+    activityBinding.bottomNavigation.setOnItemSelectedListener(this)
+    ViewCompat.setOnApplyWindowInsetsListener(activityBinding.bottomNavigation) { view, insets ->
+      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+      view.updatePadding(bottom = windowInsets.bottom)
+      WindowInsetsCompat.CONSUMED
+    }
+    listOf(R.id.dashboardFragment, R.id.queueFragment, R.id.customerFragment, R.id.productFragment)
+        .forEach { activityBinding.bottomNavigation.findViewById<View>(it)?.hideTooltipText() }
+  }
+
+  private fun _applyUserPreferences() {
+    AppCompatDelegate.setDefaultNightMode(
+        _settingsViewModel.uiState.safeValue.appTheme.defaultNightMode)
+    AppCompatDelegate.setApplicationLocales(
+        LocaleListCompat.forLanguageTags(
+            _settingsViewModel.uiState.safeValue.languageUsed.languageTag))
+  }
+
+  private fun _checkForAppUpdate() {
+    // Only automatically check for app update once a day.
+    if (_settingsViewModel.uiState.safeValue.isLastCheckedTimeForAppUpdatePastMidNight()) {
+      _settingsViewModel.dialogState.observe(this, ::_onSettingsDialogState)
+      _settingsViewModel.onCheckForAppUpdate(this, false)
+    }
   }
 
   private fun _onSettingsDialogState(state: SettingsDialogState) {
