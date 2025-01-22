@@ -34,6 +34,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
+import androidx.lifecycle.coroutineScope
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
@@ -41,6 +42,7 @@ import androidx.navigation.findNavController
 import com.google.android.material.navigation.NavigationBarView
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.MainActivityBinding
+import com.robifr.ledger.local.LocalBackup
 import com.robifr.ledger.ui.settings.AppUpdateAvailable
 import com.robifr.ledger.ui.settings.viewmodel.SettingsDialogState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsViewModel
@@ -50,6 +52,8 @@ import com.robifr.ledger.util.hideTooltipText
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 open class MainActivity :
@@ -113,6 +117,7 @@ open class MainActivity :
           onGrant = { _permissionLauncher.launch(_permission.storageAccessIntent()) })
     } else {
       _checkForAppUpdate()
+      _performBackupTasks()
     }
   }
 
@@ -169,6 +174,13 @@ open class MainActivity :
           _permissionLauncher.launch(_permission.unknownSourceInstallationIntent())
         }
       }
+    }
+  }
+
+  private fun _performBackupTasks() {
+    lifecycle.coroutineScope.launch(Dispatchers.IO) {
+      LocalBackup.backup(overwriteTodayBackup = false)
+      LocalBackup.clearOldBackups()
     }
   }
 }
