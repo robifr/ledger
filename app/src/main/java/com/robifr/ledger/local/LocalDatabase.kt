@@ -62,21 +62,24 @@ abstract class LocalDatabase : RoomDatabase() {
     fun instance(context: Context): LocalDatabase =
         _instance
             ?: Room.databaseBuilder(
-                    context.applicationContext, LocalDatabase::class.java, _fileName())
+                    context.applicationContext, LocalDatabase::class.java, dbFilePath())
                 .addCallback(Callback())
                 .addMigrations(*MigrationProvider(context).migrationList.toTypedArray())
                 .build()
                 .apply { _instance = this }
 
-    private fun _fileName(): String = "${_fileDir()}/${BuildConfig.DATABASE_FILE_NAME}"
+    fun dbFilePath(): String? {
+      val filePath: String = filePath() ?: return null
+      return "${filePath}/${BuildConfig.DATABASE_FILE_NAME}"
+    }
 
-    private fun _fileDir(): String? {
-      val directory: String =
+    fun filePath(): String? {
+      val path: String =
           "${Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
                 .absolutePath}/.ledger"
-      val dir: File = File(directory)
+      val dir: File = File(path)
       if (!dir.exists() && !dir.mkdirs()) return null
-      return directory
+      return path
     }
   }
 
