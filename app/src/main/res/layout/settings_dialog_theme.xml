@@ -30,7 +30,7 @@
       style="@style/BottomSheetDialog.Title"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
-      android:text="@string/settings_chooseAppTheme" />
+      android:text="@string/settings_selectAppTheme" />
 
   <com.google.android.material.divider.MaterialDivider
       style="@style/Divider"

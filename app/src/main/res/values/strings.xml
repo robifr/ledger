@@ -66,10 +66,10 @@
   <string name="action_delete">Delete</string>
   <string name="action_deny">Deny</string>
   <string name="action_denyAndQuit">Deny and quit</string>
-  <string name="action_discardAndLeave">Discard and leave</string>
   <string name="action_edit">Edit</string>
   <string name="action_grant">Grant</string>
   <string name="action_ignore">Ignore</string>
+  <string name="action_leaveWithoutSaving">Leave without saving</string>
   <string name="action_new">New</string>
   <string name="action_ok">Ok</string>
   <string name="action_save">Save</string>
@@ -115,10 +115,13 @@
   <string name="settings">Settings</string>
   <!-- App theme. -->
   <string name="settings_theme">Theme</string>
-  <string name="settings_chooseAppTheme">Choose app theme</string>
+  <string name="settings_selectAppTheme">Select app theme</string>
   <!-- Language. -->
   <string name="settings_language">Language</string>
   <string name="settings_selectLanguage">Select language</string>
+  <string name="settings_selectLanguage_description">Changing language may also change the currency
+    format. It\'s best to stick with the language you\'re currently using.
+  </string>
   <!-- App update. -->
   <string name="settings_checkForAppUpdate">Check for app update</string>
   <string name="settings_lastChecked_x">Last checked at %s</string>
@@ -301,7 +304,7 @@
   <string name="createQueue_status">Status</string>
   <string name="createQueue_status_selectStatus">Select status</string>
   <string name="createQueue_paymentMethods">Payment methods</string>
-  <string name="createQueue_unsavedChangesWarning">You have unsaved changes. Do you want to discard them?</string>
+  <string name="createQueue_unsavedChangesWarning">You have unsaved changes. Do you want to leave without saving them?</string>
   <string name="editQueue">Edit queue</string>
   <!-- Product orders. -->
   <string name="createQueue_productOrders">Product orders</string>

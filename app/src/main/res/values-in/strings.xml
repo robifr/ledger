@@ -15,9 +15,6 @@
  -->
 
 <resources>
-  <string name="appName">Ledger</string>
-  <string name="appName_debug">Ledger (Debug)</string>
-
   <!-- Enum. -->
   <!-- `QueueSortMethod#SortBy`. -->
   <string name="enum_queueSort_customerName">Nama pelanggan</string>
@@ -56,10 +53,10 @@
   <string name="action_delete">Hapus</string>
   <string name="action_deny">Tolak</string>
   <string name="action_denyAndQuit">Tolak dan keluar</string>
-  <string name="action_discardAndLeave">Buang dan keluar</string>
   <string name="action_edit">Edit</string>
   <string name="action_grant">Izinkan</string>
   <string name="action_ignore">Abaikan</string>
+  <string name="action_leaveWithoutSaving">Keluar tanpa menyimpan</string>
   <string name="action_new">Baru</string>
   <string name="action_ok">Oke</string>
   <string name="action_save">Simpan</string>
@@ -104,10 +101,13 @@
   <string name="settings">Pengaturan</string>
   <!-- App theme. -->
   <string name="settings_theme">Tema</string>
-  <string name="settings_chooseAppTheme">Pilih tema aplikasi</string>
+  <string name="settings_selectAppTheme">Pilih tema aplikasi</string>
   <!-- Language. -->
   <string name="settings_language">Bahasa</string>
   <string name="settings_selectLanguage">Pilih bahasa</string>
+  <string name="settings_selectLanguage_description">Mengganti bahasa juga bisa mengubah format mata
+    uang. Sebaiknya tetap gunakan bahasa yang Anda pakai saat ini.
+  </string>
   <!-- App update. -->
   <string name="settings_checkForAppUpdate">Periksa pembaruan aplikasi</string>
   <string name="settings_lastChecked_x">Terakhir diperiksa pada %s</string>
@@ -289,7 +289,8 @@
   <string name="createQueue_status">Status</string>
   <string name="createQueue_status_selectStatus">Pilih status</string>
   <string name="createQueue_paymentMethods">Metode pembayaran</string>
-  <string name="createQueue_unsavedChangesWarning">Anda memiliki perubahan yang belum disimpan. Apakah Anda ingin membuangnya?</string>
+  <string name="createQueue_unsavedChangesWarning">Anda memiliki perubahan yang belum disimpan.
+    Apakah Anda ingin keluar tanpa menyimpannya?</string>
   <string name="editQueue">Edit antrean</string>
   <!-- Product orders. -->
   <string name="createQueue_productOrders">Pesanan produk</string>
