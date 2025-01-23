@@ -19,6 +19,7 @@ package com.robifr.ledger.ui.dashboard.viewmodel
 import android.content.Context
 import android.webkit.WebView
 import androidx.annotation.ColorRes
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
 import androidx.webkit.WebViewClientCompat
@@ -33,6 +34,7 @@ import com.robifr.ledger.ui.SafeMutableLiveData
 import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.dashboard.DashboardRevenue
 import com.robifr.ledger.ui.dashboard.chart.RevenueChartModel
+import com.robifr.ledger.util.CurrencyFormat
 import java.math.BigDecimal
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -148,19 +150,22 @@ class DashboardRevenueViewModel(
     for (queue in _uiState.safeValue.queues.sortedBy { it.date }) {
       val formattedDate: String =
           ChartUtil.toDateTime(queue.date.atZone(ZoneId.systemDefault()), dateStart to dateEnd)
+      val parsedGrandTotalPriceFromCents: BigDecimal =
+          CurrencyFormat.fromCents(
+              queue.grandTotalPrice(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
       // Received income are from the completed queue only.
       if (queue.status == QueueModel.Status.COMPLETED) {
         rawDataSummed
             .merge(
                 formattedDate to DashboardRevenue.OverviewType.RECEIVED_INCOME,
-                queue.grandTotalPrice(),
+                parsedGrandTotalPriceFromCents,
                 BigDecimal::add)
             ?.let { maxValue = maxValue.max(it) }
       }
       rawDataSummed
           .merge(
               formattedDate to DashboardRevenue.OverviewType.PROJECTED_INCOME,
-              queue.grandTotalPrice(),
+              parsedGrandTotalPriceFromCents,
               BigDecimal::add)
           ?.let { maxValue = maxValue.max(it) }
     }
