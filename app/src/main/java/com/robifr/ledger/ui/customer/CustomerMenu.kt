@@ -67,7 +67,10 @@ class CustomerMenu(private val _fragment: Fragment, private val _onDialogClosed:
                           R.string.customer_cardMenu_deleteWarning_description,
                           selectedCustomer.name),
                   HtmlCompat.FROM_HTML_MODE_LEGACY))
-          .setNegativeButton(R.string.action_delete) { _, _ -> onDeleteCustomer(selectedCustomer) }
+          .setNegativeButton(R.string.action_delete) { _, _ ->
+            onDeleteCustomer(selectedCustomer)
+            _onDialogClosed()
+          }
           .setPositiveButton(R.string.action_cancel) { _, _ -> }
           .show()
     }
