@@ -86,7 +86,7 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
     fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
     fragmentBinding.searchView.queryHint = getString(R.string.searchProduct)
     fragmentBinding.searchView.setOnQueryTextListener(this)
-    fragmentBinding.noResultsImage.image.setImageResource(R.drawable.image_noresultsfound)
+    fragmentBinding.noResultsImage.image.setImageResource(R.drawable.image_search_3d)
     fragmentBinding.noResultsImage.title.setText(R.string.searchProduct_noResultsFound)
     fragmentBinding.noResultsImage.description.setText(
         R.string.searchProduct_noResultsFound_description)
@@ -151,8 +151,7 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
     } else {
       _productMenu.dismissDialog()
     }
-    fragmentBinding.horizontalListContainer.isVisible = state.isNoResultFoundIllustrationVisible
-    fragmentBinding.noResultsImage.root.isVisible = state.isNoResultFoundIllustrationVisible
+    fragmentBinding.noResultsImageContainer.isVisible = state.isNoResultFoundIllustrationVisible
     fragmentBinding.recyclerView.isVisible = state.isRecyclerViewVisible
   }
 

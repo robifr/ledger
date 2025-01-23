@@ -89,6 +89,7 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
     fragmentBinding.searchView.queryHint = getString(R.string.searchCustomersAndProducts)
     fragmentBinding.searchView.setOnQueryTextListener(this)
     fragmentBinding.viewPager.adapter = _adapter
+    fragmentBinding.noResultsImage.image.setImageResource(R.drawable.image_search_3d)
     fragmentBinding.noResultsImage.title.setText(R.string.searchCustomersAndProducts_noResultsFound)
     fragmentBinding.noResultsImage.description.setText(
         R.string.searchCustomersAndProducts_noResultsFound_description)
@@ -125,7 +126,7 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
 
   private fun _onUiState(state: SearchState) {
     fragmentBinding.tabLayout.isVisible = state.isTabLayoutVisible
-    fragmentBinding.noResultsImage.root.isVisible = state.isNoResultFoundIllustrationVisible
+    fragmentBinding.noResultsImageContainer.isVisible = state.isNoResultFoundIllustrationVisible
     fragmentBinding.viewPager.isVisible = state.isViewPagerVisible
     _adapter.setFragmentTabs(
         mutableListOf<Fragment>().apply {

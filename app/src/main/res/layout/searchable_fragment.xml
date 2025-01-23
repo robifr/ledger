@@ -47,21 +47,18 @@
   </com.google.android.material.appbar.AppBarLayout>
 
   <androidx.core.widget.NestedScrollView
+      android:id="@+id/noResultsImageContainer"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
+      android:layout_height="match_parent"
+      android:fillViewport="true"
+      android:visibility="gone">
 
-    <LinearLayout
-        android:id="@+id/horizontalListContainer"
+    <include
+        android:id="@+id/noResultsImage"
+        layout="@layout/reusable_image_stateable"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/space_large"
-        android:orientation="vertical">
-
-      <include
-          android:id="@+id/noResultsImage"
-          layout="@layout/reusable_image_stateable"
-          android:visibility="gone" />
-    </LinearLayout>
+        android:layout_marginBottom="@dimen/space_large" />
   </androidx.core.widget.NestedScrollView>
 
   <androidx.recyclerview.widget.RecyclerView
