@@ -26,6 +26,7 @@ import java.text.NumberFormat
 import java.text.ParseException
 import java.util.Locale
 import kotlin.math.max
+import kotlin.math.pow
 
 object CurrencyFormat {
   /**
@@ -67,14 +68,7 @@ object CurrencyFormat {
       amount: BigDecimal,
       languageTag: String,
       symbol: String = symbol(languageTag)
-  ): String {
-    val fractionDigits: Int = decimalFractionDigits(languageTag)
-    return format(
-        amount.divide(10.toBigDecimal().pow(fractionDigits), fractionDigits, RoundingMode.DOWN),
-        languageTag,
-        symbol,
-        fractionDigits)
-  }
+  ): String = format(fromCents(amount, languageTag), languageTag, symbol)
 
   /**
    * Formats the given amount into a locale-specific currency string with an appropriate suffix
@@ -178,9 +172,18 @@ object CurrencyFormat {
    */
   @Throws(ParseException::class)
   fun parseToCents(amount: String, languageTag: String): BigDecimal =
-      parse(amount, languageTag, decimalFractionDigits(languageTag))
-          .multiply(10.toBigDecimal().pow(decimalFractionDigits(languageTag)))
+      toCents(parse(amount, languageTag, decimalFractionDigits(languageTag)), languageTag)
           .stripTrailingZeros()
+
+  /** Scales the given amount from cents to base units based on locale-specific fraction digits. */
+  fun fromCents(amount: BigDecimal, languageTag: String): BigDecimal {
+    val fractionDigits: Int = decimalFractionDigits(languageTag)
+    return amount.divide(10.toBigDecimal().pow(fractionDigits), fractionDigits, RoundingMode.DOWN)
+  }
+
+  /** Scales the given amount from base units to cents based on locale-specific fraction digits. */
+  fun toCents(amount: BigDecimal, languageTag: String): BigDecimal =
+      10.toBigDecimal().pow(decimalFractionDigits(languageTag)) * amount
 
   fun isValidToParseAndFormat(
       amount: String,
