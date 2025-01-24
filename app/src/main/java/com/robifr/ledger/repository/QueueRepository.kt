@@ -53,81 +53,90 @@ class QueueRepository(
 
   override suspend fun isTableEmpty(): Boolean = _localDao.isTableEmpty()
 
-  override suspend fun add(model: QueueModel): Long =
-      _transactionProvider.withTransaction {
-        _localDao
-            .insert(model)
-            .let { rowId -> _localDao.selectIdByRowId(rowId) }
-            .also { insertedId ->
-              if (insertedId != 0L) {
-                _productOrderRepository.add(
-                    model.productOrders.map { it.copy(queueId = insertedId) })
-              }
-              // First select query is to get a queue mapped with newly inserted product orders.
-              selectById(insertedId)?.let { insertedQueueWithOrders ->
-                _customerRepository.selectById(insertedQueueWithOrders.customerId)?.let {
-                  // Make customer pay the already inserted queue.
-                  _customerRepository.update(
-                      it.copy(balance = it.balanceOnMadePayment(insertedQueueWithOrders)))
+  override suspend fun add(model: QueueModel): Long {
+    val insertedId: Long =
+        _transactionProvider.withTransaction {
+          _localDao
+              .insert(model)
+              .let { rowId -> _localDao.selectIdByRowId(rowId) }
+              .also { insertedId ->
+                if (insertedId != 0L) {
+                  _productOrderRepository.add(
+                      model.productOrders.map { it.copy(queueId = insertedId) })
+                }
+                // First select query is to get a queue mapped with newly inserted product orders.
+                selectById(insertedId)?.let { insertedQueueWithOrders ->
+                  _customerRepository.selectById(insertedQueueWithOrders.customerId)?.let {
+                    // Make customer pay the already inserted queue.
+                    _customerRepository.update(
+                        it.copy(balance = it.balanceOnMadePayment(insertedQueueWithOrders)))
+                  }
                 }
               }
-              // Re-select to get a queue mapped with both added product orders
-              // and updated customer.
-              selectById(insertedId)?.let { _notifyModelAdded(listOf(it)) }
+        }
+    // Re-select to get a queue mapped with both added product orders and updated customer.
+    selectById(insertedId)?.let { _notifyModelAdded(listOf(it)) }
+    return insertedId
+  }
+
+  override suspend fun update(model: QueueModel): Int {
+    val effectedRows: Int =
+        _transactionProvider.withTransaction {
+          val oldQueue: QueueModel = selectById(model.id) ?: return@withTransaction 0
+
+          val productOrdersToUpsert: MutableList<ProductOrderModel> = mutableListOf()
+          val productOrdersToDelete: MutableList<ProductOrderModel> =
+              oldQueue.productOrders.toMutableList()
+          for (productOrder in model.productOrders) {
+            // Set the queue ID, in case they're newly created.
+            productOrdersToUpsert.add(productOrder.copy(queueId = model.id))
+            // Remove product order with equal ID if they're exists inside `ordersToDelete`, so
+            // that they will get an upsert, while leaving the list with product orders to delete.
+            productOrdersToDelete.removeIf { it.id != null && it.id == productOrder.id }
+          }
+          _productOrderRepository.upsert(productOrdersToUpsert)
+          _productOrderRepository.delete(productOrdersToDelete)
+
+          val oldCustomer: CustomerModel? = _customerRepository.selectById(oldQueue.customerId)
+          val updatedCustomer: CustomerModel? = _customerRepository.selectById(model.customerId)
+          oldCustomer?.let {
+            if (updatedCustomer == null || oldCustomer.id != updatedCustomer.id) {
+              // Revert back old customer balance when different customer selected,
+              // including when the new one is null.
+              _customerRepository.update(it.copy(balance = it.balanceOnRevertedPayment(oldQueue)))
             }
-      }
+          }
+          updatedCustomer?.let {
+            // Update customer balance for newly selected customer.
+            _customerRepository.update(
+                it.copy(balance = it.balanceOnUpdatedPayment(oldQueue, model)))
+          }
 
-  override suspend fun update(model: QueueModel): Int =
-      _transactionProvider.withTransaction {
-        val oldQueue: QueueModel = selectById(model.id) ?: return@withTransaction 0
-
-        val productOrdersToUpsert: MutableList<ProductOrderModel> = mutableListOf()
-        val productOrdersToDelete: MutableList<ProductOrderModel> =
-            oldQueue.productOrders.toMutableList()
-        for (productOrder in model.productOrders) {
-          // Set the queue ID, in case they're newly created.
-          productOrdersToUpsert.add(productOrder.copy(queueId = model.id))
-          // Remove product order with equal ID if they're exists inside `ordersToDelete`, so
-          // that they will get an upsert, while leaving the list with product orders to delete.
-          productOrdersToDelete.removeIf { it.id != null && it.id == productOrder.id }
+          // Only update after foreign column updated (product orders and customer),
+          // so that queue already provided with an updated value when doing select query.
+          _localDao.update(model)
         }
-        _productOrderRepository.upsert(productOrdersToUpsert)
-        _productOrderRepository.delete(productOrdersToDelete)
+    if (effectedRows > 0) selectById(model.id)?.let { _notifyModelUpdated(listOf(it)) }
+    return effectedRows
+  }
 
-        val oldCustomer: CustomerModel? = _customerRepository.selectById(oldQueue.customerId)
-        val updatedCustomer: CustomerModel? = _customerRepository.selectById(model.customerId)
-        oldCustomer?.let {
-          if (updatedCustomer == null || oldCustomer.id != updatedCustomer.id) {
-            // Revert back old customer balance when different customer selected,
-            // including when the new one is null.
-            _customerRepository.update(it.copy(balance = it.balanceOnRevertedPayment(oldQueue)))
+  override suspend fun delete(model: QueueModel): Int {
+    val deletedQueue: QueueModel = selectById(model.id) ?: return 0
+    val effectedRows: Int =
+        _transactionProvider.withTransaction {
+          // Note: Associated rows on product order table will automatically
+          //    deleted upon queue deletion.
+          _localDao.delete(model).also { effectedRows ->
+            if (effectedRows == 0) return@also
+            _customerRepository.selectById(deletedQueue.customerId)?.let {
+              _customerRepository.update(
+                  it.copy(balance = it.balanceOnRevertedPayment(deletedQueue)))
+            }
           }
         }
-        updatedCustomer?.let {
-          // Update customer balance for newly selected customer.
-          _customerRepository.update(it.copy(balance = it.balanceOnUpdatedPayment(oldQueue, model)))
-        }
-
-        // Only update after foreign column updated (product orders and customer),
-        // so that queue already provided with an updated value when doing select query.
-        _localDao.update(model).also { effectedRows ->
-          if (effectedRows > 0) selectById(model.id)?.let { _notifyModelUpdated(listOf(it)) }
-        }
-      }
-
-  override suspend fun delete(model: QueueModel): Int =
-      _transactionProvider.withTransaction {
-        // Note: Associated rows on product order table will automatically
-        //    deleted upon queue deletion.
-        val deletedQueue: QueueModel = selectById(model.id) ?: return@withTransaction 0
-        _localDao.delete(model).also { effectedRows ->
-          if (effectedRows == 0) return@also
-          _customerRepository.selectById(deletedQueue.customerId)?.let {
-            _customerRepository.update(it.copy(balance = it.balanceOnRevertedPayment(deletedQueue)))
-          }
-          _notifyModelDeleted(listOf(deletedQueue))
-        }
-      }
+    if (effectedRows > 0) _notifyModelDeleted(listOf(deletedQueue))
+    return effectedRows
+  }
 
   suspend fun selectAllInRange(startDate: ZonedDateTime, endDate: ZonedDateTime): List<QueueModel> =
       _localDao.selectAllInRange(startDate.toInstant(), endDate.toInstant()).map { _mapFields(it) }
