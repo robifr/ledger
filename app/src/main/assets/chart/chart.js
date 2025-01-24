@@ -301,7 +301,7 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
         )
         .attr("fill", (d, i) => colors[i])
         .attr("stroke", layout.backgroundColor)
-        .style("stroke-width", "1px");
+        .style("stroke-width", (d) => (d.data.value === 0 ? "0px" : "1px"));
       g.append("g")
         .style("fill", Android.colorHex("android:textColor"))
         .attr("text-anchor", "middle")
