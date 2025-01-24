@@ -85,9 +85,25 @@ class CustomerViewModelTest(
     } just Runs
     coEvery { _customerRepository.selectAll() } returns
         listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
+    coEvery { _customerRepository.isTableEmpty() } returns false
     _viewModel = CustomerViewModel(_dispatcher, _customerRepository)
     _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
     _viewModel.recyclerAdapterState.observe(_lifecycleOwner, _recyclerAdapterStateObserver)
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on initialize with empty data`(isTableEmpty: Boolean) {
+    coEvery { _customerRepository.selectAll() } returns
+        if (isTableEmpty) listOf() else listOf(_firstCustomer)
+    coEvery { _customerRepository.isTableEmpty() } returns isTableEmpty
+    _viewModel = CustomerViewModel(_dispatcher, _customerRepository)
+    assertEquals(
+        _viewModel.uiState.safeValue.copy(
+            customers = if (isTableEmpty) listOf() else listOf(_firstCustomer),
+            isNoCustomersAddedIllustrationVisible = isTableEmpty),
+        _viewModel.uiState.safeValue,
+        "Show illustration for no customers added")
   }
 
   @Test
@@ -136,6 +152,7 @@ class CustomerViewModelTest(
             expandedCustomerIndex = 0,
             isCustomerMenuDialogShown = isShown,
             selectedCustomerMenu = if (isShown) _firstCustomer else null,
+            isNoCustomersAddedIllustrationVisible = false,
             sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
             isSortMethodDialogShown = false),
         _viewModel.uiState.safeValue,
@@ -191,6 +208,7 @@ class CustomerViewModelTest(
             expandedCustomerIndex = -1,
             isCustomerMenuDialogShown = false,
             selectedCustomerMenu = null,
+            isNoCustomersAddedIllustrationVisible = false,
             sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
             isSortMethodDialogShown = isShown),
         _viewModel.uiState.safeValue,
@@ -253,6 +271,19 @@ class CustomerViewModelTest(
         updatedCustomers,
         _viewModel.uiState.safeValue.customers,
         "Sync customers when any are updated in the database")
+  }
+
+  @Test
+  fun `on sync customer from database result empty data`() {
+    coEvery { _customerRepository.isTableEmpty() } returns true
+
+    _customerChangedListenerCaptor.captured.onModelDeleted(
+        listOf(_firstCustomer, _secondCustomer, _thirdCustomer))
+    assertEquals(
+        _viewModel.uiState.safeValue.copy(
+            customers = listOf(), isNoCustomersAddedIllustrationVisible = true),
+        _viewModel.uiState.safeValue,
+        "Show illustration for no customers created")
   }
 
   @Test

@@ -25,6 +25,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -78,6 +79,10 @@ class CustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.toolbar.navigationIcon = null
     fragmentBinding.toolbar.setTitle(R.string.appName)
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
+    fragmentBinding.noDataCreated.image.setImageResource(R.drawable.image_create_3d)
+    fragmentBinding.noDataCreated.title.setText(R.string.customer_noCustomersAdded)
+    fragmentBinding.noDataCreated.description.setText(
+        R.string.customer_noCustomersAdded_description)
     fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
@@ -117,6 +122,8 @@ class CustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     } else {
       _customerMenu.dismissDialog()
     }
+    fragmentBinding.noDataCreatedContainer.isVisible = state.isNoCustomersAddedIllustrationVisible
+    fragmentBinding.recyclerView.isVisible = !state.isNoCustomersAddedIllustrationVisible
   }
 
   private fun _onRecyclerAdapterState(state: RecyclerAdapterState) {

@@ -182,6 +182,8 @@
     <item quantity="one"><![CDATA[Displaying <b>%d</b> queue]]></item>
     <item quantity="other"><![CDATA[Displaying <b>%d</b> queues]]></item>
   </plurals>
+  <string name="queue_noQueuesCreated">No queues created</string>
+  <string name="queue_noQueuesCreated_description">Create a queue to manage orders</string>
   <string name="queue_sortBy">Sort by</string>
   <!-- Filters. -->
   <string name="queue_filters">Filters</string>
@@ -231,6 +233,8 @@
     <item quantity="one"><![CDATA[Displaying <b>%d</b> customer]]></item>
     <item quantity="other"><![CDATA[Displaying <b>%d</b> customers]]></item>
   </plurals>
+  <string name="customer_noCustomersAdded">No customers added</string>
+  <string name="customer_noCustomersAdded_description">Add a customer to keep track of clients</string>
   <string name="customer_sortBy" translatable="false">@string/queue_sortBy</string>
   <!-- Filters. -->
   <string name="customer_filters" translatable="false">@string/queue_filters</string>
@@ -267,6 +271,8 @@
     <item quantity="one"><![CDATA[Displaying <b>%d</b> product]]></item>
     <item quantity="other"><![CDATA[Displaying <b>%d</b> products]]></item>
   </plurals>
+  <string name="product_noProductsAdded">No products added</string>
+  <string name="product_noProductsAdded_description">Add a product to build and manage a catalog</string>
   <string name="product_sortBy" translatable="false">@string/queue_sortBy</string>
   <!-- Filters. -->
   <string name="product_filters" translatable="false">@string/queue_filters</string>

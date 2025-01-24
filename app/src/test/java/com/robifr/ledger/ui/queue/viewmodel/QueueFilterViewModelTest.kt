@@ -118,6 +118,7 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     every { _customerRepository.addModelChangedListener(any()) } just Runs
     every { Environment.isExternalStorageManager() } returns true
     coEvery { _queueRepository.selectAll() } returns listOf(_firstQueue, _secondQueue, _thirdQueue)
+    coEvery { _queueRepository.isTableEmpty() } returns false
     _queueViewModel =
         QueueViewModel(
             _dispatcher = _dispatcher,

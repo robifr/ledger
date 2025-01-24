@@ -79,6 +79,22 @@
     </HorizontalScrollView>
   </com.google.android.material.appbar.AppBarLayout>
 
+  <androidx.core.widget.NestedScrollView
+      android:id="@+id/noDataCreatedContainer"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:fillViewport="true"
+      android:visibility="gone"
+      app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+    <include
+        android:id="@+id/noDataCreated"
+        layout="@layout/reusable_image_stateable"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/space_large" />
+  </androidx.core.widget.NestedScrollView>
+
   <androidx.recyclerview.widget.RecyclerView
       android:id="@+id/recyclerView"
       android:layout_width="match_parent"

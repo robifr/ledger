@@ -51,7 +51,15 @@ constructor(
   private val _customerChangedListener: ModelSyncListener<CustomerModel> =
       ModelSyncListener(
           currentModel = { _uiState.safeValue.customers },
-          onSyncModels = { filterView._onFiltersChanged(customers = it) })
+          onSyncModels = {
+            viewModelScope.launch(_dispatcher) {
+              val isTableEmpty: Boolean = _customerRepository.isTableEmpty()
+              withContext(Dispatchers.Main) {
+                _onNoCustomersAddedIllustrationVisible(isTableEmpty)
+                filterView._onFiltersChanged(customers = it)
+              }
+            }
+          })
 
   private val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
   val snackbarState: LiveData<SnackbarState>
@@ -64,6 +72,7 @@ constructor(
               expandedCustomerIndex = -1,
               isCustomerMenuDialogShown = false,
               selectedCustomerMenu = null,
+              isNoCustomersAddedIllustrationVisible = false,
               sortMethod = _sorter.sortMethod,
               isSortMethodDialogShown = false))
   val uiState: SafeLiveData<CustomerState>
@@ -170,12 +179,19 @@ constructor(
     }
   }
 
+  private fun _onNoCustomersAddedIllustrationVisible(isVisible: Boolean) {
+    _uiState.setValue(_uiState.safeValue.copy(isNoCustomersAddedIllustrationVisible = isVisible))
+  }
+
   private suspend fun _selectAllCustomers(): List<CustomerModel> = _customerRepository.selectAll()
 
   private fun _loadAllCustomers() {
     viewModelScope.launch(_dispatcher) {
-      _selectAllCustomers().let {
-        withContext(Dispatchers.Main) { filterView._onFiltersChanged(customers = it) }
+      val customers: List<CustomerModel> = _selectAllCustomers()
+      val isTableEmpty: Boolean = _customerRepository.isTableEmpty()
+      withContext(Dispatchers.Main) {
+        _onNoCustomersAddedIllustrationVisible(isTableEmpty)
+        filterView._onFiltersChanged(customers = customers)
       }
     }
   }

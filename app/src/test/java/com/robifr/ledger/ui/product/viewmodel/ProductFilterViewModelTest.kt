@@ -58,6 +58,7 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     every { _productRepository.addModelChangedListener(any()) } just Runs
     coEvery { _productRepository.selectAll() } returns
         listOf(_firstProduct, _secondProduct, _thirdProduct)
+    coEvery { _productRepository.isTableEmpty() } returns false
     _productViewModel = ProductViewModel(_dispatcher, _productRepository)
     _viewModel = _productViewModel.filterView
   }

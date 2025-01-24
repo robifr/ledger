@@ -28,6 +28,7 @@ data class CustomerState(
     val expandedCustomerIndex: Int,
     val isCustomerMenuDialogShown: Boolean,
     val selectedCustomerMenu: CustomerModel?,
+    val isNoCustomersAddedIllustrationVisible: Boolean,
     val sortMethod: CustomerSortMethod,
     val isSortMethodDialogShown: Boolean
 )

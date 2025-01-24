@@ -51,7 +51,15 @@ constructor(
   private val _productChangedListener: ModelSyncListener<ProductModel> =
       ModelSyncListener(
           currentModel = { _uiState.safeValue.products },
-          onSyncModels = { filterView._onFiltersChanged(products = it) })
+          onSyncModels = {
+            viewModelScope.launch(_dispatcher) {
+              val isTableEmpty: Boolean = _productRepository.isTableEmpty()
+              withContext(Dispatchers.Main) {
+                _setNoProductsAddedIllustrationVisible(isTableEmpty)
+                filterView._onFiltersChanged(products = it)
+              }
+            }
+          })
 
   private val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
   val snackbarState: LiveData<SnackbarState>
@@ -65,6 +73,7 @@ constructor(
               isProductMenuDialogShown = false,
               selectedProductMenu = null,
               sortMethod = _sorter.sortMethod,
+              isNoProductsAddedIllustrationVisible = false,
               isSortMethodDialogShown = false))
   val uiState: SafeLiveData<ProductState>
     get() = _uiState
@@ -170,12 +179,19 @@ constructor(
     }
   }
 
+  private fun _setNoProductsAddedIllustrationVisible(isVisible: Boolean) {
+    _uiState.setValue(_uiState.safeValue.copy(isNoProductsAddedIllustrationVisible = isVisible))
+  }
+
   private suspend fun _selectAllProducts(): List<ProductModel> = _productRepository.selectAll()
 
   private fun _loadAllProducts() {
     viewModelScope.launch(_dispatcher) {
-      _selectAllProducts().let {
-        withContext(Dispatchers.Main) { filterView._onFiltersChanged(products = it) }
+      val products: List<ProductModel> = _selectAllProducts()
+      val isTableEmpty: Boolean = _productRepository.isTableEmpty()
+      withContext(Dispatchers.Main) {
+        _setNoProductsAddedIllustrationVisible(isTableEmpty)
+        filterView._onFiltersChanged(products = products)
       }
     }
   }

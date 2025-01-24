@@ -28,6 +28,7 @@ data class ProductState(
     val expandedProductIndex: Int,
     val isProductMenuDialogShown: Boolean,
     val selectedProductMenu: ProductModel?,
+    val isNoProductsAddedIllustrationVisible: Boolean,
     val sortMethod: ProductSortMethod,
     val isSortMethodDialogShown: Boolean
 )

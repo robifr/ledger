@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+ ~ Copyright 2025 Robi
+ ~
+ ~ Licensed under the Apache License, Version 2.0 (the "License");
+ ~ you may not use this file except in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing, software
+ ~ distributed under the License is distributed on an "AS IS" BASIS,
+ ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ~ See the License for the specific language governing permissions and
+ ~ limitations under the License.
+ -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="32"
+    android:viewportHeight="32">
+  <path
+      android:fillColor="#3696ee"
+      android:pathData="m8.809,5.688a4.5,4.5 0,0 0,-4.5 4.5v13a4.5,4.5 0,0 0,4.5 4.5L21.809,27.688a4.5,4.5 0,0 0,4.5 -4.5v-13a4.5,4.5 0,0 0,-4.5 -4.5zM16.002,10.992a1.004,1.004 0,0 1,1.004 1.004l-0.008,3.006 3.006,-0.008a1,1 0,0 1,1.004 1.004,1 1,0 0,1 -0.297,0.707 1,1 0,0 1,-0.707 0.297L16.998,16.994 17.006,20A1,1 0,0 1,16.709 20.707,1 1,0 0,1 16.002,21.004 1,1 0,0 1,14.998 20l0.008,-3.006L12,17.002a1.004,1.004 0,0 1,0 -2.008l3.006,0.008 -0.008,-3.006a1.004,1.004 0,0 1,1.004 -1.004z" />
+  <path
+      android:fillColor="#78b5ed"
+      android:pathData="M9,5C6.784,5 5,6.784 5,9L5,23C5,25.216 6.784,27 9,27L23,27C25.216,27 27,25.216 27,23L27,9C27,6.784 25.216,5 23,5L9,5zM16.002,10.992A1.004,1.004 0,0 1,17.006 11.996L16.998,15.002L20.004,14.994A1,1 0,0 1,21.008 15.998A1,1 0,0 1,20.711 16.705A1,1 0,0 1,20.004 17.002L16.998,16.994L17.006,20A1,1 0,0 1,16.709 20.707A1,1 0,0 1,16.002 21.004A1,1 0,0 1,14.998 20L15.006,16.994L12,17.002A1.004,1.004 0,0 1,12 14.994L15.006,15.002L14.998,11.996A1.004,1.004 0,0 1,16.002 10.992z" />
+  <path
+      android:fillColor="#3696ee"
+      android:pathData="m14.604,15 l0.402,0.002 -0.008,-3.006a1.004,1.004 0,0 1,0.139 -0.486,1.004 1.004,0 0,0 -0.539,0.877z" />
+  <path
+      android:fillColor="#3696ee"
+      android:pathData="m16.475,20.879a1,1 0,0 1,-0.473 0.125A1,1 0,0 1,14.998 20l0.008,-3.006L12,17.002A1.004,1.004 0,0 1,11.16 15.5a1.004,1.004 0,0 0,0.439 1.893l3.006,-0.006 -0.008,3.004a1,1 0,0 0,1.004 1.004,1 1,0 0,0 0.707,-0.297 1,1 0,0 0,0.166 -0.219z" />
+  <path
+      android:fillColor="#3696ee"
+      android:pathData="m20.479,16.877a1,1 0,0 1,-0.475 0.125l-3.006,-0.008 0.002,0.393 2.604,0.006a1,1 0,0 0,0.707 -0.297,1 1,0 0,0 0.168,-0.219z" />
+  <path
+      android:fillColor="#00000000"
+      android:pathData="m16.002,10.992a1.004,1.004 0,0 0,-1.004 1.004l0.008,3.006L12,14.994a1.004,1.004 0,0 0,0 2.008l3.006,-0.008L14.998,20a1,1 0,0 0,1.004 1.004,1 1,0 0,0 0.707,-0.297A1,1 0,0 0,17.006 20l-0.008,-3.006 3.006,0.008a1,1 0,0 0,0.707 -0.297,1 1,0 0,0 0.297,-0.707 1,1 0,0 0,-1.004 -1.004l-3.006,0.008 0.008,-3.006a1.004,1.004 0,0 0,-1.004 -1.004z"
+      android:strokeWidth="0.755906"
+      android:strokeAlpha="0"
+      android:strokeColor="#131313" />
+  <path
+      android:fillColor="#d7eafb"
+      android:pathData="m16.002,10.992a1.004,1.004 0,0 0,-1.004 1.004l0.008,3.006L12,14.994a1.004,1.004 0,0 0,0 2.008l3.006,-0.008L14.998,20a1,1 0,0 0,1.004 1.004,1 1,0 0,0 0.707,-0.297A1,1 0,0 0,17.006 20l-0.008,-3.006 3.006,0.008a1,1 0,0 0,0.707 -0.297,1 1,0 0,0 0.297,-0.707 1,1 0,0 0,-1.004 -1.004l-3.006,0.008 0.008,-3.006a1.004,1.004 0,0 0,-1.004 -1.004z"
+      android:strokeWidth="0.755906"
+      android:strokeAlpha="0"
+      android:strokeColor="#00000000" />
+</vector>

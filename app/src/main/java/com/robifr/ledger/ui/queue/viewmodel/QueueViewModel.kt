@@ -54,7 +54,15 @@ constructor(
   private val _queueChangedListener: ModelSyncListener<QueueModel> =
       ModelSyncListener(
           currentModel = { _uiState.safeValue.queues },
-          onSyncModels = { filterView._onFiltersChanged(queues = it) })
+          onSyncModels = {
+            viewModelScope.launch(_dispatcher) {
+              val isTableEmpty: Boolean = _queueRepository.isTableEmpty()
+              withContext(Dispatchers.Main) {
+                _onNoQueuesCreatedIllustrationVisible(isTableEmpty)
+                filterView._onFiltersChanged(queues = it)
+              }
+            }
+          })
   private val _customerChangedListener: CustomerSyncListener =
       CustomerSyncListener(
           currentQueues = { _uiState.safeValue.queues },
@@ -71,6 +79,7 @@ constructor(
               expandedQueueIndex = -1,
               isQueueMenuDialogShown = false,
               selectedQueueMenu = null,
+              isNoQueuesCreatedIllustrationVisible = false,
               sortMethod = _sorter.sortMethod,
               isSortMethodDialogShown = false))
   val uiState: SafeLiveData<QueueState>
@@ -175,6 +184,10 @@ constructor(
     }
   }
 
+  private fun _onNoQueuesCreatedIllustrationVisible(isVisible: Boolean) {
+    _uiState.setValue(_uiState.safeValue.copy(isNoQueuesCreatedIllustrationVisible = isVisible))
+  }
+
   private suspend fun _selectAllQueues(): List<QueueModel> = _queueRepository.selectAll()
 
   private fun _loadAllQueues() {
@@ -183,7 +196,11 @@ constructor(
       // It's essential to ensure that all necessary permissions are granted.
       val queues: List<QueueModel> =
           if (Environment.isExternalStorageManager()) _selectAllQueues() else listOf()
-      withContext(Dispatchers.Main) { filterView._onFiltersChanged(queues = queues) }
+      val isTableEmpty: Boolean = _queueRepository.isTableEmpty()
+      withContext(Dispatchers.Main) {
+        _onNoQueuesCreatedIllustrationVisible(isTableEmpty)
+        filterView._onFiltersChanged(queues = queues)
+      }
     }
   }
 }

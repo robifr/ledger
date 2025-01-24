@@ -125,6 +125,7 @@ class QueueViewModelTest(
     } just Runs
     every { Environment.isExternalStorageManager() } returns true
     coEvery { _queueRepository.selectAll() } returns listOf(_firstQueue, _secondQueue, _thirdQueue)
+    coEvery { _queueRepository.isTableEmpty() } returns false
     _viewModel =
         QueueViewModel(
             _dispatcher = _dispatcher,
@@ -147,6 +148,25 @@ class QueueViewModelTest(
         if (isPermissionGranted) listOf(_firstQueue, _secondQueue, _thirdQueue) else listOf(),
         _viewModel.uiState.safeValue.queues,
         "Prevent to load all queues when storage permission is denied")
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on initialize with empty data`(isTableEmpty: Boolean) {
+    coEvery { _queueRepository.selectAll() } returns
+        if (isTableEmpty) listOf() else listOf(_firstQueue)
+    coEvery { _queueRepository.isTableEmpty() } returns isTableEmpty
+    _viewModel =
+        QueueViewModel(
+            _dispatcher = _dispatcher,
+            _queueRepository = _queueRepository,
+            _customerRepository = _customerRepository)
+    assertEquals(
+        _viewModel.uiState.safeValue.copy(
+            queues = if (isTableEmpty) listOf() else listOf(_firstQueue),
+            isNoQueuesCreatedIllustrationVisible = isTableEmpty),
+        _viewModel.uiState.safeValue,
+        "Show illustration for no queues created")
   }
 
   @Test
@@ -201,6 +221,7 @@ class QueueViewModelTest(
             expandedQueueIndex = -1,
             isQueueMenuDialogShown = isShown,
             selectedQueueMenu = if (isShown) _firstQueue else null,
+            isNoQueuesCreatedIllustrationVisible = false,
             sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true),
             isSortMethodDialogShown = false),
         _viewModel.uiState.safeValue,
@@ -255,6 +276,7 @@ class QueueViewModelTest(
             expandedQueueIndex = 0,
             isQueueMenuDialogShown = false,
             selectedQueueMenu = null,
+            isNoQueuesCreatedIllustrationVisible = false,
             sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true),
             isSortMethodDialogShown = isShown),
         _viewModel.uiState.safeValue,
@@ -314,6 +336,19 @@ class QueueViewModelTest(
         updatedQueues,
         _viewModel.uiState.safeValue.queues,
         "Sync queues when any are updated in the database")
+  }
+
+  @Test
+  fun `on sync queue from database result empty data`() {
+    coEvery { _queueRepository.isTableEmpty() } returns true
+
+    _queueChangedListenerCaptor.captured.onModelDeleted(
+        listOf(_firstQueue, _secondQueue, _thirdQueue))
+    assertEquals(
+        _viewModel.uiState.safeValue.copy(
+            queues = listOf(), isNoQueuesCreatedIllustrationVisible = true),
+        _viewModel.uiState.safeValue,
+        "Show illustration for no queues created")
   }
 
   @Test

@@ -25,6 +25,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -79,6 +80,9 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.toolbar.navigationIcon = null
     fragmentBinding.toolbar.setTitle(R.string.appName)
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
+    fragmentBinding.noDataCreated.image.setImageResource(R.drawable.image_create_3d)
+    fragmentBinding.noDataCreated.title.setText(R.string.queue_noQueuesCreated)
+    fragmentBinding.noDataCreated.description.setText(R.string.queue_noQueuesCreated_description)
     fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
@@ -125,6 +129,8 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     } else {
       _queueMenu.dismissDialog()
     }
+    fragmentBinding.noDataCreatedContainer.isVisible = state.isNoQueuesCreatedIllustrationVisible
+    fragmentBinding.recyclerView.isVisible = !state.isNoQueuesCreatedIllustrationVisible
   }
 
   private fun _onRecyclerAdapterState(state: RecyclerAdapterState) {

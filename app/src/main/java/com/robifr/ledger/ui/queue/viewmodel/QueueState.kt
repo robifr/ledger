@@ -28,6 +28,7 @@ data class QueueState(
     val expandedQueueIndex: Int,
     val isQueueMenuDialogShown: Boolean,
     val selectedQueueMenu: QueueModel?,
+    val isNoQueuesCreatedIllustrationVisible: Boolean,
     val sortMethod: QueueSortMethod,
     val isSortMethodDialogShown: Boolean
 )

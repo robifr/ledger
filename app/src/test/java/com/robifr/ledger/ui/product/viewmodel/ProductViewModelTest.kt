@@ -83,9 +83,25 @@ class ProductViewModelTest(
     } just Runs
     coEvery { _productRepository.selectAll() } returns
         listOf(_firstProduct, _secondProduct, _thirdProduct)
+    coEvery { _productRepository.isTableEmpty() } returns false
     _viewModel = ProductViewModel(_dispatcher, _productRepository)
     _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
     _viewModel.recyclerAdapterState.observe(_lifecycleOwner, _recyclerAdapterStateObserver)
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on initialize with empty data`(isTableEmpty: Boolean) {
+    coEvery { _productRepository.selectAll() } returns
+        if (isTableEmpty) listOf() else listOf(_firstProduct)
+    coEvery { _productRepository.isTableEmpty() } returns isTableEmpty
+    _viewModel = ProductViewModel(_dispatcher, _productRepository)
+    assertEquals(
+        _viewModel.uiState.safeValue.copy(
+            products = if (isTableEmpty) listOf() else listOf(_firstProduct),
+            isNoProductsAddedIllustrationVisible = isTableEmpty),
+        _viewModel.uiState.safeValue,
+        "Show illustration for no products added")
   }
 
   @Test
@@ -134,6 +150,7 @@ class ProductViewModelTest(
             expandedProductIndex = 0,
             isProductMenuDialogShown = isShown,
             selectedProductMenu = if (isShown) _firstProduct else null,
+            isNoProductsAddedIllustrationVisible = false,
             sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, true),
             isSortMethodDialogShown = false),
         _viewModel.uiState.safeValue,
@@ -189,6 +206,7 @@ class ProductViewModelTest(
             expandedProductIndex = -1,
             isProductMenuDialogShown = false,
             selectedProductMenu = null,
+            isNoProductsAddedIllustrationVisible = false,
             sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, true),
             isSortMethodDialogShown = isShown),
         _viewModel.uiState.safeValue,
@@ -249,6 +267,19 @@ class ProductViewModelTest(
         updatedProducts,
         _viewModel.uiState.safeValue.products,
         "Sync products when any are updated in the database")
+  }
+
+  @Test
+  fun `on sync product from database result empty data`() {
+    coEvery { _productRepository.isTableEmpty() } returns true
+
+    _productChangedListenerCaptor.captured.onModelDeleted(
+        listOf(_firstProduct, _secondProduct, _thirdProduct))
+    assertEquals(
+        _viewModel.uiState.safeValue.copy(
+            products = listOf(), isNoProductsAddedIllustrationVisible = true),
+        _viewModel.uiState.safeValue,
+        "Show illustration for no products created")
   }
 
   @Test

@@ -63,6 +63,7 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     every { _customerRepository.addModelChangedListener(any()) } just Runs
     coEvery { _customerRepository.selectAll() } returns
         listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
+    coEvery { _customerRepository.isTableEmpty() } returns false
     _customerViewModel = CustomerViewModel(_dispatcher, _customerRepository)
     _viewModel = _customerViewModel.filterView
   }

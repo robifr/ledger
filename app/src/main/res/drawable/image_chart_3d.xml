@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+ ~ Copyright 2025 Robi
+ ~
+ ~ Licensed under the Apache License, Version 2.0 (the "License");
+ ~ you may not use this file except in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing, software
+ ~ distributed under the License is distributed on an "AS IS" BASIS,
+ ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ ~ See the License for the specific language governing permissions and
+ ~ limitations under the License.
+ -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="32"
+    android:viewportHeight="32">
+  <path
+      android:fillColor="#3696ee"
+      android:pathData="M5.888,17.403H9.4a1.328,1.328 45,0 1,1.328 1.328v10.344a1.328,1.328 135,0 1,-1.328 1.328l-3.512,0a1.328,1.328 45,0 1,-1.328 -1.328v-10.344a1.328,1.328 135,0 1,1.328 -1.328z"
+      android:strokeWidth="1.0139" />
+  <path
+      android:fillColor="#3696ee"
+      android:pathData="m21.825,13.413h3.512a1.328,1.328 45,0 1,1.328 1.328v14.344a1.328,1.328 135,0 1,-1.328 1.328h-3.512a1.328,1.328 45,0 1,-1.328 -1.328v-14.344a1.328,1.328 135,0 1,1.328 -1.328z"
+      android:strokeWidth="1.0139" />
+  <path
+      android:fillColor="#3696ee"
+      android:pathData="m13.904,6.382h3.512a1.328,1.328 45,0 1,1.328 1.328V29.054a1.328,1.328 135,0 1,-1.328 1.328h-3.512a1.328,1.328 45,0 1,-1.328 -1.328l0,-21.344a1.328,1.328 135,0 1,1.328 -1.328z"
+      android:strokeWidth="1.0139" />
+  <path
+      android:fillColor="#78b5ed"
+      android:pathData="M6,17L10,17A1,1 0,0 1,11 18L11,29A1,1 0,0 1,10 30L6,30A1,1 0,0 1,5 29L5,18A1,1 0,0 1,6 17z" />
+  <path
+      android:fillColor="#78b5ed"
+      android:pathData="M22,13L26,13A1,1 0,0 1,27 14L27,29A1,1 0,0 1,26 30L22,30A1,1 0,0 1,21 29L21,14A1,1 0,0 1,22 13z" />
+  <path
+      android:fillColor="#78b5ed"
+      android:pathData="M14,6L18,6A1,1 0,0 1,19 7L19,29A1,1 0,0 1,18 30L14,30A1,1 0,0 1,13 29L13,7A1,1 0,0 1,14 6z" />
+</vector>

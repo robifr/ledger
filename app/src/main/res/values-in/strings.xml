@@ -167,6 +167,8 @@
     <item quantity="one"><![CDATA[Menampilkan <b>%d</b> antrean]]></item>
     <item quantity="other"><![CDATA[Menampilkan <b>%d</b> antrean]]></item>
   </plurals>
+  <string name="queue_noQueuesCreated">Tidak ada antrean</string>
+  <string name="queue_noQueuesCreated_description">Buat antrean untuk mengelola pesanan</string>
   <string name="queue_sortBy">Sortir</string>
   <!-- Filters. -->
   <string name="queue_filters">Filter</string>
@@ -216,6 +218,8 @@
     <item quantity="one"><![CDATA[Menampilkan <b>%d</b> pelanggan]]></item>
     <item quantity="other"><![CDATA[Menampilkan <b>%d</b> pelanggan]]></item>
   </plurals>
+  <string name="customer_noCustomersAdded">Tidak ada pelanggan</string>
+  <string name="customer_noCustomersAdded_description">Tambahkan pelanggan untuk mencatat klien</string>
   <string name="customer_sortBy" translatable="false">@string/queue_sortBy</string>
   <!-- Filters. -->
   <string name="customer_filters" translatable="false">@string/queue_filters</string>
@@ -252,6 +256,8 @@
     <item quantity="one"><![CDATA[Menampilkan <b>%d</b> produk]]></item>
     <item quantity="other"><![CDATA[Menampilkan <b>%d</b> produk]]></item>
   </plurals>
+  <string name="product_noProductsAdded">Tidak ada produk</string>
+  <string name="product_noProductsAdded_description">Tambahkan produk untuk membangun dan mengelola katalog</string>
   <string name="product_sortBy" translatable="false">@string/queue_sortBy</string>
   <!-- Filters. -->
   <string name="product_filters" translatable="false">@string/queue_filters</string>
