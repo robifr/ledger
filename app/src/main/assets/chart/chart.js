@@ -285,67 +285,70 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
     .pie()
     .sort(null)
     .value((d) => d.value);
-  const chart = svg
+  svg
     .append("g")
-    .attr("transform", `translate(${chartXPosition}, ${chartYPosition})`);
-  chart
-    .selectAll(".slice")
-    .data(pie(data))
-    .join("path")
-    .attr(
-      "d",
-      d3
-        .arc()
-        .innerRadius(radius * 0.7)
-        .outerRadius(radius)
-    )
-    .attr("fill", (d, i) => colors[i])
-    .attr("stroke", layout.backgroundColor)
-    .style("stroke-width", "1px");
-  chart
-    .append("g")
-    .style("fill", Android.colorHex("android:textColor"))
-    .attr("text-anchor", "middle")
-    .attr("dominant-baseline", "middle")
-    .html(svgTextInCenter);
+    .attr("transform", `translate(${chartXPosition}, ${chartYPosition})`)
+    .call((g) => {
+      g.selectAll(".slice")
+        .data(pie(data))
+        .join("path")
+        .attr(
+          "d",
+          d3
+            .arc()
+            .innerRadius(radius * 0.7)
+            .outerRadius(radius)
+        )
+        .attr("fill", (d, i) => colors[i])
+        .attr("stroke", layout.backgroundColor)
+        .style("stroke-width", "1px");
+      g.append("g")
+        .style("fill", Android.colorHex("android:textColor"))
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .html(svgTextInCenter);
+    });
 
   const legendRectSize = 15;
   const legendItemPadding = 5;
-  const legend = svg.selectAll(".legend").data(pie(data)).enter().append("g");
-  legend
-    .append("rect")
-    .attr("width", legendRectSize)
-    .attr("height", legendRectSize)
-    .attr("rx", 5)
-    .attr("ry", 5)
-    .attr("fill", (d, i) => (d.data.key !== NO_DATA_KEY ? colors[i] : "none"));
-  legend
-    .append("text")
-    .text((d) => (d.data.key !== NO_DATA_KEY ? d.data.key : ""))
-    .style("fill", Android.colorHex("android:textColor"))
-    .style("font-size", 12)
-    .attr("x", legendRectSize + legendItemPadding)
-    .attr("y", legendRectSize / 2)
-    .attr("dy", "0.35em"); // Adjust for vertical alignment of text baseline.
-  legend
-    .append("text")
-    .text((d) =>
-      d.data.key !== NO_DATA_KEY
-        ? Android.formatCurrencyWithUnit(d.value, Android.localeLanguageTag(), "")
-        : ""
-    )
-    .style("fill", Android.colorHex("android:textColor"))
-    .style("font-size", 14)
-    .style("font-weight", "bold")
-    .attr("x", legendRectSize + legendItemPadding)
-    .attr("y", legendRectSize / 2 + 12 + legendItemPadding)
-    .attr("dy", "0.35em"); // Adjust for vertical alignment of text baseline.
+  svg
+    .selectAll(".legend")
+    .data(pie(data))
+    .enter()
+    .append("g")
+    .call((g) => {
+      g.append("rect")
+        .attr("width", legendRectSize)
+        .attr("height", legendRectSize)
+        .attr("rx", 5)
+        .attr("ry", 5)
+        .attr("fill", (d, i) => (d.data.key !== NO_DATA_KEY ? colors[i] : "none"));
+      g.append("text")
+        .text((d) => (d.data.key !== NO_DATA_KEY ? d.data.key : ""))
+        .style("fill", Android.colorHex("android:textColor"))
+        .style("font-size", 12)
+        .attr("x", legendRectSize + legendItemPadding)
+        .attr("y", legendRectSize / 2)
+        .attr("dy", "0.35em"); // Adjust for vertical alignment of text baseline.
+      g.append("text")
+        .text((d) =>
+          d.data.key !== NO_DATA_KEY
+            ? Android.formatCurrencyWithUnit(d.value, Android.localeLanguageTag(), "")
+            : ""
+        )
+        .style("fill", Android.colorHex("android:textColor"))
+        .style("font-size", 14)
+        .style("font-weight", "bold")
+        .attr("x", legendRectSize + legendItemPadding)
+        .attr("y", legendRectSize / 2 + 12 + legendItemPadding)
+        .attr("dy", "0.35em"); // Adjust for vertical alignment of text baseline.
 
-  const legendXPosition = chartXPosition + radius + 20;
-  let legendYPosition = layout.marginTop + 20;
-  // Dynamically set the legend y-position depending on how much space is occupied by the text.
-  legend.each(function () {
-    d3.select(this).attr("transform", `translate(${legendXPosition}, ${legendYPosition})`);
-    legendYPosition += this.getBBox().height + 15;
-  });
+      const legendXPosition = chartXPosition + radius + 20;
+      let legendYPosition = layout.marginTop + 20;
+      // Dynamically set the legend y-position depending on how much space is occupied by the text.
+      g.each(function () {
+        d3.select(this).attr("transform", `translate(${legendXPosition}, ${legendYPosition})`);
+        legendYPosition += this.getBBox().height + 15;
+      });
+    });
 }
