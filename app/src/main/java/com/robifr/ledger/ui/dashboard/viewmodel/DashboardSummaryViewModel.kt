@@ -119,8 +119,7 @@ class DashboardSummaryViewModel(
         _uiState.safeValue.queues
             .takeIf { _uiState.safeValue.date.range == QueueDate.Range.ALL_TIME }
             ?.minOfOrNull { it.date }
-            ?.atZone(ZoneId.systemDefault())
-            ?: _uiState.safeValue.date.dateStart.toInstant().atZone(ZoneId.systemDefault())
+            ?.atZone(ZoneId.systemDefault()) ?: QueueDate.Range.THIS_YEAR.dateStart()
     val dateEnd: ZonedDateTime = _uiState.safeValue.date.dateEnd
 
     // The key is a formatted date.
