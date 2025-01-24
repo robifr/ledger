@@ -149,9 +149,13 @@ dependencies {
 licensee { allow("Apache-2.0") }
 
 kover {
-  reports.filters.excludes {
-    packages("**.databinding", "dagger.hilt.*", "hilt_aggregated_deps")
-    classes("**.R.class", "**.R\$*.class", "**.BuildConfig", "**.*_*")
+  currentProject.createVariant("main") { add("debug") }
+
+  reports {
+    filters.excludes {
+      packages("**.databinding", "dagger.hilt.*", "hilt_aggregated_deps")
+      classes("**.R.class", "**.R\$*.class", "**.BuildConfig", "**.*_*")
+    }
   }
 }
 

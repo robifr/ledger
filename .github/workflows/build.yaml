@@ -62,7 +62,7 @@ jobs:
 
       - name: Generate coverage report with Kover
         if: github.ref == 'refs/heads/main'
-        run: ./gradlew koverXmlReport
+        run: ./gradlew koverXmlReportMain
 
       - name: Upload coverage report to Codecov
         if: github.ref == 'refs/heads/main'
