@@ -30,6 +30,7 @@ import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.databinding.DashboardDialogDateBinding
 import com.robifr.ledger.util.ClassPath
 import java.time.Instant
+import java.time.LocalTime
 import java.time.ZoneId
 
 class DashboardDate(
@@ -65,8 +66,15 @@ class DashboardDate(
                 date.second?.let { endDate ->
                   _onDateChanged(
                       QueueDate(
-                          Instant.ofEpochMilli(startDate).atZone(ZoneId.systemDefault()),
-                          Instant.ofEpochMilli(endDate).atZone(ZoneId.systemDefault())))
+                          Instant.ofEpochMilli(startDate)
+                              .atZone(ZoneId.systemDefault())
+                              .toLocalDate()
+                              .atStartOfDay(ZoneId.systemDefault()),
+                          Instant.ofEpochMilli(endDate)
+                              .atZone(ZoneId.systemDefault())
+                              .toLocalDate()
+                              .atTime(LocalTime.MAX)
+                              .atZone(ZoneId.systemDefault())))
                 }
               }
               _onDialogClosed()

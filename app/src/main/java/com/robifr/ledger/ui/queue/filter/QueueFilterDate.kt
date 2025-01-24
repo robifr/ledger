@@ -31,6 +31,7 @@ import com.robifr.ledger.databinding.QueueDialogFilterBinding
 import com.robifr.ledger.ui.queue.QueueFragment
 import com.robifr.ledger.util.ClassPath
 import java.time.Instant
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -50,8 +51,15 @@ class QueueFilterDate(
                 date.second?.let { endDate ->
                   _fragment.queueViewModel.filterView.onDateChanged(
                       QueueDate(
-                          Instant.ofEpochMilli(startDate).atZone(ZoneId.systemDefault()),
-                          Instant.ofEpochMilli(endDate).atZone(ZoneId.systemDefault())))
+                          Instant.ofEpochMilli(startDate)
+                              .atZone(ZoneId.systemDefault())
+                              .toLocalDate()
+                              .atStartOfDay(ZoneId.systemDefault()),
+                          Instant.ofEpochMilli(endDate)
+                              .atZone(ZoneId.systemDefault())
+                              .toLocalDate()
+                              .atTime(LocalTime.MAX)
+                              .atZone(ZoneId.systemDefault())))
                 }
               }
             }
