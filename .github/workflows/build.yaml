@@ -58,7 +58,7 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Run test
-        run: ./gradlew test --rerun-tasks
+        run: ./gradlew testDebugUnitTest --rerun-tasks
 
       - name: Generate coverage report with Kover
         if: github.ref == 'refs/heads/main'
