@@ -196,7 +196,9 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     _inputProductOrder.setContextualMode(state.isContextualModeActive)
     _inputProductOrder.setSelectedProductOrderByIndexes(state.selectedIndexes)
     // Disable every possible irrelevant action when contextual mode is on.
-    fragmentBinding.customerLayout.isEndIconVisible = !state.isContextualModeActive
+    fragmentBinding.customerLayout.isEndIconVisible =
+        createQueueViewModel.uiState.safeValue.isCustomerEndIconVisible &&
+            !state.isContextualModeActive
     fragmentBinding.customer.isEnabled = !state.isContextualModeActive
     fragmentBinding.date.isEnabled = !state.isContextualModeActive
     fragmentBinding.status.isEnabled = !state.isContextualModeActive
