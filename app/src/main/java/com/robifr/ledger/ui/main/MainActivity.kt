@@ -143,8 +143,10 @@ open class MainActivity :
       navigation.setOnItemSelectedListener(this)
       ViewCompat.setOnApplyWindowInsetsListener(activityBinding.navigation) { view, insets ->
         val statusBarInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-        val cutoutInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
-        view.updatePadding(top = statusBarInsets.top, left = cutoutInsets.left)
+        val windowInsets: Insets =
+            insets.getInsets(
+                WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.navigationBars())
+        view.updatePadding(top = statusBarInsets.top, left = windowInsets.left)
         WindowInsetsCompat.CONSUMED
       }
     }

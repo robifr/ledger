@@ -70,9 +70,11 @@ class ProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.root) { view, insets ->
-      val systemBarInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-      val cutoutInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
-      view.updatePadding(top = systemBarInsets.top, right = cutoutInsets.right)
+      val statusBarInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+      val windowInsets: Insets =
+          insets.getInsets(
+              WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.navigationBars())
+      view.updatePadding(top = statusBarInsets.top, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
     fragmentBinding.toolbar.menu.clear()

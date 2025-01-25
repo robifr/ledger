@@ -77,13 +77,15 @@ class SearchCustomerFragment : Fragment(), SearchView.OnQueryTextListener {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.root) { _, insets ->
       val systemBarInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-      val cutoutInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+      val windowInsets: Insets =
+          insets.getInsets(
+              WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.navigationBars())
       fragmentBinding.appBarLayout.updatePadding(
-          top = systemBarInsets.top, left = cutoutInsets.left, right = cutoutInsets.right)
+          top = systemBarInsets.top, left = windowInsets.left, right = windowInsets.right)
       fragmentBinding.noResultsImageContainer.updatePadding(
-          left = cutoutInsets.left, right = cutoutInsets.right)
+          left = windowInsets.left, right = windowInsets.right)
       fragmentBinding.recyclerView.updatePadding(
-          left = cutoutInsets.left, right = cutoutInsets.right)
+          left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
     requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)

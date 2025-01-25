@@ -67,9 +67,11 @@ class SettingsFragment : Fragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.root) { view, insets ->
       val systemBarInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-      val cutoutInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+      val windowInsets: Insets =
+          insets.getInsets(
+              WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.navigationBars())
       view.updatePadding(
-          top = systemBarInsets.top, left = cutoutInsets.left, right = cutoutInsets.right)
+          top = systemBarInsets.top, left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
     // Use the activity's lifecycle owner to prevent the app from closing when the system

@@ -16,6 +16,12 @@
 
 package com.robifr.ledger.ui.main
 
+import android.view.ViewGroup.MarginLayoutParams
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.marginRight
+import androidx.core.view.updateLayoutParams
 import androidx.navigation.findNavController
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -45,6 +51,17 @@ class MainCreate(private val _activity: MainActivity) {
       }
 
   init {
+    // Define the margin outside `ViewCompat.setOnApplyWindowInsetsListener()`, otherwise the margin
+    // will incremented everytime the view gets recreated.
+    val marginRight: Int = _activity.activityBinding.createButton.marginRight
+    ViewCompat.setOnApplyWindowInsetsListener(_activity.activityBinding.createButton) { view, insets
+      ->
+      val windowInsets: Insets =
+          insets.getInsets(
+              WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.navigationBars())
+      view.updateLayoutParams<MarginLayoutParams> { rightMargin = windowInsets.right + marginRight }
+      WindowInsetsCompat.CONSUMED
+    }
     _activity.activityBinding.createButton.setOnClickListener { _dialog.show() }
   }
 }
