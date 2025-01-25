@@ -79,9 +79,16 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.appBarLayout) { view, insets ->
-      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-      view.updatePadding(top = windowInsets.top)
+    ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.root) { _, insets ->
+      val systemBarInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+      val cutoutInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+      // When the device is in landscape mode, you’ll notice that the stroke gets cut in tab layout.
+      // Unfortunately, there’s no way to avoid applying insets only to the stroke.
+      fragmentBinding.appBarLayout.updatePadding(
+          top = systemBarInsets.top, left = cutoutInsets.left, right = cutoutInsets.right)
+      fragmentBinding.noResultsImageContainer.updatePadding(
+          left = cutoutInsets.left, right = cutoutInsets.right)
+      fragmentBinding.viewPager.updatePadding(left = cutoutInsets.left, right = cutoutInsets.right)
       WindowInsetsCompat.CONSUMED
     }
     requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)

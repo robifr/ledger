@@ -39,7 +39,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavDestination
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
+import com.google.android.material.navigationrail.NavigationRailView
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.MainActivityBinding
 import com.robifr.ledger.local.LocalBackup
@@ -84,12 +86,14 @@ open class MainActivity :
       destination: NavDestination,
       arguments: Bundle?
   ) {
+    val navigation: View = activityBinding.navigation
+    if (navigation !is BottomNavigationView && navigation !is NavigationRailView) return
     // Match selected item of bottom navigation with the visible fragment.
     // It doesn't get matched on back pressed.
-    activityBinding.bottomNavigation.menu.findItem(destination.id)?.isChecked = true
+    navigation.menu.findItem(destination.id)?.isChecked = true
     // Hide views on main activity when user navigating to another fragment other than the one
     // defined as top of the stack — queue, customer, and product — inside bottom navigation.
-    activityBinding.bottomNavigation.isVisible = destination.parent?.id == R.id.mainGraph
+    navigation.isVisible = destination.parent?.id == R.id.mainGraph
     activityBinding.createButton.isVisible =
         destination.parent?.id == R.id.mainGraph && destination.id != R.id.dashboardFragment
   }
@@ -109,7 +113,7 @@ open class MainActivity :
     _create = MainCreate(this)
     _permissionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult(), this)
-    _setupBottomNavigation()
+    _setupNavigation()
     _applyUserPreferences()
     if (!_permission.isStorageAccessGranted()) {
       _permission.showStorageAccessDialog(
@@ -126,15 +130,26 @@ open class MainActivity :
     findNavController(R.id.fragmentContainer).addOnDestinationChangedListener(this)
   }
 
-  private fun _setupBottomNavigation() {
-    activityBinding.bottomNavigation.setOnItemSelectedListener(this)
-    ViewCompat.setOnApplyWindowInsetsListener(activityBinding.bottomNavigation) { view, insets ->
-      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-      view.updatePadding(bottom = windowInsets.bottom)
-      WindowInsetsCompat.CONSUMED
+  private fun _setupNavigation() {
+    val navigation: View = activityBinding.navigation
+    if (navigation is BottomNavigationView) {
+      navigation.setOnItemSelectedListener(this)
+      ViewCompat.setOnApplyWindowInsetsListener(activityBinding.navigation) { view, insets ->
+        val navigationBarInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+        view.updatePadding(bottom = navigationBarInsets.bottom)
+        WindowInsetsCompat.CONSUMED
+      }
+    } else if (navigation is NavigationRailView) {
+      navigation.setOnItemSelectedListener(this)
+      ViewCompat.setOnApplyWindowInsetsListener(activityBinding.navigation) { view, insets ->
+        val statusBarInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+        val cutoutInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+        view.updatePadding(top = statusBarInsets.top, left = cutoutInsets.left)
+        WindowInsetsCompat.CONSUMED
+      }
     }
     listOf(R.id.dashboardFragment, R.id.queueFragment, R.id.customerFragment, R.id.productFragment)
-        .forEach { activityBinding.bottomNavigation.findViewById<View>(it)?.hideTooltipText() }
+        .forEach { navigation.findViewById<View>(it)?.hideTooltipText() }
   }
 
   private fun _applyUserPreferences() {

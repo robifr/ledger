@@ -16,7 +16,7 @@
 
 <resources>
 
-  <style name="AppTheme.Light" parent="Theme.Material3.DayNight">
+  <style name="AppTheme.Light" parent="Theme.Material3.DayNight.NoActionBar">
     <!-- Branding. -->
     <!-- Main button, chart. etc. -->
     <item name="colorPrimary">@color/primary_toggleable</item>
@@ -80,6 +80,9 @@
 
     <!-- Disable annoying material things. The one that make every color looks weird. -->
     <item name="elevationOverlayEnabled">false</item>
+
+    <!-- Enable view to be rendered behind camera. -->
+    <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
 
     <item name="windowNoTitle">true</item>
     <item name="windowActionBar">false</item>

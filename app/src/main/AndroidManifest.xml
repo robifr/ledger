@@ -40,7 +40,7 @@
 
     <activity
         android:name="${activityLauncherName}"
-        android:configChanges="orientation|keyboardHidden|screenSize"
+        android:configChanges="keyboardHidden|screenSize"
         android:exported="true"
         android:windowSoftInputMode="adjustNothing">
       <intent-filter>

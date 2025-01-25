@@ -71,8 +71,9 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.root) { view, insets ->
-      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-      view.updatePadding(top = windowInsets.top)
+      val systemBarInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+      val cutoutInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+      view.updatePadding(top = systemBarInsets.top, right = cutoutInsets.right)
       WindowInsetsCompat.CONSUMED
     }
     fragmentBinding.toolbar.menu.clear()

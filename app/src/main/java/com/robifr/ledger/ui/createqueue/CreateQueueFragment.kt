@@ -78,9 +78,13 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   }
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-    ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.appBarLayout) { view, insets ->
-      val windowInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-      view.updatePadding(top = windowInsets.top)
+    ViewCompat.setOnApplyWindowInsetsListener(fragmentBinding.root) { _, insets ->
+      val systemBarInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+      val cutoutInsets: Insets = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+      fragmentBinding.appBarLayout.updatePadding(
+          top = systemBarInsets.top, left = cutoutInsets.left, right = cutoutInsets.right)
+      fragmentBinding.nestedScrollView.updatePadding(
+          left = cutoutInsets.left, right = cutoutInsets.right)
       WindowInsetsCompat.CONSUMED
     }
     requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
