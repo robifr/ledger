@@ -131,12 +131,14 @@ class DashboardRevenueViewModel(
   }
 
   private fun _onDisplayChart(context: Context, @ColorRes colors: List<Int>) {
-    // Remove unnecessary dates.
     val dateStart: ZonedDateTime =
-        _uiState.safeValue.queues
-            .takeIf { _uiState.safeValue.date.range == QueueDate.Range.ALL_TIME }
-            ?.minOfOrNull { it.date }
-            ?.atZone(ZoneId.systemDefault()) ?: QueueDate.Range.THIS_YEAR.dateStart()
+        if (_uiState.safeValue.date.range == QueueDate.Range.ALL_TIME) {
+          // Use the oldest date in queues, or default to the start of this year if no data.
+          _uiState.safeValue.queues.minOfOrNull { it.date }?.atZone(ZoneId.systemDefault())
+              ?: QueueDate.Range.THIS_YEAR.dateStart()
+        } else {
+          _uiState.safeValue.date.dateStart.toInstant().atZone(ZoneId.systemDefault())
+        }
     val dateEnd: ZonedDateTime = _uiState.safeValue.date.dateEnd
 
     // The key is a formatted date with overview type as a secondary key.
