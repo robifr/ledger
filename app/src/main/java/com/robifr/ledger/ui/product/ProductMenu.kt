@@ -66,11 +66,11 @@ class ProductMenu(private val _fragment: Fragment, private val _onDialogClosed: 
                           R.string.product_cardMenu_deleteWarning_description,
                           selectedProduct.name),
                   HtmlCompat.FROM_HTML_MODE_LEGACY))
-          .setNegativeButton(R.string.action_delete) { _, _ ->
+          .setNegativeButton(R.string.action_cancel) { _, _ -> }
+          .setPositiveButton(R.string.action_delete) { _, _ ->
             onDeleteProduct(selectedProduct)
             _onDialogClosed()
           }
-          .setPositiveButton(R.string.action_cancel) { _, _ -> }
           .show()
     }
     _dialog.show()

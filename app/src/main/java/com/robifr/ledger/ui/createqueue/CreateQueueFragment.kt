@@ -273,8 +273,8 @@ private class OnBackPressedHandler(private val _fragment: CreateQueueFragment) :
   override fun handleOnBackPressed() {
     MaterialAlertDialogBuilder(_fragment.requireContext())
         .setMessage(R.string.createQueue_unsavedChangesWarning)
-        .setNegativeButton(R.string.action_leaveWithoutSaving) { _, _ -> _fragment.finish() }
-        .setPositiveButton(R.string.action_cancel) { _, _ -> }
+        .setNegativeButton(R.string.action_cancel) { _, _ -> }
+        .setPositiveButton(R.string.action_leaveWithoutSaving) { _, _ -> _fragment.finish() }
         .show()
   }
 }
