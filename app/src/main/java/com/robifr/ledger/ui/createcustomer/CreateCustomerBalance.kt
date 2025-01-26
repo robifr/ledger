@@ -16,6 +16,7 @@
 
 package com.robifr.ledger.ui.createcustomer
 
+import android.content.DialogInterface
 import android.text.Editable
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatDelegate
@@ -110,7 +111,8 @@ class CreateCustomerBalance(private val _fragment: CreateCustomerFragment) {
     _fragment.fragmentBinding.withdrawButton.isEnabled = isEnabled
   }
 
-  fun setInputtedBalanceAmountText(formattedAmount: String) {
+  fun setInputtedBalanceAmountText(formattedAmount: String, isAddButtonEnabled: Boolean) {
+    _addBalanceDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = isAddButtonEnabled
     if (_addBalanceDialogBinding.amount.text.toString() == formattedAmount) return
     // Remove listener to prevent any sort of formatting.
     _addBalanceDialogBinding.amount.removeTextChangedListener(_addBalanceTextWatcher)
@@ -118,7 +120,9 @@ class CreateCustomerBalance(private val _fragment: CreateCustomerFragment) {
     _addBalanceDialogBinding.amount.addTextChangedListener(_addBalanceTextWatcher)
   }
 
-  fun setInputtedWithdrawAmountText(formattedAmount: String) {
+  fun setInputtedWithdrawAmountText(formattedAmount: String, isWithdrawButtonEnabled: Boolean) {
+    _withdrawBalanceDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled =
+        isWithdrawButtonEnabled
     if (_withdrawBalanceDialogBinding.amount.text.toString() == formattedAmount) return
     // Remove listener to prevent any sort of formatting.
     _withdrawBalanceDialogBinding.amount.removeTextChangedListener(_withdrawTextWatcher)

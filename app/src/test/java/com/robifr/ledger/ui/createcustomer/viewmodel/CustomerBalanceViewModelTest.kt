@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.robifr.ledger.InstantTaskExecutorExtension
 import com.robifr.ledger.MainCoroutineExtension
+import com.robifr.ledger.util.CurrencyFormat
 import io.mockk.clearAllMocks
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -48,7 +49,7 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
 
   @ParameterizedTest
   @ValueSource(longs = [500L, Long.MAX_VALUE])
-  fun `on balance amount text changed`(currentBalance: Long) {
+  fun `on add balance amount text changed`(currentBalance: Long) {
     val currentFormattedAmount: String = "$0"
     _viewModel.onAddBalanceAmountTextChanged(currentFormattedAmount)
     _createCustomerViewModel.onBalanceChanged(currentBalance)
@@ -68,14 +69,28 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
   }
 
   @ParameterizedTest
+  @ValueSource(longs = [0L, 500L])
+  fun `on add balance amount text changed result add button enabled`(amount: Long) {
+    _viewModel.onAddBalanceAmountTextChanged(CurrencyFormat.format(amount.toBigDecimal(), "en-US"))
+    assertEquals(
+        amount > 0,
+        _viewModel.addBalanceState.safeValue.isAddButtonEnabled,
+        "Enable add button when the amount is more than zero")
+  }
+
+  @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on add dialog shown`(isShown: Boolean) {
     _viewModel.onAddBalanceAmountTextChanged("$1")
 
     if (isShown) _viewModel.onAddBalanceDialogShown() else _viewModel.onAddBalanceDialogClosed()
     assertEquals(
-        if (isShown) _viewModel.addBalanceState.safeValue.copy(isDialogShown = true)
-        else CustomerBalanceAddState(isDialogShown = false, formattedAmount = ""),
+        if (isShown) {
+          _viewModel.addBalanceState.safeValue.copy(isDialogShown = true)
+        } else {
+          CustomerBalanceAddState(
+              isDialogShown = false, formattedAmount = "", isAddButtonEnabled = false)
+        },
         _viewModel.addBalanceState.safeValue,
         "Preserve other fields when the dialog shown and reset when closed")
   }
@@ -113,6 +128,16 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
   }
 
   @ParameterizedTest
+  @ValueSource(longs = [0L, 500L])
+  fun `on withdraw balance amount text changed result withdraw button enabled`(amount: Long) {
+    _viewModel.onWithdrawAmountTextChanged(CurrencyFormat.format(amount.toBigDecimal(), "en-US"))
+    assertEquals(
+        amount > 0,
+        _viewModel.withdrawBalanceState.safeValue.isWithdrawButtonEnabled,
+        "Enable withdraw button when the amount is more than zero")
+  }
+
+  @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on withdraw dialog shown`(isShown: Boolean) {
     _viewModel.onWithdrawAmountTextChanged("$100")
@@ -125,7 +150,10 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
           _viewModel.withdrawBalanceState.safeValue.copy(isDialogShown = true)
         } else {
           CustomerBalanceWithdrawState(
-              isDialogShown = false, formattedAmount = "", availableAmountToWithdraw = 100L)
+              isDialogShown = false,
+              formattedAmount = "",
+              availableAmountToWithdraw = 100L,
+              isWithdrawButtonEnabled = false)
         },
         _viewModel.withdrawBalanceState.safeValue,
         "Preserve other fields when the dialog shown and reset when closed")

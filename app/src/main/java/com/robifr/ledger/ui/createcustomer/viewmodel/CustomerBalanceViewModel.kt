@@ -26,14 +26,19 @@ import java.text.ParseException
 
 class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCustomerViewModel) {
   private val _addBalanceState: SafeMutableLiveData<CustomerBalanceAddState> =
-      SafeMutableLiveData(CustomerBalanceAddState(false, ""))
+      SafeMutableLiveData(
+          CustomerBalanceAddState(
+              isDialogShown = false, formattedAmount = "", isAddButtonEnabled = false))
   val addBalanceState: SafeLiveData<CustomerBalanceAddState>
     get() = _addBalanceState
 
   private val _withdrawBalanceState: SafeMediatorLiveData<CustomerBalanceWithdrawState> =
       SafeMediatorLiveData(
               CustomerBalanceWithdrawState(
-                  isDialogShown = false, formattedAmount = "", availableAmountToWithdraw = 0L))
+                  isDialogShown = false,
+                  formattedAmount = "",
+                  availableAmountToWithdraw = 0L,
+                  isWithdrawButtonEnabled = false))
           .apply {
             addSource(_createCustomerViewModel.uiState.toLiveData()) {
               _withdrawBalanceState.setValue(
@@ -48,7 +53,9 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
   }
 
   fun onAddBalanceDialogClosed() {
-    _addBalanceState.setValue(CustomerBalanceAddState(false, ""))
+    _addBalanceState.setValue(
+        CustomerBalanceAddState(
+            isDialogShown = false, formattedAmount = "", isAddButtonEnabled = false))
   }
 
   fun onAddBalanceSubmitted() {
@@ -74,7 +81,8 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
                   _addBalanceState.safeValue.formattedAmount
                 } else {
                   formattedAmount
-                }))
+                },
+            isAddButtonEnabled = amountToAdd.compareTo(0.toBigDecimal()) > 0))
   }
 
   fun onWithdrawBalanceDialogShown() {
@@ -86,7 +94,8 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
         CustomerBalanceWithdrawState(
             isDialogShown = false,
             formattedAmount = "",
-            availableAmountToWithdraw = _createCustomerViewModel.uiState.safeValue.balance))
+            availableAmountToWithdraw = _createCustomerViewModel.uiState.safeValue.balance,
+            isWithdrawButtonEnabled = false))
   }
 
   fun onWithdrawBalanceSubmitted() {
@@ -113,7 +122,8 @@ class CustomerBalanceViewModel(private val _createCustomerViewModel: CreateCusto
                 else _withdrawBalanceState.safeValue.formattedAmount,
             availableAmountToWithdraw =
                 if (isLeftOverBalanceAvailable) balanceAfter.toLong()
-                else _withdrawBalanceState.safeValue.availableAmountToWithdraw))
+                else _withdrawBalanceState.safeValue.availableAmountToWithdraw,
+            isWithdrawButtonEnabled = amountToWithdraw.compareTo(0.toBigDecimal()) > 0))
   }
 
   private fun _parseInputtedBalanceAmount(): Long =

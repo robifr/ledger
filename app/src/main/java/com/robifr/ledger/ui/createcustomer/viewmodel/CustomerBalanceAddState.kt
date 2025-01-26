@@ -16,4 +16,8 @@
 
 package com.robifr.ledger.ui.createcustomer.viewmodel
 
-data class CustomerBalanceAddState(val isDialogShown: Boolean, val formattedAmount: String)
+data class CustomerBalanceAddState(
+    val isDialogShown: Boolean,
+    val formattedAmount: String,
+    val isAddButtonEnabled: Boolean
+)
