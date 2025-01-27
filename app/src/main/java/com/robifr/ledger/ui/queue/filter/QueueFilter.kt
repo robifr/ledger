@@ -31,7 +31,7 @@ class QueueFilter(private val _fragment: QueueFragment) {
         setContentView(_dialogBinding.root)
         setOnDismissListener { _fragment.queueViewModel.filterView.onDialogClosed() }
       }
-  val filterCustomer: QueueFilterCustomer = QueueFilterCustomer(_dialog, _fragment, _dialogBinding)
+  val filterCustomer: QueueFilterCustomer = QueueFilterCustomer(_fragment, _dialogBinding)
   val filterDate: QueueFilterDate = QueueFilterDate(_fragment, _dialogBinding)
   val filterStatus: QueueFilterStatus = QueueFilterStatus(_fragment, _dialogBinding)
   val filterTotalPrice: QueueFilterTotalPrice = QueueFilterTotalPrice(_fragment, _dialogBinding)

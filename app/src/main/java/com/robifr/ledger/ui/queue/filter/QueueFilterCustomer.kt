@@ -19,7 +19,6 @@ package com.robifr.ledger.ui.queue.filter
 import android.os.Bundle
 import android.widget.CompoundButton
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.robifr.ledger.R
 import com.robifr.ledger.data.display.QueueFilters
 import com.robifr.ledger.databinding.QueueDialogFilterBinding
@@ -27,7 +26,6 @@ import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 import com.robifr.ledger.ui.queue.QueueFragment
 
 class QueueFilterCustomer(
-    dialog: BottomSheetDialog,
     private val _fragment: QueueFragment,
     private val _dialogBinding: QueueDialogFilterBinding
 ) : CompoundButton.OnCheckedChangeListener {
@@ -42,7 +40,7 @@ class QueueFilterCustomer(
                     FilterCustomerFragment.Arguments.INITIAL_FILTERED_CUSTOMER_IDS_LONG_ARRAY.key(),
                     _fragment.queueViewModel.filterView.uiState.safeValue.customerIds.toLongArray())
               })
-      dialog.dismiss()
+      _fragment.queueViewModel.filterView.onDialogClosed()
     }
     _dialogBinding.filterCustomer.showNullCustomer.setOnClickListener {
       _dialogBinding.filterCustomer.showNullCustomerCheckbox.performClick()
