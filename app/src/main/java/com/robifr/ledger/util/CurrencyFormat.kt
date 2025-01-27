@@ -26,7 +26,6 @@ import java.text.NumberFormat
 import java.text.ParseException
 import java.util.Locale
 import kotlin.math.max
-import kotlin.math.pow
 
 object CurrencyFormat {
   /**
@@ -178,12 +177,16 @@ object CurrencyFormat {
   /** Scales the given amount from cents to base units based on locale-specific fraction digits. */
   fun fromCents(amount: BigDecimal, languageTag: String): BigDecimal {
     val fractionDigits: Int = decimalFractionDigits(languageTag)
+    if (fractionDigits == -1) return 0.toBigDecimal()
     return amount.divide(10.toBigDecimal().pow(fractionDigits), fractionDigits, RoundingMode.DOWN)
   }
 
   /** Scales the given amount from base units to cents based on locale-specific fraction digits. */
-  fun toCents(amount: BigDecimal, languageTag: String): BigDecimal =
-      10.toBigDecimal().pow(decimalFractionDigits(languageTag)) * amount
+  fun toCents(amount: BigDecimal, languageTag: String): BigDecimal {
+    val fractionDigits: Int = decimalFractionDigits(languageTag)
+    if (fractionDigits == -1) return 0.toBigDecimal()
+    return 10.toBigDecimal().pow(fractionDigits) * amount
+  }
 
   fun isValidToParseAndFormat(
       amount: String,
