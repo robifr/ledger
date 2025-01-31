@@ -56,12 +56,11 @@ reliable performance even without an internet connection.
 
 ### Screenshots
 <div align="center">
-  <img src="./docs/screenshot/promo_1.png" alt="Dashboard screenshot" width="320"/>
-  <img src="./docs/screenshot/promo_2.png" alt="Queues screenshot" width="320"/>
-</div>
-<div align="center">
-  <img src="./docs/screenshot/promo_3.png" alt="Edit queue screenshot" width="320"/>
-  <img src="./docs/screenshot/promo_4.png" alt="Products screenshot" width="320"/>
+  <img src="./docs/screenshot/promo_1.png" alt="Dashboard screenshot" width="30%"/>
+  <img src="./docs/screenshot/promo_2.png" alt="Dashboard screenshot" width="30%"/>
+  <img src="./docs/screenshot/promo_3.png" alt="Queues screenshot" width="30%"/>
+  <img src="./docs/screenshot/promo_4.png" alt="Edit queue screenshot" width="30%"/>
+  <img src="./docs/screenshot/promo_5.png" alt="Products screenshot" width="30%"/>
 </div>
 
 ### Features
