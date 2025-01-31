@@ -38,6 +38,7 @@ import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.product.filter.ProductFilter
 import com.robifr.ledger.ui.product.recycler.ProductAdapter
+import com.robifr.ledger.ui.product.viewmodel.ProductEvent
 import com.robifr.ledger.ui.product.viewmodel.ProductFilterState
 import com.robifr.ledger.ui.product.viewmodel.ProductState
 import com.robifr.ledger.ui.product.viewmodel.ProductViewModel
@@ -88,9 +89,8 @@ class ProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
-    productViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
+    productViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
     productViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
-    productViewModel.recyclerAdapterState.observe(viewLifecycleOwner, ::_onRecyclerAdapterState)
     productViewModel.filterView.uiState.observe(viewLifecycleOwner, ::_onFilterState)
   }
 
@@ -106,6 +106,17 @@ class ProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         else -> false
       }
+
+  private fun _onUiEvent(event: ProductEvent) {
+    event.snackbar?.let {
+      _onSnackbarState(it.data)
+      it.onConsumed()
+    }
+    event.recyclerAdapter?.let {
+      _onRecyclerAdapterState(it.data)
+      it.onConsumed()
+    }
+  }
 
   private fun _onSnackbarState(state: SnackbarState) {
     Snackbar.make(

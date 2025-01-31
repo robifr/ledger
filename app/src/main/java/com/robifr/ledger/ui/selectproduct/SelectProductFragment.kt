@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -35,9 +34,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ListableFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.OnBackPressedHandler
 import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
 import com.robifr.ledger.ui.selectproduct.recycler.SelectProductAdapter
+import com.robifr.ledger.ui.selectproduct.viewmodel.SelectProductEvent
 import com.robifr.ledger.ui.selectproduct.viewmodel.SelectProductResultState
 import com.robifr.ledger.ui.selectproduct.viewmodel.SelectProductViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,7 +51,6 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   val selectProductViewModel: SelectProductViewModel by viewModels()
   private lateinit var _adapter: SelectProductAdapter
-  private lateinit var _onBackPressed: OnBackPressedHandler
 
   override fun onCreateView(
       inflater: LayoutInflater,
@@ -59,7 +59,6 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   ): View {
     _fragmentBinding = ListableFragmentBinding.inflate(inflater, container, false)
     _adapter = SelectProductAdapter(this)
-    _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
   }
 
@@ -73,19 +72,23 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
           top = systemBarInsets.top, left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
-    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
+    requireActivity()
+        .onBackPressedDispatcher
+        .addCallback(
+            viewLifecycleOwner,
+            OnBackPressedHandler { selectProductViewModel.onProductSelected(null) })
+    fragmentBinding.toolbar.setNavigationOnClickListener {
+      selectProductViewModel.onProductSelected(null)
+    }
     fragmentBinding.toolbar.menu.clear()
     fragmentBinding.toolbar.inflateMenu(R.menu.reusable_toolbar_select)
     fragmentBinding.toolbar.setTitle(R.string.selectProduct)
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
-    fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
     fragmentBinding.horizontalToolbar.isGone = true
     fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
-    selectProductViewModel.resultState.observe(viewLifecycleOwner, ::_onResultState)
-    selectProductViewModel.recyclerAdapterState.observe(
-        viewLifecycleOwner, ::_onRecyclerAdapterState)
+    selectProductViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
   }
 
   override fun onStart() {
@@ -120,6 +123,17 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   fun finish() {
     findNavController().popBackStack()
+  }
+
+  private fun _onUiEvent(event: SelectProductEvent) {
+    event.recyclerAdapter?.let {
+      _onRecyclerAdapterState(it.data)
+      it.onConsumed()
+    }
+    event.selectResult?.let {
+      _onResultState(it.data)
+      it.onConsumed()
+    }
   }
 
   private fun _onResultState(state: SelectProductResultState) {
@@ -164,12 +178,5 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   enum class Result : FragmentResultKey {
     SELECTED_PRODUCT_ID_LONG
-  }
-}
-
-private class OnBackPressedHandler(private val _fragment: SelectProductFragment) :
-    OnBackPressedCallback(true) {
-  override fun handleOnBackPressed() {
-    _fragment.selectProductViewModel.onProductSelected(null)
   }
 }

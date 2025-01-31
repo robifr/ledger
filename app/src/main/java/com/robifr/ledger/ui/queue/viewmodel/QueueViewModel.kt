@@ -17,7 +17,6 @@
 package com.robifr.ledger.ui.queue.viewmodel
 
 import android.os.Environment
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
@@ -32,9 +31,10 @@ import com.robifr.ledger.ui.PluralResource
 import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.StringResourceType
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -68,9 +68,9 @@ constructor(
           currentQueues = { _uiState.safeValue.queues },
           onSyncQueues = { filterView._onFiltersChanged(queues = it) })
 
-  private val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
-  val snackbarState: LiveData<SnackbarState>
-    get() = _snackbarState
+  private val _uiEvent: SafeMutableLiveData<QueueEvent> = SafeMutableLiveData(QueueEvent())
+  val uiEvent: SafeLiveData<QueueEvent>
+    get() = _uiEvent
 
   private val _uiState: SafeMutableLiveData<QueueState> =
       SafeMutableLiveData(
@@ -84,10 +84,6 @@ constructor(
               isSortMethodDialogShown = false))
   val uiState: SafeLiveData<QueueState>
     get() = _uiState
-
-  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
-  val recyclerAdapterState: LiveData<RecyclerAdapterState>
-    get() = _recyclerAdapterState
 
   val filterView: QueueFilterViewModel =
       QueueFilterViewModel(
@@ -107,12 +103,12 @@ constructor(
 
   fun onQueuesChanged(queues: List<QueueModel>) {
     _uiState.setValue(_uiState.safeValue.copy(queues = _sorter.sort(queues)))
-    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
+    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
   }
 
   fun onExpandedQueueIndexChanged(index: Int) {
     // Update both previous and current expanded product. +1 offset because header holder.
-    _recyclerAdapterState.setValue(
+    _onRecyclerAdapterRefreshed(
         RecyclerAdapterState.ItemChanged(
             listOfNotNull(
                 _uiState.safeValue.expandedQueueIndex.takeIf { it != -1 }?.let { it + 1 },
@@ -173,19 +169,36 @@ constructor(
   fun onDeleteQueue(queue: QueueModel) {
     viewModelScope.launch(_dispatcher) {
       _queueRepository.delete(queue).let { effected ->
-        _snackbarState.postValue(
-            SnackbarState(
-                if (effected > 0) {
-                  PluralResource(R.plurals.queue_deleted_n_queue, effected, effected)
-                } else {
-                  StringResource(R.string.queue_deleteQueueError)
-                }))
+        _onSnackbarShown(
+            if (effected > 0) {
+              PluralResource(R.plurals.queue_deleted_n_queue, effected, effected)
+            } else {
+              StringResource(R.string.queue_deleteQueueError)
+            })
       }
     }
   }
 
   private fun _onNoQueuesCreatedIllustrationVisible(isVisible: Boolean) {
     _uiState.setValue(_uiState.safeValue.copy(isNoQueuesCreatedIllustrationVisible = isVisible))
+  }
+
+  private fun _onSnackbarShown(messageRes: StringResourceType) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = SnackbarState(messageRes),
+          onSet = { this?.copy(snackbar = it) },
+          onReset = { this?.copy(snackbar = null) })
+    }
+  }
+
+  private fun _onRecyclerAdapterRefreshed(state: RecyclerAdapterState) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = state,
+          onSet = { this?.copy(recyclerAdapter = it) },
+          onReset = { this?.copy(recyclerAdapter = null) })
+    }
   }
 
   private suspend fun _selectAllQueues(): List<QueueModel> = _queueRepository.selectAll()

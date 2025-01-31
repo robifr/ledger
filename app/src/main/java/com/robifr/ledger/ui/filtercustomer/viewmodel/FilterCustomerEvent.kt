@@ -14,6 +14,14 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.searchproduct.viewmodel
+package com.robifr.ledger.ui.filtercustomer.viewmodel
 
-data class SearchProductResultState(val selectedProductId: Long?)
+import com.robifr.ledger.ui.RecyclerAdapterState
+import com.robifr.ledger.ui.UiEvent
+
+data class FilterCustomerEvent(
+    val recyclerAdapter: UiEvent<RecyclerAdapterState>? = null,
+    val filterResult: UiEvent<FilterCustomerResultState>? = null
+)
+
+data class FilterCustomerResultState(val filteredCustomerIds: List<Long>)

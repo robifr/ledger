@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -36,12 +35,14 @@ import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.SearchableFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.OnBackPressedHandler
 import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.product.ProductMenu
 import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.search.viewmodel.SearchViewModel
 import com.robifr.ledger.ui.searchproduct.recycler.SearchProductAdapter
+import com.robifr.ledger.ui.searchproduct.viewmodel.SearchProductEvent
 import com.robifr.ledger.ui.searchproduct.viewmodel.SearchProductResultState
 import com.robifr.ledger.ui.searchproduct.viewmodel.SearchProductState
 import com.robifr.ledger.ui.searchproduct.viewmodel.SearchProductViewModel
@@ -60,7 +61,6 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
       viewModels({ if (parentFragment !is NavHostFragment) requireParentFragment() else this })
   private lateinit var _productMenu: ProductMenu
   private lateinit var _adapter: SearchProductAdapter
-  private lateinit var _onBackPressed: OnBackPressedHandler
 
   override fun onCreateView(
       inflater: LayoutInflater,
@@ -70,7 +70,6 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
     _fragmentBinding = SearchableFragmentBinding.inflate(inflater, container, false)
     _productMenu = ProductMenu(this, searchProductViewModel::onProductMenuDialogClosed)
     _adapter = SearchProductAdapter(this)
-    _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
   }
 
@@ -88,10 +87,16 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
           left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
-    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
+    requireActivity()
+        .onBackPressedDispatcher
+        .addCallback(
+            viewLifecycleOwner,
+            OnBackPressedHandler { searchProductViewModel.onProductSelected(null) })
+    fragmentBinding.toolbar.setNavigationOnClickListener {
+      searchProductViewModel.onProductSelected(null)
+    }
     fragmentBinding.appBarLayout.isVisible =
         searchProductViewModel.uiState.safeValue.isToolbarVisible
-    fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
     fragmentBinding.searchView.queryHint = getString(R.string.searchProduct)
     fragmentBinding.searchView.setOnQueryTextListener(this)
     fragmentBinding.noResultsImage.image.setImageResource(R.drawable.image_search_3d)
@@ -101,11 +106,8 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
     fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
-    searchProductViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
-    searchProductViewModel.resultState.observe(viewLifecycleOwner, ::_onResultState)
+    searchProductViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
     searchProductViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
-    searchProductViewModel.recyclerAdapterState.observe(
-        viewLifecycleOwner, ::_onRecyclerAdapterState)
     _searchViewModel.uiState.observe(viewLifecycleOwner, ::_onSearchUiState)
 
     if (searchProductViewModel.uiState.safeValue.isToolbarVisible) {
@@ -129,6 +131,21 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
   fun finish() {
     requireView().hideKeyboard()
     findNavController().popBackStack()
+  }
+
+  private fun _onUiEvent(event: SearchProductEvent) {
+    event.snackbar?.let {
+      _onSnackbarState(it.data)
+      it.onConsumed()
+    }
+    event.recyclerAdapter?.let {
+      _onRecyclerAdapterState(it.data)
+      it.onConsumed()
+    }
+    event.searchResult?.let {
+      _onResultState(it.data)
+      it.onConsumed()
+    }
   }
 
   private fun _onSnackbarState(state: SnackbarState) {
@@ -188,12 +205,5 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
 
   enum class Result : FragmentResultKey {
     SELECTED_PRODUCT_ID_LONG
-  }
-}
-
-private class OnBackPressedHandler(private val _fragment: SearchProductFragment) :
-    OnBackPressedCallback(true) {
-  override fun handleOnBackPressed() {
-    _fragment.searchProductViewModel.onProductSelected(null)
   }
 }

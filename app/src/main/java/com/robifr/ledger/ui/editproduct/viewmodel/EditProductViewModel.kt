@@ -18,6 +18,7 @@ package com.robifr.ledger.ui.editproduct.viewmodel
 
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
@@ -25,12 +26,12 @@ import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.ui.PluralResource
-import com.robifr.ledger.ui.SingleLiveEvent
-import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.UiEvent
 import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductViewModel
 import com.robifr.ledger.ui.editproduct.EditProductFragment
 import com.robifr.ledger.util.CurrencyFormat
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -48,9 +49,9 @@ constructor(
 ) : CreateProductViewModel(dispatcher, productRepository) {
   private lateinit var _initialProductToEdit: ProductModel
 
-  private val _editResultState: SingleLiveEvent<EditProductResultState> = SingleLiveEvent()
-  val editResultState: LiveData<EditProductResultState>
-    get() = _editResultState
+  private val _editResultEvent: MutableLiveData<UiEvent<EditProductResultState>> = MutableLiveData()
+  val editResultEvent: LiveData<UiEvent<EditProductResultState>>
+    get() = _editResultEvent
 
   init {
     // Setting up initial values inside a fragment is painful. See commit d5604599.
@@ -67,6 +68,11 @@ constructor(
     viewModelScope.launch(_dispatcher) { _updateProduct(_parseInputtedProduct()) }
   }
 
+  override fun onBackPressed() {
+    if (_initialProductToEdit != _parseInputtedProduct()) _onUnsavedChangesDialogShown()
+    else _onFragmentFinished()
+  }
+
   override fun _parseInputtedProduct(): ProductModel =
       if (::_initialProductToEdit.isInitialized) {
         super._parseInputtedProduct().copy(id = _initialProductToEdit.id)
@@ -76,22 +82,21 @@ constructor(
 
   private suspend fun _selectProductById(productId: Long?): ProductModel? =
       _productRepository.selectById(productId).also {
-        if (it == null) {
-          _snackbarState.postValue(
-              SnackbarState(StringResource(R.string.createProduct_fetchProductError)))
-        }
+        if (it == null) _onSnackbarShown(StringResource(R.string.createProduct_fetchProductError))
       }
 
   private suspend fun _updateProduct(product: ProductModel) {
     _productRepository.update(product).let { effected ->
-      if (effected > 0) _editResultState.postValue(EditProductResultState(product.id))
-      _snackbarState.postValue(
-          SnackbarState(
-              if (effected > 0) {
-                PluralResource(R.plurals.createProduct_updated_n_product, effected, effected)
-              } else {
-                StringResource(R.string.createProduct_updateProductError)
-              }))
+      _onSnackbarShown(
+          if (effected > 0) {
+            PluralResource(R.plurals.createProduct_updated_n_product, effected, effected)
+          } else {
+            StringResource(R.string.createProduct_updateProductError)
+          })
+      if (effected > 0) {
+        _editResultEvent.updateEvent(
+            data = EditProductResultState(product.id), onSet = { it }, onReset = { null })
+      }
     }
   }
 

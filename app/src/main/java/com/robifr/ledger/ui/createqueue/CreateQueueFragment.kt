@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -37,7 +36,9 @@ import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.databinding.CreateQueueFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.OnBackPressedHandler
 import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueEvent
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueResultState
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueState
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueViewModel
@@ -60,7 +61,6 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   private lateinit var _inputStatus: CreateQueueStatus
   private lateinit var _inputPaymentMethod: CreateQueuePaymentMethod
   private lateinit var _inputProductOrder: CreateQueueProductOrder
-  private lateinit var _onBackPressed: OnBackPressedHandler
 
   override fun onCreateView(
       inflater: LayoutInflater,
@@ -73,7 +73,6 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     _inputStatus = CreateQueueStatus(this)
     _inputPaymentMethod = CreateQueuePaymentMethod(this)
     _inputProductOrder = CreateQueueProductOrder(this)
-    _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
   }
 
@@ -89,13 +88,15 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
           left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
-    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
-    fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
+    requireActivity()
+        .onBackPressedDispatcher
+        .addCallback(
+            viewLifecycleOwner, OnBackPressedHandler { createQueueViewModel.onBackPressed() })
+    fragmentBinding.toolbar.setNavigationOnClickListener { createQueueViewModel.onBackPressed() }
     fragmentBinding.toolbar.menu.clear()
     fragmentBinding.toolbar.inflateMenu(R.menu.reusable_toolbar_edit)
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
-    createQueueViewModel.resultState.observe(viewLifecycleOwner, ::_onResultState)
-    createQueueViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
+    createQueueViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
     createQueueViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
     createQueueViewModel.makeProductOrderView.uiState.observe(
         viewLifecycleOwner, ::_onMakeProductOrderState)
@@ -129,6 +130,24 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     findNavController().popBackStack()
   }
 
+  private fun _onUiEvent(event: CreateQueueEvent) {
+    event.snackbar?.let {
+      _onSnackbarState(it.data)
+      it.onConsumed()
+    }
+    event.isFragmentFinished?.let {
+      finish()
+      it.onConsumed()
+    }
+    event.isUnsavedChangesDialogShown?.let {
+      _onUnsavedChangesDialogState(onDismiss = { it.onConsumed() })
+    }
+    event.createResult?.let {
+      _onResultState(it.data)
+      it.onConsumed()
+    }
+  }
+
   private fun _onResultState(state: CreateQueueResultState) {
     parentFragmentManager.setFragmentResult(
         Request.CREATE_QUEUE.key(),
@@ -143,6 +162,15 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
             fragmentBinding.root as View,
             state.messageRes.toStringValue(requireContext()),
             Snackbar.LENGTH_LONG)
+        .show()
+  }
+
+  private fun _onUnsavedChangesDialogState(onDismiss: () -> Unit) {
+    MaterialAlertDialogBuilder(requireContext())
+        .setMessage(R.string.createQueue_unsavedChangesWarning)
+        .setNegativeButton(R.string.action_cancel) { _, _ -> }
+        .setPositiveButton(R.string.action_leaveWithoutSaving) { _, _ -> finish() }
+        .setOnDismissListener { onDismiss() }
         .show()
   }
 
@@ -265,16 +293,5 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   enum class Result : FragmentResultKey {
     CREATED_QUEUE_ID_LONG
-  }
-}
-
-private class OnBackPressedHandler(private val _fragment: CreateQueueFragment) :
-    OnBackPressedCallback(true) {
-  override fun handleOnBackPressed() {
-    MaterialAlertDialogBuilder(_fragment.requireContext())
-        .setMessage(R.string.createQueue_unsavedChangesWarning)
-        .setNegativeButton(R.string.action_cancel) { _, _ -> }
-        .setPositiveButton(R.string.action_leaveWithoutSaving) { _, _ -> _fragment.finish() }
-        .show()
   }
 }

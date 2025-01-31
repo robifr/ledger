@@ -39,6 +39,7 @@ import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 import com.robifr.ledger.ui.queue.filter.QueueFilter
 import com.robifr.ledger.ui.queue.recycler.QueueAdapter
+import com.robifr.ledger.ui.queue.viewmodel.QueueEvent
 import com.robifr.ledger.ui.queue.viewmodel.QueueFilterState
 import com.robifr.ledger.ui.queue.viewmodel.QueueState
 import com.robifr.ledger.ui.queue.viewmodel.QueueViewModel
@@ -89,9 +90,8 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
-    queueViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
+    queueViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
     queueViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
-    queueViewModel.recyclerAdapterState.observe(viewLifecycleOwner, ::_onRecyclerAdapterState)
     queueViewModel.filterView.uiState.observe(viewLifecycleOwner, ::_onFilterState)
   }
 
@@ -116,6 +116,17 @@ class QueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         }
         else -> false
       }
+
+  private fun _onUiEvent(event: QueueEvent) {
+    event.snackbar?.let {
+      _onSnackbarState(it.data)
+      it.onConsumed()
+    }
+    event.recyclerAdapter?.let {
+      _onRecyclerAdapterState(it.data)
+      it.onConsumed()
+    }
+  }
 
   private fun _onSnackbarState(state: SnackbarState) {
     Snackbar.make(

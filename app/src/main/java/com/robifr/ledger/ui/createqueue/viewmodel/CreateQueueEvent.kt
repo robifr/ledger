@@ -16,4 +16,14 @@
 
 package com.robifr.ledger.ui.createqueue.viewmodel
 
+import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.UiEvent
+
+data class CreateQueueEvent(
+    val snackbar: UiEvent<SnackbarState>? = null,
+    val isFragmentFinished: UiEvent<Boolean>? = null,
+    val isUnsavedChangesDialogShown: UiEvent<Boolean>? = null,
+    val createResult: UiEvent<CreateQueueResultState>? = null
+)
+
 data class CreateQueueResultState(val createdQueueId: Long?)

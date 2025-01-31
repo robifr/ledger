@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -32,13 +31,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ListableFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.OnBackPressedHandler
 import com.robifr.ledger.ui.RecyclerAdapterState
-import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.filtercustomer.recycler.FilterCustomerAdapter
+import com.robifr.ledger.ui.filtercustomer.viewmodel.FilterCustomerEvent
 import com.robifr.ledger.ui.filtercustomer.viewmodel.FilterCustomerResultState
 import com.robifr.ledger.ui.filtercustomer.viewmodel.FilterCustomerViewModel
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
@@ -52,7 +51,6 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   val filterCustomerViewModel: FilterCustomerViewModel by viewModels()
   private lateinit var _adapter: FilterCustomerAdapter
-  private lateinit var _onBackPressed: OnBackPressedHandler
 
   override fun onCreateView(
       inflater: LayoutInflater,
@@ -61,7 +59,6 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   ): View {
     _fragmentBinding = ListableFragmentBinding.inflate(inflater, container, false)
     _adapter = FilterCustomerAdapter(this)
-    _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
   }
 
@@ -75,20 +72,19 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
           top = systemBarInsets.top, left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
-    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
+    requireActivity()
+        .onBackPressedDispatcher
+        .addCallback(viewLifecycleOwner, OnBackPressedHandler { filterCustomerViewModel.onSave() })
+    fragmentBinding.toolbar.setNavigationOnClickListener { filterCustomerViewModel.onSave() }
     fragmentBinding.toolbar.menu.clear()
     fragmentBinding.toolbar.inflateMenu(R.menu.reusable_toolbar_select_multiple)
     fragmentBinding.toolbar.setTitle(R.string.filterCustomer)
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
-    fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
     fragmentBinding.horizontalToolbar.isGone = true
     fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
-    filterCustomerViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
-    filterCustomerViewModel.resultState.observe(viewLifecycleOwner, ::_onResultState)
-    filterCustomerViewModel.recyclerAdapterState.observe(
-        viewLifecycleOwner, ::_onRecyclerAdapterState)
+    filterCustomerViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
   }
 
   override fun onStart() {
@@ -129,12 +125,15 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     findNavController().popBackStack()
   }
 
-  private fun _onSnackbarState(state: SnackbarState) {
-    Snackbar.make(
-            fragmentBinding.root as View,
-            state.messageRes.toStringValue(requireContext()),
-            Snackbar.LENGTH_LONG)
-        .show()
+  private fun _onUiEvent(event: FilterCustomerEvent) {
+    event.recyclerAdapter?.let {
+      _onRecyclerAdapterState(it.data)
+      it.onConsumed()
+    }
+    event.filterResult?.let {
+      _onResultState(it.data)
+      it.onConsumed()
+    }
   }
 
   private fun _onResultState(state: FilterCustomerResultState) {
@@ -181,12 +180,5 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   enum class Result : FragmentResultKey {
     FILTERED_CUSTOMER_IDS_LONG_ARRAY
-  }
-}
-
-private class OnBackPressedHandler(private val _fragment: FilterCustomerFragment) :
-    OnBackPressedCallback(true) {
-  override fun handleOnBackPressed() {
-    _fragment.filterCustomerViewModel.onSave()
   }
 }

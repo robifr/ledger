@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.createcustomer.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
@@ -26,9 +25,10 @@ import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.ui.PluralResource
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.StringResourceType
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -42,20 +42,23 @@ constructor(
     @IoDispatcher protected val _dispatcher: CoroutineDispatcher,
     protected val _customerRepository: CustomerRepository
 ) : ViewModel() {
-  protected val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
-  val snackbarState: LiveData<SnackbarState>
-    get() = _snackbarState
+  private val _initialCustomerToCreate: CustomerModel =
+      CustomerModel(name = "", balance = 0L, debt = 0.toBigDecimal())
+
+  protected val _uiEvent: SafeMutableLiveData<CreateCustomerEvent> =
+      SafeMutableLiveData(CreateCustomerEvent())
+  val uiEvent: SafeLiveData<CreateCustomerEvent>
+    get() = _uiEvent
 
   protected val _uiState: SafeMutableLiveData<CreateCustomerState> =
       SafeMutableLiveData(
           CreateCustomerState(
-              name = "", nameErrorMessageRes = null, balance = 0L, debt = 0.toBigDecimal()))
+              name = _initialCustomerToCreate.name,
+              nameErrorMessageRes = null,
+              balance = _initialCustomerToCreate.balance,
+              debt = _initialCustomerToCreate.debt))
   val uiState: SafeLiveData<CreateCustomerState>
     get() = _uiState
-
-  private val _resultState: SingleLiveEvent<CreateCustomerResultState> = SingleLiveEvent()
-  val resultState: LiveData<CreateCustomerResultState>
-    get() = _resultState
 
   val balanceView: CustomerBalanceViewModel by lazy { CustomerBalanceViewModel(this) }
 
@@ -86,19 +89,55 @@ constructor(
     viewModelScope.launch(_dispatcher) { _addCustomer(_parseInputtedCustomer()) }
   }
 
+  open fun onBackPressed() {
+    if (_initialCustomerToCreate != _parseInputtedCustomer()) _onUnsavedChangesDialogShown()
+    else _onFragmentFinished()
+  }
+
   protected open fun _parseInputtedCustomer(): CustomerModel =
       CustomerModel(
           name = _uiState.safeValue.name,
           balance = _uiState.safeValue.balance,
           debt = _uiState.safeValue.debt)
 
+  protected fun _onSnackbarShown(messageRes: StringResourceType) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = SnackbarState(messageRes),
+          onSet = { this?.copy(snackbar = it) },
+          onReset = { this?.copy(snackbar = null) })
+    }
+  }
+
+  protected fun _onFragmentFinished() {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = true,
+          onSet = { this?.copy(isFragmentFinished = it) },
+          onReset = { this?.copy(isFragmentFinished = null) })
+    }
+  }
+
+  protected fun _onUnsavedChangesDialogShown() {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = true,
+          onSet = { this?.copy(isUnsavedChangesDialogShown = it) },
+          onReset = { this?.copy(isUnsavedChangesDialogShown = null) })
+    }
+  }
+
   private suspend fun _addCustomer(customer: CustomerModel) {
     _customerRepository.add(customer).let { id ->
-      if (id != 0L) _resultState.postValue(CreateCustomerResultState(id))
-      _snackbarState.postValue(
-          SnackbarState(
-              if (id != 0L) PluralResource(R.plurals.createCustomer_added_n_customer, 1, 1)
-              else StringResource(R.string.createCustomer_addCustomerError)))
+      _onSnackbarShown(
+          if (id != 0L) PluralResource(R.plurals.createCustomer_added_n_customer, 1, 1)
+          else StringResource(R.string.createCustomer_addCustomerError))
+      if (id != 0L) {
+        _uiEvent.updateEvent(
+            data = CreateCustomerResultState(id),
+            onSet = { this?.copy(createResult = it) },
+            onReset = { this?.copy(createResult = null) })
+      }
     }
   }
 }

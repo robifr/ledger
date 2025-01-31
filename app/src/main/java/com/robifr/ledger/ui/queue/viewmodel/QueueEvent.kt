@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.selectproduct.viewmodel
+package com.robifr.ledger.ui.queue.viewmodel
 
-data class SelectProductResultState(val selectedProductId: Long?)
+import com.robifr.ledger.ui.RecyclerAdapterState
+import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.UiEvent
+
+data class QueueEvent(
+    val snackbar: UiEvent<SnackbarState>? = null,
+    val recyclerAdapter: UiEvent<RecyclerAdapterState>? = null
+)

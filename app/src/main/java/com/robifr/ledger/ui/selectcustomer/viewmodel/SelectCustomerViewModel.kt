@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.selectcustomer.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -28,8 +27,8 @@ import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.selectcustomer.SelectCustomerFragment
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -50,6 +49,11 @@ constructor(
       ModelSyncListener(
           currentModel = { _uiState.safeValue.customers }, onSyncModels = ::_onCustomersChanged)
 
+  private val _uiEvent: SafeMutableLiveData<SelectCustomerEvent> =
+      SafeMutableLiveData(SelectCustomerEvent())
+  val uiEvent: SafeLiveData<SelectCustomerEvent>
+    get() = _uiEvent
+
   private val _uiState: SafeMutableLiveData<SelectCustomerState> =
       SafeMutableLiveData(
           SelectCustomerState(
@@ -63,14 +67,6 @@ constructor(
   val uiState: SafeLiveData<SelectCustomerState>
     get() = _uiState
 
-  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
-  val recyclerAdapterState: LiveData<RecyclerAdapterState>
-    get() = _recyclerAdapterState
-
-  private val _resultState: SingleLiveEvent<SelectCustomerResultState> = SingleLiveEvent()
-  val resultState: LiveData<SelectCustomerResultState>
-    get() = _resultState
-
   init {
     _customerRepository.addModelChangedListener(_customerChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
@@ -83,12 +79,12 @@ constructor(
 
   fun onSelectedCustomerPreviewExpanded(isExpanded: Boolean) {
     _uiState.setValue(_uiState.safeValue.copy(isSelectedCustomerPreviewExpanded = isExpanded))
-    _recyclerAdapterState.setValue(RecyclerAdapterState.ItemChanged(0)) // Update header holder.
+    _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(0)) // Update header holder.
   }
 
   fun onExpandedCustomerIndexChanged(index: Int) {
     // Update both previous and current expanded product. +1 offset because header holder.
-    _recyclerAdapterState.setValue(
+    _onRecyclerAdapterRefreshed(
         RecyclerAdapterState.ItemChanged(
             listOfNotNull(
                 _uiState.safeValue.expandedCustomerIndex.takeIf { it != -1 }?.let { it + 1 },
@@ -100,18 +96,32 @@ constructor(
   }
 
   fun onCustomerSelected(customer: CustomerModel?) {
-    _resultState.setValue(SelectCustomerResultState(customer?.id))
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = SelectCustomerResultState(customer?.id),
+          onSet = { this?.copy(selectResult = it) },
+          onReset = { this?.copy(selectResult = null) })
+    }
   }
 
   private fun _onCustomersChanged(customers: List<CustomerModel>) {
     _uiState.setValue(_uiState.safeValue.copy(customers = _sorter.sort(customers)))
-    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
+    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
   }
 
   private fun _onSelectedCustomerOnDatabaseChanged(customer: CustomerModel?) {
     _uiState.setValue(_uiState.safeValue.copy(selectedCustomerOnDatabase = customer))
     // Update `selectedItemDescription` in header holder.
-    _recyclerAdapterState.setValue(RecyclerAdapterState.ItemChanged(0))
+    _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(0))
+  }
+
+  private fun _onRecyclerAdapterRefreshed(state: RecyclerAdapterState) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = state,
+          onSet = { this?.copy(recyclerAdapter = it) },
+          onReset = { this?.copy(recyclerAdapter = null) })
+    }
   }
 
   private suspend fun _selectAllCustomers(): List<CustomerModel> = _customerRepository.selectAll()

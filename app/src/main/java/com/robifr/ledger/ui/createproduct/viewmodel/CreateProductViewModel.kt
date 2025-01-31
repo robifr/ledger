@@ -17,7 +17,6 @@
 package com.robifr.ledger.ui.createproduct.viewmodel
 
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
@@ -27,10 +26,11 @@ import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.ui.PluralResource
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.StringResourceType
 import com.robifr.ledger.util.CurrencyFormat
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.ParseException
 import javax.inject.Inject
@@ -44,19 +44,19 @@ constructor(
     @IoDispatcher protected val _dispatcher: CoroutineDispatcher,
     protected val _productRepository: ProductRepository
 ) : ViewModel() {
-  protected val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
-  val snackbarState: LiveData<SnackbarState>
-    get() = _snackbarState
+  private val _initialProductToCreate: ProductModel = ProductModel(name = "", price = 0L)
+
+  protected val _uiEvent: SafeMutableLiveData<CreateProductEvent> =
+      SafeMutableLiveData(CreateProductEvent())
+  val uiEvent: SafeLiveData<CreateProductEvent>
+    get() = _uiEvent
 
   protected val _uiState: SafeMutableLiveData<CreateProductState> =
       SafeMutableLiveData(
-          CreateProductState(name = "", nameErrorMessageRes = null, formattedPrice = ""))
+          CreateProductState(
+              name = _initialProductToCreate.name, nameErrorMessageRes = null, formattedPrice = ""))
   val uiState: SafeLiveData<CreateProductState>
     get() = _uiState
-
-  private val _resultState: SingleLiveEvent<CreateProductResultState> = SingleLiveEvent()
-  val resultState: LiveData<CreateProductResultState>
-    get() = _resultState
 
   fun onNameTextChanged(name: String) {
     _uiState.setValue(
@@ -81,6 +81,11 @@ constructor(
     viewModelScope.launch(_dispatcher) { _addProduct(_parseInputtedProduct()) }
   }
 
+  open fun onBackPressed() {
+    if (_initialProductToCreate != _parseInputtedProduct()) _onUnsavedChangesDialogShown()
+    else _onFragmentFinished()
+  }
+
   protected open fun _parseInputtedProduct(): ProductModel {
     val price: Long =
         try {
@@ -94,13 +99,44 @@ constructor(
     return ProductModel(name = _uiState.safeValue.name, price = price)
   }
 
+  protected fun _onSnackbarShown(messageRes: StringResourceType) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = SnackbarState(messageRes),
+          onSet = { this?.copy(snackbar = it) },
+          onReset = { this?.copy(snackbar = null) })
+    }
+  }
+
+  protected fun _onFragmentFinished() {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = true,
+          onSet = { this?.copy(isFragmentFinished = it) },
+          onReset = { this?.copy(isFragmentFinished = null) })
+    }
+  }
+
+  protected fun _onUnsavedChangesDialogShown() {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = true,
+          onSet = { this?.copy(isUnsavedChangesDialogShown = it) },
+          onReset = { this?.copy(isUnsavedChangesDialogShown = null) })
+    }
+  }
+
   private suspend fun _addProduct(product: ProductModel) {
     _productRepository.add(product).let { id ->
-      if (id != 0L) _resultState.postValue(CreateProductResultState(id))
-      _snackbarState.postValue(
-          SnackbarState(
-              if (id != 0L) PluralResource(R.plurals.createProduct_added_n_product, 1, 1)
-              else StringResource(R.string.createProduct_addProductError)))
+      _onSnackbarShown(
+          if (id != 0L) PluralResource(R.plurals.createProduct_added_n_product, 1, 1)
+          else StringResource(R.string.createProduct_addProductError))
+      if (id != 0L) {
+        _uiEvent.updateEvent(
+            data = CreateProductResultState(id),
+            onSet = { this?.copy(createResult = it) },
+            onReset = { this?.copy(createResult = null) })
+      }
     }
   }
 }

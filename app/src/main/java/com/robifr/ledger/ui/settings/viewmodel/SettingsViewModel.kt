@@ -19,7 +19,6 @@ package com.robifr.ledger.ui.settings.viewmodel
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.BuildConfig
@@ -31,11 +30,12 @@ import com.robifr.ledger.network.NetworkState
 import com.robifr.ledger.repository.SettingsRepository
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.StringResourceType
 import com.robifr.ledger.ui.main.RequiredPermission
 import com.robifr.ledger.util.VersionComparator
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZoneId
 import javax.inject.Inject
@@ -50,9 +50,9 @@ constructor(
     private val _settingsRepository: SettingsRepository,
     private val _permission: RequiredPermission
 ) : ViewModel() {
-  private val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
-  val snackbarState: LiveData<SnackbarState>
-    get() = _snackbarState
+  private val _uiEvent: SafeMutableLiveData<SettingsEvent> = SafeMutableLiveData(SettingsEvent())
+  val uiEvent: SafeLiveData<SettingsEvent>
+    get() = _uiEvent
 
   private val _uiState: SafeMutableLiveData<SettingsState> =
       SafeMutableLiveData(
@@ -66,10 +66,6 @@ constructor(
               githubRelease = null))
   val uiState: SafeLiveData<SettingsState>
     get() = _uiState
-
-  private val _dialogState: SingleLiveEvent<SettingsDialogState> = SingleLiveEvent()
-  val dialogState: SingleLiveEvent<SettingsDialogState>
-    get() = _dialogState
 
   fun onAppThemeChanged(appTheme: AppTheme) {
     _uiState.setValue(_uiState.safeValue.copy(appTheme = appTheme))
@@ -102,8 +98,7 @@ constructor(
   fun onCheckForAppUpdate(context: Context, shouldSnackbarShown: Boolean = true) {
     if (!NetworkState.isInternetAvailable(context)) {
       if (shouldSnackbarShown) {
-        _snackbarState.setValue(
-            SnackbarState(StringResource(R.string.settings_noInternetConnectionForAppUpdates)))
+        _onSnackbarShown(StringResource(R.string.settings_noInternetConnectionForAppUpdates))
       }
       return
     }
@@ -111,11 +106,10 @@ constructor(
       _settingsRepository.obtainLatestAppRelease()?.let {
         if (VersionComparator.isNewVersionNewer(
             BuildConfig.VERSION_NAME, it.tagName.removePrefix("v"))) {
-          _dialogState.postValue(UpdateAvailableDialogState(it))
+          _onDialogShown(UpdateAvailableDialogState(it))
         } else {
           if (shouldSnackbarShown) {
-            _snackbarState.postValue(
-                SnackbarState(StringResource(R.string.settings_noUpdatesWereAvailable)))
+            _onSnackbarShown(StringResource(R.string.settings_noUpdatesWereAvailable))
           }
         }
         _uiState.postValue(
@@ -131,7 +125,7 @@ constructor(
 
   fun onUpdateApp() {
     if (!_permission.isUnknownSourceInstallationGranted()) {
-      _dialogState.setValue(UnknownSourceInstallationDialogState)
+      _onDialogShown(UnknownSourceInstallationDialogState)
       return
     }
     viewModelScope.launch(_dispatcher) {
@@ -140,6 +134,24 @@ constructor(
   }
 
   fun onActivityResultForUnknownSourceInstallation() {
-    _uiState.safeValue.githubRelease?.let { _dialogState.postValue(UpdateAvailableDialogState(it)) }
+    _uiState.safeValue.githubRelease?.let { _onDialogShown(UpdateAvailableDialogState(it)) }
+  }
+
+  private fun _onSnackbarShown(messageRes: StringResourceType) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = SnackbarState(messageRes),
+          onSet = { this?.copy(snackbar = it) },
+          onReset = { this?.copy(snackbar = null) })
+    }
+  }
+
+  private fun _onDialogShown(state: SettingsDialogState) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = state,
+          onSet = { this?.copy(dialog = it) },
+          onReset = { this?.copy(dialog = null) })
+    }
   }
 }

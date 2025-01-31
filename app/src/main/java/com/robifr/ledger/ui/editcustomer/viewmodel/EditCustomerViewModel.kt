@@ -17,6 +17,7 @@
 package com.robifr.ledger.ui.editcustomer.viewmodel
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
@@ -24,11 +25,11 @@ import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.ui.PluralResource
-import com.robifr.ledger.ui.SingleLiveEvent
-import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.UiEvent
 import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerViewModel
 import com.robifr.ledger.ui.editcustomer.EditCustomerFragment
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -46,9 +47,10 @@ constructor(
 ) : CreateCustomerViewModel(dispatcher, customerRepository) {
   private lateinit var _initialCustomerToEdit: CustomerModel
 
-  private val _editResultState: SingleLiveEvent<EditCustomerResultState> = SingleLiveEvent()
-  val editResultState: LiveData<EditCustomerResultState>
-    get() = _editResultState
+  private val _editResultEvent: MutableLiveData<UiEvent<EditCustomerResultState>> =
+      MutableLiveData()
+  val editResultEvent: LiveData<UiEvent<EditCustomerResultState>>
+    get() = _editResultEvent
 
   init {
     // Setting up initial values inside a fragment is painful. See commit d5604599.
@@ -65,6 +67,11 @@ constructor(
     viewModelScope.launch(_dispatcher) { _updateCustomer(_parseInputtedCustomer()) }
   }
 
+  override fun onBackPressed() {
+    if (_initialCustomerToEdit != _parseInputtedCustomer()) _onUnsavedChangesDialogShown()
+    else _onFragmentFinished()
+  }
+
   override fun _parseInputtedCustomer(): CustomerModel =
       if (::_initialCustomerToEdit.isInitialized) {
         super._parseInputtedCustomer().copy(id = _initialCustomerToEdit.id)
@@ -74,22 +81,21 @@ constructor(
 
   private suspend fun _selectCustomerById(customerId: Long?): CustomerModel? =
       _customerRepository.selectById(customerId).also {
-        if (it == null) {
-          _snackbarState.postValue(
-              SnackbarState(StringResource(R.string.createCustomer_fetchCustomerError)))
-        }
+        if (it == null) _onSnackbarShown(StringResource(R.string.createCustomer_fetchCustomerError))
       }
 
   private suspend fun _updateCustomer(customer: CustomerModel) {
     _customerRepository.update(customer).let { effected ->
-      if (effected > 0) _editResultState.postValue(EditCustomerResultState(customer.id))
-      _snackbarState.postValue(
-          SnackbarState(
-              if (effected > 0) {
-                PluralResource(R.plurals.createCustomer_updated_n_customer, effected, effected)
-              } else {
-                StringResource(R.string.createCustomer_updateCustomerError)
-              }))
+      _onSnackbarShown(
+          if (effected > 0) {
+            PluralResource(R.plurals.createCustomer_updated_n_customer, effected, effected)
+          } else {
+            StringResource(R.string.createCustomer_updateCustomerError)
+          })
+      if (effected > 0) {
+        _editResultEvent.updateEvent(
+            data = EditCustomerResultState(customer.id), onSet = { it }, onReset = { null })
+      }
     }
   }
 

@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -35,9 +34,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ListableFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.OnBackPressedHandler
 import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import com.robifr.ledger.ui.selectcustomer.recycler.SelectCustomerAdapter
+import com.robifr.ledger.ui.selectcustomer.viewmodel.SelectCustomerEvent
 import com.robifr.ledger.ui.selectcustomer.viewmodel.SelectCustomerResultState
 import com.robifr.ledger.ui.selectcustomer.viewmodel.SelectCustomerViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -50,7 +51,6 @@ class SelectCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   val selectCustomerViewModel: SelectCustomerViewModel by viewModels()
   private lateinit var _adapter: SelectCustomerAdapter
-  private lateinit var _onBackPressed: OnBackPressedHandler
 
   override fun onCreateView(
       inflater: LayoutInflater,
@@ -59,7 +59,6 @@ class SelectCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   ): View {
     _fragmentBinding = ListableFragmentBinding.inflate(inflater, container, false)
     _adapter = SelectCustomerAdapter(this)
-    _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
   }
 
@@ -73,19 +72,23 @@ class SelectCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
           top = systemBarInsets.top, left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
-    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
+    requireActivity()
+        .onBackPressedDispatcher
+        .addCallback(
+            viewLifecycleOwner,
+            OnBackPressedHandler { selectCustomerViewModel.onCustomerSelected(null) })
+    fragmentBinding.toolbar.setNavigationOnClickListener {
+      selectCustomerViewModel.onCustomerSelected(null)
+    }
     fragmentBinding.toolbar.menu.clear()
     fragmentBinding.toolbar.inflateMenu(R.menu.reusable_toolbar_select)
     fragmentBinding.toolbar.setTitle(R.string.selectCustomer)
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
-    fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
     fragmentBinding.horizontalToolbar.isGone = true
     fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
     fragmentBinding.recyclerView.adapter = _adapter
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
-    selectCustomerViewModel.resultState.observe(viewLifecycleOwner, ::_onResultState)
-    selectCustomerViewModel.recyclerAdapterState.observe(
-        viewLifecycleOwner, ::_onRecyclerAdapterState)
+    selectCustomerViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
   }
 
   override fun onStart() {
@@ -121,6 +124,17 @@ class SelectCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   fun finish() {
     findNavController().popBackStack()
+  }
+
+  private fun _onUiEvent(event: SelectCustomerEvent) {
+    event.recyclerAdapter?.let {
+      _onRecyclerAdapterState(it.data)
+      it.onConsumed()
+    }
+    event.selectResult?.let {
+      _onResultState(it.data)
+      it.onConsumed()
+    }
   }
 
   private fun _onResultState(state: SelectCustomerResultState) {
@@ -165,12 +179,5 @@ class SelectCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   enum class Result : FragmentResultKey {
     SELECTED_CUSTOMER_ID_LONG
-  }
-}
-
-private class OnBackPressedHandler(private val _fragment: SelectCustomerFragment) :
-    OnBackPressedCallback(true) {
-  override fun handleOnBackPressed() {
-    _fragment.selectCustomerViewModel.onCustomerSelected(null)
   }
 }

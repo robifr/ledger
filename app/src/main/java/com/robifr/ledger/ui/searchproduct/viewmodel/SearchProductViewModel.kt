@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.searchproduct.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -29,11 +28,12 @@ import com.robifr.ledger.ui.PluralResource
 import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.StringResourceType
 import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -54,9 +54,10 @@ constructor(
           currentModel = { _uiState.safeValue.products }, onSyncModels = ::_onProductsChanged)
   private var _searchJob: Job? = null
 
-  private val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
-  val snackbarState: LiveData<SnackbarState>
-    get() = _snackbarState
+  private val _uiEvent: SafeMutableLiveData<SearchProductEvent> =
+      SafeMutableLiveData(SearchProductEvent())
+  val uiEvent: SafeLiveData<SearchProductEvent>
+    get() = _uiEvent
 
   private val _uiState: SafeMutableLiveData<SearchProductState> =
       SafeMutableLiveData(
@@ -84,14 +85,6 @@ constructor(
   val uiState: SafeLiveData<SearchProductState>
     get() = _uiState
 
-  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
-  val recyclerAdapterState: LiveData<RecyclerAdapterState>
-    get() = _recyclerAdapterState
-
-  private val _resultState: SingleLiveEvent<SearchProductResultState> = SingleLiveEvent()
-  val resultState: LiveData<SearchProductResultState>
-    get() = _resultState
-
   init {
     _productRepository.addModelChangedListener(_productChangedListener)
   }
@@ -108,14 +101,14 @@ constructor(
           delay(300L)
           _productRepository.search(query).let {
             _uiState.postValue(_uiState.safeValue.copy(query = query, products = it))
-            _recyclerAdapterState.postValue(RecyclerAdapterState.DataSetChanged)
+            _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
           }
         }
   }
 
   fun onExpandedProductIndexChanged(index: Int) {
     // Update both previous and current expanded product. +1 offset because header holder.
-    _recyclerAdapterState.setValue(
+    _onRecyclerAdapterRefreshed(
         RecyclerAdapterState.ItemChanged(
             listOfNotNull(
                 _uiState.safeValue.expandedProductIndex.takeIf { it != -1 }?.let { it + 1 },
@@ -138,30 +131,52 @@ constructor(
   }
 
   fun onProductSelected(product: ProductModel?) {
-    _resultState.setValue(SearchProductResultState(product?.id))
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = SearchProductResultState(product?.id),
+          onSet = { this?.copy(searchResult = it) },
+          onReset = { this?.copy(searchResult = null) })
+    }
   }
 
   fun onDeleteProduct(product: ProductModel) {
     viewModelScope.launch(_dispatcher) {
       _productRepository.delete(product).also { effected ->
-        _snackbarState.postValue(
-            SnackbarState(
-                if (effected > 0) {
-                  PluralResource(R.plurals.searchProduct_deleted_n_product, effected, effected)
-                } else {
-                  StringResource(R.string.searchProduct_deleteProductError)
-                }))
+        _onSnackbarShown(
+            if (effected > 0) {
+              PluralResource(R.plurals.searchProduct_deleted_n_product, effected, effected)
+            } else {
+              StringResource(R.string.searchProduct_deleteProductError)
+            })
       }
     }
   }
 
   fun onSearchUiStateChanged(state: SearchState) {
     _uiState.setValue(_uiState.safeValue.copy(query = state.query, products = state.products))
-    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
+    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
   }
 
   private fun _onProductsChanged(products: List<ProductModel>) {
     _uiState.setValue(_uiState.safeValue.copy(products = products))
-    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
+    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
+  }
+
+  private fun _onSnackbarShown(messageRes: StringResourceType) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = SnackbarState(messageRes),
+          onSet = { this?.copy(snackbar = it) },
+          onReset = { this?.copy(snackbar = null) })
+    }
+  }
+
+  private fun _onRecyclerAdapterRefreshed(state: RecyclerAdapterState) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = state,
+          onSet = { this?.copy(recyclerAdapter = it) },
+          onReset = { this?.copy(recyclerAdapter = null) })
+    }
   }
 }

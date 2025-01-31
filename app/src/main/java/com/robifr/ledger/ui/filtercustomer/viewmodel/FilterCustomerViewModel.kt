@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.filtercustomer.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -27,9 +26,8 @@ import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
-import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -47,9 +45,10 @@ constructor(
 ) : ViewModel() {
   private val _sorter: CustomerSorter = CustomerSorter()
 
-  private val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
-  val snackbarState: LiveData<SnackbarState>
-    get() = _snackbarState
+  private val _uiEvent: SafeMutableLiveData<FilterCustomerEvent> =
+      SafeMutableLiveData(FilterCustomerEvent())
+  val uiEvent: SafeLiveData<FilterCustomerEvent>
+    get() = _uiEvent
 
   private val _uiState: SafeMutableLiveData<FilterCustomerState> =
       SafeMutableLiveData(
@@ -57,14 +56,6 @@ constructor(
               customers = listOf(), expandedCustomerIndex = -1, filteredCustomers = listOf()))
   val uiState: SafeLiveData<FilterCustomerState>
     get() = _uiState
-
-  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
-  val recyclerAdapterState: LiveData<RecyclerAdapterState>
-    get() = _recyclerAdapterState
-
-  private val _resultState: SingleLiveEvent<FilterCustomerResultState> = SingleLiveEvent()
-  val resultState: LiveData<FilterCustomerResultState>
-    get() = _resultState
 
   init {
     // Setting up initial values inside a fragment is painful. See commit d5604599.
@@ -78,7 +69,7 @@ constructor(
                 _uiState.safeValue.filteredCustomers.toMutableList().apply {
                   customers.forEach { if (!contains(it)) add(it) else remove(it) }
                 }))
-    _recyclerAdapterState.setValue(
+    _onRecyclerAdapterRefreshed(
         RecyclerAdapterState.ItemChanged(
             0, // Index 0 to update header holder.
             *customers
@@ -93,7 +84,7 @@ constructor(
 
   fun onExpandedCustomerIndexChanged(index: Int) {
     // Update both previous and current expanded product. +1 offset because header holder.
-    _recyclerAdapterState.setValue(
+    _onRecyclerAdapterRefreshed(
         RecyclerAdapterState.ItemChanged(
             listOfNotNull(
                 _uiState.safeValue.expandedCustomerIndex.takeIf { it != -1 }?.let { it + 1 },
@@ -105,13 +96,27 @@ constructor(
   }
 
   fun onSave() {
-    _resultState.setValue(
-        FilterCustomerResultState(_uiState.safeValue.filteredCustomers.mapNotNull { it.id }))
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data =
+              FilterCustomerResultState(_uiState.safeValue.filteredCustomers.mapNotNull { it.id }),
+          onSet = { this?.copy(filterResult = it) },
+          onReset = { this?.copy(filterResult = null) })
+    }
   }
 
   private fun _onCustomersChanged(customers: List<CustomerModel>) {
     _uiState.setValue(_uiState.safeValue.copy(customers = _sorter.sort(customers)))
-    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
+    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
+  }
+
+  private fun _onRecyclerAdapterRefreshed(state: RecyclerAdapterState) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = state,
+          onSet = { this?.copy(recyclerAdapter = it) },
+          onReset = { this?.copy(recyclerAdapter = null) })
+    }
   }
 
   private suspend fun _selectAllCustomers(): List<CustomerModel> = _customerRepository.selectAll()

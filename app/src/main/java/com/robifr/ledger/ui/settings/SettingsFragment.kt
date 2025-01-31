@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -31,8 +30,10 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.SettingsFragmentBinding
+import com.robifr.ledger.ui.OnBackPressedHandler
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsDialogState
+import com.robifr.ledger.ui.settings.viewmodel.SettingsEvent
 import com.robifr.ledger.ui.settings.viewmodel.SettingsState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsViewModel
 import com.robifr.ledger.ui.settings.viewmodel.UnknownSourceInstallationDialogState
@@ -49,7 +50,6 @@ class SettingsFragment : Fragment() {
   private lateinit var _appTheme: SettingsAppTheme
   private lateinit var _language: SettingsLanguage
   private lateinit var _appUpdate: SettingsAppUpdate
-  private lateinit var _onBackPressed: OnBackPressedHandler
 
   override fun onCreateView(
       inflater: LayoutInflater,
@@ -60,7 +60,6 @@ class SettingsFragment : Fragment() {
     _appTheme = SettingsAppTheme(this)
     _language = SettingsLanguage(this)
     _appUpdate = SettingsAppUpdate(this)
-    _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
   }
 
@@ -74,22 +73,27 @@ class SettingsFragment : Fragment() {
           top = systemBarInsets.top, left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
-    // Use the activity's lifecycle owner to prevent the app from closing when the system
-    // back button is pressed after a configuration change. Just ensure that it's removed
-    // when this fragment is finished, to avoid a crash when closing the app.
-    requireActivity().onBackPressedDispatcher.addCallback(requireActivity(), _onBackPressed)
-    fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
+    requireActivity()
+        .onBackPressedDispatcher
+        .addCallback(viewLifecycleOwner, OnBackPressedHandler { finish() })
+    fragmentBinding.toolbar.setNavigationOnClickListener { finish() }
     fragmentBinding.aboutAppLayer.setOnClickListener {
       findNavController().navigate(R.id.aboutFragment)
     }
-    settingsViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
+    settingsViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
     settingsViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
-    settingsViewModel.dialogState.observe(viewLifecycleOwner, ::_onDialogState)
   }
 
   fun finish() {
     findNavController().popBackStack()
-    _onBackPressed.remove()
+  }
+
+  private fun _onUiEvent(event: SettingsEvent) {
+    event.snackbar?.let {
+      _onSnackbarState(it.data)
+      it.onConsumed()
+    }
+    event.dialog?.let { _onDialogState(state = it.data, onDismiss = { it.onConsumed() }) }
   }
 
   private fun _onSnackbarState(state: SnackbarState) {
@@ -111,20 +115,15 @@ class SettingsFragment : Fragment() {
         state.lastCheckedTimeForAppUpdate, state.languageUsed.detailedDateFormat)
   }
 
-  private fun _onDialogState(state: SettingsDialogState) {
+  private fun _onDialogState(state: SettingsDialogState, onDismiss: () -> Unit) {
     when (state) {
       is UpdateAvailableDialogState ->
           _appUpdate.showUpdateAvailableDialog(
-              state.githubRelease, settingsViewModel.uiState.safeValue.languageUsed.fullDateFormat)
+              state.githubRelease,
+              settingsViewModel.uiState.safeValue.languageUsed.fullDateFormat,
+              onDismiss)
       is UnknownSourceInstallationDialogState ->
-          _appUpdate.showUnknownSourceInstallationPermissionDialog()
+          _appUpdate.showUnknownSourceInstallationPermissionDialog(onDismiss)
     }
-  }
-}
-
-private class OnBackPressedHandler(private val _fragment: SettingsFragment) :
-    OnBackPressedCallback(true) {
-  override fun handleOnBackPressed() {
-    _fragment.finish()
   }
 }

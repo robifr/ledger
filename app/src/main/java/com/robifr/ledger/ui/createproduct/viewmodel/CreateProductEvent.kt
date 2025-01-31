@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.selectcustomer.viewmodel
+package com.robifr.ledger.ui.createproduct.viewmodel
 
-data class SelectCustomerResultState(val selectedCustomerId: Long?)
+import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.UiEvent
+
+data class CreateProductEvent(
+    val snackbar: UiEvent<SnackbarState>? = null,
+    val isFragmentFinished: UiEvent<Boolean>? = null,
+    val isUnsavedChangesDialogShown: UiEvent<Boolean>? = null,
+    val createResult: UiEvent<CreateProductResultState>? = null
+)
+
+data class CreateProductResultState(val createdProductId: Long?)

@@ -14,6 +14,19 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.searchcustomer.viewmodel
+package com.robifr.ledger.ui.settings.viewmodel
 
-data class SearchCustomerResultState(val selectedCustomerId: Long?)
+import com.robifr.ledger.network.GithubReleaseModel
+import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.UiEvent
+
+data class SettingsEvent(
+    val snackbar: UiEvent<SnackbarState>? = null,
+    val dialog: UiEvent<SettingsDialogState>? = null
+)
+
+sealed interface SettingsDialogState
+
+data class UpdateAvailableDialogState(val githubRelease: GithubReleaseModel) : SettingsDialogState
+
+object UnknownSourceInstallationDialogState : SettingsDialogState

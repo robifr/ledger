@@ -32,9 +32,10 @@ import com.robifr.ledger.repository.QueueRepository
 import com.robifr.ledger.ui.PluralResource
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.StringResourceType
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -51,27 +52,30 @@ constructor(
     private val _customerRepository: CustomerRepository,
     private val _productRepository: ProductRepository
 ) : ViewModel() {
-  protected val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
-  val snackbarState: LiveData<SnackbarState>
-    get() = _snackbarState
+  private val _initialQueueToCreate: QueueModel =
+      QueueModel(
+          status = QueueModel.Status.IN_QUEUE,
+          date = ZonedDateTime.now(ZoneId.systemDefault()).toInstant(),
+          paymentMethod = QueueModel.PaymentMethod.CASH)
+
+  protected val _uiEvent: SafeMutableLiveData<CreateQueueEvent> =
+      SafeMutableLiveData(CreateQueueEvent())
+  val uiEvent: SafeLiveData<CreateQueueEvent>
+    get() = _uiEvent
 
   protected val _uiState: SafeMutableLiveData<CreateQueueState> =
       SafeMutableLiveData(
           CreateQueueState(
-              customer = null,
+              customer = _initialQueueToCreate.customer,
               temporalCustomer = null,
-              date = ZonedDateTime.now(ZoneId.systemDefault()),
-              status = QueueModel.Status.IN_QUEUE,
+              date = _initialQueueToCreate.date.atZone(ZoneId.systemDefault()),
+              status = _initialQueueToCreate.status,
               isStatusDialogShown = false,
-              paymentMethod = QueueModel.PaymentMethod.CASH,
-              allowedPaymentMethods = setOf(QueueModel.PaymentMethod.CASH),
-              productOrders = listOf()))
+              paymentMethod = _initialQueueToCreate.paymentMethod,
+              allowedPaymentMethods = setOf(_initialQueueToCreate.paymentMethod),
+              productOrders = _initialQueueToCreate.productOrders))
   val uiState: SafeLiveData<CreateQueueState>
     get() = _uiState
-
-  private val _resultState: SingleLiveEvent<CreateQueueResultState> = SingleLiveEvent()
-  val resultState: LiveData<CreateQueueResultState>
-    get() = _resultState
 
   val makeProductOrderView: MakeProductOrderViewModel by lazy { MakeProductOrderViewModel(this) }
   val selectProductOrderView: SelectProductOrderViewModel by lazy {
@@ -127,11 +131,15 @@ constructor(
 
   open fun onSave() {
     if (_uiState.safeValue.productOrders.isEmpty()) {
-      _snackbarState.setValue(
-          SnackbarState(StringResource(R.string.createQueue_includeOneProductOrderError)))
+      _onSnackbarShown(StringResource(R.string.createQueue_includeOneProductOrderError))
       return
     }
     viewModelScope.launch(_dispatcher) { _addQueue(parseInputtedQueue()) }
+  }
+
+  open fun onBackPressed() {
+    if (_initialQueueToCreate != parseInputtedQueue()) _onUnsavedChangesDialogShown()
+    else _onFragmentFinished()
   }
 
   fun selectCustomerById(customerId: Long?): LiveData<CustomerModel?> =
@@ -140,8 +148,7 @@ constructor(
           postValue(
               _customerRepository.selectById(customerId).also {
                 if (it == null) {
-                  _snackbarState.postValue(
-                      SnackbarState(StringResource(R.string.createQueue_fetchCustomerError)))
+                  _onSnackbarShown(StringResource(R.string.createQueue_fetchCustomerError))
                 }
               })
         }
@@ -153,8 +160,7 @@ constructor(
           postValue(
               _productRepository.selectById(productId).also {
                 if (it == null) {
-                  _snackbarState.postValue(
-                      SnackbarState(StringResource(R.string.createQueue_fetchProductError)))
+                  _onSnackbarShown(StringResource(R.string.createQueue_fetchProductError))
                 }
               })
         }
@@ -190,13 +196,44 @@ constructor(
                 }))
   }
 
+  protected fun _onSnackbarShown(messageRes: StringResourceType) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = SnackbarState(messageRes),
+          onSet = { this?.copy(snackbar = it) },
+          onReset = { this?.copy(snackbar = null) })
+    }
+  }
+
+  protected fun _onFragmentFinished() {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = true,
+          onSet = { this?.copy(isFragmentFinished = it) },
+          onReset = { this?.copy(isFragmentFinished = null) })
+    }
+  }
+
+  protected fun _onUnsavedChangesDialogShown() {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = true,
+          onSet = { this?.copy(isUnsavedChangesDialogShown = it) },
+          onReset = { this?.copy(isUnsavedChangesDialogShown = null) })
+    }
+  }
+
   private suspend fun _addQueue(queue: QueueModel) {
     _queueRepository.add(queue).let { id ->
-      if (id != 0L) _resultState.postValue(CreateQueueResultState(id))
-      _snackbarState.postValue(
-          SnackbarState(
-              if (id != 0L) PluralResource(R.plurals.createQueue_added_n_queue, 1, 1)
-              else StringResource(R.string.createQueue_addQueueError)))
+      _onSnackbarShown(
+          if (id != 0L) PluralResource(R.plurals.createQueue_added_n_queue, 1, 1)
+          else StringResource(R.string.createQueue_addQueueError))
+      if (id != 0L) {
+        _uiEvent.updateEvent(
+            data = CreateQueueResultState(id),
+            onSet = { this?.copy(createResult = it) },
+            onReset = { this?.copy(createResult = null) })
+      }
     }
   }
 }

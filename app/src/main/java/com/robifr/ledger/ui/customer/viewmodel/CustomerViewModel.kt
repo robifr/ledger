@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.customer.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
@@ -30,9 +29,10 @@ import com.robifr.ledger.ui.PluralResource
 import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.StringResourceType
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -61,9 +61,9 @@ constructor(
             }
           })
 
-  private val _snackbarState: SingleLiveEvent<SnackbarState> = SingleLiveEvent()
-  val snackbarState: LiveData<SnackbarState>
-    get() = _snackbarState
+  private val _uiEvent: SafeMutableLiveData<CustomerEvent> = SafeMutableLiveData(CustomerEvent())
+  val uiEvent: SafeLiveData<CustomerEvent>
+    get() = _uiEvent
 
   private val _uiState: SafeMutableLiveData<CustomerState> =
       SafeMutableLiveData(
@@ -77,10 +77,6 @@ constructor(
               isSortMethodDialogShown = false))
   val uiState: SafeLiveData<CustomerState>
     get() = _uiState
-
-  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
-  val recyclerAdapterState: LiveData<RecyclerAdapterState>
-    get() = _recyclerAdapterState
 
   val filterView: CustomerFilterViewModel =
       CustomerFilterViewModel(
@@ -100,12 +96,12 @@ constructor(
 
   fun onCustomersChanged(customers: List<CustomerModel>) {
     _uiState.setValue(_uiState.safeValue.copy(customers = _sorter.sort(customers)))
-    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
+    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
   }
 
   fun onExpandedCustomerIndexChanged(index: Int) {
     // Update both previous and current expanded product. +1 offset because header holder.
-    _recyclerAdapterState.setValue(
+    _onRecyclerAdapterRefreshed(
         RecyclerAdapterState.ItemChanged(
             listOfNotNull(
                 _uiState.safeValue.expandedCustomerIndex.takeIf { it != -1 }?.let { it + 1 },
@@ -168,19 +164,36 @@ constructor(
   fun onDeleteCustomer(customer: CustomerModel) {
     viewModelScope.launch(_dispatcher) {
       _customerRepository.delete(customer).let { effected ->
-        _snackbarState.postValue(
-            SnackbarState(
-                if (effected > 0) {
-                  PluralResource(R.plurals.customer_deleted_n_customer, effected, effected)
-                } else {
-                  StringResource(R.string.customer_deleteCustomerError)
-                }))
+        _onSnackbarShown(
+            if (effected > 0) {
+              PluralResource(R.plurals.customer_deleted_n_customer, effected, effected)
+            } else {
+              StringResource(R.string.customer_deleteCustomerError)
+            })
       }
     }
   }
 
   private fun _onNoCustomersAddedIllustrationVisible(isVisible: Boolean) {
     _uiState.setValue(_uiState.safeValue.copy(isNoCustomersAddedIllustrationVisible = isVisible))
+  }
+
+  private fun _onSnackbarShown(messageRes: StringResourceType) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = SnackbarState(messageRes),
+          onSet = { this?.copy(snackbar = it) },
+          onReset = { this?.copy(snackbar = null) })
+    }
+  }
+
+  private fun _onRecyclerAdapterRefreshed(state: RecyclerAdapterState) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = state,
+          onSet = { this?.copy(recyclerAdapter = it) },
+          onReset = { this?.copy(recyclerAdapter = null) })
+    }
   }
 
   private suspend fun _selectAllCustomers(): List<CustomerModel> = _customerRepository.selectAll()

@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.settings.viewmodel
+package com.robifr.ledger.ui.searchproduct.viewmodel
 
-import com.robifr.ledger.network.GithubReleaseModel
+import com.robifr.ledger.ui.RecyclerAdapterState
+import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.UiEvent
 
-sealed interface SettingsDialogState
+data class SearchProductEvent(
+    val snackbar: UiEvent<SnackbarState>? = null,
+    val recyclerAdapter: UiEvent<RecyclerAdapterState>? = null,
+    val searchResult: UiEvent<SearchProductResultState>? = null
+)
 
-data class UpdateAvailableDialogState(val githubRelease: GithubReleaseModel) : SettingsDialogState
-
-object UnknownSourceInstallationDialogState : SettingsDialogState
+data class SearchProductResultState(val selectedProductId: Long?)

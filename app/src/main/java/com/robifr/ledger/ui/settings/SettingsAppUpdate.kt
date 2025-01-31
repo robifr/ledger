@@ -46,7 +46,11 @@ class SettingsAppUpdate(private val _fragment: SettingsFragment) {
             lastCheckedTime.format(DateTimeFormatter.ofPattern(_fragment.getString(dateFormat))))
   }
 
-  fun showUpdateAvailableDialog(githubRelease: GithubReleaseModel, @StringRes dateFormat: Int) {
+  fun showUpdateAvailableDialog(
+      githubRelease: GithubReleaseModel,
+      @StringRes dateFormat: Int,
+      onDismiss: () -> Unit
+  ) {
     AppUpdateAvailable(_fragment.requireContext())
         .showDialog(
             updateVersion = githubRelease.tagName,
@@ -54,13 +58,16 @@ class SettingsAppUpdate(private val _fragment: SettingsFragment) {
                 ZonedDateTime.parse(githubRelease.publishedAt, DateTimeFormatter.ISO_DATE_TIME)
                     .format(DateTimeFormatter.ofPattern(_fragment.getString(dateFormat))),
             updateSize = githubRelease.sizeInMb(),
-            onUpdate = { _fragment.settingsViewModel.onUpdateApp() })
+            onUpdate = { _fragment.settingsViewModel.onUpdateApp() },
+            onDismiss = onDismiss)
   }
 
-  fun showUnknownSourceInstallationPermissionDialog() {
-    _permission.showUnknownSourceInstallationDialog {
-      _unknownSourceInstallationPermissionLauncher.launch(
-          _permission.unknownSourceInstallationIntent())
-    }
+  fun showUnknownSourceInstallationPermissionDialog(onDismiss: () -> Unit) {
+    _permission.showUnknownSourceInstallationDialog(
+        onGrant = {
+          _unknownSourceInstallationPermissionLauncher.launch(
+              _permission.unknownSourceInstallationIntent())
+        },
+        onDismiss = onDismiss)
   }
 }

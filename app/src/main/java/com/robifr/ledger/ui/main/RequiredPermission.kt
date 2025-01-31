@@ -33,7 +33,7 @@ class RequiredPermission(private val _context: Context) {
           Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
           Uri.fromParts("package", _context.packageName, null))
 
-  fun showStorageAccessDialog(onDeny: () -> Unit, onGrant: () -> Unit) {
+  fun showStorageAccessDialog(onDeny: () -> Unit, onGrant: () -> Unit, onDismiss: () -> Unit = {}) {
     MaterialAlertDialogBuilder(_context)
         .setTitle(
             HtmlCompat.fromHtml(
@@ -45,6 +45,7 @@ class RequiredPermission(private val _context: Context) {
                 HtmlCompat.FROM_HTML_MODE_LEGACY))
         .setNegativeButton(R.string.action_denyAndQuit) { _, _ -> onDeny() }
         .setPositiveButton(R.string.action_grant) { _, _ -> onGrant() }
+        .setOnDismissListener { onDismiss() }
         .setCancelable(false)
         .show()
   }
@@ -57,7 +58,7 @@ class RequiredPermission(private val _context: Context) {
           Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
           Uri.fromParts("package", _context.packageName, null))
 
-  fun showUnknownSourceInstallationDialog(onGrant: () -> Unit) {
+  fun showUnknownSourceInstallationDialog(onGrant: () -> Unit, onDismiss: () -> Unit = {}) {
     MaterialAlertDialogBuilder(_context)
         .setTitle(
             HtmlCompat.fromHtml(
@@ -67,6 +68,7 @@ class RequiredPermission(private val _context: Context) {
             _context.getString(R.string.main_unknownSourceInstallationPermission_description))
         .setNegativeButton(R.string.action_deny) { _, _ -> }
         .setPositiveButton(R.string.action_grant) { _, _ -> onGrant() }
+        .setOnDismissListener { onDismiss() }
         .show()
   }
 }

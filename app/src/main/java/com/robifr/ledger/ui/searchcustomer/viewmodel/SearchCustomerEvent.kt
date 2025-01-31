@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui.createcustomer.viewmodel
+package com.robifr.ledger.ui.searchcustomer.viewmodel
 
-data class CreateCustomerResultState(val createdCustomerId: Long?)
+import com.robifr.ledger.ui.RecyclerAdapterState
+import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.UiEvent
+
+data class SearchCustomerEvent(
+    val snackbar: UiEvent<SnackbarState>? = null,
+    val recyclerAdapter: UiEvent<RecyclerAdapterState>? = null,
+    val searchResult: UiEvent<SearchCustomerResultState>? = null
+)
+
+data class SearchCustomerResultState(val selectedCustomerId: Long?)

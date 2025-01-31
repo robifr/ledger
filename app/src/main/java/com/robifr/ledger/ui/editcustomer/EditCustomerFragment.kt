@@ -21,6 +21,7 @@ import android.view.View
 import androidx.fragment.app.viewModels
 import com.robifr.ledger.R
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.UiEvent
 import com.robifr.ledger.ui.createcustomer.CreateCustomerFragment
 import com.robifr.ledger.ui.editcustomer.viewmodel.EditCustomerResultState
 import com.robifr.ledger.ui.editcustomer.viewmodel.EditCustomerViewModel
@@ -33,7 +34,13 @@ class EditCustomerFragment : CreateCustomerFragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     fragmentBinding.toolbar.setTitle(R.string.editCustomer)
-    createCustomerViewModel.editResultState.observe(viewLifecycleOwner, ::_onResultState)
+    createCustomerViewModel.editResultEvent.observe(viewLifecycleOwner) {
+        event: UiEvent<EditCustomerResultState>? ->
+      event?.let {
+        _onResultState(it.data)
+        it.onConsumed()
+      }
+    }
   }
 
   private fun _onResultState(state: EditCustomerResultState) {

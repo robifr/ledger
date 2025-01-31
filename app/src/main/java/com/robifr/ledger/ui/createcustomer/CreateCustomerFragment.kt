@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -35,7 +34,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.CreateCustomerFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.OnBackPressedHandler
 import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerEvent
 import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerResultState
 import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerState
 import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerViewModel
@@ -54,7 +55,6 @@ open class CreateCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener 
   private lateinit var _inputName: CreateCustomerName
   private lateinit var _inputBalance: CreateCustomerBalance
   private lateinit var _inputDebt: CreateCustomerDebt
-  private lateinit var _onBackPressed: OnBackPressedHandler
 
   override fun onCreateView(
       inflater: LayoutInflater,
@@ -65,7 +65,6 @@ open class CreateCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener 
     _inputName = CreateCustomerName(this)
     _inputBalance = CreateCustomerBalance(this)
     _inputDebt = CreateCustomerDebt(this)
-    _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
   }
 
@@ -79,13 +78,15 @@ open class CreateCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener 
           top = systemBarInsets.top, left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
-    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
-    fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
+    requireActivity()
+        .onBackPressedDispatcher
+        .addCallback(
+            viewLifecycleOwner, OnBackPressedHandler { createCustomerViewModel.onBackPressed() })
+    fragmentBinding.toolbar.setNavigationOnClickListener { createCustomerViewModel.onBackPressed() }
     fragmentBinding.toolbar.menu.clear()
     fragmentBinding.toolbar.inflateMenu(R.menu.reusable_toolbar_edit)
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
-    createCustomerViewModel.resultState.observe(viewLifecycleOwner, ::_onResultState)
-    createCustomerViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
+    createCustomerViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
     createCustomerViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
     createCustomerViewModel.balanceView.addBalanceState.observe(
         viewLifecycleOwner, ::_onInputBalanceAmountState)
@@ -107,6 +108,24 @@ open class CreateCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener 
     findNavController().popBackStack()
   }
 
+  private fun _onUiEvent(event: CreateCustomerEvent) {
+    event.snackbar?.let {
+      _onSnackbarState(it.data)
+      it.onConsumed()
+    }
+    event.isFragmentFinished?.let {
+      finish()
+      it.onConsumed()
+    }
+    event.isUnsavedChangesDialogShown?.let {
+      _onUnsavedChangesDialogState(onDismiss = { it.onConsumed() })
+    }
+    event.createResult?.let {
+      _onResultState(it.data)
+      it.onConsumed()
+    }
+  }
+
   private fun _onResultState(state: CreateCustomerResultState) {
     parentFragmentManager.setFragmentResult(
         Request.CREATE_CUSTOMER.key(),
@@ -121,6 +140,15 @@ open class CreateCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener 
             fragmentBinding.root as View,
             state.messageRes.toStringValue(requireContext()),
             Snackbar.LENGTH_LONG)
+        .show()
+  }
+
+  private fun _onUnsavedChangesDialogState(onDismiss: () -> Unit) {
+    MaterialAlertDialogBuilder(requireContext())
+        .setMessage(R.string.createCustomer_unsavedChangesWarning)
+        .setNegativeButton(R.string.action_cancel) { _, _ -> }
+        .setPositiveButton(R.string.action_leaveWithoutSaving) { _, _ -> finish() }
+        .setOnDismissListener { onDismiss() }
         .show()
   }
 
@@ -153,16 +181,5 @@ open class CreateCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener 
 
   enum class Result : FragmentResultKey {
     CREATED_CUSTOMER_ID_LONG
-  }
-}
-
-private class OnBackPressedHandler(private val _fragment: CreateCustomerFragment) :
-    OnBackPressedCallback(true) {
-  override fun handleOnBackPressed() {
-    MaterialAlertDialogBuilder(_fragment.requireContext())
-        .setMessage(R.string.createCustomer_unsavedChangesWarning)
-        .setNegativeButton(R.string.action_cancel) { _, _ -> }
-        .setPositiveButton(R.string.action_leaveWithoutSaving) { _, _ -> _fragment.finish() }
-        .show()
   }
 }

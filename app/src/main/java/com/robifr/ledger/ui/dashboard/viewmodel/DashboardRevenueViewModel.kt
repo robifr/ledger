@@ -21,6 +21,7 @@ import android.webkit.WebView
 import androidx.annotation.ColorRes
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.webkit.WebViewClientCompat
 import com.robifr.ledger.assetbinding.chart.ChartData
@@ -31,10 +32,11 @@ import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
+import com.robifr.ledger.ui.UiEvent
 import com.robifr.ledger.ui.dashboard.DashboardRevenue
 import com.robifr.ledger.ui.dashboard.chart.RevenueChartModel
 import com.robifr.ledger.util.CurrencyFormat
+import com.robifr.ledger.util.updateEvent
 import java.math.BigDecimal
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -74,9 +76,9 @@ class DashboardRevenueViewModel(
    * whenever [WebView.loadUrl] is called to refresh the content. This also need to be called when
    * the current fragment is replaced and then revisited.
    */
-  private val _chartModel: SingleLiveEvent<RevenueChartModel> = SingleLiveEvent()
-  val chartModel: LiveData<RevenueChartModel>
-    get() = _chartModel
+  private val _chartModelEvent: MutableLiveData<UiEvent<RevenueChartModel>> = MutableLiveData()
+  val chartModelEvent: LiveData<UiEvent<RevenueChartModel>>
+    get() = _chartModelEvent
 
   fun onDisplayedChartChanged(displayedChart: DashboardRevenue.OverviewType) {
     _uiState.setValue(_uiState.safeValue.copy(displayedChart = displayedChart))
@@ -170,26 +172,31 @@ class DashboardRevenueViewModel(
               BigDecimal::add)
           ?.let { maxValue = maxValue.max(it) }
     }
-    _chartModel.setValue(
-        RevenueChartModel(
-            // Both domains must be the same as the formatted ones.
-            // X-axis for the data's key, y-axis for the data's value.
-            xAxisDomain = ChartUtil.toDateTimeDomain(dateStart to dateEnd),
-            yAxisDomain = ChartUtil.toPercentageLinearDomain(context, maxValue, yAxisTicks),
-            data =
-                rawDataSummed.map { (key, value) ->
-                  ChartData.Multiple(
-                      key.first,
-                      // Convert to percent because D3.js can't handle big decimal.
-                      ChartUtil.toPercentageLinear(value, maxValue, yAxisTicks),
-                      key.second.toString())
-                },
-            colors = colors,
-            // When viewing the received income, the projected income bar appears behind it.
-            // Therefore, projected income is placed before received income.
-            groupInOrder =
-                setOf(
-                    DashboardRevenue.OverviewType.PROJECTED_INCOME,
-                    DashboardRevenue.OverviewType.RECEIVED_INCOME)))
+    _viewModel.viewModelScope.launch {
+      _chartModelEvent.updateEvent(
+          data =
+              RevenueChartModel(
+                  // Both domains must be the same as the formatted ones.
+                  // X-axis for the data's key, y-axis for the data's value.
+                  xAxisDomain = ChartUtil.toDateTimeDomain(dateStart to dateEnd),
+                  yAxisDomain = ChartUtil.toPercentageLinearDomain(context, maxValue, yAxisTicks),
+                  data =
+                      rawDataSummed.map { (key, value) ->
+                        ChartData.Multiple(
+                            key.first,
+                            // Convert to percent because D3.js can't handle big decimal.
+                            ChartUtil.toPercentageLinear(value, maxValue, yAxisTicks),
+                            key.second.toString())
+                      },
+                  colors = colors,
+                  // When viewing the received income, the projected income bar appears behind it.
+                  // Therefore, projected income is placed before received income.
+                  groupInOrder =
+                      setOf(
+                          DashboardRevenue.OverviewType.PROJECTED_INCOME,
+                          DashboardRevenue.OverviewType.RECEIVED_INCOME)),
+          onSet = { it },
+          onReset = { null })
+    }
   }
 }

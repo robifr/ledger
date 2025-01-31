@@ -17,6 +17,7 @@
 package com.robifr.ledger.ui.editqueue.viewmodel
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
@@ -26,11 +27,11 @@ import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.repository.QueueRepository
 import com.robifr.ledger.ui.PluralResource
-import com.robifr.ledger.ui.SingleLiveEvent
-import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.StringResource
+import com.robifr.ledger.ui.UiEvent
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueViewModel
 import com.robifr.ledger.ui.editqueue.EditQueueFragment
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZoneId
 import javax.inject.Inject
@@ -51,9 +52,9 @@ constructor(
 ) : CreateQueueViewModel(dispatcher, queueRepository, customerRepository, productRepository) {
   private lateinit var _initialQueueToEdit: QueueModel
 
-  private val _editResultState: SingleLiveEvent<EditQueueResultState> = SingleLiveEvent()
-  val editResultState: LiveData<EditQueueResultState>
-    get() = _editResultState
+  private val _editResultEvent: MutableLiveData<UiEvent<EditQueueResultState>> = MutableLiveData()
+  val editResultEvent: LiveData<UiEvent<EditQueueResultState>>
+    get() = _editResultEvent
 
   init {
     // Setting up initial values inside a fragment is painful. See commit d5604599.
@@ -63,11 +64,15 @@ constructor(
   override fun onSave() {
     val inputtedQueue: QueueModel = parseInputtedQueue()
     if (inputtedQueue.productOrders.isEmpty()) {
-      _snackbarState.setValue(
-          SnackbarState(StringResource(R.string.createQueue_includeOneProductOrderError)))
+      _onSnackbarShown(StringResource(R.string.createQueue_includeOneProductOrderError))
       return
     }
     viewModelScope.launch(_dispatcher) { _updateQueue(inputtedQueue) }
+  }
+
+  override fun onBackPressed() {
+    if (_initialQueueToEdit != parseInputtedQueue()) _onUnsavedChangesDialogShown()
+    else _onFragmentFinished()
   }
 
   override fun parseInputtedQueue(): QueueModel =
@@ -123,22 +128,21 @@ constructor(
 
   private suspend fun _selectQueueById(queueId: Long?): QueueModel? =
       _queueRepository.selectById(queueId).also {
-        if (it == null) {
-          _snackbarState.postValue(
-              SnackbarState(StringResource(R.string.createQueue_fetchQueueError)))
-        }
+        if (it == null) _onSnackbarShown(StringResource(R.string.createQueue_fetchQueueError))
       }
 
   private suspend fun _updateQueue(queue: QueueModel) {
     _queueRepository.update(queue).let { effected ->
-      if (effected > 0) _editResultState.postValue(EditQueueResultState(queue.id))
-      _snackbarState.postValue(
-          SnackbarState(
-              if (effected > 0) {
-                PluralResource(R.plurals.createQueue_updated_n_queue, effected, effected)
-              } else {
-                StringResource(R.string.createQueue_updateQueueError)
-              }))
+      _onSnackbarShown(
+          if (effected > 0) {
+            PluralResource(R.plurals.createQueue_updated_n_queue, effected, effected)
+          } else {
+            StringResource(R.string.createQueue_updateQueueError)
+          })
+      if (effected > 0) {
+        _editResultEvent.updateEvent(
+            data = EditQueueResultState(queue.id), onSet = { it }, onReset = { null })
+      }
     }
   }
 

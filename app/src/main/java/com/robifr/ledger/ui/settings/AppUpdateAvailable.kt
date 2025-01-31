@@ -28,7 +28,8 @@ class AppUpdateAvailable(private val _context: Context) {
       updateVersion: String,
       updateDate: String,
       updateSize: Double,
-      onUpdate: () -> Unit
+      onUpdate: () -> Unit,
+      onDismiss: () -> Unit
   ) {
     MaterialAlertDialogBuilder(_context)
         .setTitle(
@@ -42,6 +43,7 @@ class AppUpdateAvailable(private val _context: Context) {
                 HtmlCompat.FROM_HTML_MODE_LEGACY))
         .setNegativeButton(_context.getString(R.string.action_ignore)) { _, _ -> }
         .setPositiveButton(_context.getString(R.string.action_update)) { _, _ -> onUpdate() }
+        .setOnDismissListener { onDismiss() }
         .show()
         .apply {
           // Enable hyperlink.

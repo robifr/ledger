@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.selectproduct.viewmodel
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -28,8 +27,8 @@ import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.ui.RecyclerAdapterState
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
 import com.robifr.ledger.ui.selectproduct.SelectProductFragment
+import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -50,6 +49,11 @@ constructor(
       ModelSyncListener(
           currentModel = { _uiState.safeValue.products }, onSyncModels = ::_onProductsChanged)
 
+  private val _uiEvent: SafeMutableLiveData<SelectProductEvent> =
+      SafeMutableLiveData(SelectProductEvent())
+  val uiEvent: SafeLiveData<SelectProductEvent>
+    get() = _uiEvent
+
   private val _uiState: SafeMutableLiveData<SelectProductState> =
       SafeMutableLiveData(
           SelectProductState(
@@ -63,14 +67,6 @@ constructor(
   val uiState: SafeLiveData<SelectProductState>
     get() = _uiState
 
-  private val _recyclerAdapterState: SingleLiveEvent<RecyclerAdapterState> = SingleLiveEvent()
-  val recyclerAdapterState: LiveData<RecyclerAdapterState>
-    get() = _recyclerAdapterState
-
-  private val _resultState: SingleLiveEvent<SelectProductResultState> = SingleLiveEvent()
-  val resultState: LiveData<SelectProductResultState>
-    get() = _resultState
-
   init {
     _productRepository.addModelChangedListener(_productChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
@@ -83,12 +79,12 @@ constructor(
 
   fun onSelectedProductPreviewExpanded(isExpanded: Boolean) {
     _uiState.setValue(_uiState.safeValue.copy(isSelectedProductPreviewExpanded = isExpanded))
-    _recyclerAdapterState.setValue(RecyclerAdapterState.ItemChanged(0)) // Update header holder.
+    _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(0)) // Update header holder.
   }
 
   fun onExpandedProductIndexChanged(index: Int) {
     // Update both previous and current expanded product. +1 offset because header holder.
-    _recyclerAdapterState.setValue(
+    _onRecyclerAdapterRefreshed(
         RecyclerAdapterState.ItemChanged(
             listOfNotNull(
                 _uiState.safeValue.expandedProductIndex.takeIf { it != -1 }?.let { it + 1 },
@@ -100,18 +96,32 @@ constructor(
   }
 
   fun onProductSelected(product: ProductModel?) {
-    _resultState.setValue(SelectProductResultState(product?.id))
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = SelectProductResultState(product?.id),
+          onSet = { this?.copy(selectResult = it) },
+          onReset = { this?.copy(selectResult = null) })
+    }
   }
 
   private fun _onProductsChanged(products: List<ProductModel>) {
     _uiState.setValue(_uiState.safeValue.copy(products = _sorter.sort(products)))
-    _recyclerAdapterState.setValue(RecyclerAdapterState.DataSetChanged)
+    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
   }
 
   private fun _onSelectedProductOnDatabaseChanged(product: ProductModel?) {
     _uiState.setValue(_uiState.safeValue.copy(selectedProductOnDatabase = product))
     // Update `selectedItemDescription` in header holder.
-    _recyclerAdapterState.setValue(RecyclerAdapterState.ItemChanged(0))
+    _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(0))
+  }
+
+  private fun _onRecyclerAdapterRefreshed(state: RecyclerAdapterState) {
+    viewModelScope.launch {
+      _uiEvent.updateEvent(
+          data = state,
+          onSet = { this?.copy(recyclerAdapter = it) },
+          onReset = { this?.copy(recyclerAdapter = null) })
+    }
   }
 
   private suspend fun _selectAllProducts(): List<ProductModel> = _productRepository.selectAll()

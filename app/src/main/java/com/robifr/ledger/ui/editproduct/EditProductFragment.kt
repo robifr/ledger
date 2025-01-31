@@ -21,6 +21,7 @@ import android.view.View
 import androidx.fragment.app.viewModels
 import com.robifr.ledger.R
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.UiEvent
 import com.robifr.ledger.ui.createproduct.CreateProductFragment
 import com.robifr.ledger.ui.editproduct.viewmodel.EditProductResultState
 import com.robifr.ledger.ui.editproduct.viewmodel.EditProductViewModel
@@ -33,7 +34,13 @@ class EditProductFragment : CreateProductFragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     fragmentBinding.toolbar.setTitle(R.string.editProduct)
-    createProductViewModel.editResultState.observe(viewLifecycleOwner, ::_onResultState)
+    createProductViewModel.editResultEvent.observe(viewLifecycleOwner) {
+        event: UiEvent<EditProductResultState>? ->
+      event?.let {
+        _onResultState(it.data)
+        it.onConsumed()
+      }
+    }
   }
 
   private fun _onResultState(state: EditProductResultState) {

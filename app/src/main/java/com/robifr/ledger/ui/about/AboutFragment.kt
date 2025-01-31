@@ -23,7 +23,6 @@ import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.core.graphics.Insets
 import androidx.core.text.HtmlCompat
 import androidx.core.view.ViewCompat
@@ -33,6 +32,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.AboutFragmentBinding
+import com.robifr.ledger.ui.OnBackPressedHandler
 import com.robifr.ledger.ui.about.viewmodel.AboutState
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -42,15 +42,12 @@ class AboutFragment : Fragment() {
   val fragmentBinding: AboutFragmentBinding
     get() = _fragmentBinding!!
 
-  private lateinit var _onBackPressed: OnBackPressedHandler
-
   override fun onCreateView(
       inflater: LayoutInflater,
       container: ViewGroup?,
       savedInstanceState: Bundle?
   ): View {
     _fragmentBinding = AboutFragmentBinding.inflate(inflater, container, false)
-    _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
   }
 
@@ -64,8 +61,10 @@ class AboutFragment : Fragment() {
           top = systemBarInsets.top, left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
-    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
-    fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
+    requireActivity()
+        .onBackPressedDispatcher
+        .addCallback(viewLifecycleOwner, OnBackPressedHandler { finish() })
+    fragmentBinding.toolbar.setNavigationOnClickListener { finish() }
     val state: AboutState = AboutState()
     fragmentBinding.info.text =
         HtmlCompat.fromHtml(
@@ -85,12 +84,5 @@ class AboutFragment : Fragment() {
 
   fun finish() {
     findNavController().popBackStack()
-  }
-}
-
-private class OnBackPressedHandler(private val _fragment: AboutFragment) :
-    OnBackPressedCallback(true) {
-  override fun handleOnBackPressed() {
-    _fragment.finish()
   }
 }

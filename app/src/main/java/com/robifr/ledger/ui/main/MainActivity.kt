@@ -165,12 +165,16 @@ open class MainActivity :
   private fun _checkForAppUpdate() {
     // Only automatically check for app update once a day.
     if (_settingsViewModel.uiState.safeValue.isLastCheckedTimeForAppUpdatePastMidNight()) {
-      _settingsViewModel.dialogState.observe(this, ::_onSettingsDialogState)
+      _settingsViewModel.uiEvent.observe(this) { event ->
+        event.dialog?.let {
+          _onSettingsDialogState(state = it.data, onDismiss = { it.onConsumed() })
+        }
+      }
       _settingsViewModel.onCheckForAppUpdate(this, false)
     }
   }
 
-  private fun _onSettingsDialogState(state: SettingsDialogState) {
+  private fun _onSettingsDialogState(state: SettingsDialogState, onDismiss: () -> Unit) {
     when (state) {
       is UpdateAvailableDialogState -> {
         val dateFormat: DateTimeFormatter =
@@ -184,12 +188,13 @@ open class MainActivity :
                             state.githubRelease.publishedAt, DateTimeFormatter.ISO_DATE_TIME)
                         .format(dateFormat),
                 updateSize = state.githubRelease.sizeInMb(),
-                onUpdate = { _settingsViewModel.onUpdateApp() })
+                onUpdate = { _settingsViewModel.onUpdateApp() },
+                onDismiss = onDismiss)
       }
       is UnknownSourceInstallationDialogState -> {
-        _permission.showUnknownSourceInstallationDialog {
-          _permissionLauncher.launch(_permission.unknownSourceInstallationIntent())
-        }
+        _permission.showUnknownSourceInstallationDialog(
+            onGrant = { _permissionLauncher.launch(_permission.unknownSourceInstallationIntent()) },
+            onDismiss = onDismiss)
       }
     }
   }

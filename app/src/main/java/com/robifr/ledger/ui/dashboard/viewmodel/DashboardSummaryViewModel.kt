@@ -18,6 +18,7 @@ package com.robifr.ledger.ui.dashboard.viewmodel
 
 import android.webkit.WebView
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.webkit.WebViewClientCompat
 import com.robifr.ledger.assetbinding.chart.ChartData
@@ -28,11 +29,12 @@ import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.SafeLiveData
 import com.robifr.ledger.ui.SafeMutableLiveData
-import com.robifr.ledger.ui.SingleLiveEvent
+import com.robifr.ledger.ui.UiEvent
 import com.robifr.ledger.ui.dashboard.DashboardSummary
 import com.robifr.ledger.ui.dashboard.chart.SummaryChartModel
 import com.robifr.ledger.ui.dashboard.chart.TotalQueuesChartModel
 import com.robifr.ledger.ui.dashboard.chart.UncompletedQueuesChartModel
+import com.robifr.ledger.util.updateEvent
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import kotlinx.coroutines.CoroutineDispatcher
@@ -71,15 +73,20 @@ class DashboardSummaryViewModel(
    * whenever [WebView.loadUrl] is called to refresh the content. This also need to be called when
    * the current fragment is replaced and then revisited.
    */
-  private val _chartModel: SingleLiveEvent<SummaryChartModel> = SingleLiveEvent()
-  val chartModel: LiveData<SummaryChartModel>
-    get() = _chartModel
+  private val _chartModelEvent: MutableLiveData<UiEvent<SummaryChartModel>> = MutableLiveData()
+  val chartModelEvent: LiveData<UiEvent<SummaryChartModel>>
+    get() = _chartModelEvent
 
   fun onDisplayedChartChanged(displayedChart: DashboardSummary.OverviewType) {
     _uiState.setValue(_uiState.safeValue.copy(displayedChart = displayedChart))
   }
 
   fun onWebViewLoaded() {
+    // FIXME: Chart doesn't load when returning from another fragment. Steps to reproduce:
+    //    1. Select `TOTAL_QUEUES` or `UNCOMPLETED_QUEUES` overview.
+    //    2. Switch to `ACTIVE_CUSTOMERS` or `PRODUCTS_SOLD` overview.
+    //    3. Navigate to another fragment, such as settings.
+    //    4. Press back and reselect the initial overview (`TOTAL_QUEUES` or `UNCOMPLETED_QUEUES`).
     when (_uiState.safeValue.displayedChart) {
       DashboardSummary.OverviewType.TOTAL_QUEUES -> _onDisplayTotalQueuesChart()
       DashboardSummary.OverviewType.UNCOMPLETED_QUEUES -> _onDisplayUncompletedQueuesChart()
@@ -138,17 +145,22 @@ class DashboardSummaryViewModel(
               Int::plus)
           ?.let { maxValue = maxOf(maxValue, it) }
     }
-    _chartModel.setValue(
-        TotalQueuesChartModel(
-            // Both domains must be the same as the formatted ones.
-            // X-axis for the data's key, y-axis for the data's value.
-            xAxisDomain = ChartUtil.toDateTimeDomain(dateStart to dateEnd),
-            yAxisDomain =
-                listOf(
-                    0.0,
-                    ChartUtil.calculateNiceScale(0.0, maxValue.toDouble(), yAxisTicks.toDouble())[
-                            1]),
-            data = rawDataSummed.map { (key, value) -> ChartData.Single(key, value) }))
+    _viewModel.viewModelScope.launch {
+      _chartModelEvent.updateEvent(
+          data =
+              TotalQueuesChartModel(
+                  // Both domains must be the same as the formatted ones.
+                  // X-axis for the data's key, y-axis for the data's value.
+                  xAxisDomain = ChartUtil.toDateTimeDomain(dateStart to dateEnd),
+                  yAxisDomain =
+                      listOf(
+                          0.0,
+                          ChartUtil.calculateNiceScale(
+                                  0.0, maxValue.toDouble(), yAxisTicks.toDouble())[1]),
+                  data = rawDataSummed.map { (key, value) -> ChartData.Single(key, value) }),
+          onSet = { it },
+          onReset = { null })
+    }
   }
 
   private fun _onDisplayUncompletedQueuesChart() {
@@ -169,14 +181,19 @@ class DashboardSummaryViewModel(
         }
       }
     }
-    _chartModel.setValue(
-        UncompletedQueuesChartModel(
-            data = rawDataSummed.map { (key, value) -> ChartData.Single(key, value) },
-            colors =
-                listOf(
-                    QueueModel.Status.IN_QUEUE.backgroundColorRes,
-                    QueueModel.Status.IN_PROCESS.backgroundColorRes,
-                    QueueModel.Status.UNPAID.backgroundColorRes),
-            oldestDate = oldestDate))
+    _viewModel.viewModelScope.launch {
+      _chartModelEvent.updateEvent(
+          data =
+              UncompletedQueuesChartModel(
+                  data = rawDataSummed.map { (key, value) -> ChartData.Single(key, value) },
+                  colors =
+                      listOf(
+                          QueueModel.Status.IN_QUEUE.backgroundColorRes,
+                          QueueModel.Status.IN_PROCESS.backgroundColorRes,
+                          QueueModel.Status.UNPAID.backgroundColorRes),
+                  oldestDate = oldestDate),
+          onSet = { it },
+          onReset = { null })
+    }
   }
 }

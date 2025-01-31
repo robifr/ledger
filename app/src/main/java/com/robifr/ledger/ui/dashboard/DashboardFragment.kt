@@ -31,6 +31,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.DashboardFragmentBinding
+import com.robifr.ledger.ui.UiEvent
 import com.robifr.ledger.ui.dashboard.chart.RevenueChartModel
 import com.robifr.ledger.ui.dashboard.chart.SummaryChartModel
 import com.robifr.ledger.ui.dashboard.chart.TotalQueuesChartModel
@@ -75,9 +76,21 @@ class DashboardFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     }
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
     dashboardViewModel.summaryView.uiState.observe(viewLifecycleOwner, ::_onSummaryState)
-    dashboardViewModel.summaryView.chartModel.observe(viewLifecycleOwner, ::_onSummaryChartModel)
+    dashboardViewModel.summaryView.chartModelEvent.observe(viewLifecycleOwner) {
+        event: UiEvent<SummaryChartModel>? ->
+      event?.let {
+        _onSummaryChartModel(it.data)
+        it.onConsumed()
+      }
+    }
     dashboardViewModel.revenueView.uiState.observe(viewLifecycleOwner, ::_onRevenueState)
-    dashboardViewModel.revenueView.chartModel.observe(viewLifecycleOwner, ::_onRevenueChartModel)
+    dashboardViewModel.revenueView.chartModelEvent.observe(viewLifecycleOwner) {
+        event: UiEvent<RevenueChartModel>? ->
+      event?.let {
+        _onRevenueChartModel(it.data)
+        it.onConsumed()
+      }
+    }
     dashboardViewModel.balanceView.uiState.observe(viewLifecycleOwner, ::_onBalanceState)
   }
 

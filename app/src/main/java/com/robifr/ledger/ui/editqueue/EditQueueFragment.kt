@@ -21,6 +21,7 @@ import android.view.View
 import androidx.fragment.app.viewModels
 import com.robifr.ledger.R
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.UiEvent
 import com.robifr.ledger.ui.createqueue.CreateQueueFragment
 import com.robifr.ledger.ui.editqueue.viewmodel.EditQueueResultState
 import com.robifr.ledger.ui.editqueue.viewmodel.EditQueueViewModel
@@ -33,7 +34,13 @@ class EditQueueFragment : CreateQueueFragment() {
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
     fragmentBinding.toolbar.setTitle(R.string.editQueue)
-    createQueueViewModel.editResultState.observe(viewLifecycleOwner, ::_onResultState)
+    createQueueViewModel.editResultEvent.observe(viewLifecycleOwner) {
+        event: UiEvent<EditQueueResultState>? ->
+      event?.let {
+        _onResultState(it.data)
+        it.onConsumed()
+      }
+    }
   }
 
   private fun _onResultState(state: EditQueueResultState) {

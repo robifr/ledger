@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SearchView
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -34,6 +33,7 @@ import com.google.android.material.tabs.TabLayoutMediator
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.SearchFragmentBinding
 import com.robifr.ledger.ui.FragmentAdapter
+import com.robifr.ledger.ui.OnBackPressedHandler
 import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.search.viewmodel.SearchViewModel
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
@@ -50,22 +50,7 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
     get() = _fragmentBinding!!
 
   private val _searchViewModel: SearchViewModel by viewModels()
-  private val _searchCustomerFragment: SearchCustomerFragment =
-      SearchCustomerFragment().apply {
-        arguments =
-            Bundle().apply {
-              putBoolean(SearchCustomerFragment.Arguments.IS_TOOLBAR_VISIBLE_BOOLEAN.key(), false)
-            }
-      }
-  private val _searchProductFragment: SearchProductFragment =
-      SearchProductFragment().apply {
-        arguments =
-            Bundle().apply {
-              putBoolean(SearchProductFragment.Arguments.IS_TOOLBAR_VISIBLE_BOOLEAN.key(), false)
-            }
-      }
   private lateinit var _adapter: FragmentAdapter
-  private lateinit var _onBackPressed: OnBackPressedHandler
 
   override fun onCreateView(
       inflater: LayoutInflater,
@@ -74,7 +59,6 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
   ): View {
     _fragmentBinding = SearchFragmentBinding.inflate(inflater, container, false)
     _adapter = FragmentAdapter(this)
-    _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
   }
 
@@ -93,8 +77,10 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
       fragmentBinding.viewPager.updatePadding(left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
-    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
-    fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
+    requireActivity()
+        .onBackPressedDispatcher
+        .addCallback(viewLifecycleOwner, OnBackPressedHandler { finish() })
+    fragmentBinding.toolbar.setNavigationOnClickListener { finish() }
     fragmentBinding.searchView.queryHint = getString(R.string.searchCustomersAndProducts)
     fragmentBinding.searchView.setOnQueryTextListener(this)
     fragmentBinding.viewPager.adapter = _adapter
@@ -137,17 +123,59 @@ class SearchFragment : Fragment(), SearchView.OnQueryTextListener {
     fragmentBinding.tabLayout.isVisible = state.isTabLayoutVisible
     fragmentBinding.noResultsImageContainer.isVisible = state.isNoResultFoundIllustrationVisible
     fragmentBinding.viewPager.isVisible = state.isViewPagerVisible
+    // Although this code works just fine, there’s something weird with the `ViewPager`. Previously,
+    // when using `SingleLiveEvent`, we didn’t even need to recreate the sub fragments (both
+    // `_searchCustomerFragment` and `_searchProductFragment` are final properties, not getters nor
+    // functions). It didn’t flash/blink, and the data in the sub fragments got refreshed when
+    // navigating back from another fragment. For example, within this fragment, if you edit a
+    // customer and go back, you’ll notice the differences.
+    //
+    // Ever since we used events as states, the sub fragment gets recreated, which might seem normal
+    // assuming the `ViewPager` has its own fragment management. However, there’s a flash/blink
+    // effect, and the data doesn’t update. The problem is resolved by recreating the fragment only
+    // if it hasn’t been created before.
     _adapter.setFragmentTabs(
-        mutableListOf<Fragment>().apply {
-          if (state.shouldSearchCustomerFragmentLoaded) add(_searchCustomerFragment)
-          if (state.shouldSearchProductFragmentLoaded) add(_searchProductFragment)
+        _adapter.fragmentTabs.toMutableList().apply {
+          // We can’t directly compare fragments from `FragmentAdapter.fragmentTabs` with
+          // `_searchCustomerFragment` or `_searchProductFragment`. For example,
+          // `fragmentTabs[0] == _searchCustomerFragment` will always fail because they're different
+          // instances. One key difference is that fragments created by `ViewPager` have tags.
+          // Instead of direct comparison, we identify the fragment in the list by checking its
+          // instance type.
+          _adapter.fragmentTabs
+              .find { it is SearchCustomerFragment }
+              .let {
+                if (state.shouldSearchCustomerFragmentLoaded && it == null) {
+                  add(_createSearchCustomerFragment())
+                } else if (!state.shouldSearchCustomerFragmentLoaded) {
+                  remove(it)
+                }
+              }
+          _adapter.fragmentTabs
+              .find { it is SearchProductFragment }
+              .let {
+                if (state.shouldSearchProductFragmentLoaded && it == null) {
+                  add(_createSearchProductFragment())
+                } else if (!state.shouldSearchProductFragmentLoaded) {
+                  remove(it)
+                }
+              }
         })
   }
-}
 
-private class OnBackPressedHandler(private val _fragment: SearchFragment) :
-    OnBackPressedCallback(true) {
-  override fun handleOnBackPressed() {
-    _fragment.finish()
-  }
+  private fun _createSearchCustomerFragment(): SearchCustomerFragment =
+      SearchCustomerFragment().apply {
+        arguments =
+            Bundle().apply {
+              putBoolean(SearchCustomerFragment.Arguments.IS_TOOLBAR_VISIBLE_BOOLEAN.key(), false)
+            }
+      }
+
+  private fun _createSearchProductFragment(): SearchProductFragment =
+      SearchProductFragment().apply {
+        arguments =
+            Bundle().apply {
+              putBoolean(SearchProductFragment.Arguments.IS_TOOLBAR_VISIBLE_BOOLEAN.key(), false)
+            }
+      }
 }

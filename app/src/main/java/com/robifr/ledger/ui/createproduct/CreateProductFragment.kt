@@ -21,7 +21,6 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.Toolbar
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -35,7 +34,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.CreateProductFragmentBinding
 import com.robifr.ledger.ui.FragmentResultKey
+import com.robifr.ledger.ui.OnBackPressedHandler
 import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductEvent
 import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductResultState
 import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductState
 import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductViewModel
@@ -51,7 +52,6 @@ open class CreateProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   open val createProductViewModel: CreateProductViewModel by viewModels()
   private lateinit var _inputName: CreateProductName
   private lateinit var _inputPrice: CreateProductPrice
-  private lateinit var _onBackPressed: OnBackPressedHandler
 
   override fun onCreateView(
       inflater: LayoutInflater,
@@ -61,7 +61,6 @@ open class CreateProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     _fragmentBinding = CreateProductFragmentBinding.inflate(inflater, container, false)
     _inputName = CreateProductName(this)
     _inputPrice = CreateProductPrice(this)
-    _onBackPressed = OnBackPressedHandler(this)
     return fragmentBinding.root
   }
 
@@ -75,13 +74,15 @@ open class CreateProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
           top = systemBarInsets.top, left = windowInsets.left, right = windowInsets.right)
       WindowInsetsCompat.CONSUMED
     }
-    requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, _onBackPressed)
-    fragmentBinding.toolbar.setNavigationOnClickListener { _onBackPressed.handleOnBackPressed() }
+    requireActivity()
+        .onBackPressedDispatcher
+        .addCallback(
+            viewLifecycleOwner, OnBackPressedHandler { createProductViewModel.onBackPressed() })
+    fragmentBinding.toolbar.setNavigationOnClickListener { createProductViewModel.onBackPressed() }
     fragmentBinding.toolbar.menu.clear()
     fragmentBinding.toolbar.inflateMenu(R.menu.reusable_toolbar_edit)
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
-    createProductViewModel.resultState.observe(viewLifecycleOwner, ::_onResultState)
-    createProductViewModel.snackbarState.observe(viewLifecycleOwner, ::_onSnackbarState)
+    createProductViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
     createProductViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
   }
 
@@ -97,6 +98,24 @@ open class CreateProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   fun finish() {
     requireView().hideKeyboard()
     findNavController().popBackStack()
+  }
+
+  private fun _onUiEvent(event: CreateProductEvent) {
+    event.snackbar?.let {
+      _onSnackbarState(it.data)
+      it.onConsumed()
+    }
+    event.isFragmentFinished?.let {
+      finish()
+      it.onConsumed()
+    }
+    event.isUnsavedChangesDialogShown?.let {
+      _onUnsavedChangesDialogState(onDismiss = { it.onConsumed() })
+    }
+    event.createResult?.let {
+      _onResultState(it.data)
+      it.onConsumed()
+    }
   }
 
   private fun _onResultState(state: CreateProductResultState) {
@@ -116,6 +135,15 @@ open class CreateProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         .show()
   }
 
+  private fun _onUnsavedChangesDialogState(onDismiss: () -> Unit) {
+    MaterialAlertDialogBuilder(requireContext())
+        .setMessage(R.string.createProduct_unsavedChangesWarning)
+        .setNegativeButton(R.string.action_cancel) { _, _ -> }
+        .setPositiveButton(R.string.action_leaveWithoutSaving) { _, _ -> finish() }
+        .setOnDismissListener { onDismiss() }
+        .show()
+  }
+
   private fun _onUiState(state: CreateProductState) {
     _inputName.setInputtedNameText(
         state.name, state.nameErrorMessageRes?.toStringValue(requireContext()))
@@ -128,16 +156,5 @@ open class CreateProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
 
   enum class Result : FragmentResultKey {
     CREATED_PRODUCT_ID_LONG
-  }
-}
-
-private class OnBackPressedHandler(private val _fragment: CreateProductFragment) :
-    OnBackPressedCallback(true) {
-  override fun handleOnBackPressed() {
-    MaterialAlertDialogBuilder(_fragment.requireContext())
-        .setMessage(R.string.createProduct_unsavedChangesWarning)
-        .setNegativeButton(R.string.action_cancel) { _, _ -> }
-        .setPositiveButton(R.string.action_leaveWithoutSaving) { _, _ -> _fragment.finish() }
-        .show()
   }
 }
