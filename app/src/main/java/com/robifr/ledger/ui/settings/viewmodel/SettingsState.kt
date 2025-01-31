@@ -28,7 +28,7 @@ data class SettingsState(
     val languageUsed: LanguageOption,
     val isLanguageDialogShown: Boolean,
     val lastCheckedTimeForAppUpdate: ZonedDateTime,
-    val githubRelease: GithubReleaseModel?,
+    val githubRelease: GithubReleaseModel?
 ) {
   fun isLastCheckedTimeForAppUpdatePastMidNight(): Boolean {
     val now: ZonedDateTime = ZonedDateTime.now(ZoneId.systemDefault())

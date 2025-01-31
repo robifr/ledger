@@ -29,7 +29,7 @@ open class CurrencyTextWatcher(
     view: EditText,
     protected val _maximumAmount: BigDecimal = Int.MAX_VALUE.toBigDecimal(),
     protected val _isSymbolHidden: Boolean = false,
-    protected val _fractionDigits: Int? = null,
+    protected val _fractionDigits: Int? = null
 ) : EditTextWatcher(view) {
   override fun afterTextChanged(editable: Editable) {
     // WARNING! Never ever mess with this method unless you know what you do.
