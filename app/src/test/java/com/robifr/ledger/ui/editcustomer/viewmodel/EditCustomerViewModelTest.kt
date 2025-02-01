@@ -24,14 +24,15 @@ import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.repository.CustomerRepository
-import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerEvent
 import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerState
 import com.robifr.ledger.ui.editcustomer.EditCustomerFragment
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -57,8 +58,8 @@ class EditCustomerViewModelTest(
 ) {
   private lateinit var _customerRepository: CustomerRepository
   private lateinit var _viewModel: EditCustomerViewModel
-  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
-  private lateinit var _resultStateObserver: Observer<EditCustomerResultState>
+  private lateinit var _uiEventObserver: Observer<CreateCustomerEvent>
+  private lateinit var _editResultEventObserver: Observer<UiEvent<EditCustomerResultState>>
 
   private val _customerToEdit: CustomerModel =
       CustomerModel(id = 111L, name = "Amy", balance = 100L, debt = (-100).toBigDecimal())
@@ -67,8 +68,8 @@ class EditCustomerViewModelTest(
   fun beforeEach() {
     clearAllMocks()
     _customerRepository = mockk()
-    _snackbarStateObserver = mockk(relaxed = true)
-    _resultStateObserver = mockk(relaxed = true)
+    _uiEventObserver = mockk(relaxed = true)
+    _editResultEventObserver = mockk(relaxed = true)
 
     coEvery { _customerRepository.add(any()) } returns 0L
     coEvery { _customerRepository.selectById(_customerToEdit.id) } returns _customerToEdit
@@ -81,8 +82,8 @@ class EditCustomerViewModelTest(
                   EditCustomerFragment.Arguments.INITIAL_CUSTOMER_ID_TO_EDIT_LONG.key(),
                   _customerToEdit.id)
             })
-    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
-    _viewModel.editResultState.observe(_lifecycleOwner, _resultStateObserver)
+    _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
+    _viewModel.editResultEvent.observe(_lifecycleOwner, _editResultEventObserver)
   }
 
   @Test
@@ -149,16 +150,43 @@ class EditCustomerViewModelTest(
     _viewModel.onSave()
     assertAll(
         {
-          assertDoesNotThrow("Return result with the correct ID after success update") {
-            verify(exactly = if (effectedRows == 0) 0 else 1) {
-              _resultStateObserver.onChanged(eq(EditCustomerResultState(_customerToEdit.id)))
-            }
-          }
+          assertNotNull(
+              _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the result via snackbar")
         },
         {
-          assertDoesNotThrow("Notify the result via snackbar") {
-            verify { _snackbarStateObserver.onChanged(any()) }
+          assertEquals(
+              if (effectedRows != 0) EditCustomerResultState(_customerToEdit.id) else null,
+              _viewModel.editResultEvent.value?.data,
+              "Return result with the correct ID after success update")
+        },
+        {
+          assertDoesNotThrow("Update result event last to finish the fragment") {
+            verifyOrder {
+              _uiEventObserver.onChanged(match { it.snackbar != null })
+              if (effectedRows != 0) _editResultEventObserver.onChanged(any())
+            }
           }
+        })
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on back pressed`(isCustomerChanged: Boolean) {
+    if (isCustomerChanged) _viewModel.onNameTextChanged("Ben")
+
+    _viewModel.onBackPressed()
+    assertAll(
+        {
+          assertEquals(
+              if (isCustomerChanged) true else null,
+              _viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data,
+              "Show unsaved changes dialog when there's a change")
+        },
+        {
+          assertEquals(
+              if (!isCustomerChanged) true else null,
+              _viewModel.uiEvent.safeValue.isFragmentFinished?.data,
+              "Finish fragment when there's no change")
         })
   }
 }

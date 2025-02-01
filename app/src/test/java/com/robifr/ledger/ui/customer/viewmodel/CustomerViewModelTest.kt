@@ -27,7 +27,6 @@ import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.RecyclerAdapterState
-import com.robifr.ledger.ui.SnackbarState
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.clearAllMocks
@@ -41,6 +40,7 @@ import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -65,8 +65,7 @@ class CustomerViewModelTest(
   private val _customerChangedListenerCaptor: CapturingSlot<ModelSyncListener<CustomerModel>> =
       slot()
   private lateinit var _viewModel: CustomerViewModel
-  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
-  private lateinit var _recyclerAdapterStateObserver: Observer<RecyclerAdapterState>
+  private lateinit var _uiEventObserver: Observer<CustomerEvent>
 
   private val _firstCustomer: CustomerModel = CustomerModel(id = 111L, name = "Amy", balance = 200L)
   private val _secondCustomer: CustomerModel =
@@ -77,8 +76,7 @@ class CustomerViewModelTest(
   fun beforeEach() {
     clearAllMocks()
     _customerRepository = mockk()
-    _snackbarStateObserver = mockk(relaxed = true)
-    _recyclerAdapterStateObserver = mockk(relaxed = true)
+    _uiEventObserver = mockk(relaxed = true)
 
     every {
       _customerRepository.addModelChangedListener(capture(_customerChangedListenerCaptor))
@@ -87,8 +85,7 @@ class CustomerViewModelTest(
         listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
     coEvery { _customerRepository.isTableEmpty() } returns false
     _viewModel = CustomerViewModel(_dispatcher, _customerRepository)
-    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
-    _viewModel.recyclerAdapterState.observe(_lifecycleOwner, _recyclerAdapterStateObserver)
+    _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
 
   @ParameterizedTest
@@ -241,22 +238,20 @@ class CustomerViewModelTest(
               "Update expanded customer index and reset when selecting the same one")
         },
         {
-          assertDoesNotThrow("Notify recycler adapter of item changes") {
-            verify {
-              _recyclerAdapterStateObserver.onChanged(
-                  eq(RecyclerAdapterState.ItemChanged(updatedIndexes)))
-            }
-          }
+          assertEquals(
+              RecyclerAdapterState.ItemChanged(updatedIndexes),
+              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
+              "Notify recycler adapter of item changes")
         })
   }
 
-  @Test
-  fun `on delete customer`() {
-    coEvery { _customerRepository.delete(any()) } returns 1
+  @ParameterizedTest
+  @ValueSource(ints = [0, 1])
+  fun `on delete product`(effectedRows: Int) {
+    coEvery { _customerRepository.delete(any()) } returns effectedRows
     _viewModel.onDeleteCustomer(_firstCustomer)
-    assertDoesNotThrow("Notify the delete result via snackbar") {
-      verify { _snackbarStateObserver.onChanged(any()) }
-    }
+    assertNotNull(
+        _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the delete result via snackbar")
   }
 
   @Test
@@ -288,14 +283,15 @@ class CustomerViewModelTest(
 
   @Test
   fun `on state changed result notify recycler adapter dataset changes`() {
-    clearMocks(_recyclerAdapterStateObserver)
+    clearMocks(_uiEventObserver)
     _customerChangedListenerCaptor.captured.onModelAdded(listOf(_firstCustomer))
     _viewModel.onCustomersChanged(_viewModel.uiState.safeValue.customers)
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod)
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod.sortBy)
     assertDoesNotThrow("Notify recycler adapter of dataset changes") {
       verify(exactly = 4) {
-        _recyclerAdapterStateObserver.onChanged(eq(RecyclerAdapterState.DataSetChanged))
+        _uiEventObserver.onChanged(
+            match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
       }
     }
   }

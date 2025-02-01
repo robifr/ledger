@@ -87,7 +87,7 @@ constructor(
     _onRecyclerAdapterRefreshed(
         RecyclerAdapterState.ItemChanged(
             listOfNotNull(
-                _uiState.safeValue.expandedCustomerIndex.takeIf { it != -1 }?.let { it + 1 },
+                _uiState.safeValue.expandedCustomerIndex.takeIf { it != -1 && it != index }?.inc(),
                 index + 1)))
     _uiState.setValue(
         _uiState.safeValue.copy(

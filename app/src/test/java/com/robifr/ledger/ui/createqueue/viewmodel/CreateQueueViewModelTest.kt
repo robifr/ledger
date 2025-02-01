@@ -28,17 +28,20 @@ import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.repository.QueueRepository
-import com.robifr.ledger.ui.SnackbarState
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.verifyOrder
 import java.time.Instant
 import java.time.ZoneId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
+import org.hamcrest.CoreMatchers.notNullValue
+import org.hamcrest.CoreMatchers.nullValue
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -61,8 +64,7 @@ class CreateQueueViewModelTest(
   private lateinit var _customerRepository: CustomerRepository
   private lateinit var _productRepository: ProductRepository
   private lateinit var _viewModel: CreateQueueViewModel
-  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
-  private lateinit var _resultStateObserver: Observer<CreateQueueResultState>
+  private lateinit var _uiEventObserver: Observer<CreateQueueEvent>
 
   private val _customer: CustomerModel = CustomerModel(id = 111L, name = "Amy", balance = 500L)
   private val _product: ProductModel = ProductModel(id = 111L, name = "Apple", price = 100L)
@@ -87,12 +89,10 @@ class CreateQueueViewModelTest(
     _queueRepository = mockk()
     _customerRepository = mockk()
     _productRepository = mockk()
-    _snackbarStateObserver = mockk(relaxed = true)
-    _resultStateObserver = mockk(relaxed = true)
+    _uiEventObserver = mockk(relaxed = true)
     _viewModel =
         CreateQueueViewModel(_dispatcher, _queueRepository, _customerRepository, _productRepository)
-    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
-    _viewModel.resultState.observe(_lifecycleOwner, _resultStateObserver)
+    _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
 
   @Test
@@ -283,9 +283,8 @@ class CreateQueueViewModelTest(
           }
         },
         {
-          assertDoesNotThrow("Notify the error via snackbar") {
-            verify { _snackbarStateObserver.onChanged(any()) }
-          }
+          assertNotNull(
+              _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the error via snackbar")
         })
   }
 
@@ -302,16 +301,45 @@ class CreateQueueViewModelTest(
     _viewModel.onSave()
     assertAll(
         {
-          assertDoesNotThrow("Return result with the correct ID after success save") {
-            verify(exactly = if (createdQueueId == 0L) 0 else 1) {
-              _resultStateObserver.onChanged(eq(CreateQueueResultState(createdQueueId)))
-            }
-          }
+          assertNotNull(
+              _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the result via snackbar")
         },
         {
-          assertDoesNotThrow("Notify the result via snackbar") {
-            verify { _snackbarStateObserver.onChanged(any()) }
+          assertEquals(
+              if (createdQueueId != 0L) CreateQueueResultState(createdQueueId) else null,
+              _viewModel.uiEvent.safeValue.createResult?.data,
+              "Return result with the correct ID after success save")
+        },
+        {
+          assertDoesNotThrow("Update result event last to finish the fragment") {
+            verifyOrder {
+              _uiEventObserver.onChanged(match { it.snackbar != null && it.createResult == null })
+              if (createdQueueId != 0L) {
+                _uiEventObserver.onChanged(match { it.createResult != null })
+              }
+            }
           }
+        })
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on back pressed`(isQueueChanged: Boolean) {
+    if (isQueueChanged) _viewModel.onStatusChanged(QueueModel.Status.UNPAID)
+
+    _viewModel.onBackPressed()
+    assertAll(
+        {
+          assertEquals(
+              if (isQueueChanged) true else null,
+              _viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data,
+              "Show unsaved changes dialog when there's a change")
+        },
+        {
+          assertEquals(
+              if (!isQueueChanged) true else null,
+              _viewModel.uiEvent.safeValue.isFragmentFinished?.data,
+              "Finish fragment when there's no change")
         })
   }
 
@@ -328,11 +356,11 @@ class CreateQueueViewModelTest(
               "Return the correct customer for the given ID")
         },
         {
-          assertDoesNotThrow("Notify any error via snackbar") {
-            verify(exactly = if (isCustomerNull) 1 else 0) {
-              _snackbarStateObserver.onChanged(any())
-            }
-          }
+          assertThat(
+              "Notify any error via snackbar",
+              _viewModel.uiEvent.safeValue.snackbar?.data,
+              if (isCustomerNull) notNullValue() else nullValue(),
+          )
         })
   }
 
@@ -349,11 +377,11 @@ class CreateQueueViewModelTest(
               "Return the correct product for the given ID")
         },
         {
-          assertDoesNotThrow("Notify any error via snackbar") {
-            verify(exactly = if (isProductNull) 1 else 0) {
-              _snackbarStateObserver.onChanged(any())
-            }
-          }
+          assertThat(
+              "Notify any error via snackbar",
+              _viewModel.uiEvent.safeValue.snackbar?.data,
+              if (isProductNull) notNullValue() else nullValue(),
+          )
         })
   }
 }

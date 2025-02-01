@@ -26,14 +26,15 @@ import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.repository.ProductRepository
-import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductEvent
 import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductState
 import com.robifr.ledger.ui.editproduct.EditProductFragment
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -59,8 +60,8 @@ class EditProductViewModelTest(
 ) {
   private lateinit var _productRepository: ProductRepository
   private lateinit var _viewModel: EditProductViewModel
-  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
-  private lateinit var _resultStateObserver: Observer<EditProductResultState>
+  private lateinit var _uiEventObserver: Observer<CreateProductEvent>
+  private lateinit var _editResultEventObserver: Observer<UiEvent<EditProductResultState>>
 
   private val _productToEdit: ProductModel = ProductModel(id = 111L, name = "Apple", price = 100L)
 
@@ -68,8 +69,8 @@ class EditProductViewModelTest(
   fun beforeEach() {
     clearAllMocks()
     _productRepository = mockk()
-    _snackbarStateObserver = mockk(relaxed = true)
-    _resultStateObserver = mockk(relaxed = true)
+    _uiEventObserver = mockk(relaxed = true)
+    _editResultEventObserver = mockk(relaxed = true)
     AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-US"))
 
     coEvery { _productRepository.add(any()) } returns 0L
@@ -83,8 +84,8 @@ class EditProductViewModelTest(
                   EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key(),
                   _productToEdit.id)
             })
-    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
-    _viewModel.editResultState.observe(_lifecycleOwner, _resultStateObserver)
+    _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
+    _viewModel.editResultEvent.observe(_lifecycleOwner, _editResultEventObserver)
   }
 
   @Test
@@ -150,16 +151,43 @@ class EditProductViewModelTest(
     _viewModel.onSave()
     assertAll(
         {
-          assertDoesNotThrow("Return result with the correct ID after success update") {
-            verify(exactly = if (effectedRows == 0) 0 else 1) {
-              _resultStateObserver.onChanged(eq(EditProductResultState(_productToEdit.id)))
-            }
-          }
+          assertNotNull(
+              _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the result via snackbar")
         },
         {
-          assertDoesNotThrow("Notify the result via snackbar") {
-            verify { _snackbarStateObserver.onChanged(any()) }
+          assertEquals(
+              if (effectedRows != 0) EditProductResultState(_productToEdit.id) else null,
+              _viewModel.editResultEvent.value?.data,
+              "Return result with the correct ID after success update")
+        },
+        {
+          assertDoesNotThrow("Update result event last to finish the fragment") {
+            verifyOrder {
+              _uiEventObserver.onChanged(match { it.snackbar != null })
+              if (effectedRows != 0) _editResultEventObserver.onChanged(any())
+            }
           }
+        })
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on back pressed`(isProductChanged: Boolean) {
+    if (isProductChanged) _viewModel.onNameTextChanged("Banana")
+
+    _viewModel.onBackPressed()
+    assertAll(
+        {
+          assertEquals(
+              if (isProductChanged) true else null,
+              _viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data,
+              "Show unsaved changes dialog when there's a change")
+        },
+        {
+          assertEquals(
+              if (!isProductChanged) true else null,
+              _viewModel.uiEvent.safeValue.isFragmentFinished?.data,
+              "Finish fragment when there's no change")
         })
   }
 }

@@ -40,7 +40,6 @@ import io.mockk.slot
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -66,7 +65,7 @@ class SelectCustomerViewModelTest(
   private val _customerChangedListenerCaptor: CapturingSlot<ModelSyncListener<CustomerModel>> =
       slot()
   private lateinit var _viewModel: SelectCustomerViewModel
-  private lateinit var _recyclerAdapterStateObserver: Observer<RecyclerAdapterState>
+  private lateinit var _uiEventObserver: Observer<SelectCustomerEvent>
 
   private val _firstCustomer: CustomerModel = CustomerModel(id = 111L, name = "Amy")
   private val _secondCustomer: CustomerModel = CustomerModel(id = 222L, name = "Ben")
@@ -76,7 +75,7 @@ class SelectCustomerViewModelTest(
   fun beforeEach() {
     clearAllMocks()
     _customerRepository = mockk()
-    _recyclerAdapterStateObserver = mockk(relaxed = true)
+    _uiEventObserver = mockk(relaxed = true)
 
     every {
       _customerRepository.addModelChangedListener(capture(_customerChangedListenerCaptor))
@@ -85,7 +84,7 @@ class SelectCustomerViewModelTest(
         listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
     coEvery { _customerRepository.selectById(any<Long>()) } returns _firstCustomer
     _viewModel = SelectCustomerViewModel(SavedStateHandle(), _dispatcher, _customerRepository)
-    _viewModel.recyclerAdapterState.observe(_lifecycleOwner, _recyclerAdapterStateObserver)
+    _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
 
   @Test
@@ -125,10 +124,11 @@ class SelectCustomerViewModelTest(
   }
 
   @Test
-  fun `on initialize result notify recycler adapter item changes`() = runTest {
-    assertDoesNotThrow("Notify recycler adapter of header holder changes") {
-      verify { _recyclerAdapterStateObserver.onChanged(eq(RecyclerAdapterState.ItemChanged(0))) }
-    }
+  fun `on initialize result notify recycler adapter item changes`() {
+    assertEquals(
+        RecyclerAdapterState.ItemChanged(0),
+        _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
+        "Notify recycler adapter of header holder changes")
   }
 
   @Test
@@ -152,11 +152,10 @@ class SelectCustomerViewModelTest(
               "Update whether selected customer preview is expanded")
         },
         {
-          assertDoesNotThrow("Notify recycler adapter of header holder changes") {
-            verify {
-              _recyclerAdapterStateObserver.onChanged(eq(RecyclerAdapterState.ItemChanged(0)))
-            }
-          }
+          assertEquals(
+              RecyclerAdapterState.ItemChanged(0),
+              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
+              "Notify recycler adapter of header holder changes")
         })
   }
 
@@ -186,12 +185,10 @@ class SelectCustomerViewModelTest(
               "Update expanded customer index and reset when selecting the same one")
         },
         {
-          assertDoesNotThrow("Notify recycler adapter of item changes") {
-            verify {
-              _recyclerAdapterStateObserver.onChanged(
-                  eq(RecyclerAdapterState.ItemChanged(updatedIndexes)))
-            }
-          }
+          assertEquals(
+              RecyclerAdapterState.ItemChanged(updatedIndexes),
+              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
+              "Notify recycler adapter of item changes")
         })
   }
 
@@ -202,7 +199,7 @@ class SelectCustomerViewModelTest(
     _viewModel.onCustomerSelected(customer)
     assertEquals(
         SelectCustomerResultState(customer?.id),
-        _viewModel.resultState.value,
+        _viewModel.uiEvent.safeValue.selectResult?.data,
         "Update result state based from the selected customer")
   }
 
@@ -222,11 +219,12 @@ class SelectCustomerViewModelTest(
 
   @Test
   fun `on state changed result notify recycler adapter dataset changes`() {
-    clearMocks(_recyclerAdapterStateObserver)
+    clearMocks(_uiEventObserver)
     _customerChangedListenerCaptor.captured.onModelAdded(listOf(_firstCustomer))
     assertDoesNotThrow("Notify recycler adapter of dataset changes") {
       verify(exactly = 1) {
-        _recyclerAdapterStateObserver.onChanged(eq(RecyclerAdapterState.DataSetChanged))
+        _uiEventObserver.onChanged(
+            match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
       }
     }
   }

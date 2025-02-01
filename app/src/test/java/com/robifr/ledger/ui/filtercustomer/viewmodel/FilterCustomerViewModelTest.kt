@@ -29,7 +29,6 @@ import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -37,7 +36,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -55,8 +53,7 @@ class FilterCustomerViewModelTest(
 ) {
   private lateinit var _customerRepository: CustomerRepository
   private lateinit var _viewModel: FilterCustomerViewModel
-  private lateinit var _recyclerAdapterStateObserver: Observer<RecyclerAdapterState>
-  private lateinit var _resultStateObserver: Observer<FilterCustomerResultState>
+  private lateinit var _uiEventObserver: Observer<FilterCustomerEvent>
 
   private val _firstCustomer: CustomerModel = CustomerModel(id = 111L, name = "Amy")
   private val _secondCustomer: CustomerModel = CustomerModel(id = 222L, name = "Ben")
@@ -66,14 +63,12 @@ class FilterCustomerViewModelTest(
   fun beforeEach() {
     clearAllMocks()
     _customerRepository = mockk()
-    _recyclerAdapterStateObserver = mockk(relaxed = true)
-    _resultStateObserver = mockk(relaxed = true)
+    _uiEventObserver = mockk(relaxed = true)
 
     coEvery { _customerRepository.selectAll() } returns
         listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
     _viewModel = FilterCustomerViewModel(_dispatcher, _customerRepository, SavedStateHandle())
-    _viewModel.recyclerAdapterState.observe(_lifecycleOwner, _recyclerAdapterStateObserver)
-    _viewModel.resultState.observe(_lifecycleOwner, _resultStateObserver)
+    _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
 
   @Test
@@ -138,12 +133,10 @@ class FilterCustomerViewModelTest(
               "Add checked customer to the filtered customers and remove it when double checked")
         },
         {
-          assertDoesNotThrow("Notify recycler adapter of item changes") {
-            verify {
-              _recyclerAdapterStateObserver.onChanged(
-                  eq(RecyclerAdapterState.ItemChanged(recyclerItemIndexToUpdate)))
-            }
-          }
+          assertEquals(
+              RecyclerAdapterState.ItemChanged(recyclerItemIndexToUpdate),
+              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
+              "Notify recycler adapter of item changes")
         })
   }
 
@@ -173,12 +166,10 @@ class FilterCustomerViewModelTest(
               "Update expanded customer index and reset when selecting the same one")
         },
         {
-          assertDoesNotThrow("Notify recycler adapter of item changes") {
-            verify {
-              _recyclerAdapterStateObserver.onChanged(
-                  eq(RecyclerAdapterState.ItemChanged(updatedIndexes)))
-            }
-          }
+          assertEquals(
+              RecyclerAdapterState.ItemChanged(updatedIndexes),
+              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
+              "Notify recycler adapter of item changes")
         })
   }
 
@@ -188,13 +179,10 @@ class FilterCustomerViewModelTest(
     if (isAnyCustomerFiltered) _viewModel.onCustomerCheckedChanged(_firstCustomer)
 
     _viewModel.onSave()
-    assertDoesNotThrow("Update result state based on the selected customer") {
-      verify {
-        _resultStateObserver.onChanged(
-            eq(
-                FilterCustomerResultState(
-                    if (isAnyCustomerFiltered) listOfNotNull(_firstCustomer.id) else listOf())))
-      }
-    }
+    assertEquals(
+        FilterCustomerResultState(
+            if (isAnyCustomerFiltered) listOfNotNull(_firstCustomer.id) else listOf()),
+        _viewModel.uiEvent.safeValue.filterResult?.data,
+        "Update result state based on the selected customer")
   }
 }

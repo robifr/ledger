@@ -26,20 +26,22 @@ import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.repository.QueueRepository
-import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueEvent
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueState
 import com.robifr.ledger.ui.editqueue.EditQueueFragment
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import io.mockk.verify
+import io.mockk.verifyOrder
 import java.time.Instant
 import java.time.ZoneId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -60,8 +62,8 @@ class EditQueueViewModelTest(
 ) {
   private lateinit var _queueRepository: QueueRepository
   private lateinit var _viewModel: EditQueueViewModel
-  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
-  private lateinit var _resultStateObserver: Observer<EditQueueResultState>
+  private lateinit var _uiEventObserver: Observer<CreateQueueEvent>
+  private lateinit var _editResultEventObserver: Observer<UiEvent<EditQueueResultState>>
 
   private val _customer: CustomerModel = CustomerModel(id = 111L, name = "Amy", balance = 500L)
   private val _productOrder: ProductOrderModel =
@@ -86,8 +88,8 @@ class EditQueueViewModelTest(
   fun beforeEach() {
     clearAllMocks()
     _queueRepository = mockk()
-    _snackbarStateObserver = mockk(relaxed = true)
-    _resultStateObserver = mockk(relaxed = true)
+    _uiEventObserver = mockk(relaxed = true)
+    _editResultEventObserver = mockk(relaxed = true)
 
     coEvery { _queueRepository.add(any()) } returns 0L
     coEvery { _queueRepository.selectById(_queueToEdit.id) } returns _queueToEdit
@@ -103,8 +105,8 @@ class EditQueueViewModelTest(
                       EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key(),
                       _queueToEdit.id)
                 })
-    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
-    _viewModel.editResultState.observe(_lifecycleOwner, _resultStateObserver)
+    _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
+    _viewModel.editResultEvent.observe(_lifecycleOwner, _editResultEventObserver)
   }
 
   @Test
@@ -247,16 +249,43 @@ class EditQueueViewModelTest(
     _viewModel.onSave()
     assertAll(
         {
-          assertDoesNotThrow("Return result with the correct ID after success update") {
-            verify(exactly = if (effectedRows == 0) 0 else 1) {
-              _resultStateObserver.onChanged(eq(EditQueueResultState(_queueToEdit.id)))
-            }
-          }
+          assertNotNull(
+              _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the result via snackbar")
         },
         {
-          assertDoesNotThrow("Notify the result via snackbar") {
-            verify { _snackbarStateObserver.onChanged(any()) }
+          assertEquals(
+              if (effectedRows != 0) EditQueueResultState(_queueToEdit.id) else null,
+              _viewModel.editResultEvent.value?.data,
+              "Return result with the correct ID after success update")
+        },
+        {
+          assertDoesNotThrow("Update result event last to finish the fragment") {
+            verifyOrder {
+              _uiEventObserver.onChanged(match { it.snackbar != null })
+              if (effectedRows != 0) _editResultEventObserver.onChanged(any())
+            }
           }
+        })
+  }
+
+  @ParameterizedTest
+  @ValueSource(booleans = [true, false])
+  fun `on back pressed`(isQueueChanged: Boolean) {
+    if (isQueueChanged) _viewModel.onStatusChanged(QueueModel.Status.UNPAID)
+
+    _viewModel.onBackPressed()
+    assertAll(
+        {
+          assertEquals(
+              if (isQueueChanged) true else null,
+              _viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data,
+              "Show unsaved changes dialog when there's a change")
+        },
+        {
+          assertEquals(
+              if (!isQueueChanged) true else null,
+              _viewModel.uiEvent.safeValue.isFragmentFinished?.data,
+              "Finish fragment when there's no change")
         })
   }
 }

@@ -27,7 +27,6 @@ import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.RecyclerAdapterState
-import com.robifr.ledger.ui.SnackbarState
 import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import io.mockk.CapturingSlot
@@ -45,6 +44,7 @@ import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -69,22 +69,19 @@ class SearchCustomerViewModelTest(
   private val _customerChangedListenerCaptor: CapturingSlot<ModelSyncListener<CustomerModel>> =
       slot()
   private lateinit var _viewModel: SearchCustomerViewModel
-  private lateinit var _snackbarStateObserver: Observer<SnackbarState>
-  private lateinit var _recyclerAdapterStateObserver: Observer<RecyclerAdapterState>
+  private lateinit var _uiEventObserver: Observer<SearchCustomerEvent>
 
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
     _customerRepository = mockk()
-    _snackbarStateObserver = mockk(relaxed = true)
-    _recyclerAdapterStateObserver = mockk(relaxed = true)
+    _uiEventObserver = mockk(relaxed = true)
 
     every {
       _customerRepository.addModelChangedListener(capture(_customerChangedListenerCaptor))
     } just Runs
     _viewModel = SearchCustomerViewModel(SavedStateHandle(), _dispatcher, _customerRepository)
-    _viewModel.snackbarState.observe(_lifecycleOwner, _snackbarStateObserver)
-    _viewModel.recyclerAdapterState.observe(_lifecycleOwner, _recyclerAdapterStateObserver)
+    _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
 
   @Test
@@ -192,12 +189,10 @@ class SearchCustomerViewModelTest(
               "Update expanded customer index and reset when selecting the same one")
         },
         {
-          assertDoesNotThrow("Notify recycler adapter of item changes") {
-            verify {
-              _recyclerAdapterStateObserver.onChanged(
-                  eq(RecyclerAdapterState.ItemChanged(updatedIndexes)))
-            }
-          }
+          assertEquals(
+              RecyclerAdapterState.ItemChanged(updatedIndexes),
+              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
+              "Notify recycler adapter of item changes")
         })
   }
 
@@ -209,7 +204,7 @@ class SearchCustomerViewModelTest(
     _viewModel.onCustomerSelected(customer)
     assertEquals(
         SearchCustomerResultState(customer?.id),
-        _viewModel.resultState.value,
+        _viewModel.uiEvent.safeValue.searchResult?.data,
         "Update result state based from the selected customer")
   }
 
@@ -217,9 +212,8 @@ class SearchCustomerViewModelTest(
   fun `on delete customer`() {
     coEvery { _customerRepository.delete(any()) } returns 1
     _viewModel.onDeleteCustomer(CustomerModel(id = 111L, name = "Amy"))
-    assertDoesNotThrow("Notify the delete result via snackbar") {
-      verify { _snackbarStateObserver.onChanged(any()) }
-    }
+    assertNotNull(
+        _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the delete result via snackbar")
   }
 
   @ParameterizedTest
@@ -295,7 +289,8 @@ class SearchCustomerViewModelTest(
     _viewModel.onSearchUiStateChanged(SearchState(listOf(), listOf(), ""))
     assertDoesNotThrow("Notify recycler adapter of dataset changes") {
       verify(exactly = 3) {
-        _recyclerAdapterStateObserver.onChanged(eq(RecyclerAdapterState.DataSetChanged))
+        _uiEventObserver.onChanged(
+            match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
       }
     }
   }
