@@ -48,8 +48,6 @@ import com.robifr.ledger.local.LocalBackup
 import com.robifr.ledger.ui.settings.AppUpdateAvailable
 import com.robifr.ledger.ui.settings.viewmodel.SettingsDialogState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsViewModel
-import com.robifr.ledger.ui.settings.viewmodel.UnknownSourceInstallationDialogState
-import com.robifr.ledger.ui.settings.viewmodel.UpdateAvailableDialogState
 import com.robifr.ledger.util.hideTooltipText
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.ZonedDateTime
@@ -176,7 +174,7 @@ open class MainActivity :
 
   private fun _onSettingsDialogState(state: SettingsDialogState, onDismiss: () -> Unit) {
     when (state) {
-      is UpdateAvailableDialogState -> {
+      is SettingsDialogState.UpdateAvailable -> {
         val dateFormat: DateTimeFormatter =
             DateTimeFormatter.ofPattern(
                 getString(_settingsViewModel.uiState.safeValue.languageUsed.fullDateFormat))
@@ -191,11 +189,12 @@ open class MainActivity :
                 onUpdate = { _settingsViewModel.onUpdateApp() },
                 onDismiss = onDismiss)
       }
-      is UnknownSourceInstallationDialogState -> {
-        _permission.showUnknownSourceInstallationDialog(
-            onGrant = { _permissionLauncher.launch(_permission.unknownSourceInstallationIntent()) },
-            onDismiss = onDismiss)
-      }
+      is SettingsDialogState.UnknownSourceInstallation ->
+          _permission.showUnknownSourceInstallationDialog(
+              onGrant = {
+                _permissionLauncher.launch(_permission.unknownSourceInstallationIntent())
+              },
+              onDismiss = onDismiss)
     }
   }
 

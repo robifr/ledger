@@ -25,8 +25,8 @@ data class SettingsEvent(
     val dialog: UiEvent<SettingsDialogState>? = null
 )
 
-sealed interface SettingsDialogState
+sealed interface SettingsDialogState {
+  data class UpdateAvailable(val githubRelease: GithubReleaseModel) : SettingsDialogState
 
-data class UpdateAvailableDialogState(val githubRelease: GithubReleaseModel) : SettingsDialogState
-
-object UnknownSourceInstallationDialogState : SettingsDialogState
+  data object UnknownSourceInstallation : SettingsDialogState
+}

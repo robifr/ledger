@@ -36,8 +36,6 @@ import com.robifr.ledger.ui.settings.viewmodel.SettingsDialogState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsEvent
 import com.robifr.ledger.ui.settings.viewmodel.SettingsState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsViewModel
-import com.robifr.ledger.ui.settings.viewmodel.UnknownSourceInstallationDialogState
-import com.robifr.ledger.ui.settings.viewmodel.UpdateAvailableDialogState
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -117,12 +115,12 @@ class SettingsFragment : Fragment() {
 
   private fun _onDialogState(state: SettingsDialogState, onDismiss: () -> Unit) {
     when (state) {
-      is UpdateAvailableDialogState ->
+      is SettingsDialogState.UpdateAvailable ->
           _appUpdate.showUpdateAvailableDialog(
               state.githubRelease,
               settingsViewModel.uiState.safeValue.languageUsed.fullDateFormat,
               onDismiss)
-      is UnknownSourceInstallationDialogState ->
+      is SettingsDialogState.UnknownSourceInstallation ->
           _appUpdate.showUnknownSourceInstallationPermissionDialog(onDismiss)
     }
   }

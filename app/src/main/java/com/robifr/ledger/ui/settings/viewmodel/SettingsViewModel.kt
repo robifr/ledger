@@ -106,7 +106,7 @@ constructor(
       _settingsRepository.obtainLatestAppRelease()?.let {
         if (VersionComparator.isNewVersionNewer(
             BuildConfig.VERSION_NAME, it.tagName.removePrefix("v"))) {
-          _onDialogShown(UpdateAvailableDialogState(it))
+          _onDialogShown(SettingsDialogState.UpdateAvailable(it))
         } else {
           if (shouldSnackbarShown) {
             _onSnackbarShown(StringResource(R.string.settings_noUpdatesWereAvailable))
@@ -125,7 +125,7 @@ constructor(
 
   fun onUpdateApp() {
     if (!_permission.isUnknownSourceInstallationGranted()) {
-      _onDialogShown(UnknownSourceInstallationDialogState)
+      _onDialogShown(SettingsDialogState.UnknownSourceInstallation)
       return
     }
     viewModelScope.launch(_dispatcher) {
@@ -134,7 +134,9 @@ constructor(
   }
 
   fun onActivityResultForUnknownSourceInstallation() {
-    _uiState.safeValue.githubRelease?.let { _onDialogShown(UpdateAvailableDialogState(it)) }
+    _uiState.safeValue.githubRelease?.let {
+      _onDialogShown(SettingsDialogState.UpdateAvailable(it))
+    }
   }
 
   private fun _onSnackbarShown(messageRes: StringResourceType) {
