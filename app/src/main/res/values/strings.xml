@@ -457,11 +457,11 @@
   <string name="about_license_description">Ledger is open-source software and distributed under the
     terms of the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</a>.
     The source code is available on <a href="https://github.com/robifr/ledger">GitHub</a>.
-    \n\nCopyright 2024 Robi
+    \n\nCopyright © 2024–2025 Robi.
   </string>
   <string name="about_thirdPartyLicenses">Third-party licenses</string>
   <string name="about_thirdPartyLicenses_description">Ledger also uses open-source libraries.
-    <a href="licenses">Learn more about the licenses</a>.
+    <a href="licenses">Learn more about their licenses</a>.
   </string>
   <string name="about_viewSourceCode">View source code</string>
 
