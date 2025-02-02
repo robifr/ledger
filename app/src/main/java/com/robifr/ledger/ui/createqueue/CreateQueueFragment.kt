@@ -61,6 +61,7 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
   private lateinit var _inputStatus: CreateQueueStatus
   private lateinit var _inputPaymentMethod: CreateQueuePaymentMethod
   private lateinit var _inputProductOrder: CreateQueueProductOrder
+  private lateinit var _inputNote: CreateQueueNote
 
   override fun onCreateView(
       inflater: LayoutInflater,
@@ -73,6 +74,7 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     _inputStatus = CreateQueueStatus(this)
     _inputPaymentMethod = CreateQueuePaymentMethod(this)
     _inputProductOrder = CreateQueueProductOrder(this)
+    _inputNote = CreateQueueNote(this)
     return fragmentBinding.root
   }
 
@@ -199,6 +201,7 @@ open class CreateQueueFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     _inputProductOrder.setInputtedProductOrders(state.productOrders)
     _inputProductOrder.setTotalDiscount(inputtedQueue.totalDiscount())
     _inputProductOrder.setGrandTotalPrice(inputtedQueue.grandTotalPrice())
+    _inputNote.setInputtedNoteText(state.note)
   }
 
   private fun _onMakeProductOrderState(state: MakeProductOrderState) {

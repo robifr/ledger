@@ -16,12 +16,12 @@
 
 package com.robifr.ledger.local.migration
 
-import android.content.Context
 import androidx.room.migration.Migration
-import com.robifr.ledger.preferences.SettingsPreferences
+import androidx.sqlite.db.SupportSQLiteDatabase
 
-class MigrationProvider(context: Context) {
-  private val _settingsPreferences: SettingsPreferences = SettingsPreferences(context)
-  val migrationList: List<Migration> =
-      listOf(V1To2Migration(_settingsPreferences), V2To3Migration())
+/** Add `note` column in the `queue` table. */
+class V2To3Migration : Migration(2, 3) {
+  override fun migrate(database: SupportSQLiteDatabase) {
+    database.execSQL("ALTER TABLE `queue` ADD COLUMN `note` TEXT NOT NULL DEFAULT ''")
+  }
 }

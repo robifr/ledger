@@ -160,6 +160,7 @@ constructor(
               onStatusChanged(it.status)
               onPaymentMethodChanged(it.paymentMethod)
               onProductOrdersChanged(it.productOrders)
+              onNoteTextChanged(it.note)
             }
           }
     }

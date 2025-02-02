@@ -295,6 +295,7 @@
   <string name="createQueue_status">Status</string>
   <string name="createQueue_status_selectStatus">Pilih status</string>
   <string name="createQueue_paymentMethods">Metode pembayaran</string>
+  <string name="createQueue_note">Catatan</string>
   <string name="createQueue_unsavedChangesWarning">Anda memiliki perubahan yang belum disimpan.
     Apakah Anda ingin keluar tanpa menyimpannya?</string>
   <string name="editQueue">Edit antrean</string>

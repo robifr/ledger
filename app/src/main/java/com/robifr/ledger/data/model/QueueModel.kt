@@ -60,6 +60,7 @@ data class QueueModel(
     @ColumnInfo(name = "status") val status: Status,
     @ColumnInfo(name = "date") @field:TypeConverters(InstantConverter::class) val date: Instant,
     @ColumnInfo(name = "payment_method") val paymentMethod: PaymentMethod,
+    @ColumnInfo(name = "note") val note: String = "",
     @Ignore val customer: CustomerModel? = null,
     @Ignore val productOrders: List<ProductOrderModel> = listOf()
 ) : Model, Parcelable {
@@ -69,8 +70,9 @@ data class QueueModel(
       customerId: Long?,
       status: Status,
       date: Instant,
-      paymentMethod: PaymentMethod
-  ) : this(id, customerId, status, date, paymentMethod, null, listOf())
+      paymentMethod: PaymentMethod,
+      note: String
+  ) : this(id, customerId, status, date, paymentMethod, note, null, listOf())
 
   @Ignore fun grandTotalPrice(): BigDecimal = productOrders.sumOf { it.totalPrice }
 

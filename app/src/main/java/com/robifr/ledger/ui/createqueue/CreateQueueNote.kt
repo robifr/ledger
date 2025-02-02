@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.local.migration
+package com.robifr.ledger.ui.createqueue
 
-import android.content.Context
-import androidx.room.migration.Migration
-import com.robifr.ledger.preferences.SettingsPreferences
+import androidx.core.widget.doOnTextChanged
 
-class MigrationProvider(context: Context) {
-  private val _settingsPreferences: SettingsPreferences = SettingsPreferences(context)
-  val migrationList: List<Migration> =
-      listOf(V1To2Migration(_settingsPreferences), V2To3Migration())
+class CreateQueueNote(private val _fragment: CreateQueueFragment) {
+  init {
+    _fragment.fragmentBinding.note.doOnTextChanged { text: CharSequence?, _, _, _ ->
+      _fragment.createQueueViewModel.onNoteTextChanged(text.toString())
+    }
+  }
+
+  fun setInputtedNoteText(note: String) {
+    if (_fragment.fragmentBinding.note.text.toString() != note) {
+      _fragment.fragmentBinding.note.setText(note)
+    }
+  }
 }

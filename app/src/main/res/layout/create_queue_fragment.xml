@@ -172,6 +172,38 @@
       <include
           android:id="@+id/productOrder"
           layout="@layout/create_queue_product_order" />
+
+      <TextView
+          android:id="@+id/noteTitle"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginTop="@dimen/space_mediumLarge"
+          android:layout_marginEnd="@dimen/space_medium"
+          android:layout_marginBottom="@dimen/space_smallMedium"
+          android:text="@string/createQueue_note"
+          android:textStyle="bold" />
+
+      <com.google.android.material.textfield.TextInputLayout
+          style="@style/TextInputLayout.OutlinedBox"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="@dimen/space_medium"
+          android:layout_marginEnd="@dimen/space_medium"
+          android:layout_marginBottom="@dimen/space_small"
+          app:boxCornerRadiusBottomEnd="@dimen/space_medium"
+          app:boxCornerRadiusBottomStart="@dimen/space_medium"
+          app:boxCornerRadiusTopEnd="@dimen/space_medium"
+          app:boxCornerRadiusTopStart="@dimen/space_medium">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:minHeight="120dp"
+            app:backgroundTint="@android:color/transparent" />
+      </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
   </androidx.core.widget.NestedScrollView>
 </LinearLayout>

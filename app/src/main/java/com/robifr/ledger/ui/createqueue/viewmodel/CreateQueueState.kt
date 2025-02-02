@@ -38,7 +38,8 @@ data class CreateQueueState(
     val isStatusDialogShown: Boolean,
     val paymentMethod: QueueModel.PaymentMethod,
     val allowedPaymentMethods: Set<QueueModel.PaymentMethod>,
-    val productOrders: List<ProductOrderModel>
+    val productOrders: List<ProductOrderModel>,
+    val note: String
 ) {
   val isCustomerEndIconVisible: Boolean
     get() = customer != null

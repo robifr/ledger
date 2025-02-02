@@ -81,7 +81,8 @@ class CreateQueueViewModelTest(
                       productId = _product.id,
                       productName = _product.name,
                       productPrice = _product.price,
-                      quantity = 1.0)))
+                      quantity = 1.0)),
+          note = "Example")
 
   @BeforeEach
   fun beforeEach() {
@@ -103,6 +104,7 @@ class CreateQueueViewModelTest(
     _viewModel.onStatusDialogShown()
     _viewModel.onPaymentMethodChanged(_queue.paymentMethod)
     _viewModel.onProductOrdersChanged(_queue.productOrders)
+    _viewModel.onNoteTextChanged(_queue.note)
     assertEquals(
         CreateQueueState(
             customer = _customer,
@@ -112,7 +114,8 @@ class CreateQueueViewModelTest(
             isStatusDialogShown = true,
             paymentMethod = _queue.paymentMethod,
             allowedPaymentMethods = setOf(_queue.paymentMethod),
-            productOrders = _queue.productOrders),
+            productOrders = _queue.productOrders,
+            note = _queue.note),
         _viewModel.uiState.safeValue,
         "Preserve all values except for the changed field")
   }
@@ -196,6 +199,7 @@ class CreateQueueViewModelTest(
     _viewModel.onStatusChanged(_queue.status)
     _viewModel.onPaymentMethodChanged(_queue.paymentMethod)
     _viewModel.onProductOrdersChanged(_queue.productOrders)
+    _viewModel.onNoteTextChanged(_queue.note)
 
     if (isShown) _viewModel.onStatusDialogShown() else _viewModel.onStatusDialogClosed()
     assertEquals(
@@ -207,7 +211,8 @@ class CreateQueueViewModelTest(
             isStatusDialogShown = isShown,
             paymentMethod = _queue.paymentMethod,
             allowedPaymentMethods = setOf(_queue.paymentMethod),
-            productOrders = _queue.productOrders),
+            productOrders = _queue.productOrders,
+            note = _queue.note),
         _viewModel.uiState.safeValue,
         "Preserve other fields when the dialog shown or closed")
   }

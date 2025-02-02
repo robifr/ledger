@@ -82,7 +82,8 @@ class EditQueueViewModelTest(
           status = QueueModel.Status.COMPLETED,
           date = Instant.now(),
           paymentMethod = QueueModel.PaymentMethod.ACCOUNT_BALANCE,
-          productOrders = listOf(_productOrder))
+          productOrders = listOf(_productOrder),
+          note = "Example")
 
   @BeforeEach
   fun beforeEach() {
@@ -121,7 +122,8 @@ class EditQueueViewModelTest(
             paymentMethod = _queueToEdit.paymentMethod,
             allowedPaymentMethods =
                 setOf(QueueModel.PaymentMethod.CASH, _queueToEdit.paymentMethod),
-            productOrders = _queueToEdit.productOrders),
+            productOrders = _queueToEdit.productOrders,
+            note = _queueToEdit.note),
         _viewModel.uiState.safeValue,
         "Match state with the retrieved data from the fragment arguments")
   }

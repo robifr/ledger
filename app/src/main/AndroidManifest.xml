@@ -32,6 +32,7 @@
       android:roundIcon="@mipmap/icon_app"
       android:supportsRtl="true"
       android:theme="@style/AppTheme.Light"
+      android:windowSoftInputMode="adjustResize|stateHidden"
       tools:targetApi="31">
 
     <meta-data
@@ -41,8 +42,7 @@
     <activity
         android:name="${activityLauncherName}"
         android:configChanges="keyboardHidden|screenSize"
-        android:exported="true"
-        android:windowSoftInputMode="adjustNothing">
+        android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />

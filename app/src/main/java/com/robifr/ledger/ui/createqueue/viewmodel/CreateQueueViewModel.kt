@@ -73,7 +73,8 @@ constructor(
               isStatusDialogShown = false,
               paymentMethod = _initialQueueToCreate.paymentMethod,
               allowedPaymentMethods = setOf(_initialQueueToCreate.paymentMethod),
-              productOrders = _initialQueueToCreate.productOrders))
+              productOrders = _initialQueueToCreate.productOrders,
+              note = _initialQueueToCreate.note))
   val uiState: SafeLiveData<CreateQueueState>
     get() = _uiState
 
@@ -89,7 +90,8 @@ constructor(
           paymentMethod = _uiState.safeValue.paymentMethod,
           customerId = _uiState.safeValue.customer?.id,
           customer = _uiState.safeValue.customer,
-          productOrders = _uiState.safeValue.productOrders)
+          productOrders = _uiState.safeValue.productOrders,
+          note = _uiState.safeValue.note)
 
   fun onCustomerChanged(customer: CustomerModel?) {
     _uiState.setValue(_uiState.safeValue.copy(customer = customer))
@@ -127,6 +129,10 @@ constructor(
   fun onPaymentMethodChanged(paymentMethod: QueueModel.PaymentMethod) {
     _uiState.setValue(_uiState.safeValue.copy(paymentMethod = paymentMethod))
     _onUpdateTemporalCustomer()
+  }
+
+  fun onNoteTextChanged(note: String) {
+    _uiState.setValue(_uiState.safeValue.copy(note = note))
   }
 
   open fun onSave() {
