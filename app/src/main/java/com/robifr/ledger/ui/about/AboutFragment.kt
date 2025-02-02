@@ -16,8 +16,6 @@
 
 package com.robifr.ledger.ui.about
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
@@ -76,9 +74,6 @@ class AboutFragment : Fragment() {
     fragmentBinding.license.movementMethod = LinkMovementMethod.getInstance()
     fragmentBinding.thirdPartyLicenses.setOnClickListener {
       findNavController().navigate(R.id.thirdPartyLicensesFragment)
-    }
-    fragmentBinding.viewSourceCodeButton.setOnClickListener {
-      startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/robifr/ledger")))
     }
   }
 

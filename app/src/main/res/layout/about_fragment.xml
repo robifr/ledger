@@ -142,29 +142,6 @@
           android:textSize="@dimen/text_small"
           app:layout_constraintStart_toStartOf="parent"
           app:layout_constraintTop_toBottomOf="@id/thirdPartyLicensesTitle" />
-
-
-      <com.google.android.material.button.MaterialButton
-          android:id="@+id/viewSourceCodeButton"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/space_medium"
-          android:layout_marginTop="@dimen/space_mediumLarge"
-          android:layout_marginEnd="@dimen/space_medium"
-          android:minHeight="@dimen/space_large"
-          android:padding="@dimen/space_smallMedium"
-          android:text="@string/about_viewSourceCode"
-          android:textColor="?colorOnSecondary"
-          app:backgroundTint="?colorSecondary"
-          app:icon="@drawable/icon_github"
-          app:iconGravity="textStart"
-          app:iconPadding="@dimen/space_medium"
-          app:iconSize="@dimen/icon_large"
-          app:iconTint="?colorOnSecondary"
-          app:layout_constraintEnd_toEndOf="parent"
-          app:layout_constraintStart_toStartOf="parent"
-          app:layout_constraintTop_toBottomOf="@+id/thirdPartyLicenses"
-          app:rippleColor="@color/secondary_ripple" />
     </androidx.constraintlayout.widget.ConstraintLayout>
   </androidx.core.widget.NestedScrollView>
 </LinearLayout>

@@ -442,6 +442,7 @@
   <string name="about_license">Lisensi</string>
   <string name="about_license_description">Ledger adalah perangkat lunak sumber terbuka dan
     didistribusikan di bawah ketentuan <a href="https://www.apache.org/licenses/LICENSE-2.0">Lisensi Apache, Versi 2.0</a>.
+    Kode sumbernya tersedia di <a href="https://github.com/robifr/ledger">GitHub</a>.
     \n\nHak Cipta 2024 Robi
   </string>
   <string name="about_thirdPartyLicenses">Lisensi pihak ketiga</string>
