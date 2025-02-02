@@ -34,6 +34,9 @@
   <dimen name="space_large">64dp</dimen>
   <dimen name="space_extraLarge">90dp</dimen>
 
+  <dimen name="corner_small">8dp</dimen>
+  <dimen name="corner_medium">12dp</dimen>
+
   <dimen name="stroke_width">0.7dp</dimen>
   <dimen name="stroke_selectable_width">0.7dp</dimen>
 

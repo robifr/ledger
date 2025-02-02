@@ -19,7 +19,6 @@ package com.robifr.ledger.components
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isVisible
-import com.google.android.material.R as MaterialR
 import com.google.android.material.shape.ShapeAppearanceModel
 import com.robifr.ledger.R
 import com.robifr.ledger.data.model.ProductOrderModel
@@ -33,10 +32,8 @@ class ProductOrderCardComponent(
 ) {
   init {
     _binding.productImage.shapeableImage.shapeAppearanceModel =
-        ShapeAppearanceModel.builder(
-                _context,
-                MaterialR.style.Widget_MaterialComponents_ShapeableImageView,
-                R.style.Shape_Card)
+        ShapeAppearanceModel.builder()
+            .setAllCornerSizes(_context.resources.getDimension(R.dimen.corner_small))
             .build()
   }
 

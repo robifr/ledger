@@ -25,6 +25,7 @@ import androidx.core.view.isVisible
 import androidx.transition.ChangeBounds
 import androidx.transition.TransitionManager
 import com.google.android.material.R as MaterialR
+import com.google.android.material.shape.RelativeCornerSize
 import com.google.android.material.shape.ShapeAppearanceModel
 import com.robifr.ledger.R
 import com.robifr.ledger.assetbinding.JsInterface
@@ -190,10 +191,8 @@ class DashboardSummary(private val _fragment: DashboardFragment) : View.OnClickL
                             R.plurals.dashboard_activeCustomers_n_queue, queueCounts, queueCounts),
                         HtmlCompat.FROM_HTML_MODE_LEGACY)
                 image.shapeableImage.shapeAppearanceModel =
-                    ShapeAppearanceModel.builder(
-                            _fragment.requireContext(),
-                            MaterialR.style.Widget_MaterialComponents_ShapeableImageView,
-                            R.style.Shape_Round)
+                    ShapeAppearanceModel.builder()
+                        .setAllCornerSizes(RelativeCornerSize(0.5f))
                         .build()
                 image.text.text = customer.name.take(1)
               }
@@ -235,10 +234,8 @@ class DashboardSummary(private val _fragment: DashboardFragment) : View.OnClickL
                                 CurrencyFormat.countDecimalPlace(amountSold))),
                         HtmlCompat.FROM_HTML_MODE_LEGACY)
                 image.shapeableImage.shapeAppearanceModel =
-                    ShapeAppearanceModel.builder(
-                            _fragment.requireContext(),
-                            MaterialR.style.Widget_MaterialComponents_ShapeableImageView,
-                            R.style.Shape_Card)
+                    ShapeAppearanceModel.builder()
+                        .setAllCornerSizes(_fragment.resources.getDimension(R.dimen.corner_small))
                         .build()
                 image.text.text = product.name.take(1)
               }

@@ -191,10 +191,10 @@
           android:layout_marginStart="@dimen/space_medium"
           android:layout_marginEnd="@dimen/space_medium"
           android:layout_marginBottom="@dimen/space_small"
-          app:boxCornerRadiusBottomEnd="@dimen/space_medium"
-          app:boxCornerRadiusBottomStart="@dimen/space_medium"
-          app:boxCornerRadiusTopEnd="@dimen/space_medium"
-          app:boxCornerRadiusTopStart="@dimen/space_medium">
+          app:boxCornerRadiusBottomEnd="@dimen/corner_medium"
+          app:boxCornerRadiusBottomStart="@dimen/corner_medium"
+          app:boxCornerRadiusTopEnd="@dimen/corner_medium"
+          app:boxCornerRadiusTopStart="@dimen/corner_medium">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/note"

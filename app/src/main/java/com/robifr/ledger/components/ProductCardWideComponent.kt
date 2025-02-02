@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
-import com.google.android.material.R as MaterialR
 import com.google.android.material.shape.ShapeAppearanceModel
 import com.robifr.ledger.R
 import com.robifr.ledger.data.model.ProductModel
@@ -33,10 +32,8 @@ class ProductCardWideComponent(
 ) {
   init {
     val imageShape: ShapeAppearanceModel =
-        ShapeAppearanceModel.builder(
-                _context,
-                MaterialR.style.Widget_MaterialComponents_ShapeableImageView,
-                R.style.Shape_Card)
+        ShapeAppearanceModel.builder()
+            .setAllCornerSizes(_context.resources.getDimension(R.dimen.corner_small))
             .build()
     _binding.normalCard.image.shapeableImage.shapeAppearanceModel = imageShape
     _binding.expandedCard.image.shapeableImage.shapeAppearanceModel = imageShape
