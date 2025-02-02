@@ -16,35 +16,19 @@
 
 package com.robifr.ledger.ui.createcustomer
 
-import android.text.Editable
-import com.google.android.material.textfield.TextInputEditText
-import com.robifr.ledger.components.EditTextWatcher
+import androidx.core.widget.doOnTextChanged
 
 class CreateCustomerName(private val _fragment: CreateCustomerFragment) {
-  private val _nameTextWatcher: NameTextWatcher =
-      NameTextWatcher(_fragment, _fragment.fragmentBinding.name)
-
   init {
-    _fragment.fragmentBinding.name.addTextChangedListener(_nameTextWatcher)
+    _fragment.fragmentBinding.name.doOnTextChanged { text: CharSequence?, _, _, _ ->
+      _fragment.createCustomerViewModel.onNameTextChanged(text.toString())
+    }
   }
 
   fun setInputtedNameText(name: String, errorMessage: String?) {
     if (_fragment.fragmentBinding.name.text.toString() != name) {
-      // Remove listener to prevent any sort of formatting although there isn't.
-      _fragment.fragmentBinding.name.removeTextChangedListener(_nameTextWatcher)
       _fragment.fragmentBinding.name.setText(name)
-      _fragment.fragmentBinding.name.addTextChangedListener(_nameTextWatcher)
     }
     _fragment.fragmentBinding.nameLayout.error = errorMessage
-  }
-}
-
-private class NameTextWatcher(
-    private val _fragment: CreateCustomerFragment,
-    editText: TextInputEditText
-) : EditTextWatcher(editText) {
-  override fun afterTextChanged(editable: Editable) {
-    super.afterTextChanged(editable)
-    _fragment.createCustomerViewModel.onNameTextChanged(newText())
   }
 }
