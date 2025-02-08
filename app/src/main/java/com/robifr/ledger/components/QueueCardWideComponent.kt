@@ -48,9 +48,7 @@ class QueueCardWideComponent(
 
   init {
     val imageShape: ShapeAppearanceModel =
-        ShapeAppearanceModel.builder()
-            .setAllCornerSizes(RelativeCornerSize(0.5f))
-            .build()
+        ShapeAppearanceModel.builder().setAllCornerSizes(RelativeCornerSize(0.5f)).build()
     _binding.normalCard.customerImage.shapeableImage.shapeAppearanceModel = imageShape
     _binding.expandedCard.customerImage.shapeableImage.shapeAppearanceModel = imageShape
   }
