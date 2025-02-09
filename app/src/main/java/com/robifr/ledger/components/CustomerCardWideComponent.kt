@@ -34,9 +34,7 @@ class CustomerCardWideComponent(
 ) {
   init {
     val imageShape: ShapeAppearanceModel =
-        ShapeAppearanceModel.builder()
-            .setAllCornerSizes(RelativeCornerSize(0.5f))
-            .build()
+        ShapeAppearanceModel.builder().setAllCornerSizes(RelativeCornerSize(0.5f)).build()
     _binding.normalCard.image.shapeableImage.shapeAppearanceModel = imageShape
     _binding.expandedCard.image.shapeableImage.shapeAppearanceModel = imageShape
   }
