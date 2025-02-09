@@ -30,6 +30,7 @@ import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.local.BigDecimalConverter
 import com.robifr.ledger.local.FtsStringConverter
 import java.math.BigDecimal
+import org.intellij.lang.annotations.Language
 
 @Dao
 abstract class CustomerDao : QueryAccessible<CustomerModel> {
@@ -80,12 +81,15 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   @Query("SELECT id, balance FROM customer WHERE balance > 0")
   abstract fun selectAllInfoWithBalance(): List<CustomerBalanceInfo>
 
-  @Transaction
-  open fun selectAllInfoWithDebt(): List<CustomerDebtInfo> =
-      _selectAllIds().mapNotNull {
-        val debt: BigDecimal = totalDebtById(it)
-        if (debt.compareTo(0.toBigDecimal()) < 0) CustomerDebtInfo(it, debt) else null
-      }
+  @Transaction open fun selectAllInfoWithDebt(): List<CustomerDebtInfo> = _selectAllInfoWithDebt()
+
+  @Query(
+      """
+      ${_CTE_COUNT_DEBT_BY_ID}
+      SELECT customer_id, debt FROM total_debt_cte WHERE debt < 0
+      """)
+  @TypeConverters(BigDecimalConverter::class)
+  protected abstract fun _selectAllInfoWithDebt(customerId: Long? = null): List<CustomerDebtInfo>
 
   @Transaction
   open fun search(query: String): List<CustomerModel> {
@@ -93,18 +97,19 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
     return _search("*\"${FtsStringConverter.toFtsSpacedString(escapedQuery)}\"*")
   }
 
-  /** @return Current debt by counting all of product orders total price from unpaid queues. */
-  @Transaction
-  open fun totalDebtById(customerId: Long?): BigDecimal =
-      _selectUnpaidQueueTotalPrice(customerId).fold(0.toBigDecimal(), BigDecimal::subtract)
+  @Query(
+      """
+      ${_CTE_COUNT_DEBT_BY_ID}
+      SELECT debt FROM total_debt_cte
+      """)
+  @TypeConverters(BigDecimalConverter::class)
+  abstract fun totalDebtById(customerId: Long?): BigDecimal
 
   @Insert protected abstract fun _insert(customer: CustomerModel): Long
 
   @Update protected abstract fun _update(customer: CustomerModel): Int
 
   @Delete protected abstract fun _delete(customer: CustomerModel): Int
-
-  @Query("SELECT id FROM customer") protected abstract fun _selectAllIds(): List<Long>
 
   @Query(
       """
@@ -121,19 +126,6 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
       """)
   protected abstract fun _search(query: String): List<CustomerModel>
 
-  @Query(
-      """
-      SELECT product_order.total_price FROM product_order
-      WHERE product_order.queue_id = (
-        SELECT queue.id FROM queue
-        WHERE queue.id = product_order.queue_id
-            AND queue.customer_id = :customerId
-            AND queue.status == 'UNPAID'
-      )
-      """)
-  @TypeConverters(BigDecimalConverter::class)
-  protected abstract fun _selectUnpaidQueueTotalPrice(customerId: Long?): List<BigDecimal>
-
   /**
    * Delete customer virtual row from FTS table. It should be used before updating or deleting
    * customer from the actual table.
@@ -148,4 +140,20 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
    * @return Inserted row ID.
    */
   @Insert protected abstract fun _insertFts(customerFts: CustomerFtsModel): Long
+
+  companion object {
+    /** Current debt by counting all of product orders total price from unpaid queues. */
+    @Language("RoomSql")
+    private const val _CTE_COUNT_DEBT_BY_ID: String =
+        """
+        WITH total_debt_cte AS (
+          SELECT queue.customer_id AS customer_id,
+              -IFNULL(SUM(ABS(product_order.total_price)), 0) AS debt
+          FROM product_order
+          JOIN queue ON queue.id = product_order.queue_id
+          WHERE (:customerId IS NULL OR queue.customer_id = :customerId)
+              AND queue.status = 'UNPAID'
+        )
+        """
+  }
 }
