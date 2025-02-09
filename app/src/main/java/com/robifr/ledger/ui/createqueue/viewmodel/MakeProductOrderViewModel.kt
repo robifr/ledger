@@ -19,8 +19,8 @@ package com.robifr.ledger.ui.createqueue.viewmodel
 import androidx.appcompat.app.AppCompatDelegate
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.data.model.ProductOrderModel
-import com.robifr.ledger.ui.SafeLiveData
-import com.robifr.ledger.ui.SafeMutableLiveData
+import com.robifr.ledger.ui.common.state.SafeLiveData
+import com.robifr.ledger.ui.common.state.SafeMutableLiveData
 import com.robifr.ledger.util.CurrencyFormat
 import java.math.BigDecimal
 import java.text.ParseException

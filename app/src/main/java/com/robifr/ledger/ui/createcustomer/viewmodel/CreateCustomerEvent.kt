@@ -16,8 +16,8 @@
 
 package com.robifr.ledger.ui.createcustomer.viewmodel
 
-import com.robifr.ledger.ui.SnackbarState
-import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.common.state.SnackbarState
+import com.robifr.ledger.ui.common.state.UiEvent
 
 data class CreateCustomerEvent(
     val snackbar: UiEvent<SnackbarState>? = null,

@@ -26,12 +26,12 @@ import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.repository.QueueRepository
-import com.robifr.ledger.ui.PluralResource
-import com.robifr.ledger.ui.StringResource
-import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.common.PluralResource
+import com.robifr.ledger.ui.common.StringResource
+import com.robifr.ledger.ui.common.state.UiEvent
+import com.robifr.ledger.ui.common.state.updateEvent
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueViewModel
 import com.robifr.ledger.ui.editqueue.EditQueueFragment
-import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZoneId
 import javax.inject.Inject

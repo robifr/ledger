@@ -31,7 +31,7 @@ import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ModelChangedListener
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.QueueRepository
-import com.robifr.ledger.ui.RecyclerAdapterState
+import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import io.mockk.CapturingSlot
 import io.mockk.Runs
 import io.mockk.clearAllMocks

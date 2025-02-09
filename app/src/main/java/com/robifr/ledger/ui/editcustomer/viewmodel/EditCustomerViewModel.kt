@@ -24,12 +24,12 @@ import com.robifr.ledger.R
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
-import com.robifr.ledger.ui.PluralResource
-import com.robifr.ledger.ui.StringResource
-import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.common.PluralResource
+import com.robifr.ledger.ui.common.StringResource
+import com.robifr.ledger.ui.common.state.UiEvent
+import com.robifr.ledger.ui.common.state.updateEvent
 import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerViewModel
 import com.robifr.ledger.ui.editcustomer.EditCustomerFragment
-import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher

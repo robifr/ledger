@@ -14,12 +14,11 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui
+package com.robifr.ledger.ui.common
 
-sealed interface RecyclerAdapterState {
-  data object DataSetChanged : RecyclerAdapterState
+import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 
-  data class ItemChanged(val indexes: List<Int>) : RecyclerAdapterState {
-    constructor(vararg indexes: Int) : this(indexes.toList())
-  }
+abstract class RecyclerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+  abstract fun bind(itemIndex: Int = -1)
 }

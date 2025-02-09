@@ -20,7 +20,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.robifr.ledger.databinding.ListableListTextBinding
 import com.robifr.ledger.databinding.QueueCardWideBinding
-import com.robifr.ledger.ui.RecyclerViewHolder
+import com.robifr.ledger.ui.common.RecyclerViewHolder
 import com.robifr.ledger.ui.queue.QueueFragment
 
 class QueueAdapter(private val _fragment: QueueFragment) :

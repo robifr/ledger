@@ -32,8 +32,8 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.tabs.TabLayoutMediator
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.SearchFragmentBinding
-import com.robifr.ledger.ui.FragmentAdapter
-import com.robifr.ledger.ui.OnBackPressedHandler
+import com.robifr.ledger.ui.common.FragmentAdapter
+import com.robifr.ledger.ui.common.navigation.OnBackPressedHandler
 import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.search.viewmodel.SearchViewModel
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment

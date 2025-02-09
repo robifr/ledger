@@ -45,7 +45,7 @@ in `LiveData`. The `Fragment` observes the `LiveData` to update the UI based on 
 `State`.
 
 ### Data Exchange Between Fragments
-Each `Fragment` uses [`FragmentResultKey`](../app/src/main/java/com/robifr/ledger/ui/FragmentResultKey.kt),
+Each `Fragment` uses [`FragmentResultKey`](../app/src/main/java/com/robifr/ledger/ui/common/navigation/FragmentResultKey.kt),
 an interface primarily implemented by enums, to ensure unique keys for communication. It provides a
 `key()` method, which is used in various ways to manage data exchange between fragments:
 - In `Bundle.putString()`, `Bundle.putInt()`, and similar methods to pass fragment results or
@@ -78,7 +78,7 @@ is rotated, and continue to manage UI-related data without being recreated.
 
 ### Managing UI State
 To effectively manage data observed by the UI, this project uses:
-- [`SafeLiveData`](../app/src/main/java/com/robifr/ledger/ui/SafeLiveData.kt): A null-safe wrapper
+- [`SafeLiveData`](../app/src/main/java/com/robifr/ledger/ui/common/state/SafeLiveData.kt): A null-safe wrapper
   around `LiveData` for handling persistent and reactive UI data.
 - [`SingleLiveEvent`](../app/src/main/java/com/robifr/ledger/ui/SingleLiveEvent.kt): A
   `MutableLiveData` implementation designed for one-time events, such as triggering a snackbar or

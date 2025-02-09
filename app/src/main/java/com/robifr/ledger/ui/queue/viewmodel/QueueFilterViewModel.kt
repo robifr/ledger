@@ -22,8 +22,8 @@ import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.display.QueueFilterer
 import com.robifr.ledger.data.display.QueueFilters
 import com.robifr.ledger.data.model.QueueModel
-import com.robifr.ledger.ui.SafeLiveData
-import com.robifr.ledger.ui.SafeMutableLiveData
+import com.robifr.ledger.ui.common.state.SafeLiveData
+import com.robifr.ledger.ui.common.state.SafeMutableLiveData
 import com.robifr.ledger.util.CurrencyFormat
 import java.math.BigDecimal
 import java.text.ParseException

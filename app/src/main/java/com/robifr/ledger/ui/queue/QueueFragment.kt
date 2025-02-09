@@ -34,8 +34,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ListableFragmentBinding
-import com.robifr.ledger.ui.RecyclerAdapterState
-import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.common.state.RecyclerAdapterState
+import com.robifr.ledger.ui.common.state.SnackbarState
 import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 import com.robifr.ledger.ui.queue.filter.QueueFilter
 import com.robifr.ledger.ui.queue.recycler.QueueAdapter

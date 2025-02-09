@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui
-
-import com.robifr.ledger.util.updateEvent
+package com.robifr.ledger.ui.common.state
 
 /**
  * A generic state wrapper for one-time operation like displaying a snackbar, toast, etc.

@@ -23,11 +23,11 @@ import com.robifr.ledger.data.display.CustomerSorter
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
-import com.robifr.ledger.ui.RecyclerAdapterState
-import com.robifr.ledger.ui.SafeLiveData
-import com.robifr.ledger.ui.SafeMutableLiveData
+import com.robifr.ledger.ui.common.state.RecyclerAdapterState
+import com.robifr.ledger.ui.common.state.SafeLiveData
+import com.robifr.ledger.ui.common.state.SafeMutableLiveData
+import com.robifr.ledger.ui.common.state.updateEvent
 import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
-import com.robifr.ledger.util.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher

@@ -16,7 +16,7 @@
 
 package com.robifr.ledger.ui.createproduct.viewmodel
 
-import com.robifr.ledger.ui.StringResourceType
+import com.robifr.ledger.ui.common.StringResourceType
 
 data class CreateProductState(
     val name: String,

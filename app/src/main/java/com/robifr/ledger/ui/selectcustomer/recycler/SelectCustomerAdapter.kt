@@ -20,7 +20,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.robifr.ledger.databinding.CustomerCardWideBinding
 import com.robifr.ledger.databinding.ListableListSelectedItemBinding
-import com.robifr.ledger.ui.RecyclerViewHolder
+import com.robifr.ledger.ui.common.RecyclerViewHolder
 import com.robifr.ledger.ui.selectcustomer.SelectCustomerFragment
 
 class SelectCustomerAdapter(private val _fragment: SelectCustomerFragment) :

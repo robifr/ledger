@@ -16,8 +16,8 @@
 
 package com.robifr.ledger.ui.selectproduct.viewmodel
 
-import com.robifr.ledger.ui.RecyclerAdapterState
-import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.common.state.RecyclerAdapterState
+import com.robifr.ledger.ui.common.state.UiEvent
 
 data class SelectProductEvent(
     val recyclerAdapter: UiEvent<RecyclerAdapterState>? = null,

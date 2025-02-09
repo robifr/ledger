@@ -26,7 +26,7 @@ import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.ProductRepository
-import com.robifr.ledger.ui.RecyclerAdapterState
+import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.selectproduct.SelectProductFragment
 import io.mockk.CapturingSlot
 import io.mockk.Runs

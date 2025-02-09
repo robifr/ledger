@@ -24,7 +24,7 @@ import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.repository.CustomerRepository
-import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.common.state.UiEvent
 import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerEvent
 import com.robifr.ledger.ui.createcustomer.viewmodel.CreateCustomerState
 import com.robifr.ledger.ui.editcustomer.EditCustomerFragment

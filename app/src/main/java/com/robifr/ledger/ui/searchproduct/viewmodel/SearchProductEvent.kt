@@ -16,9 +16,9 @@
 
 package com.robifr.ledger.ui.searchproduct.viewmodel
 
-import com.robifr.ledger.ui.RecyclerAdapterState
-import com.robifr.ledger.ui.SnackbarState
-import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.common.state.RecyclerAdapterState
+import com.robifr.ledger.ui.common.state.SnackbarState
+import com.robifr.ledger.ui.common.state.UiEvent
 
 data class SearchProductEvent(
     val snackbar: UiEvent<SnackbarState>? = null,

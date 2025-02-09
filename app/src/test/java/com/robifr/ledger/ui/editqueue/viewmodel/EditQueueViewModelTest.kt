@@ -26,7 +26,7 @@ import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.repository.QueueRepository
-import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.common.state.UiEvent
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueEvent
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueState
 import com.robifr.ledger.ui.editqueue.EditQueueFragment

@@ -21,8 +21,8 @@ import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.repository.InfoSyncListener
-import com.robifr.ledger.ui.SafeLiveData
-import com.robifr.ledger.ui.SafeMutableLiveData
+import com.robifr.ledger.ui.common.state.SafeLiveData
+import com.robifr.ledger.ui.common.state.SafeMutableLiveData
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

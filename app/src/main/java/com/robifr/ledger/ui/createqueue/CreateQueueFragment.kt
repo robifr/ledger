@@ -35,9 +35,9 @@ import com.robifr.ledger.R
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.databinding.CreateQueueFragmentBinding
-import com.robifr.ledger.ui.FragmentResultKey
-import com.robifr.ledger.ui.OnBackPressedHandler
-import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.common.navigation.FragmentResultKey
+import com.robifr.ledger.ui.common.navigation.OnBackPressedHandler
+import com.robifr.ledger.ui.common.state.SnackbarState
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueEvent
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueResultState
 import com.robifr.ledger.ui.createqueue.viewmodel.CreateQueueState

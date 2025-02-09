@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.components
+package com.robifr.ledger.ui.common
 
 import android.text.Editable
 import android.widget.EditText

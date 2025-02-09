@@ -18,9 +18,9 @@ package com.robifr.ledger.ui.customer.filter
 
 import android.text.Editable
 import android.widget.EditText
-import com.robifr.ledger.components.CurrencyTextWatcher
 import com.robifr.ledger.data.display.CustomerFilters
 import com.robifr.ledger.databinding.CustomerDialogFilterBinding
+import com.robifr.ledger.ui.common.CurrencyTextWatcher
 import com.robifr.ledger.ui.customer.CustomerFragment
 
 class CustomerFilterDebt(

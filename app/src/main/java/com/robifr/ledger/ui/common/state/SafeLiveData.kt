@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui
+package com.robifr.ledger.ui.common.state
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData

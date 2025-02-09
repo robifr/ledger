@@ -30,8 +30,8 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.SettingsFragmentBinding
-import com.robifr.ledger.ui.OnBackPressedHandler
-import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.common.navigation.OnBackPressedHandler
+import com.robifr.ledger.ui.common.state.SnackbarState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsDialogState
 import com.robifr.ledger.ui.settings.viewmodel.SettingsEvent
 import com.robifr.ledger.ui.settings.viewmodel.SettingsState

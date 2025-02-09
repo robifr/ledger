@@ -34,10 +34,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.SearchableFragmentBinding
-import com.robifr.ledger.ui.FragmentResultKey
-import com.robifr.ledger.ui.OnBackPressedHandler
-import com.robifr.ledger.ui.RecyclerAdapterState
-import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.common.navigation.FragmentResultKey
+import com.robifr.ledger.ui.common.navigation.OnBackPressedHandler
+import com.robifr.ledger.ui.common.state.RecyclerAdapterState
+import com.robifr.ledger.ui.common.state.SnackbarState
 import com.robifr.ledger.ui.product.ProductMenu
 import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.search.viewmodel.SearchViewModel

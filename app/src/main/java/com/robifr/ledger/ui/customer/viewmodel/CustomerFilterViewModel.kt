@@ -21,8 +21,8 @@ import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.data.display.CustomerFilterer
 import com.robifr.ledger.data.display.CustomerFilters
 import com.robifr.ledger.data.model.CustomerModel
-import com.robifr.ledger.ui.SafeLiveData
-import com.robifr.ledger.ui.SafeMutableLiveData
+import com.robifr.ledger.ui.common.state.SafeLiveData
+import com.robifr.ledger.ui.common.state.SafeMutableLiveData
 import com.robifr.ledger.util.CurrencyFormat
 import java.math.BigDecimal
 import java.text.ParseException

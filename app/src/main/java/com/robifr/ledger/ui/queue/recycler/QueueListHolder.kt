@@ -19,7 +19,7 @@ package com.robifr.ledger.ui.queue.recycler
 import com.robifr.ledger.components.QueueCardWideComponent
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.databinding.QueueCardWideBinding
-import com.robifr.ledger.ui.RecyclerViewHolder
+import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class QueueListHolder(
     private val _cardBinding: QueueCardWideBinding,

@@ -24,7 +24,7 @@ import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.repository.CustomerRepository
-import com.robifr.ledger.ui.RecyclerAdapterState
+import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 import io.mockk.clearAllMocks
 import io.mockk.coEvery

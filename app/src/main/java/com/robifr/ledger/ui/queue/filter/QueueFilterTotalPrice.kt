@@ -18,9 +18,9 @@ package com.robifr.ledger.ui.queue.filter
 
 import android.text.Editable
 import android.widget.EditText
-import com.robifr.ledger.components.CurrencyTextWatcher
 import com.robifr.ledger.data.display.QueueFilters
 import com.robifr.ledger.databinding.QueueDialogFilterBinding
+import com.robifr.ledger.ui.common.CurrencyTextWatcher
 import com.robifr.ledger.ui.queue.QueueFragment
 
 class QueueFilterTotalPrice(

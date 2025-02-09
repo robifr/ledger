@@ -29,10 +29,10 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.robifr.ledger.R
-import com.robifr.ledger.components.CurrencyTextWatcher
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.databinding.CreateQueueDialogProductOrderBinding
+import com.robifr.ledger.ui.common.CurrencyTextWatcher
 import com.robifr.ledger.ui.selectproduct.SelectProductFragment
 import com.robifr.ledger.util.CurrencyFormat
 import java.math.BigDecimal

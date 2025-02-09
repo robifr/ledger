@@ -25,7 +25,7 @@ import com.robifr.ledger.R
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.databinding.ListableListSelectedItemBinding
 import com.robifr.ledger.databinding.ReusableChipInputBinding
-import com.robifr.ledger.ui.RecyclerViewHolder
+import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class FilterCustomerHeaderHolder(
     private val _selectedItemBinding: ListableListSelectedItemBinding,

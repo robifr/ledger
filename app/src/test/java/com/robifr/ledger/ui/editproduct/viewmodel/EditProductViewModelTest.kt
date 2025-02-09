@@ -26,7 +26,7 @@ import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.repository.ProductRepository
-import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.common.state.UiEvent
 import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductEvent
 import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductState
 import com.robifr.ledger.ui.editproduct.EditProductFragment

@@ -31,7 +31,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.DashboardFragmentBinding
-import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.common.state.UiEvent
 import com.robifr.ledger.ui.dashboard.chart.RevenueChartModel
 import com.robifr.ledger.ui.dashboard.chart.SummaryChartModel
 import com.robifr.ledger.ui.dashboard.chart.TotalQueuesChartModel

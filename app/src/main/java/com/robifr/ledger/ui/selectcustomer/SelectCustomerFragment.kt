@@ -33,9 +33,9 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ListableFragmentBinding
-import com.robifr.ledger.ui.FragmentResultKey
-import com.robifr.ledger.ui.OnBackPressedHandler
-import com.robifr.ledger.ui.RecyclerAdapterState
+import com.robifr.ledger.ui.common.navigation.FragmentResultKey
+import com.robifr.ledger.ui.common.navigation.OnBackPressedHandler
+import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
 import com.robifr.ledger.ui.selectcustomer.recycler.SelectCustomerAdapter
 import com.robifr.ledger.ui.selectcustomer.viewmodel.SelectCustomerEvent

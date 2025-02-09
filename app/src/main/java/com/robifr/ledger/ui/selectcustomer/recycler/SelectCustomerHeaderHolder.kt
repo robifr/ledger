@@ -26,7 +26,7 @@ import com.robifr.ledger.components.CustomerCardWideComponent
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.databinding.CustomerCardWideBinding
 import com.robifr.ledger.databinding.ListableListSelectedItemBinding
-import com.robifr.ledger.ui.RecyclerViewHolder
+import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class SelectCustomerHeaderHolder(
     private val _selectedItemBinding: ListableListSelectedItemBinding,

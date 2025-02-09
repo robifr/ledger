@@ -21,7 +21,7 @@ import androidx.core.text.HtmlCompat
 import com.robifr.ledger.R
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.databinding.ListableListTextBinding
-import com.robifr.ledger.ui.RecyclerViewHolder
+import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class CustomerHeaderHolder(
     private val _textBinding: ListableListTextBinding,

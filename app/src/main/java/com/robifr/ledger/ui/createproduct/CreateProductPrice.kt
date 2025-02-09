@@ -18,7 +18,7 @@ package com.robifr.ledger.ui.createproduct
 
 import android.text.Editable
 import com.google.android.material.textfield.TextInputEditText
-import com.robifr.ledger.components.CurrencyTextWatcher
+import com.robifr.ledger.ui.common.CurrencyTextWatcher
 
 class CreateProductPrice(private val _fragment: CreateProductFragment) {
   private val _priceTextWatcher: PriceTextWatcher =

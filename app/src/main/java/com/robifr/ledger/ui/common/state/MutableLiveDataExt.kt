@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.util
+package com.robifr.ledger.ui.common.state
 
 import androidx.lifecycle.MutableLiveData
-import com.robifr.ledger.ui.UiEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

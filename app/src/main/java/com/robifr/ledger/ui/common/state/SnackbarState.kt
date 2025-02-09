@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui
+package com.robifr.ledger.ui.common.state
 
-import android.view.View
-import androidx.recyclerview.widget.RecyclerView
+import com.robifr.ledger.ui.common.StringResourceType
 
-abstract class RecyclerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-  abstract fun bind(itemIndex: Int = -1)
-}
+data class SnackbarState(val messageRes: StringResourceType)

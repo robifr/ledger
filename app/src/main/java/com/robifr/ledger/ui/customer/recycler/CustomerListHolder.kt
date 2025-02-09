@@ -19,7 +19,7 @@ package com.robifr.ledger.ui.customer.recycler
 import com.robifr.ledger.components.CustomerCardWideComponent
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.databinding.CustomerCardWideBinding
-import com.robifr.ledger.ui.RecyclerViewHolder
+import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class CustomerListHolder(
     private val _cardBinding: CustomerCardWideBinding,

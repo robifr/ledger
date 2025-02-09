@@ -20,7 +20,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.robifr.ledger.databinding.ListableListTextBinding
 import com.robifr.ledger.databinding.ProductCardWideBinding
-import com.robifr.ledger.ui.RecyclerViewHolder
+import com.robifr.ledger.ui.common.RecyclerViewHolder
 import com.robifr.ledger.ui.product.ProductFragment
 
 class ProductAdapter(private val _fragment: ProductFragment) :

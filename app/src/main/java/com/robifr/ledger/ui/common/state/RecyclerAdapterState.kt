@@ -14,6 +14,12 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui
+package com.robifr.ledger.ui.common.state
 
-data class SnackbarState(val messageRes: StringResourceType)
+sealed interface RecyclerAdapterState {
+  data object DataSetChanged : RecyclerAdapterState
+
+  data class ItemChanged(val indexes: List<Int>) : RecyclerAdapterState {
+    constructor(vararg indexes: Int) : this(indexes.toList())
+  }
+}

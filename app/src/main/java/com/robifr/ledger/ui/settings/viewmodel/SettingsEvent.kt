@@ -17,8 +17,8 @@
 package com.robifr.ledger.ui.settings.viewmodel
 
 import com.robifr.ledger.network.GithubReleaseModel
-import com.robifr.ledger.ui.SnackbarState
-import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.common.state.SnackbarState
+import com.robifr.ledger.ui.common.state.UiEvent
 
 data class SettingsEvent(
     val snackbar: UiEvent<SnackbarState>? = null,

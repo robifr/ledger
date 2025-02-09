@@ -16,8 +16,8 @@
 
 package com.robifr.ledger.ui.createqueue.viewmodel
 
-import com.robifr.ledger.ui.SafeLiveData
-import com.robifr.ledger.ui.SafeMutableLiveData
+import com.robifr.ledger.ui.common.state.SafeLiveData
+import com.robifr.ledger.ui.common.state.SafeMutableLiveData
 
 class SelectProductOrderViewModel(private val _viewModel: CreateQueueViewModel) {
   private val _uiState: SafeMutableLiveData<SelectProductOrderState> =

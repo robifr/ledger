@@ -18,7 +18,7 @@ package com.robifr.ledger.ui.createcustomer.viewmodel
 
 import androidx.annotation.ColorRes
 import com.robifr.ledger.R
-import com.robifr.ledger.ui.StringResourceType
+import com.robifr.ledger.ui.common.StringResourceType
 import java.math.BigDecimal
 
 data class CreateCustomerState(

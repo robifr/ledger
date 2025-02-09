@@ -33,9 +33,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.CreateProductFragmentBinding
-import com.robifr.ledger.ui.FragmentResultKey
-import com.robifr.ledger.ui.OnBackPressedHandler
-import com.robifr.ledger.ui.SnackbarState
+import com.robifr.ledger.ui.common.navigation.FragmentResultKey
+import com.robifr.ledger.ui.common.navigation.OnBackPressedHandler
+import com.robifr.ledger.ui.common.state.SnackbarState
 import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductEvent
 import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductResultState
 import com.robifr.ledger.ui.createproduct.viewmodel.CreateProductState

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.robifr.ledger.ui
+package com.robifr.ledger.ui.common.navigation
 
 import android.os.Bundle
 import androidx.fragment.app.FragmentManager

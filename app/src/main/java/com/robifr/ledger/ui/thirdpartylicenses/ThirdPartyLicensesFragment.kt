@@ -29,7 +29,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ThirdPartyLicensesFragmentBinding
-import com.robifr.ledger.ui.OnBackPressedHandler
+import com.robifr.ledger.ui.common.navigation.OnBackPressedHandler
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

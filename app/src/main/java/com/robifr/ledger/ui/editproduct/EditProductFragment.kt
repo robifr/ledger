@@ -20,8 +20,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
 import com.robifr.ledger.R
-import com.robifr.ledger.ui.FragmentResultKey
-import com.robifr.ledger.ui.UiEvent
+import com.robifr.ledger.ui.common.navigation.FragmentResultKey
+import com.robifr.ledger.ui.common.state.UiEvent
 import com.robifr.ledger.ui.createproduct.CreateProductFragment
 import com.robifr.ledger.ui.editproduct.viewmodel.EditProductResultState
 import com.robifr.ledger.ui.editproduct.viewmodel.EditProductViewModel
