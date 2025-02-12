@@ -25,7 +25,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.robifr.ledger.R
-import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.databinding.QueueCardDialogMenuBinding
 import com.robifr.ledger.ui.editqueue.EditQueueFragment
 
@@ -39,7 +39,7 @@ class QueueMenu(private val _fragment: Fragment, private val _onDialogClosed: ()
         setOnDismissListener { _onDialogClosed() }
       }
 
-  fun showDialog(selectedQueue: QueueModel, onDeleteQueue: (QueueModel) -> Unit) {
+  fun showDialog(selectedQueue: QueuePaginatedInfo, onDeleteQueue: (queueId: Long?) -> Unit) {
     _dialogBinding.editButton.setOnClickListener {
       val queueId: Long = selectedQueue.id ?: return@setOnClickListener
       _fragment
@@ -67,7 +67,7 @@ class QueueMenu(private val _fragment: Fragment, private val _onDialogClosed: ()
                   HtmlCompat.FROM_HTML_MODE_LEGACY))
           .setNegativeButton(R.string.action_cancel) { _, _ -> }
           .setPositiveButton(R.string.action_delete) { _, _ ->
-            onDeleteQueue(selectedQueue)
+            onDeleteQueue(selectedQueue.id)
             _onDialogClosed()
           }
           .show()

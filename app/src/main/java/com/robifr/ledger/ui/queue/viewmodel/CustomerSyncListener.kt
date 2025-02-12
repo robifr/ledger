@@ -17,12 +17,12 @@
 package com.robifr.ledger.ui.queue.viewmodel
 
 import com.robifr.ledger.data.model.CustomerModel
-import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.repository.ModelChangedListener
 
 class CustomerSyncListener(
-    val currentQueues: () -> List<QueueModel>,
-    val onSyncQueues: (List<QueueModel>) -> Unit
+    val currentQueues: () -> List<QueuePaginatedInfo>,
+    val onSyncQueues: (List<QueuePaginatedInfo>) -> Unit
 ) : ModelChangedListener<CustomerModel> {
   override fun onModelAdded(customers: List<CustomerModel>) {
     // Current queues doesn't contains a newly added customer.
@@ -37,7 +37,12 @@ class CustomerSyncListener(
               if (queue.customerId != null &&
                   customer.id != null &&
                   queue.customerId == customer.id) {
-                set(i, queue.copy(customerId = customer.id, customer = customer))
+                set(
+                    i,
+                    queue.copy(
+                        customerId = customer.id,
+                        customerName = customer.name,
+                        fullModel = queue.fullModel?.copy(customer = customer)))
               }
             }
           }
@@ -53,7 +58,12 @@ class CustomerSyncListener(
               if (queue.customerId != null &&
                   customer.id != null &&
                   queue.customerId == customer.id) {
-                set(i, queue.copy(customerId = null, customer = null))
+                set(
+                    i,
+                    queue.copy(
+                        customerId = null,
+                        customerName = null,
+                        fullModel = queue.fullModel?.copy(customer = null)))
               }
             }
           }

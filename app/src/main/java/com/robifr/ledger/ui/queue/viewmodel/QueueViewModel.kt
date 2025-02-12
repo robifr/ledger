@@ -21,8 +21,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
 import com.robifr.ledger.data.display.QueueSortMethod
-import com.robifr.ledger.data.display.QueueSorter
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ModelSyncListener
@@ -30,6 +30,8 @@ import com.robifr.ledger.repository.QueueRepository
 import com.robifr.ledger.ui.common.PluralResource
 import com.robifr.ledger.ui.common.StringResource
 import com.robifr.ledger.ui.common.StringResourceType
+import com.robifr.ledger.ui.common.pagination.PaginationManager
+import com.robifr.ledger.ui.common.pagination.PaginationState
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
@@ -39,6 +41,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -50,23 +54,59 @@ constructor(
     private val _queueRepository: QueueRepository,
     private val _customerRepository: CustomerRepository
 ) : ViewModel() {
-  private val _sorter: QueueSorter = QueueSorter()
+  private var _expandedQueueJob: Job? = null
+  private val _paginationManager: PaginationManager<QueuePaginatedInfo> =
+      PaginationManager(
+          state = { _uiState.safeValue.pagination },
+          onStateChanged = { _uiState.setValue(_uiState.safeValue.copy(pagination = it)) },
+          _coroutineScope = viewModelScope,
+          _dispatcher = _dispatcher,
+          _onNotifyRecyclerState = {
+            _onRecyclerAdapterRefreshed(
+                when (it) {
+                  // +1 offset because header holder.
+                  is RecyclerAdapterState.ItemRangeChanged ->
+                      RecyclerAdapterState.ItemRangeChanged(
+                          it.positionStart + 1, it.itemCount, it.payload)
+                  is RecyclerAdapterState.ItemRangeInserted ->
+                      RecyclerAdapterState.ItemRangeInserted(it.positionStart + 1, it.itemCount)
+                  is RecyclerAdapterState.ItemRangeRemoved ->
+                      RecyclerAdapterState.ItemRangeRemoved(it.positionStart + 1, it.itemCount)
+                  else -> it
+                })
+          },
+          _countTotalItem = {
+            _queueRepository.countFilteredQueues(filterView.parseInputtedFilters())
+          },
+          _selectItemsByPageOffset = { pageNumber, limit ->
+            // Queue fragment is the first fragment to be loaded during the initial app run.
+            // It's essential to ensure that all necessary permissions are granted.
+            if (Environment.isExternalStorageManager()) {
+              _queueRepository.selectByPageOffset(
+                  pageNumber,
+                  limit,
+                  _uiState.safeValue.sortMethod,
+                  filterView.parseInputtedFilters())
+            } else {
+              listOf()
+            }
+          })
   private val _queueChangedListener: ModelSyncListener<QueueModel> =
       ModelSyncListener(
-          currentModel = { _uiState.safeValue.queues },
+          currentModel = { listOf() },
           onSyncModels = {
-            viewModelScope.launch(_dispatcher) {
-              val isTableEmpty: Boolean = _queueRepository.isTableEmpty()
-              withContext(Dispatchers.Main) {
-                _onNoQueuesCreatedIllustrationVisible(isTableEmpty)
-                filterView._onFiltersChanged(queues = it)
-              }
-            }
+            _onReloadPage(
+                _uiState.safeValue.pagination.firstLoadedPageNumber,
+                _uiState.safeValue.pagination.lastLoadedPageNumber)
           })
   private val _customerChangedListener: CustomerSyncListener =
       CustomerSyncListener(
-          currentQueues = { _uiState.safeValue.queues },
-          onSyncQueues = { filterView._onFiltersChanged(queues = it) })
+          currentQueues = { _uiState.safeValue.pagination.paginatedItems },
+          onSyncQueues = {
+            _paginationManager.onStateChanged(
+                _uiState.safeValue.pagination.copy(paginatedItems = it))
+            _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
+          })
 
   private val _uiEvent: SafeMutableLiveData<QueueEvent> = SafeMutableLiveData(QueueEvent())
   val uiEvent: SafeLiveData<QueueEvent>
@@ -75,25 +115,32 @@ constructor(
   private val _uiState: SafeMutableLiveData<QueueState> =
       SafeMutableLiveData(
           QueueState(
-              queues = listOf(),
+              pagination =
+                  PaginationState(
+                      isLoading = false,
+                      firstLoadedPageNumber = 1,
+                      lastLoadedPageNumber = 1,
+                      isRecyclerStateIdle = false,
+                      paginatedItems = listOf(),
+                      totalItem = 0,
+                  ),
               expandedQueueIndex = -1,
+              expandedQueue = null,
               isQueueMenuDialogShown = false,
               selectedQueueMenu = null,
               isNoQueuesCreatedIllustrationVisible = false,
-              sortMethod = _sorter.sortMethod,
+              sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, false),
               isSortMethodDialogShown = false))
   val uiState: SafeLiveData<QueueState>
     get() = _uiState
 
-  val filterView: QueueFilterViewModel =
-      QueueFilterViewModel(
-          _viewModel = this, _dispatcher = _dispatcher, _selectAllQueues = { _selectAllQueues() })
+  val filterView: QueueFilterViewModel = QueueFilterViewModel { _onReloadPage(1, 1) }
 
   init {
     _queueRepository.addModelChangedListener(_queueChangedListener)
     _customerRepository.addModelChangedListener(_customerChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    _loadAllQueues()
+    _onReloadPage(1, 1)
   }
 
   override fun onCleared() {
@@ -101,24 +148,67 @@ constructor(
     _customerRepository.removeModelChangedListener(_customerChangedListener)
   }
 
-  fun onQueuesChanged(queues: List<QueueModel>) {
-    _uiState.setValue(_uiState.safeValue.copy(queues = _sorter.sort(queues)))
-    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
+  fun onLoadPreviousPage() {
+    _paginationManager.onLoadPreviousPage {
+      if (_uiState.safeValue.expandedQueue == null) return@onLoadPreviousPage
+      // Load full model of current current expanded queue.
+      val expandedQueueIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedQueue?.id
+          }
+      if (expandedQueueIndex != -1) {
+        _onLoadFullQueue(expandedQueueIndex, _uiState.safeValue.expandedQueue)
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedQueueIndex + 1))
+      }
+    }
+  }
+
+  fun onLoadNextPage() {
+    _paginationManager.onLoadNextPage {
+      if (_uiState.safeValue.expandedQueue == null) return@onLoadNextPage
+      // Load full model of current current expanded queue.
+      val expandedQueueIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedQueue?.id
+          }
+      if (expandedQueueIndex != -1) {
+        _onLoadFullQueue(expandedQueueIndex, _uiState.safeValue.expandedQueue)
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedQueueIndex + 1))
+      }
+    }
+  }
+
+  fun onRecyclerStateIdle(isIdle: Boolean) {
+    _paginationManager.onRecyclerStateIdleNotifyItemRangeChanged(isIdle)
   }
 
   fun onExpandedQueueIndexChanged(index: Int) {
-    // Update both previous and current expanded product. +1 offset because header holder.
-    _onRecyclerAdapterRefreshed(
-        RecyclerAdapterState.ItemChanged(
-            listOfNotNull(
-                _uiState.safeValue.expandedQueueIndex.takeIf { it != -1 && it != index }?.inc(),
-                index + 1)))
-    _uiState.setValue(
-        _uiState.safeValue.copy(
-            expandedQueueIndex = if (_uiState.safeValue.expandedQueueIndex != index) index else -1))
+    _expandedQueueJob?.cancel()
+    _expandedQueueJob =
+        viewModelScope.launch(_dispatcher) {
+          delay(200)
+          val previousExpandedIndex: Int = _uiState.safeValue.expandedQueueIndex
+          val shouldExpand: Boolean = previousExpandedIndex != index
+          val queue: QueueModel? = if (shouldExpand) _selectQueueForIndex(index) else null
+          withContext(Dispatchers.Main) {
+            // Load full model for current expanded queue.
+            if (shouldExpand) _onLoadFullQueue(index, queue)
+            _uiState.setValue(
+                _uiState.safeValue.copy(
+                    expandedQueueIndex = if (shouldExpand) index else -1, expandedQueue = queue))
+            // Update both previous and current expanded queue. +1 offset because header holder.
+            _onRecyclerAdapterRefreshed(
+                RecyclerAdapterState.ItemChanged(
+                    listOfNotNull(
+                        previousExpandedIndex.takeIf { it != -1 && it != index }?.inc(),
+                        index + 1)))
+          }
+        }
   }
 
-  fun onQueueMenuDialogShown(selectedQueue: QueueModel) {
+  fun onQueueMenuDialogShown(selectedQueue: QueuePaginatedInfo) {
     _uiState.setValue(
         _uiState.safeValue.copy(isQueueMenuDialogShown = true, selectedQueueMenu = selectedQueue))
   }
@@ -128,24 +218,18 @@ constructor(
         _uiState.safeValue.copy(isQueueMenuDialogShown = false, selectedQueueMenu = null))
   }
 
-  fun onSortMethodChanged(
-      sortMethod: QueueSortMethod,
-      queues: List<QueueModel> = _uiState.safeValue.queues
-  ) {
-    _sorter.sortMethod = sortMethod
+  fun onSortMethodChanged(sortMethod: QueueSortMethod) {
     _uiState.setValue(_uiState.safeValue.copy(sortMethod = sortMethod))
-    onQueuesChanged(queues)
+    _onReloadPage(1, 1)
   }
 
   /**
-   * Sort [QueueState.queues] based on specified [QueueSortMethod.SortBy] type. Doing so will
-   * reverse the order — Ascending becomes descending and vice versa. Use [onSortMethodChanged] that
-   * takes a [QueueSortMethod] if you want to apply the order by yourself.
+   * Sort [PaginationState.paginatedItems] based on specified [QueueSortMethod.SortBy] type. Doing
+   * so will reverse the order — Ascending becomes descending and vice versa. Use
+   * [onSortMethodChanged] that takes a [QueueSortMethod] if you want to apply the order by
+   * yourself.
    */
-  fun onSortMethodChanged(
-      sortBy: QueueSortMethod.SortBy,
-      queues: List<QueueModel> = _uiState.safeValue.queues
-  ) {
+  fun onSortMethodChanged(sortBy: QueueSortMethod.SortBy) {
     onSortMethodChanged(
         QueueSortMethod(
             sortBy,
@@ -154,8 +238,7 @@ constructor(
               !_uiState.safeValue.sortMethod.isAscending
             } else {
               _uiState.safeValue.sortMethod.isAscending
-            }),
-        queues)
+            }))
   }
 
   fun onSortMethodDialogShown() {
@@ -166,9 +249,9 @@ constructor(
     _uiState.setValue(_uiState.safeValue.copy(isSortMethodDialogShown = false))
   }
 
-  fun onDeleteQueue(queue: QueueModel) {
+  fun onDeleteQueue(queueId: Long?) {
     viewModelScope.launch(_dispatcher) {
-      _queueRepository.delete(queue).let { effected ->
+      _queueRepository.delete(queueId).let { effected ->
         _onSnackbarShown(
             if (effected > 0) {
               PluralResource(R.plurals.queue_deleted_n_queue, effected, effected)
@@ -177,6 +260,17 @@ constructor(
             })
       }
     }
+  }
+
+  private fun _onLoadFullQueue(index: Int, queue: QueueModel?) {
+    val queueToUpdate: QueuePaginatedInfo =
+        _uiState.safeValue.pagination.paginatedItems.getOrNull(index) ?: return
+    _paginationManager.onStateChanged(
+        _uiState.safeValue.pagination.copy(
+            paginatedItems =
+                _uiState.safeValue.pagination.paginatedItems.toMutableList().apply {
+                  set(index, queueToUpdate.copy(fullModel = queue))
+                }))
   }
 
   private fun _onNoQueuesCreatedIllustrationVisible(isVisible: Boolean) {
@@ -201,19 +295,19 @@ constructor(
     }
   }
 
-  private suspend fun _selectAllQueues(): List<QueueModel> = _queueRepository.selectAll()
-
-  private fun _loadAllQueues() {
+  private fun _onReloadPage(firstVisiblePageNumber: Int, lastVisiblePageNumber: Int) {
     viewModelScope.launch(_dispatcher) {
-      // Queue fragment is the first fragment to be loaded during the initial app run.
-      // It's essential to ensure that all necessary permissions are granted.
-      val queues: List<QueueModel> =
-          if (Environment.isExternalStorageManager()) _selectAllQueues() else listOf()
       val isTableEmpty: Boolean = _queueRepository.isTableEmpty()
-      withContext(Dispatchers.Main) {
+      _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
         _onNoQueuesCreatedIllustrationVisible(isTableEmpty)
-        filterView._onFiltersChanged(queues = queues)
       }
     }
+  }
+
+  private suspend fun _selectQueueForIndex(index: Int): QueueModel? {
+    val queueToFetch: QueuePaginatedInfo =
+        _uiState.safeValue.pagination.paginatedItems.getOrNull(index) ?: return null
+    if (queueToFetch.fullModel != null) return queueToFetch.fullModel
+    return _queueRepository.selectById(queueToFetch.id)
   }
 }
