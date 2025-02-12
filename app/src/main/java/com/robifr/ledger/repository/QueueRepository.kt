@@ -123,16 +123,13 @@ class QueueRepository(
     return effectedRows
   }
 
-  @Deprecated("Replaced with `delete(Long?)`")
-  override suspend fun delete(model: QueueModel): Int = delete(model.id)
-
-  suspend fun delete(modelId: Long?): Int {
-    val deletedQueue: QueueModel = selectById(modelId) ?: return 0
+  override suspend fun delete(id: Long?): Int {
+    val deletedQueue: QueueModel = selectById(id) ?: return 0
     val effectedRows: Int =
         _transactionProvider.withTransaction {
           // Note: Associated rows on product order table will automatically
           //    deleted upon queue deletion.
-          _localDao.delete(deletedQueue).also { effectedRows ->
+          _localDao.delete(id).also { effectedRows ->
             if (effectedRows == 0) return@also
             _customerRepository.selectById(deletedQueue.customerId)?.let {
               _customerRepository.update(

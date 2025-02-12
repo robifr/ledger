@@ -31,7 +31,7 @@ sealed interface Queryable<M : Model> {
   suspend fun update(model: M): Int
 
   /** @return Number of row effected. 0 for a failed operation. */
-  suspend fun delete(model: M): Int
+  suspend fun delete(id: Long?): Int
 
   /** @return List of selected models. Empty list for a failed operation. */
   suspend fun selectAll(): List<M>

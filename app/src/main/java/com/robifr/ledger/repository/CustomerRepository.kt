@@ -57,11 +57,11 @@ class CustomerRepository(private val _localDao: CustomerDao) : Queryable<Custome
         if (effectedRows > 0) selectById(model.id)?.let { _notifyModelUpdated(listOf(it)) }
       }
 
-  override suspend fun delete(model: CustomerModel): Int {
+  override suspend fun delete(id: Long?): Int {
     // Note: Referenced customer ID on queue table will automatically set
     //    to null upon customer deletion.
-    val deletedCustomer: CustomerModel = selectById(model.id) ?: return 0
-    return _localDao.delete(model).also { effectedRows ->
+    val deletedCustomer: CustomerModel = selectById(id) ?: return 0
+    return _localDao.delete(id).also { effectedRows ->
       if (effectedRows > 0) _notifyModelDeleted(listOf(deletedCustomer))
     }
   }

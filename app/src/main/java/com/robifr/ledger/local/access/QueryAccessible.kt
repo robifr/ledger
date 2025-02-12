@@ -31,7 +31,7 @@ interface QueryAccessible<M : Model> {
   fun update(model: M): Int
 
   /** @return Number of row effected. 0 for a failed operation. */
-  fun delete(model: M): Int
+  fun delete(id: Long?): Int
 
   fun selectAll(): List<M>
 

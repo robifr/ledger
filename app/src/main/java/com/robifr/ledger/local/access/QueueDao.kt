@@ -37,7 +37,7 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
 
   @Update abstract override fun update(queue: QueueModel): Int
 
-  @Delete abstract override fun delete(queue: QueueModel): Int
+  @Delete abstract override fun delete(queueId: Long?): Int
 
   @Query("SELECT * FROM queue") abstract override fun selectAll(): List<QueueModel>
 
