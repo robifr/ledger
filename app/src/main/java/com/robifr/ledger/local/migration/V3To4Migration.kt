@@ -16,12 +16,11 @@
 
 package com.robifr.ledger.local.migration
 
-import android.content.Context
 import androidx.room.migration.Migration
-import com.robifr.ledger.preferences.SettingsPreferences
+import androidx.sqlite.db.SupportSQLiteDatabase
 
-class MigrationProvider(context: Context) {
-  private val _settingsPreferences: SettingsPreferences = SettingsPreferences(context)
-  val migrationList: List<Migration> =
-      listOf(V1To2Migration(_settingsPreferences), V2To3Migration(), V3To4Migration())
+class V3To4Migration : Migration(3, 4) {
+  override fun migrate(database: SupportSQLiteDatabase) {
+    database.execSQL("CREATE INDEX IF NOT EXISTS `index_queue_date` ON `queue` (`date`)")
+  }
 }

@@ -16,9 +16,12 @@
 
 package com.robifr.ledger.repository
 
+import com.robifr.ledger.data.display.QueueFilters
+import com.robifr.ledger.data.display.QueueSortMethod
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.local.TransactionProvider
 import com.robifr.ledger.local.access.QueueDao
 import java.time.ZonedDateTime
@@ -120,13 +123,16 @@ class QueueRepository(
     return effectedRows
   }
 
-  override suspend fun delete(model: QueueModel): Int {
-    val deletedQueue: QueueModel = selectById(model.id) ?: return 0
+  @Deprecated("Replaced with `delete(Long?)`")
+  override suspend fun delete(model: QueueModel): Int = delete(model.id)
+
+  suspend fun delete(modelId: Long?): Int {
+    val deletedQueue: QueueModel = selectById(modelId) ?: return 0
     val effectedRows: Int =
         _transactionProvider.withTransaction {
           // Note: Associated rows on product order table will automatically
           //    deleted upon queue deletion.
-          _localDao.delete(model).also { effectedRows ->
+          _localDao.delete(deletedQueue).also { effectedRows ->
             if (effectedRows == 0) return@also
             _customerRepository.selectById(deletedQueue.customerId)?.let {
               _customerRepository.update(
@@ -140,6 +146,35 @@ class QueueRepository(
 
   suspend fun selectAllInRange(startDate: ZonedDateTime, endDate: ZonedDateTime): List<QueueModel> =
       _localDao.selectAllInRange(startDate.toInstant(), endDate.toInstant()).map { _mapFields(it) }
+
+  suspend fun selectByPageOffset(
+      pageNumber: Int,
+      limit: Int,
+      sortMethod: QueueSortMethod,
+      filters: QueueFilters
+  ): List<QueuePaginatedInfo> =
+      _localDao.selectByPageOffset(
+          pageNumber = pageNumber,
+          limit = limit,
+          sortBy = sortMethod.sortBy,
+          isAscending = sortMethod.isAscending,
+          filteredCustomerIds = filters.filteredCustomerIds,
+          isNullCustomerShown = filters.isNullCustomerShown,
+          filteredStatus = filters.filteredStatus,
+          filteredMinTotalPrice = filters.filteredTotalPrice.first,
+          filteredMaxTotalPrice = filters.filteredTotalPrice.second,
+          filteredDateStart = filters.filteredDate.dateStart.toInstant(),
+          filteredDateEnd = filters.filteredDate.dateEnd.toInstant())
+
+  suspend fun countFilteredQueues(filters: QueueFilters): Long =
+      _localDao.countFilteredQueues(
+          filteredCustomerIds = filters.filteredCustomerIds,
+          isNullCustomerShown = filters.isNullCustomerShown,
+          filteredStatus = filters.filteredStatus,
+          filteredMinTotalPrice = filters.filteredTotalPrice.first,
+          filteredMaxTotalPrice = filters.filteredTotalPrice.second,
+          filteredDateStart = filters.filteredDate.dateStart.toInstant(),
+          filteredDateEnd = filters.filteredDate.dateEnd.toInstant())
 
   private suspend fun _notifyModelAdded(models: List<QueueModel>) {
     withContext(Dispatchers.Main) { _modelChangedListeners.forEach { it.onModelAdded(models) } }

@@ -53,7 +53,7 @@ import kotlinx.parcelize.Parcelize
                 childColumns = ["customer_id"],
                 onUpdate = ForeignKey.CASCADE,
                 onDelete = ForeignKey.SET_NULL)],
-    indices = [Index(value = ["customer_id"])])
+    indices = [Index(value = ["customer_id"]), Index(value = ["date"])])
 data class QueueModel(
     @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "id") override val id: Long? = null,
     @ColumnInfo(name = "customer_id") val customerId: Long? = null,

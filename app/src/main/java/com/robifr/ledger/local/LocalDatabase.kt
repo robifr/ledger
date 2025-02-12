@@ -45,7 +45,7 @@ import java.io.File
             ProductOrderModel::class,
             ProductModel::class,
             ProductFtsModel::class],
-    version = 3)
+    version = 4)
 abstract class LocalDatabase : RoomDatabase() {
   abstract fun queueDao(): QueueDao
 
