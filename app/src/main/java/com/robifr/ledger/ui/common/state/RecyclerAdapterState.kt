@@ -22,4 +22,18 @@ sealed interface RecyclerAdapterState {
   data class ItemChanged(val indexes: List<Int>) : RecyclerAdapterState {
     constructor(vararg indexes: Int) : this(indexes.toList())
   }
+
+  /**
+   * @property payload Optional data for partial updates to avoid triggering a full rebind. Pass
+   *   [Unit] to disable animation.
+   */
+  data class ItemRangeChanged(
+      val positionStart: Int,
+      val itemCount: Int,
+      val payload: Any? = null
+  ) : RecyclerAdapterState
+
+  data class ItemRangeInserted(val positionStart: Int, val itemCount: Int) : RecyclerAdapterState
+
+  data class ItemRangeRemoved(val positionStart: Int, val itemCount: Int) : RecyclerAdapterState
 }
