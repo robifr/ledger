@@ -18,16 +18,21 @@ package com.robifr.ledger.ui.queue.viewmodel
 
 import com.robifr.ledger.data.display.QueueSortMethod
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
+import com.robifr.ledger.ui.common.pagination.PaginationState
 
 /**
- * @property expandedQueueIndex Currently expanded queue index from [queues]. -1 to represent none
- *   being expanded.
+ * @property expandedQueueIndex Currently expanded queue index from
+ *   [PaginationState.paginatedItems]. -1 to represent none being expanded.
+ * @property expandedQueue Currently expanded queue full model which is used to fill the
+ *   [QueuePaginatedInfo.fullModel] after being loaded.
  */
 data class QueueState(
-    val queues: List<QueueModel>,
+    val pagination: PaginationState<QueuePaginatedInfo>,
     val expandedQueueIndex: Int,
+    val expandedQueue: QueueModel?,
     val isQueueMenuDialogShown: Boolean,
-    val selectedQueueMenu: QueueModel?,
+    val selectedQueueMenu: QueuePaginatedInfo?,
     val isNoQueuesCreatedIllustrationVisible: Boolean,
     val sortMethod: QueueSortMethod,
     val isSortMethodDialogShown: Boolean

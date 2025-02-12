@@ -29,6 +29,7 @@ import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.databinding.QueueCardWideBinding
 import com.robifr.ledger.databinding.QueueCardWideExpandedOrderBinding
 import com.robifr.ledger.databinding.QueueCardWideExpandedOrderDataBinding
@@ -53,12 +54,12 @@ class QueueCardWideComponent(
     _binding.expandedCard.customerImage.shapeableImage.shapeAppearanceModel = imageShape
   }
 
-  fun setNormalCardQueue(queue: QueueModel) {
+  fun setNormalCardQueue(queue: QueuePaginatedInfo) {
     _setId(queue.id, true)
     _setDate(queue.date.atZone(ZoneId.systemDefault()), true)
     _setStatus(queue.status, true)
-    _setGrandTotalPrice(queue.grandTotalPrice(), true)
-    _setCustomer(queue.customer, true)
+    _setGrandTotalPrice(queue.grandTotalPrice, true)
+    _setCustomerOnNormalCard(queue.customerId, queue.customerName)
   }
 
   fun setExpandedCardQueue(queue: QueueModel) {
@@ -66,7 +67,7 @@ class QueueCardWideComponent(
     _setDate(queue.date.atZone(ZoneId.systemDefault()), false)
     _setStatus(queue.status, false)
     _setGrandTotalPrice(queue.grandTotalPrice(), false)
-    _setCustomer(queue.customer, false)
+    _setCustomerOnExpandedCard(queue.customer)
     _setPaymentMethod(queue.paymentMethod, queue.status)
     _setTotalDiscount(queue.totalDiscount())
     _setProductOrders(queue.productOrders)
@@ -98,8 +99,8 @@ class QueueCardWideComponent(
 
     _binding.expandedCard.paymentMethod.text = null
 
+    _productOrderBinding.table.removeAllViews()
     _productOrderBinding.totalDiscount.text = null
-
     _binding.normalCard.grandTotalPrice.text = null
     _productOrderBinding.grandTotalPrice.text = null
 
@@ -188,46 +189,47 @@ class QueueCardWideComponent(
     else _productOrderBinding.grandTotalPrice.text = formattedGrandTotalPrice
   }
 
-  private fun _setCustomer(customer: CustomerModel?, isNormalCard: Boolean) {
+  private fun _setCustomerOnNormalCard(customerId: Long?, customerName: String?) {
+    val customerImageText: String? = customerName?.take(1)
+    val customerName: String = customerName ?: _context.getString(R.string.symbol_notAvailable)
+    _binding.normalCard.customerImage.text.text = customerImageText
+    _binding.normalCard.customerName.text = customerName
+    _binding.normalCard.customerName.isEnabled = customerId != null
+  }
+
+  private fun _setCustomerOnExpandedCard(customer: CustomerModel?) {
     val customerImageText: String? = customer?.name?.take(1)
     val customerName: String = customer?.name ?: _context.getString(R.string.symbol_notAvailable)
-    if (isNormalCard) {
-      _binding.normalCard.customerImage.text.text = customerImageText
-      _binding.normalCard.customerName.text = customerName
-      _binding.normalCard.customerName.isEnabled = customer != null
-    } else {
-      val croppedCustomerName: String? =
-          customer?.let { if (it.name.length > 12) it.name.take(12) else it.name }
-      _binding.expandedCard.customerImage.text.text = customerImageText
-      _binding.expandedCard.customerName.text = customerName
-      _binding.expandedCard.customerName.isEnabled = customer != null
-      // Displaying customer data on the product orders detail.
-      _productOrderBinding.customerBalanceTitle.text =
-          _context.getString(R.string.queue_card_x_balance, croppedCustomerName)
-      _productOrderBinding.customerBalanceTitle.isVisible = customer != null
-      _productOrderBinding.customerBalance.text =
-          customer?.let {
-            CurrencyFormat.formatCents(
-                it.balance.toBigDecimal(),
-                AppCompatDelegate.getApplicationLocales().toLanguageTags())
-          }
-      _productOrderBinding.customerBalance.isVisible = customer != null
-      _productOrderBinding.customerDebtTitle.text =
-          _context.getString(R.string.queue_card_x_debt, croppedCustomerName)
-      _productOrderBinding.customerDebtTitle.isVisible = customer != null
-      _productOrderBinding.customerDebt.text =
-          customer?.let {
-            CurrencyFormat.formatCents(
-                it.debt, AppCompatDelegate.getApplicationLocales().toLanguageTags())
-          }
-      _productOrderBinding.customerDebt.setTextColor(
-          if (customer != null && customer.debt.compareTo(0.toBigDecimal()) < 0) {
-            _context.getColor(R.color.red) // Negative debt will be shown red.
-          } else {
-            _context.getColor(R.color.text_enabled)
-          })
-      _productOrderBinding.customerDebt.isVisible = customer != null
-    }
+    val croppedCustomerName: String? =
+        customer?.let { if (it.name.length > 12) it.name.take(12) else it.name }
+    _binding.expandedCard.customerImage.text.text = customerImageText
+    _binding.expandedCard.customerName.text = customerName
+    _binding.expandedCard.customerName.isEnabled = customer != null
+    // Displaying customer data on the product orders detail.
+    _productOrderBinding.customerBalanceTitle.text =
+        _context.getString(R.string.queue_card_x_balance, croppedCustomerName)
+    _productOrderBinding.customerBalanceTitle.isVisible = customer != null
+    _productOrderBinding.customerBalance.text =
+        customer?.let {
+          CurrencyFormat.formatCents(
+              it.balance.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        }
+    _productOrderBinding.customerBalance.isVisible = customer != null
+    _productOrderBinding.customerDebtTitle.text =
+        _context.getString(R.string.queue_card_x_debt, croppedCustomerName)
+    _productOrderBinding.customerDebtTitle.isVisible = customer != null
+    _productOrderBinding.customerDebt.text =
+        customer?.let {
+          CurrencyFormat.formatCents(
+              it.debt, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        }
+    _productOrderBinding.customerDebt.setTextColor(
+        if (customer != null && customer.debt.compareTo(0.toBigDecimal()) < 0) {
+          _context.getColor(R.color.red) // Negative debt will be shown red.
+        } else {
+          _context.getColor(R.color.text_enabled)
+        })
+    _productOrderBinding.customerDebt.isVisible = customer != null
   }
 
   private fun _setProductOrders(productOrders: List<ProductOrderModel>) {

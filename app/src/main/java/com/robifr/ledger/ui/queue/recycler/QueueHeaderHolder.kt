@@ -19,13 +19,12 @@ package com.robifr.ledger.ui.queue.recycler
 import android.util.TypedValue
 import androidx.core.text.HtmlCompat
 import com.robifr.ledger.R
-import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.databinding.ListableListTextBinding
 import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class QueueHeaderHolder(
     private val _textBinding: ListableListTextBinding,
-    private val _queues: () -> List<QueueModel>
+    private val _totalQueues: () -> Long
 ) : RecyclerViewHolder(_textBinding.root) {
   init {
     _textBinding.text.setTextSize(
@@ -36,7 +35,7 @@ class QueueHeaderHolder(
     _textBinding.text.text =
         HtmlCompat.fromHtml(
             itemView.context.resources.getQuantityString(
-                R.plurals.queue_displaying_n_queue, _queues().size, _queues().size),
+                R.plurals.queue_displaying_n_queue, _totalQueues().toInt(), _totalQueues().toInt()),
             HtmlCompat.FROM_HTML_MODE_LEGACY)
   }
 }

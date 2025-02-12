@@ -18,15 +18,16 @@ package com.robifr.ledger.ui.queue.recycler
 
 import com.robifr.ledger.components.QueueCardWideComponent
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.databinding.QueueCardWideBinding
 import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class QueueListHolder(
     private val _cardBinding: QueueCardWideBinding,
-    private val _queues: () -> List<QueueModel>,
-    private val _expandedQueueIndex: () -> Int,
+    private val _queues: () -> List<QueuePaginatedInfo>,
     private val _onExpandedQueueIndexChanged: (Int) -> Unit,
-    private val _onQueueMenuDialogShown: (selectedQueue: QueueModel) -> Unit
+    private val _expandedQueue: () -> QueueModel?,
+    private val _onQueueMenuDialogShown: (selectedQueue: QueuePaginatedInfo) -> Unit
 ) : RecyclerViewHolder(_cardBinding.root) {
   private var _queueIndex: Int = -1
   private val _card: QueueCardWideComponent = QueueCardWideComponent(itemView.context, _cardBinding)
@@ -45,13 +46,12 @@ class QueueListHolder(
     _queueIndex = itemIndex
     _card.reset()
     _card.setNormalCardQueue(_queues()[_queueIndex])
-    _setCardExpanded(
-        _expandedQueueIndex() != -1 && _queues()[_queueIndex] == _queues()[_expandedQueueIndex()])
+    _setCardExpanded(_queues()[_queueIndex].id == _expandedQueue()?.id)
   }
 
   private fun _setCardExpanded(isExpanded: Boolean) {
     _card.setCardExpanded(isExpanded)
     // Only fill the view when it's shown on screen.
-    if (isExpanded) _card.setExpandedCardQueue(_queues()[_queueIndex])
+    if (isExpanded) _queues()[_queueIndex].fullModel?.let { _card.setExpandedCardQueue(it) }
   }
 }

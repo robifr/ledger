@@ -31,17 +31,15 @@ class QueueAdapter(private val _fragment: QueueFragment) :
             QueueHeaderHolder(
                 _textBinding =
                     ListableListTextBinding.inflate(_fragment.layoutInflater, parent, false),
-                _queues = { _fragment.queueViewModel.uiState.safeValue.queues })
+                _totalQueues = { _fragment.queueViewModel.uiState.safeValue.pagination.totalItem })
         else ->
             QueueListHolder(
                 _cardBinding =
                     QueueCardWideBinding.inflate(_fragment.layoutInflater, parent, false),
-                _queues = { _fragment.queueViewModel.uiState.safeValue.queues },
-                _expandedQueueIndex = {
-                  _fragment.queueViewModel.uiState.safeValue.expandedQueueIndex
-                },
+                _queues = { _fragment.queueViewModel.uiState.safeValue.pagination.paginatedItems },
                 _onExpandedQueueIndexChanged =
                     _fragment.queueViewModel::onExpandedQueueIndexChanged,
+                _expandedQueue = { _fragment.queueViewModel.uiState.safeValue.expandedQueue },
                 _onQueueMenuDialogShown = _fragment.queueViewModel::onQueueMenuDialogShown)
       }
 
@@ -54,7 +52,7 @@ class QueueAdapter(private val _fragment: QueueFragment) :
 
   override fun getItemCount(): Int =
       // +1 offset because header holder.
-      _fragment.queueViewModel.uiState.safeValue.queues.size + 1
+      _fragment.queueViewModel.uiState.safeValue.pagination.paginatedItems.size + 1
 
   override fun getItemViewType(position: Int): Int =
       when (position) {
