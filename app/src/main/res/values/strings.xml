@@ -309,6 +309,7 @@
   <string name="createQueue_date_selectDate">Select date</string>
   <string name="createQueue_status">Status</string>
   <string name="createQueue_status_selectStatus">Select status</string>
+  <string name="createQueue_status_selectStatus_description">Selecting the \"Unpaid\" status will add more debt to the customer.</string>
   <string name="createQueue_paymentMethods">Payment methods</string>
   <string name="createQueue_note">Note</string>
   <string name="createQueue_unsavedChangesWarning">You have unsaved changes. Do you want to leave without saving them?</string>
