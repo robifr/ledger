@@ -91,7 +91,7 @@ constructor(
           customerId = _uiState.safeValue.customer?.id,
           customer = _uiState.safeValue.customer,
           productOrders = _uiState.safeValue.productOrders,
-          note = _uiState.safeValue.note)
+          note = _uiState.safeValue.note.trim())
 
   fun onCustomerChanged(customer: CustomerModel?) {
     _uiState.setValue(_uiState.safeValue.copy(customer = customer))
