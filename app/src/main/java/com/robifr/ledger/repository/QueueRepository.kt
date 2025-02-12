@@ -83,6 +83,7 @@ class QueueRepository(
     val effectedRows: Int =
         _transactionProvider.withTransaction {
           val oldQueue: QueueModel = selectById(model.id) ?: return@withTransaction 0
+          val effected: Int = _localDao.update(model)
 
           val productOrdersToUpsert: MutableList<ProductOrderModel> = mutableListOf()
           val productOrdersToDelete: MutableList<ProductOrderModel> =
@@ -111,10 +112,7 @@ class QueueRepository(
             _customerRepository.update(
                 it.copy(balance = it.balanceOnUpdatedPayment(oldQueue, model)))
           }
-
-          // Only update after foreign column updated (product orders and customer),
-          // so that queue already provided with an updated value when doing select query.
-          _localDao.update(model)
+          return@withTransaction effected
         }
     if (effectedRows > 0) selectById(model.id)?.let { _notifyModelUpdated(listOf(it)) }
     return effectedRows
