@@ -185,6 +185,7 @@ class SearchCustomerFragment : Fragment(), SearchView.OnQueryTextListener {
       is RecyclerAdapterState.DataSetChanged -> _adapter.notifyDataSetChanged()
       is RecyclerAdapterState.ItemChanged ->
           state.indexes.forEach { _adapter.notifyItemChanged(it) }
+      else -> Unit
     }
   }
 
