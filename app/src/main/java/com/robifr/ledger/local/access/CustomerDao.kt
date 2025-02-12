@@ -51,9 +51,9 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   }
 
   @Transaction
-  override fun delete(customer: CustomerModel): Int {
-    _deleteFts(selectRowIdById(customer.id))
-    return _delete(customer)
+  override fun delete(customerId: Long?): Int {
+    _deleteFts(selectRowIdById(customerId))
+    return _delete(customerId)
   }
 
   @Query("SELECT * FROM customer") abstract override fun selectAll(): List<CustomerModel>
@@ -109,7 +109,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
 
   @Update protected abstract fun _update(customer: CustomerModel): Int
 
-  @Delete protected abstract fun _delete(customer: CustomerModel): Int
+  @Delete protected abstract fun _delete(customerId: Long?): Int
 
   @Query(
       """

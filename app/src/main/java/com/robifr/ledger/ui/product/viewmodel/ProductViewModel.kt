@@ -163,7 +163,7 @@ constructor(
 
   fun onDeleteProduct(product: ProductModel) {
     viewModelScope.launch(_dispatcher) {
-      _productRepository.delete(product).let { effected ->
+      _productRepository.delete(product.id).let { effected ->
         _onSnackbarShown(
             if (effected > 0) {
               PluralResource(R.plurals.product_deleted_n_product, effected, effected)

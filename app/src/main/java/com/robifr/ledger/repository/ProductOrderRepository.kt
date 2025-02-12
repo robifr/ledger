@@ -71,9 +71,9 @@ class ProductOrderRepository(private val _localDao: ProductOrderDao) :
         selectById(models.mapNotNull { it.id }).let { if (it.isNotEmpty()) _notifyModelUpdated(it) }
       }
 
-  override suspend fun delete(model: ProductOrderModel): Int {
-    val deletedOrder: ProductOrderModel = selectById(model.id) ?: return 0
-    return _localDao.delete(model).also { effectedRows ->
+  override suspend fun delete(id: Long?): Int {
+    val deletedOrder: ProductOrderModel = selectById(id) ?: return 0
+    return _localDao.delete(id).also { effectedRows ->
       if (effectedRows > 0) _notifyModelDeleted(listOf(deletedOrder))
     }
   }

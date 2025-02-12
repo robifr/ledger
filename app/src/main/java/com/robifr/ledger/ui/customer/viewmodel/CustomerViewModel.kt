@@ -163,7 +163,7 @@ constructor(
 
   fun onDeleteCustomer(customer: CustomerModel) {
     viewModelScope.launch(_dispatcher) {
-      _customerRepository.delete(customer).let { effected ->
+      _customerRepository.delete(customer.id).let { effected ->
         _onSnackbarShown(
             if (effected > 0) {
               PluralResource(R.plurals.customer_deleted_n_customer, effected, effected)

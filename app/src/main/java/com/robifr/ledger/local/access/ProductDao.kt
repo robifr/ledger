@@ -45,9 +45,9 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
   }
 
   @Transaction
-  override fun delete(product: ProductModel): Int {
-    _deleteFts(selectRowIdById(product.id))
-    return _delete(product)
+  override fun delete(productId: Long?): Int {
+    _deleteFts(selectRowIdById(productId))
+    return _delete(productId)
   }
 
   @Query("SELECT * FROM product") abstract override fun selectAll(): List<ProductModel>
@@ -82,7 +82,7 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
 
   @Update protected abstract fun _update(product: ProductModel): Int
 
-  @Delete protected abstract fun _delete(product: ProductModel): Int
+  @Delete protected abstract fun _delete(productId: Long?): Int
 
   @Query(
       """

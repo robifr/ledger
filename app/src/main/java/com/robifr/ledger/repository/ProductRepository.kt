@@ -53,11 +53,11 @@ class ProductRepository(private val _localDao: ProductDao) : Queryable<ProductMo
         if (effectedRows > 0) selectById(model.id)?.let { _notifyModelUpdated(listOf(it)) }
       }
 
-  override suspend fun delete(model: ProductModel): Int {
+  override suspend fun delete(id: Long?): Int {
     // Note: Referenced product ID on product order table will automatically set
     //    to null upon product deletion.
-    val deletedProduct: ProductModel = selectById(model.id) ?: return 0
-    return _localDao.delete(model).also { effectedRows ->
+    val deletedProduct: ProductModel = selectById(id) ?: return 0
+    return _localDao.delete(id).also { effectedRows ->
       if (effectedRows > 0) _notifyModelDeleted(listOf(deletedProduct))
     }
   }
