@@ -37,7 +37,6 @@ import java.math.BigDecimal
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.toBigDecimal
 
 class QueueCardWideComponent(
     private val _context: Context,
@@ -70,6 +69,7 @@ class QueueCardWideComponent(
     _setPaymentMethod(queue.paymentMethod, queue.status)
     _setTotalDiscount(queue.totalDiscount())
     _setProductOrders(queue.productOrders)
+    _setNote(queue.note)
   }
 
   fun setCardExpanded(isExpanded: Boolean) {
@@ -264,5 +264,12 @@ class QueueCardWideComponent(
               }
               .root)
     }
+  }
+
+  private fun _setNote(note: String) {
+    _binding.expandedCard.dividerForProductOrders.isGone = note.isBlank()
+    _binding.expandedCard.noteTitle.isGone = note.isBlank()
+    _binding.expandedCard.note.text = note
+    _binding.expandedCard.note.isGone = note.isBlank()
   }
 }

@@ -65,6 +65,7 @@
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:orientation="vertical"
+      android:paddingBottom="@dimen/space_smallMedium"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toEndOf="@id/coloredSideline"
       app:layout_constraintTop_toBottomOf="@id/productTitle" />
@@ -180,9 +181,4 @@
       app:layout_constraintStart_toEndOf="@id/customerDebtTitle"
       app:layout_constraintTop_toBottomOf="@id/customerBalance"
       app:layout_constraintVertical_bias="0" />
-
-  <Space
-      android:layout_width="match_parent"
-      android:layout_height="@dimen/space_smallMedium"
-      app:layout_constraintTop_toBottomOf="@id/customerDebt" />
 </merge>

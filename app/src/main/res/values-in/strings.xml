@@ -196,6 +196,7 @@
   <string name="queue_card_totalDiscount" translatable="false">@string/createQueue_productOrders_totalDiscount</string>
   <string name="queue_card_x_balance" translatable="false">@string/createQueue_productOrders_x_balance</string>
   <string name="queue_card_x_debt" translatable="false">@string/createQueue_productOrders_x_debt</string>
+  <string name="queue_card_note">Catatan</string>
   <!-- Card menu. -->
   <string name="queue_cardMenu_edit" translatable="false">@string/action_edit</string>
   <string name="queue_cardMenu_delete" translatable="false">@string/action_delete</string>
