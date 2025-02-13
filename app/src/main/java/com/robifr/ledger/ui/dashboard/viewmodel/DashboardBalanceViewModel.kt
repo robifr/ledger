@@ -17,10 +17,11 @@
 package com.robifr.ledger.ui.dashboard.viewmodel
 
 import androidx.lifecycle.viewModelScope
+import com.robifr.ledger.data.InfoSynchronizer
 import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
 import com.robifr.ledger.data.model.CustomerModel
-import com.robifr.ledger.repository.InfoSyncListener
+import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
 import kotlinx.coroutines.CoroutineDispatcher
@@ -34,20 +35,41 @@ class DashboardBalanceViewModel(
     private val _selectAllCustomersWithBalance: suspend () -> List<CustomerBalanceInfo>,
     private val _selectAllCustomersWithDebt: suspend () -> List<CustomerDebtInfo>
 ) {
-  val _customerBalanceChangedListener: InfoSyncListener<CustomerBalanceInfo, CustomerModel> =
-      InfoSyncListener(
-          currentInfo = { _uiState.safeValue.customersWithBalance },
-          modelToInfo = ::CustomerBalanceInfo,
-          onSyncInfo = { syncedInfo ->
-            _onCustomersWithBalanceChanged(syncedInfo.filter { it.balance != 0L })
+  val _customerBalanceChangedListener: ModelSyncListener<CustomerModel, CustomerBalanceInfo> =
+      ModelSyncListener(
+          onAdd = {
+            InfoSynchronizer.addInfo(
+                _uiState.safeValue.customersWithBalance, it, ::CustomerBalanceInfo)
+          },
+          onUpdate = {
+            InfoSynchronizer.updateInfo(
+                _uiState.safeValue.customersWithBalance, it, ::CustomerBalanceInfo)
+          },
+          onDelete = { InfoSynchronizer.deleteInfo(_uiState.safeValue.customersWithBalance, it) },
+          onUpsert = {
+            InfoSynchronizer.upsertInfo(
+                _uiState.safeValue.customersWithBalance, it, ::CustomerBalanceInfo)
+          },
+          onSync = { _, updatedModels ->
+            _onCustomersWithBalanceChanged(updatedModels.filter { it.balance != 0L })
           })
-  val _customerDebtChangedListener: InfoSyncListener<CustomerDebtInfo, CustomerModel> =
-      InfoSyncListener(
-          currentInfo = { uiState.safeValue.customersWithDebt },
-          modelToInfo = ::CustomerDebtInfo,
-          onSyncInfo = { syncedInfo ->
+  val _customerDebtChangedListener: ModelSyncListener<CustomerModel, CustomerDebtInfo> =
+      ModelSyncListener(
+          onAdd = {
+            InfoSynchronizer.addInfo(_uiState.safeValue.customersWithDebt, it, ::CustomerDebtInfo)
+          },
+          onUpdate = {
+            InfoSynchronizer.updateInfo(
+                _uiState.safeValue.customersWithDebt, it, ::CustomerDebtInfo)
+          },
+          onDelete = { InfoSynchronizer.deleteInfo(_uiState.safeValue.customersWithDebt, it) },
+          onUpsert = {
+            InfoSynchronizer.upsertInfo(
+                _uiState.safeValue.customersWithDebt, it, ::CustomerDebtInfo)
+          },
+          onSync = { _, updatedModels ->
             _onCustomersWithDebtChanged(
-                syncedInfo.filter { it.debt.compareTo(0.toBigDecimal()) != 0 })
+                updatedModels.filter { it.debt.compareTo(0.toBigDecimal()) != 0 })
           })
 
   private val _uiState: SafeMutableLiveData<DashboardBalanceState> =

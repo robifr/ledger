@@ -19,6 +19,7 @@ package com.robifr.ledger.ui.customer.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
+import com.robifr.ledger.data.ModelSynchronizer
 import com.robifr.ledger.data.display.CustomerSortMethod
 import com.robifr.ledger.data.display.CustomerSorter
 import com.robifr.ledger.data.model.CustomerModel
@@ -48,15 +49,18 @@ constructor(
     private val _customerRepository: CustomerRepository
 ) : ViewModel() {
   private val _sorter: CustomerSorter = CustomerSorter()
-  private val _customerChangedListener: ModelSyncListener<CustomerModel> =
+  private val _customerChangedListener: ModelSyncListener<CustomerModel, CustomerModel> =
       ModelSyncListener(
-          currentModel = { _uiState.safeValue.customers },
-          onSyncModels = {
+          onAdd = { ModelSynchronizer.addModel(_uiState.safeValue.customers, it) },
+          onUpdate = { ModelSynchronizer.updateModel(_uiState.safeValue.customers, it) },
+          onDelete = { ModelSynchronizer.deleteModel(_uiState.safeValue.customers, it) },
+          onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.customers, it) },
+          onSync = { _, updatedModels ->
             viewModelScope.launch(_dispatcher) {
               val isTableEmpty: Boolean = _customerRepository.isTableEmpty()
               withContext(Dispatchers.Main) {
                 _onNoCustomersAddedIllustrationVisible(isTableEmpty)
-                filterView._onFiltersChanged(customers = it)
+                filterView._onFiltersChanged(customers = updatedModels)
               }
             }
           })

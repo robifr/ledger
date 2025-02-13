@@ -22,6 +22,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.assetbinding.chart.ChartData
 import com.robifr.ledger.assetbinding.chart.ChartUtil
+import com.robifr.ledger.data.ModelSynchronizer
 import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.display.QueueFilterer
 import com.robifr.ledger.data.model.QueueModel
@@ -47,14 +48,17 @@ class DashboardSummaryViewModel(
     private val _selectAllQueuesInRange:
         suspend (startDate: ZonedDateTime, endDate: ZonedDateTime) -> List<QueueModel>
 ) {
-  val _queueChangedListener: ModelSyncListener<QueueModel> =
+  val _queueChangedListener: ModelSyncListener<QueueModel, QueueModel> =
       ModelSyncListener(
-          currentModel = { _uiState.safeValue.queues },
-          onSyncModels = {
+          onAdd = { ModelSynchronizer.addModel(_uiState.safeValue.queues, it) },
+          onUpdate = { ModelSynchronizer.updateModel(_uiState.safeValue.queues, it) },
+          onDelete = { ModelSynchronizer.deleteModel(_uiState.safeValue.queues, it) },
+          onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.queues, it) },
+          onSync = { _, updatedModels ->
             _onQueuesChanged(
                 QueueFilterer()
                     .apply { filters = filters.copy(filteredDate = _uiState.safeValue.date) }
-                    .filter(it))
+                    .filter(updatedModels))
           })
 
   private val _uiState: SafeMutableLiveData<DashboardSummaryState> =

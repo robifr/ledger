@@ -19,6 +19,7 @@ package com.robifr.ledger.ui.selectproduct.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.robifr.ledger.data.ModelSynchronizer
 import com.robifr.ledger.data.display.ProductSorter
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.di.IoDispatcher
@@ -45,9 +46,13 @@ constructor(
     private val _productRepository: ProductRepository
 ) : ViewModel() {
   private val _sorter: ProductSorter = ProductSorter()
-  private val _productChangedListener: ModelSyncListener<ProductModel> =
+  private val _productChangedListener: ModelSyncListener<ProductModel, ProductModel> =
       ModelSyncListener(
-          currentModel = { _uiState.safeValue.products }, onSyncModels = ::_onProductsChanged)
+          onAdd = { ModelSynchronizer.addModel(_uiState.safeValue.products, it) },
+          onUpdate = { ModelSynchronizer.updateModel(_uiState.safeValue.products, it) },
+          onDelete = { ModelSynchronizer.deleteModel(_uiState.safeValue.products, it) },
+          onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.products, it) },
+          onSync = { _, updatedModels -> _onProductsChanged(updatedModels) })
 
   private val _uiEvent: SafeMutableLiveData<SelectProductEvent> =
       SafeMutableLiveData(SelectProductEvent())

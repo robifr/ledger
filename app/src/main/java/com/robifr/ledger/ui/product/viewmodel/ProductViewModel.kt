@@ -19,6 +19,7 @@ package com.robifr.ledger.ui.product.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
+import com.robifr.ledger.data.ModelSynchronizer
 import com.robifr.ledger.data.display.ProductSortMethod
 import com.robifr.ledger.data.display.ProductSorter
 import com.robifr.ledger.data.model.ProductModel
@@ -48,15 +49,18 @@ constructor(
     private val _productRepository: ProductRepository
 ) : ViewModel() {
   private val _sorter: ProductSorter = ProductSorter()
-  private val _productChangedListener: ModelSyncListener<ProductModel> =
+  private val _productChangedListener: ModelSyncListener<ProductModel, ProductModel> =
       ModelSyncListener(
-          currentModel = { _uiState.safeValue.products },
-          onSyncModels = {
+          onAdd = { ModelSynchronizer.addModel(_uiState.safeValue.products, it) },
+          onUpdate = { ModelSynchronizer.updateModel(_uiState.safeValue.products, it) },
+          onDelete = { ModelSynchronizer.deleteModel(_uiState.safeValue.products, it) },
+          onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.products, it) },
+          onSync = { _, updatedModels ->
             viewModelScope.launch(_dispatcher) {
               val isTableEmpty: Boolean = _productRepository.isTableEmpty()
               withContext(Dispatchers.Main) {
                 _setNoProductsAddedIllustrationVisible(isTableEmpty)
-                filterView._onFiltersChanged(products = it)
+                filterView._onFiltersChanged(products = updatedModels)
               }
             }
           })

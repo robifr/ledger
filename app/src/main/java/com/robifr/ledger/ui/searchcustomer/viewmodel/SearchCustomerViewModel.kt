@@ -20,6 +20,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
+import com.robifr.ledger.data.ModelSynchronizer
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
@@ -49,9 +50,13 @@ constructor(
     @IoDispatcher private val _dispatcher: CoroutineDispatcher,
     private val _customerRepository: CustomerRepository
 ) : ViewModel() {
-  private val _customerChangedListener: ModelSyncListener<CustomerModel> =
+  private val _customerChangedListener: ModelSyncListener<CustomerModel, CustomerModel> =
       ModelSyncListener(
-          currentModel = { _uiState.safeValue.customers }, onSyncModels = ::_onCustomersChanged)
+          onAdd = { ModelSynchronizer.addModel(_uiState.safeValue.customers, it) },
+          onUpdate = { ModelSynchronizer.updateModel(_uiState.safeValue.customers, it) },
+          onDelete = { ModelSynchronizer.deleteModel(_uiState.safeValue.customers, it) },
+          onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.customers, it) },
+          onSync = { _, updatedModels -> _onCustomersChanged(updatedModels) })
   private var _searchJob: Job? = null
 
   private val _uiEvent: SafeMutableLiveData<SearchCustomerEvent> =

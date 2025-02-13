@@ -91,10 +91,9 @@ constructor(
               listOf()
             }
           })
-  private val _queueChangedListener: ModelSyncListener<QueueModel> =
+  private val _queueChangedListener: ModelSyncListener<QueueModel, Unit> =
       ModelSyncListener(
-          currentModel = { listOf() },
-          onSyncModels = {
+          onSync = { _, _ ->
             _onReloadPage(
                 _uiState.safeValue.pagination.firstLoadedPageNumber,
                 _uiState.safeValue.pagination.lastLoadedPageNumber)
