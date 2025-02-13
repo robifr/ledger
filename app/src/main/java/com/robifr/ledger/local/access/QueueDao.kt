@@ -17,7 +17,6 @@
 package com.robifr.ledger.local.access
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.TypeConverters
@@ -37,7 +36,7 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
 
   @Update abstract override fun update(queue: QueueModel): Int
 
-  @Delete abstract override fun delete(queueId: Long?): Int
+  @Query("DELETE FROM queue WHERE id = :queueId") abstract override fun delete(queueId: Long?): Int
 
   @Query("SELECT * FROM queue") abstract override fun selectAll(): List<QueueModel>
 

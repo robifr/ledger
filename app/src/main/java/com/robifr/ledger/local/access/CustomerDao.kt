@@ -17,7 +17,6 @@
 package com.robifr.ledger.local.access
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
@@ -109,7 +108,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
 
   @Update protected abstract fun _update(customer: CustomerModel): Int
 
-  @Delete protected abstract fun _delete(customerId: Long?): Int
+  @Query("DELETE FROM customer WHERE id = :customerId") abstract fun _delete(customerId: Long?): Int
 
   @Query(
       """

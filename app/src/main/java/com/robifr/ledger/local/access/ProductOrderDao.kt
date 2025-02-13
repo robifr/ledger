@@ -36,7 +36,8 @@ abstract class ProductOrderDao : QueryAccessible<ProductOrderModel> {
   /** @return Number of row effected. */
   @Update abstract fun update(productOrders: List<ProductOrderModel>): Int
 
-  @Delete abstract override fun delete(productOrderId: Long?): Int
+  @Query("DELETE FROM product_order WHERE id = :productOrderId")
+  abstract override fun delete(productOrderId: Long?): Int
 
   /** @return Number of row effected. */
   @Delete abstract fun delete(productOrders: List<ProductOrderModel>): Int
