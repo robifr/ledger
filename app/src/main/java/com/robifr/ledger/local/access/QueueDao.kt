@@ -156,8 +156,10 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
               AND (:isFilteredStatusEmpty IS TRUE OR queue.status IN (:filteredStatus))
 
               -- Filter by total price range.
-              AND (:filteredMinTotalPrice IS NULL OR grand_total_price >= :filteredMinTotalPrice)
-              AND (:filteredMaxTotalPrice IS NULL OR grand_total_price <= :filteredMaxTotalPrice)
+              AND (:filteredMinTotalPrice IS NULL
+                  OR grand_total_price >= CAST(:filteredMinTotalPrice AS NUMERIC))
+              AND (:filteredMaxTotalPrice IS NULL
+                  OR grand_total_price <= CAST(:filteredMaxTotalPrice AS NUMERIC))
 
               -- Filter by date range.
               AND (queue.date BETWEEN :filteredDateStart AND :filteredDateEnd)
