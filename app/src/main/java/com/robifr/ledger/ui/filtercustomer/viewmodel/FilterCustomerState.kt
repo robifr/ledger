@@ -17,13 +17,21 @@
 package com.robifr.ledger.ui.filtercustomer.viewmodel
 
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
+import com.robifr.ledger.ui.common.pagination.PaginationState
 
 /**
- * @property expandedCustomerIndex Currently expanded customer index from [customers]. -1 to
- *   represent none being expanded.
+ * @property expandedCustomerIndex Currently expanded customer index from
+ *   [PaginationState.paginatedItems]. -1 to represent none being expanded.
  */
 data class FilterCustomerState(
-    val customers: List<CustomerModel>,
+    val pagination: PaginationState<CustomerPaginatedInfo>,
     val expandedCustomerIndex: Int,
-    val filteredCustomers: List<CustomerModel>
-)
+    val filteredCustomers: List<CustomerPaginatedInfo>
+) {
+  val expandedCustomer: CustomerModel?
+    get() =
+        // The full model is always loaded by default.
+        if (expandedCustomerIndex != -1) pagination.paginatedItems[expandedCustomerIndex].fullModel
+        else null
+}

@@ -35,6 +35,7 @@ import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ListableFragmentBinding
 import com.robifr.ledger.ui.common.navigation.FragmentResultKey
 import com.robifr.ledger.ui.common.navigation.OnBackPressedHandler
+import com.robifr.ledger.ui.common.pagination.PaginationScrollListener
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.filtercustomer.recycler.FilterCustomerAdapter
 import com.robifr.ledger.ui.filtercustomer.viewmodel.FilterCustomerEvent
@@ -81,8 +82,19 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.toolbar.setTitle(R.string.filterCustomer)
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
     fragmentBinding.horizontalToolbar.isGone = true
-    fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+    val layoutManager: LinearLayoutManager = LinearLayoutManager(requireContext())
+    fragmentBinding.recyclerView.layoutManager = layoutManager
     fragmentBinding.recyclerView.adapter = _adapter
+    fragmentBinding.recyclerView.addOnScrollListener(
+        PaginationScrollListener(
+            _layoutManager = layoutManager,
+            _onLoadPreviousPage = { filterCustomerViewModel.onLoadPreviousPage() },
+            _onLoadNextPage = { filterCustomerViewModel.onLoadNextPage() },
+            _isLoading = { filterCustomerViewModel.uiState.safeValue.pagination.isLoading },
+            _onStateIdle = filterCustomerViewModel::onRecyclerStateIdle,
+            _maxItems = {
+              filterCustomerViewModel.uiState.safeValue.pagination.paginatedItems.size
+            }))
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
     filterCustomerViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
   }
@@ -152,7 +164,12 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
       is RecyclerAdapterState.DataSetChanged -> _adapter.notifyDataSetChanged()
       is RecyclerAdapterState.ItemChanged ->
           state.indexes.forEach { _adapter.notifyItemChanged(it) }
-      else -> Unit
+      is RecyclerAdapterState.ItemRangeChanged ->
+          _adapter.notifyItemRangeChanged(state.positionStart, state.itemCount, state.payload)
+      is RecyclerAdapterState.ItemRangeInserted ->
+          _adapter.notifyItemRangeInserted(state.positionStart, state.itemCount)
+      is RecyclerAdapterState.ItemRangeRemoved ->
+          _adapter.notifyItemRangeRemoved(state.positionStart, state.itemCount)
     }
   }
 
@@ -162,7 +179,7 @@ class FilterCustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val customerId: Long =
             result.getLong(SearchCustomerFragment.Result.SELECTED_CUSTOMER_ID_LONG.key())
         if (customerId != 0L) {
-          filterCustomerViewModel.uiState.safeValue.customers
+          filterCustomerViewModel.uiState.safeValue.pagination.paginatedItems
               .find { it.id != null && it.id == customerId }
               ?.let { filterCustomerViewModel.onCustomerCheckedChanged(it) }
         }

@@ -19,10 +19,13 @@ package com.robifr.ledger.ui.filtercustomer.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.robifr.ledger.data.display.CustomerSorter
-import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.display.CustomerFilters
+import com.robifr.ledger.data.display.CustomerSortMethod
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
+import com.robifr.ledger.ui.common.pagination.PaginationManager
+import com.robifr.ledger.ui.common.pagination.PaginationState
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
@@ -31,9 +34,9 @@ import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class FilterCustomerViewModel
@@ -43,7 +46,37 @@ constructor(
     private val _customerRepository: CustomerRepository,
     private val _savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-  private val _sorter: CustomerSorter = CustomerSorter()
+  private var _expandedCustomerJob: Job? = null
+  private val _paginationManager: PaginationManager<CustomerPaginatedInfo> =
+      PaginationManager(
+          state = { _uiState.safeValue.pagination },
+          onStateChanged = { _uiState.setValue(_uiState.safeValue.copy(pagination = it)) },
+          _coroutineScope = viewModelScope,
+          _dispatcher = _dispatcher,
+          _onNotifyRecyclerState = {
+            _onRecyclerAdapterRefreshed(
+                when (it) {
+                  // +1 offset because header holder.
+                  is RecyclerAdapterState.ItemRangeChanged ->
+                      RecyclerAdapterState.ItemRangeChanged(
+                          it.positionStart + 1, it.itemCount, it.payload)
+                  is RecyclerAdapterState.ItemRangeInserted ->
+                      RecyclerAdapterState.ItemRangeInserted(it.positionStart + 1, it.itemCount)
+                  is RecyclerAdapterState.ItemRangeRemoved ->
+                      RecyclerAdapterState.ItemRangeRemoved(it.positionStart + 1, it.itemCount)
+                  else -> it
+                })
+          },
+          _countTotalItem = {
+            _customerRepository.countFilteredCustomers(CustomerFilters(null to null, null to null))
+          },
+          _selectItemsByPageOffset = { pageNumber, limit ->
+            _customerRepository.selectByPageOffset(
+                pageNumber,
+                limit,
+                CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
+                CustomerFilters(null to null, null to null))
+          })
 
   private val _uiEvent: SafeMutableLiveData<FilterCustomerEvent> =
       SafeMutableLiveData(FilterCustomerEvent())
@@ -53,16 +86,60 @@ constructor(
   private val _uiState: SafeMutableLiveData<FilterCustomerState> =
       SafeMutableLiveData(
           FilterCustomerState(
-              customers = listOf(), expandedCustomerIndex = -1, filteredCustomers = listOf()))
+              pagination =
+                  PaginationState(
+                      isLoading = false,
+                      firstLoadedPageNumber = 1,
+                      lastLoadedPageNumber = 1,
+                      isRecyclerStateIdle = false,
+                      paginatedItems = listOf(),
+                      totalItem = 0,
+                  ),
+              expandedCustomerIndex = -1,
+              filteredCustomers = listOf()))
   val uiState: SafeLiveData<FilterCustomerState>
     get() = _uiState
 
   init {
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    _loadAllCustomers()
+    _onReloadPage(1, 1)
   }
 
-  fun onCustomerCheckedChanged(vararg customers: CustomerModel) {
+  fun onLoadPreviousPage() {
+    _paginationManager.onLoadPreviousPage {
+      if (_uiState.safeValue.expandedCustomer == null) return@onLoadPreviousPage
+      // Re-expand current expanded customer.
+      val expandedCustomerIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedCustomer?.id
+          }
+      if (expandedCustomerIndex != -1) {
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedCustomerIndex + 1))
+      }
+    }
+  }
+
+  fun onLoadNextPage() {
+    _paginationManager.onLoadNextPage {
+      if (_uiState.safeValue.expandedCustomer == null) return@onLoadNextPage
+      // Re-expand current expanded customer.
+      val expandedCustomerIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedCustomer?.id
+          }
+      if (expandedCustomerIndex != -1) {
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedCustomerIndex + 1))
+      }
+    }
+  }
+
+  fun onRecyclerStateIdle(isIdle: Boolean) {
+    _paginationManager.onRecyclerStateIdleNotifyItemRangeChanged(isIdle)
+  }
+
+  fun onCustomerCheckedChanged(vararg customers: CustomerPaginatedInfo) {
     _uiState.setValue(
         _uiState.safeValue.copy(
             filteredCustomers =
@@ -74,25 +151,31 @@ constructor(
             0, // Index 0 to update header holder.
             *customers
                 .mapNotNull { checkedCustomer ->
-                  _uiState.safeValue.customers
+                  _uiState.safeValue.pagination.paginatedItems
                       .indexOfFirst { it.id == checkedCustomer.id }
                       .takeIf { it != -1 }
-                      ?.let { it + 1 } // +1 offset because header holder.
+                      ?.inc() // +1 offset because header holder.
                 }
                 .toIntArray()))
   }
 
   fun onExpandedCustomerIndexChanged(index: Int) {
-    // Update both previous and current expanded product. +1 offset because header holder.
-    _onRecyclerAdapterRefreshed(
-        RecyclerAdapterState.ItemChanged(
-            listOfNotNull(
-                _uiState.safeValue.expandedCustomerIndex.takeIf { it != -1 && it != index }?.inc(),
-                index + 1)))
-    _uiState.setValue(
-        _uiState.safeValue.copy(
-            expandedCustomerIndex =
-                if (_uiState.safeValue.expandedCustomerIndex != index) index else -1))
+    _expandedCustomerJob?.cancel()
+    _expandedCustomerJob =
+        viewModelScope.launch {
+          delay(200)
+          val previousExpandedIndex: Int = _uiState.safeValue.expandedCustomerIndex
+          val shouldExpand: Boolean = previousExpandedIndex != index
+          // Unlike queue, there's no need to load for the customer's
+          // `CustomerPaginatedInfo.fullModel`. They're loaded by default.
+          _uiState.setValue(
+              _uiState.safeValue.copy(expandedCustomerIndex = if (shouldExpand) index else -1))
+          // Update both previous and current expanded customer. +1 offset because header holder.
+          _onRecyclerAdapterRefreshed(
+              RecyclerAdapterState.ItemChanged(
+                  listOfNotNull(
+                      previousExpandedIndex.takeIf { it != -1 && it != index }?.inc(), index + 1)))
+        }
   }
 
   fun onSave() {
@@ -105,11 +188,6 @@ constructor(
     }
   }
 
-  private fun _onCustomersChanged(customers: List<CustomerModel>) {
-    _uiState.setValue(_uiState.safeValue.copy(customers = _sorter.sort(customers)))
-    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
-  }
-
   private fun _onRecyclerAdapterRefreshed(state: RecyclerAdapterState) {
     viewModelScope.launch {
       _uiEvent.updateEvent(
@@ -119,21 +197,18 @@ constructor(
     }
   }
 
-  private suspend fun _selectAllCustomers(): List<CustomerModel> = _customerRepository.selectAll()
-
-  private fun _loadAllCustomers() {
+  private fun _onReloadPage(firstVisiblePageNumber: Int, lastVisiblePageNumber: Int) {
     viewModelScope.launch(_dispatcher) {
-      _selectAllCustomers().let { customers: List<CustomerModel> ->
-        withContext(Dispatchers.Main) {
-          val filteredCustomerIds: LongArray =
-              _savedStateHandle.get<LongArray>(
-                  FilterCustomerFragment.Arguments.INITIAL_FILTERED_CUSTOMER_IDS_LONG_ARRAY.key())
-                  ?: longArrayOf()
-          val filteredCustomer: List<CustomerModel> =
-              customers.filter { it.id != null && filteredCustomerIds.contains(it.id) }
-          _onCustomersChanged(customers)
-          onCustomerCheckedChanged(*filteredCustomer.toTypedArray())
-        }
+      val filteredCustomerIds: LongArray =
+          _savedStateHandle.get<LongArray>(
+              FilterCustomerFragment.Arguments.INITIAL_FILTERED_CUSTOMER_IDS_LONG_ARRAY.key())
+              ?: longArrayOf()
+      val filteredCustomers: List<CustomerPaginatedInfo> =
+          _customerRepository.selectById(filteredCustomerIds.toList()).map {
+            CustomerPaginatedInfo(it)
+          }
+      _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
+        onCustomerCheckedChanged(*filteredCustomers.toTypedArray())
       }
     }
   }

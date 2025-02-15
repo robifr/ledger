@@ -22,15 +22,15 @@ import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
 import com.google.android.material.chip.ChipGroup
 import com.robifr.ledger.R
-import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.databinding.ListableListSelectedItemBinding
 import com.robifr.ledger.databinding.ReusableChipInputBinding
 import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class FilterCustomerHeaderHolder(
     private val _selectedItemBinding: ListableListSelectedItemBinding,
-    private val _filteredCustomers: () -> List<CustomerModel>,
-    private val _onCustomerCheckedChanged: (CustomerModel) -> Unit
+    private val _filteredCustomers: () -> List<CustomerPaginatedInfo>,
+    private val _onCustomerCheckedChanged: (CustomerPaginatedInfo) -> Unit
 ) : RecyclerViewHolder(_selectedItemBinding.root) {
   private val _chipGroup: ChipGroup =
       ChipGroup(itemView.context).apply {

@@ -41,17 +41,19 @@ class FilterCustomerAdapter(private val _fragment: FilterCustomerFragment) :
             FilterCustomerListHolder(
                 _cardBinding =
                     CustomerCardWideBinding.inflate(_fragment.layoutInflater, parent, false),
-                _customers = { _fragment.filterCustomerViewModel.uiState.safeValue.customers },
+                _customers = {
+                  _fragment.filterCustomerViewModel.uiState.safeValue.pagination.paginatedItems
+                },
                 _onCustomerCheckedChanged =
                     _fragment.filterCustomerViewModel::onCustomerCheckedChanged,
                 _filteredCustomers = {
                   _fragment.filterCustomerViewModel.uiState.safeValue.filteredCustomers
                 },
-                _expandedCustomerIndex = {
-                  _fragment.filterCustomerViewModel.uiState.safeValue.expandedCustomerIndex
-                },
                 _onExpandedCustomerIndexChanged =
-                    _fragment.filterCustomerViewModel::onExpandedCustomerIndexChanged)
+                    _fragment.filterCustomerViewModel::onExpandedCustomerIndexChanged,
+                _expandedCustomer = {
+                  _fragment.filterCustomerViewModel.uiState.safeValue.expandedCustomer
+                })
       }
 
   override fun onBindViewHolder(holder: RecyclerViewHolder, position: Int) {
@@ -63,7 +65,7 @@ class FilterCustomerAdapter(private val _fragment: FilterCustomerFragment) :
 
   override fun getItemCount(): Int =
       // +1 offset because header holder.
-      _fragment.filterCustomerViewModel.uiState.safeValue.customers.size + 1
+      _fragment.filterCustomerViewModel.uiState.safeValue.pagination.paginatedItems.size + 1
 
   override fun getItemViewType(position: Int): Int =
       when (position) {
