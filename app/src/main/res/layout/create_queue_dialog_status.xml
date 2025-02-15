@@ -28,7 +28,20 @@
       style="@style/BottomSheetDialog.Title"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
+      android:layout_marginBottom="@dimen/space_smallMedium"
       android:text="@string/createQueue_status_selectStatus" />
+
+  <TextView
+      android:id="@+id/description"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="@dimen/space_medium"
+      android:layout_marginEnd="@dimen/space_medium"
+      android:layout_marginBottom="@dimen/space_medium"
+      android:gravity="center"
+      android:text="@string/createQueue_status_selectStatus_description"
+      android:textColor="?colorOnSurfaceVariant"
+      android:textSize="@dimen/text_small" />
 
   <com.google.android.material.divider.MaterialDivider
       style="@style/Divider"

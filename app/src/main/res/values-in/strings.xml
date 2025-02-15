@@ -37,7 +37,7 @@
   <!-- `QueueModel#Status`. -->
   <string name="enum_queueStatus_inQueue">Mengantre</string>
   <string name="enum_queueStatus_inProcess">Diproses</string>
-  <string name="enum_queueStatus_unpaid">Belum dibayar</string>
+  <string name="enum_queueStatus_unpaid">Belum bayar</string>
   <string name="enum_queueStatus_completed">Selesai</string>
   <!-- `QueueModel#PaymentMethod`. -->
   <string name="enum_queuePaymentMethod_cash">Tunai</string>
@@ -196,6 +196,7 @@
   <string name="queue_card_totalDiscount" translatable="false">@string/createQueue_productOrders_totalDiscount</string>
   <string name="queue_card_x_balance" translatable="false">@string/createQueue_productOrders_x_balance</string>
   <string name="queue_card_x_debt" translatable="false">@string/createQueue_productOrders_x_debt</string>
+  <string name="queue_card_note">Catatan</string>
   <!-- Card menu. -->
   <string name="queue_cardMenu_edit" translatable="false">@string/action_edit</string>
   <string name="queue_cardMenu_delete" translatable="false">@string/action_delete</string>
@@ -294,6 +295,7 @@
   <string name="createQueue_date_selectDate">Pilih tanggal</string>
   <string name="createQueue_status">Status</string>
   <string name="createQueue_status_selectStatus">Pilih status</string>
+  <string name="createQueue_status_selectStatus_description">Memilih status \"Belum bayar\" akan menambah hutang pelanggan.</string>
   <string name="createQueue_paymentMethods">Metode pembayaran</string>
   <string name="createQueue_note">Catatan</string>
   <string name="createQueue_unsavedChangesWarning">Anda memiliki perubahan yang belum disimpan.

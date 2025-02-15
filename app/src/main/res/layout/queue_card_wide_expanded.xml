@@ -207,4 +207,46 @@
       app:layout_constraintTop_toBottomOf="@id/barrierAboveDividerForPaymentMethod" />
 
   <include layout="@layout/queue_card_wide_expanded_order" />
+
+  <androidx.constraintlayout.widget.Barrier
+      android:id="@+id/barrierAboveDividerForProductOrders"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      app:barrierDirection="bottom"
+      app:barrierMargin="@dimen/space_medium"
+      app:constraint_referenced_ids="totalDiscount,customerDebt" />
+
+  <com.google.android.material.divider.MaterialDivider
+      android:id="@+id/dividerForProductOrders"
+      style="@style/Divider"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="@dimen/space_smallMedium"
+      android:layout_marginEnd="@dimen/space_smallMedium"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@id/coloredSideline"
+      app:layout_constraintTop_toBottomOf="@id/barrierAboveDividerForProductOrders" />
+
+  <TextView
+      android:id="@+id/noteTitle"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="@dimen/space_smallMedium"
+      android:layout_marginTop="@dimen/space_medium"
+      android:enabled="false"
+      android:text="@string/queue_card_note"
+      android:textSize="@dimen/text_small"
+      app:layout_constraintStart_toEndOf="@id/coloredSideline"
+      app:layout_constraintTop_toBottomOf="@id/dividerForProductOrders" />
+
+  <TextView
+      android:id="@+id/note"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginEnd="@dimen/space_smallMedium"
+      android:layout_marginBottom="@dimen/space_medium"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="@id/noteTitle"
+      app:layout_constraintTop_toBottomOf="@id/noteTitle" />
 </androidx.constraintlayout.widget.ConstraintLayout>

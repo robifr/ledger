@@ -85,7 +85,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   @Query(
       """
       ${_CTE_COUNT_DEBT_BY_ID}
-      SELECT customer_id, debt FROM total_debt_cte WHERE debt < 0
+      SELECT id, debt FROM total_debt_cte WHERE debt < 0
       """)
   @TypeConverters(BigDecimalConverter::class)
   protected abstract fun _selectAllInfoWithDebt(customerId: Long? = null): List<CustomerDebtInfo>
@@ -146,7 +146,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
     private const val _CTE_COUNT_DEBT_BY_ID: String =
         """
         WITH total_debt_cte AS (
-          SELECT queue.customer_id AS customer_id,
+          SELECT queue.customer_id AS id,
               -IFNULL(SUM(ABS(product_order.total_price)), 0) AS debt
           FROM product_order
           JOIN queue ON queue.id = product_order.queue_id
