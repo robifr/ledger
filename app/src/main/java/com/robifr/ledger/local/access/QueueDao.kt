@@ -77,7 +77,7 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
           CASE WHEN :sortBy = 'DATE' AND :isAscending IS TRUE
               THEN filtered_queues_cte.date END ASC,
           CASE WHEN :sortBy = 'DATE' AND :isAscending IS FALSE
-              THEN filtered_queues_cte.date END ASC,
+              THEN filtered_queues_cte.date END DESC,
           CASE WHEN :sortBy = 'TOTAL_PRICE' AND :isAscending IS TRUE
               THEN filtered_queues_cte.grand_total_price END ASC,
           CASE WHEN :sortBy = 'TOTAL_PRICE' AND :isAscending IS FALSE
