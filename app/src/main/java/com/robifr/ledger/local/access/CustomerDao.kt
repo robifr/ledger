@@ -22,10 +22,12 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.TypeConverters
 import androidx.room.Update
+import com.robifr.ledger.data.display.CustomerSortMethod
 import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
 import com.robifr.ledger.data.model.CustomerFtsModel
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.local.BigDecimalConverter
 import com.robifr.ledger.local.FtsStringConverter
 import java.math.BigDecimal
@@ -76,6 +78,50 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   abstract override fun isExistsById(customerId: Long?): Boolean
 
   @Query("SELECT NOT EXISTS(SELECT 1 FROM customer)") abstract override fun isTableEmpty(): Boolean
+
+  @Query(
+      """
+      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      SELECT * FROM filtered_customers_cte
+      -- Sorting based on the data from `CustomerSortMethod`.
+      ORDER BY
+          CASE WHEN :sortBy = 'NAME' AND :isAscending IS TRUE
+              THEN filtered_customers_cte.name END COLLATE NOCASE ASC,
+          CASE WHEN :sortBy = 'NAME' AND :isAscending IS FALSE
+              THEN filtered_customers_cte.name END COLLATE NOCASE DESC,
+          CASE WHEN :sortBy = 'BALANCE' AND :isAscending IS TRUE
+              THEN filtered_customers_cte.balance END ASC,
+          CASE WHEN :sortBy = 'BALANCE' AND :isAscending IS FALSE
+              THEN filtered_customers_cte.balance END ASC
+      LIMIT :limit OFFSET (:pageNumber - 1) * :limit
+      """)
+  @TypeConverters(BigDecimalConverter::class)
+  abstract fun selectByPageOffset(
+      pageNumber: Int,
+      limit: Int,
+      // Sort options from `CustomerSortMethod`.
+      sortBy: CustomerSortMethod.SortBy,
+      isAscending: Boolean,
+      // Filter options from `CustomerFilters`.
+      filteredMinBalance: Long?,
+      filteredMaxBalance: Long?,
+      filteredMinDebt: BigDecimal?,
+      filteredMaxDebt: BigDecimal?
+  ): List<CustomerPaginatedInfo>
+
+  @Query(
+      """
+      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      SELECT COUNT(*) FROM filtered_customers_cte
+      """)
+  @TypeConverters(BigDecimalConverter::class)
+  abstract fun countFilteredCustomers(
+      // Filter options from `CustomerFilters`.
+      filteredMinBalance: Long?,
+      filteredMaxBalance: Long?,
+      filteredMinDebt: BigDecimal?,
+      filteredMaxDebt: BigDecimal?
+  ): Long
 
   @Query("SELECT id, balance FROM customer WHERE balance > 0")
   abstract fun selectAllInfoWithBalance(): List<CustomerBalanceInfo>
@@ -141,7 +187,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   @Insert protected abstract fun _insertFts(customerFts: CustomerFtsModel): Long
 
   companion object {
-    /** Current debt by counting all of product orders total price from unpaid queues. */
+    /** Current debt by counting all of product order's total price from unpaid queues. */
     @Language("RoomSql")
     private const val _CTE_COUNT_DEBT_BY_ID: String =
         """
@@ -152,6 +198,38 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
           JOIN queue ON queue.id = product_order.queue_id
           WHERE (:customerId IS NULL OR queue.customer_id = :customerId)
               AND queue.status = 'UNPAID'
+        )
+        """
+
+    @Language("RoomSql")
+    private const val _CTE_SELECT_PAGINATED_WITH_FILTER: String =
+        """
+        WITH filtered_customers_cte AS (
+          SELECT
+              customer.id AS id,
+              customer.name AS name,
+              customer.balance AS balance,
+              IFNULL(debt, 0) AS debt
+          FROM customer
+          LEFT JOIN (
+            -- Count customer debt based from product order's total price with unpaid queue status.
+            SELECT
+                queue.customer_id,
+                -IFNULL(SUM(ABS(product_order.total_price)), 0) AS debt
+            FROM product_order
+            JOIN queue ON queue.id = product_order.queue_id
+            WHERE queue.customer_id IS NOT NULL AND queue.status = 'UNPAID'
+            GROUP BY queue.customer_id
+          ) ON customer_id = customer.id
+          -- Condition based on the data from `CustomerFilters`.
+          WHERE
+              -- Filter by balance range.
+              (:filteredMinBalance IS NULL OR balance >= :filteredMinBalance)
+              AND (:filteredMaxBalance IS NULL OR balance <= :filteredMaxBalance)
+
+              -- Filter by debt range.
+              AND (:filteredMinDebt IS NULL OR ABS(debt) >= ABS(CAST(:filteredMinDebt AS NUMERIC)))
+              AND (:filteredMaxDebt IS NULL OR ABS(debt) <= ABS(CAST(:filteredMaxDebt AS NUMERIC)))
         )
         """
   }

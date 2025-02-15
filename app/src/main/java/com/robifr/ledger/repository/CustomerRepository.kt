@@ -16,9 +16,12 @@
 
 package com.robifr.ledger.repository
 
+import com.robifr.ledger.data.display.CustomerFilters
+import com.robifr.ledger.data.display.CustomerSortMethod
 import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.local.access.CustomerDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -67,6 +70,29 @@ class CustomerRepository(private val _localDao: CustomerDao) : Queryable<Custome
   }
 
   suspend fun search(query: String): List<CustomerModel> = _mapFields(_localDao.search(query))
+
+  suspend fun selectByPageOffset(
+      pageNumber: Int,
+      limit: Int,
+      sortMethod: CustomerSortMethod,
+      filters: CustomerFilters
+  ): List<CustomerPaginatedInfo> =
+      _localDao.selectByPageOffset(
+          pageNumber = pageNumber,
+          limit = limit,
+          sortBy = sortMethod.sortBy,
+          isAscending = sortMethod.isAscending,
+          filteredMinBalance = filters.filteredBalance.first,
+          filteredMaxBalance = filters.filteredBalance.second,
+          filteredMinDebt = filters.filteredDebt.first,
+          filteredMaxDebt = filters.filteredDebt.second)
+
+  suspend fun countFilteredCustomers(filters: CustomerFilters): Long =
+      _localDao.countFilteredCustomers(
+          filteredMinBalance = filters.filteredBalance.first,
+          filteredMaxBalance = filters.filteredBalance.second,
+          filteredMinDebt = filters.filteredDebt.first,
+          filteredMaxDebt = filters.filteredDebt.second)
 
   suspend fun selectAllInfoWithBalance(): List<CustomerBalanceInfo> =
       _localDao.selectAllInfoWithBalance()
