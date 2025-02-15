@@ -31,17 +31,21 @@ class CustomerAdapter(private val _fragment: CustomerFragment) :
             CustomerHeaderHolder(
                 _textBinding =
                     ListableListTextBinding.inflate(_fragment.layoutInflater, parent, false),
-                _customers = { _fragment.customerViewModel.uiState.safeValue.customers })
+                _totalCustomers = {
+                  _fragment.customerViewModel.uiState.safeValue.pagination.totalItem
+                })
         else ->
             CustomerListHolder(
                 _cardBinding =
                     CustomerCardWideBinding.inflate(_fragment.layoutInflater, parent, false),
-                _customers = { _fragment.customerViewModel.uiState.safeValue.customers },
-                _expandedCustomerIndex = {
-                  _fragment.customerViewModel.uiState.safeValue.expandedCustomerIndex
+                _customers = {
+                  _fragment.customerViewModel.uiState.safeValue.pagination.paginatedItems
                 },
                 _onExpandedCustomerIndexChanged =
                     _fragment.customerViewModel::onExpandedCustomerIndexChanged,
+                _expandedCustomer = {
+                  _fragment.customerViewModel.uiState.safeValue.expandedCustomer
+                },
                 _onCustomerMenuDialogShown = _fragment.customerViewModel::onCustomerMenuDialogShown)
       }
 
@@ -54,7 +58,7 @@ class CustomerAdapter(private val _fragment: CustomerFragment) :
 
   override fun getItemCount(): Int =
       // +1 offset because header holder.
-      _fragment.customerViewModel.uiState.safeValue.customers.size + 1
+      _fragment.customerViewModel.uiState.safeValue.pagination.paginatedItems.size + 1
 
   override fun getItemViewType(position: Int): Int =
       when (position) {

@@ -33,6 +33,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.databinding.SearchableFragmentBinding
 import com.robifr.ledger.ui.common.navigation.FragmentResultKey
 import com.robifr.ledger.ui.common.navigation.OnBackPressedHandler
@@ -171,7 +172,8 @@ class SearchCustomerFragment : Fragment(), SearchView.OnQueryTextListener {
     // FIXME: Customer menu dialog doesn't get retained (it close) when configuration changes.
     if (state.isCustomerMenuDialogShown) {
       state.selectedCustomerMenu?.let {
-        _customerMenu.showDialog(it, searchCustomerViewModel::onDeleteCustomer)
+        _customerMenu.showDialog(
+            CustomerPaginatedInfo(it), searchCustomerViewModel::onDeleteCustomer)
       }
     } else {
       _customerMenu.dismissDialog()

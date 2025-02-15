@@ -18,6 +18,7 @@ package com.robifr.ledger.ui.searchcustomer.recycler
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.databinding.CustomerCardWideBinding
 import com.robifr.ledger.databinding.ListableListTextBinding
 import com.robifr.ledger.ui.common.RecyclerViewHolder
@@ -53,14 +54,21 @@ class SearchCustomerAdapter(private val _fragment: SearchCustomerFragment) :
           } else {
             CustomerListHolder(
                 _cardBinding = cardBinding,
-                _customers = { _fragment.searchCustomerViewModel.uiState.safeValue.customers },
-                _expandedCustomerIndex = {
-                  _fragment.searchCustomerViewModel.uiState.safeValue.expandedCustomerIndex
+                _customers = {
+                  _fragment.searchCustomerViewModel.uiState.safeValue.customers.map {
+                    CustomerPaginatedInfo(it)
+                  }
                 },
                 _onExpandedCustomerIndexChanged =
                     _fragment.searchCustomerViewModel::onExpandedCustomerIndexChanged,
-                _onCustomerMenuDialogShown =
-                    _fragment.searchCustomerViewModel::onCustomerMenuDialogShown)
+                _expandedCustomer = {
+                  _fragment.searchCustomerViewModel.uiState.safeValue.expandedCustomer
+                },
+                _onCustomerMenuDialogShown = { info ->
+                  info.fullModel?.let {
+                    _fragment.searchCustomerViewModel.onCustomerMenuDialogShown(it)
+                  }
+                })
           }
         }
       }

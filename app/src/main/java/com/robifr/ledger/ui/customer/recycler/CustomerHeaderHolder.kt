@@ -19,13 +19,12 @@ package com.robifr.ledger.ui.customer.recycler
 import android.util.TypedValue
 import androidx.core.text.HtmlCompat
 import com.robifr.ledger.R
-import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.databinding.ListableListTextBinding
 import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class CustomerHeaderHolder(
     private val _textBinding: ListableListTextBinding,
-    private val _customers: () -> List<CustomerModel>
+    private val _totalCustomers: () -> Long
 ) : RecyclerViewHolder(_textBinding.root) {
   init {
     _textBinding.text.setTextSize(
@@ -36,7 +35,9 @@ class CustomerHeaderHolder(
     _textBinding.text.text =
         HtmlCompat.fromHtml(
             itemView.context.resources.getQuantityString(
-                R.plurals.customer_displaying_n_customer, _customers().size, _customers().size),
+                R.plurals.customer_displaying_n_customer,
+                _totalCustomers().toInt(),
+                _totalCustomers().toInt()),
             HtmlCompat.FROM_HTML_MODE_LEGACY)
   }
 }

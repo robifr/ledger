@@ -34,6 +34,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ListableFragmentBinding
+import com.robifr.ledger.ui.common.pagination.PaginationScrollListener
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.common.state.SnackbarState
 import com.robifr.ledger.ui.customer.filter.CustomerFilter
@@ -87,8 +88,17 @@ class CustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.noDataCreated.title.setText(R.string.customer_noCustomersAdded)
     fragmentBinding.noDataCreated.description.setText(
         R.string.customer_noCustomersAdded_description)
-    fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+    val layoutManager: LinearLayoutManager = LinearLayoutManager(requireContext())
+    fragmentBinding.recyclerView.layoutManager = layoutManager
     fragmentBinding.recyclerView.adapter = _adapter
+    fragmentBinding.recyclerView.addOnScrollListener(
+        PaginationScrollListener(
+            _layoutManager = layoutManager,
+            _onLoadPreviousPage = { customerViewModel.onLoadPreviousPage() },
+            _onLoadNextPage = { customerViewModel.onLoadNextPage() },
+            _isLoading = { customerViewModel.uiState.safeValue.pagination.isLoading },
+            _onStateIdle = customerViewModel::onRecyclerStateIdle,
+            _maxItems = { customerViewModel.uiState.safeValue.pagination.paginatedItems.size }))
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
     customerViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
     customerViewModel.uiState.observe(viewLifecycleOwner, ::_onUiState)
@@ -145,7 +155,12 @@ class CustomerFragment : Fragment(), Toolbar.OnMenuItemClickListener {
       is RecyclerAdapterState.DataSetChanged -> _adapter.notifyDataSetChanged()
       is RecyclerAdapterState.ItemChanged ->
           state.indexes.forEach { _adapter.notifyItemChanged(it) }
-      else -> Unit
+      is RecyclerAdapterState.ItemRangeChanged ->
+          _adapter.notifyItemRangeChanged(state.positionStart, state.itemCount, state.payload)
+      is RecyclerAdapterState.ItemRangeInserted ->
+          _adapter.notifyItemRangeInserted(state.positionStart, state.itemCount)
+      is RecyclerAdapterState.ItemRangeRemoved ->
+          _adapter.notifyItemRangeRemoved(state.positionStart, state.itemCount)
     }
   }
 

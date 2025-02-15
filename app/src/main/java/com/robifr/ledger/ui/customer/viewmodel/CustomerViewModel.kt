@@ -19,16 +19,17 @@ package com.robifr.ledger.ui.customer.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
-import com.robifr.ledger.data.ModelSynchronizer
 import com.robifr.ledger.data.display.CustomerSortMethod
-import com.robifr.ledger.data.display.CustomerSorter
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.common.PluralResource
 import com.robifr.ledger.ui.common.StringResource
 import com.robifr.ledger.ui.common.StringResourceType
+import com.robifr.ledger.ui.common.pagination.PaginationManager
+import com.robifr.ledger.ui.common.pagination.PaginationState
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
@@ -37,9 +38,9 @@ import com.robifr.ledger.ui.common.state.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class CustomerViewModel
@@ -48,21 +49,43 @@ constructor(
     @IoDispatcher private val _dispatcher: CoroutineDispatcher,
     private val _customerRepository: CustomerRepository
 ) : ViewModel() {
-  private val _sorter: CustomerSorter = CustomerSorter()
+  private var _expandedCustomerJob: Job? = null
+  private val _paginationManager: PaginationManager<CustomerPaginatedInfo> =
+      PaginationManager(
+          state = { _uiState.safeValue.pagination },
+          onStateChanged = { _uiState.setValue(_uiState.safeValue.copy(pagination = it)) },
+          _coroutineScope = viewModelScope,
+          _dispatcher = _dispatcher,
+          _onNotifyRecyclerState = {
+            _onRecyclerAdapterRefreshed(
+                when (it) {
+                  // +1 offset because header holder.
+                  is RecyclerAdapterState.ItemRangeChanged ->
+                      RecyclerAdapterState.ItemRangeChanged(
+                          it.positionStart + 1, it.itemCount, it.payload)
+                  is RecyclerAdapterState.ItemRangeInserted ->
+                      RecyclerAdapterState.ItemRangeInserted(it.positionStart + 1, it.itemCount)
+                  is RecyclerAdapterState.ItemRangeRemoved ->
+                      RecyclerAdapterState.ItemRangeRemoved(it.positionStart + 1, it.itemCount)
+                  else -> it
+                })
+          },
+          _countTotalItem = {
+            _customerRepository.countFilteredCustomers(filterView._parseInputtedFilters())
+          },
+          _selectItemsByPageOffset = { pageNumber, limit ->
+            _customerRepository.selectByPageOffset(
+                pageNumber,
+                limit,
+                _uiState.safeValue.sortMethod,
+                filterView._parseInputtedFilters())
+          })
   private val _customerChangedListener: ModelSyncListener<CustomerModel, CustomerModel> =
       ModelSyncListener(
-          onAdd = { ModelSynchronizer.addModel(_uiState.safeValue.customers, it) },
-          onUpdate = { ModelSynchronizer.updateModel(_uiState.safeValue.customers, it) },
-          onDelete = { ModelSynchronizer.deleteModel(_uiState.safeValue.customers, it) },
-          onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.customers, it) },
-          onSync = { _, updatedModels ->
-            viewModelScope.launch(_dispatcher) {
-              val isTableEmpty: Boolean = _customerRepository.isTableEmpty()
-              withContext(Dispatchers.Main) {
-                _onNoCustomersAddedIllustrationVisible(isTableEmpty)
-                filterView._onFiltersChanged(customers = updatedModels)
-              }
-            }
+          onSync = { _, _ ->
+            _onReloadPage(
+                _uiState.safeValue.pagination.firstLoadedPageNumber,
+                _uiState.safeValue.pagination.lastLoadedPageNumber)
           })
 
   private val _uiEvent: SafeMutableLiveData<CustomerEvent> = SafeMutableLiveData(CustomerEvent())
@@ -72,51 +95,90 @@ constructor(
   private val _uiState: SafeMutableLiveData<CustomerState> =
       SafeMutableLiveData(
           CustomerState(
-              customers = listOf(),
+              pagination =
+                  PaginationState(
+                      isLoading = false,
+                      firstLoadedPageNumber = 1,
+                      lastLoadedPageNumber = 1,
+                      isRecyclerStateIdle = false,
+                      paginatedItems = listOf(),
+                      totalItem = 0,
+                  ),
               expandedCustomerIndex = -1,
               isCustomerMenuDialogShown = false,
               selectedCustomerMenu = null,
               isNoCustomersAddedIllustrationVisible = false,
-              sortMethod = _sorter.sortMethod,
+              sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
               isSortMethodDialogShown = false))
   val uiState: SafeLiveData<CustomerState>
     get() = _uiState
 
-  val filterView: CustomerFilterViewModel =
-      CustomerFilterViewModel(
-          _viewModel = this,
-          _dispatcher = _dispatcher,
-          _selectAllCustomers = { _selectAllCustomers() })
+  val filterView: CustomerFilterViewModel = CustomerFilterViewModel { _onReloadPage(1, 1) }
 
   init {
     _customerRepository.addModelChangedListener(_customerChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    _loadAllCustomers()
+    _onReloadPage(1, 1)
   }
 
   override fun onCleared() {
     _customerRepository.removeModelChangedListener(_customerChangedListener)
   }
 
-  fun onCustomersChanged(customers: List<CustomerModel>) {
-    _uiState.setValue(_uiState.safeValue.copy(customers = _sorter.sort(customers)))
-    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
+  fun onLoadPreviousPage() {
+    _paginationManager.onLoadPreviousPage {
+      if (_uiState.safeValue.expandedCustomer == null) return@onLoadPreviousPage
+      // Re-expand current expanded customer.
+      val expandedCustomerIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedCustomer?.id
+          }
+      if (expandedCustomerIndex != -1) {
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedCustomerIndex + 1))
+      }
+    }
+  }
+
+  fun onLoadNextPage() {
+    _paginationManager.onLoadNextPage {
+      if (_uiState.safeValue.expandedCustomer == null) return@onLoadNextPage
+      // Re-expand current expanded customer.
+      val expandedCustomerIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedCustomer?.id
+          }
+      if (expandedCustomerIndex != -1) {
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedCustomerIndex + 1))
+      }
+    }
+  }
+
+  fun onRecyclerStateIdle(isIdle: Boolean) {
+    _paginationManager.onRecyclerStateIdleNotifyItemRangeChanged(isIdle)
   }
 
   fun onExpandedCustomerIndexChanged(index: Int) {
-    // Update both previous and current expanded product. +1 offset because header holder.
-    _onRecyclerAdapterRefreshed(
-        RecyclerAdapterState.ItemChanged(
-            listOfNotNull(
-                _uiState.safeValue.expandedCustomerIndex.takeIf { it != -1 && it != index }?.inc(),
-                index + 1)))
-    _uiState.setValue(
-        _uiState.safeValue.copy(
-            expandedCustomerIndex =
-                if (_uiState.safeValue.expandedCustomerIndex != index) index else -1))
+    _expandedCustomerJob?.cancel()
+    _expandedCustomerJob =
+        viewModelScope.launch {
+          delay(200)
+          val previousExpandedIndex: Int = _uiState.safeValue.expandedCustomerIndex
+          val shouldExpand: Boolean = previousExpandedIndex != index
+          // Unlike queue, there's no need to load for the customer's
+          // `CustomerPaginatedInfo.fullModel`. They're loaded by default.
+          _uiState.setValue(
+              _uiState.safeValue.copy(expandedCustomerIndex = if (shouldExpand) index else -1))
+          // Update both previous and current expanded customer. +1 offset because header holder.
+          _onRecyclerAdapterRefreshed(
+              RecyclerAdapterState.ItemChanged(
+                  listOfNotNull(
+                      previousExpandedIndex.takeIf { it != -1 && it != index }?.inc(), index + 1)))
+        }
   }
 
-  fun onCustomerMenuDialogShown(selectedCustomer: CustomerModel) {
+  fun onCustomerMenuDialogShown(selectedCustomer: CustomerPaginatedInfo) {
     _uiState.setValue(
         _uiState.safeValue.copy(
             isCustomerMenuDialogShown = true, selectedCustomerMenu = selectedCustomer))
@@ -127,24 +189,18 @@ constructor(
         _uiState.safeValue.copy(isCustomerMenuDialogShown = false, selectedCustomerMenu = null))
   }
 
-  fun onSortMethodChanged(
-      sortMethod: CustomerSortMethod,
-      customers: List<CustomerModel> = _uiState.safeValue.customers
-  ) {
-    _sorter.sortMethod = sortMethod
+  fun onSortMethodChanged(sortMethod: CustomerSortMethod) {
     _uiState.setValue(_uiState.safeValue.copy(sortMethod = sortMethod))
-    onCustomersChanged(customers)
+    _onReloadPage(1, 1)
   }
 
   /**
-   * Sort [CustomerState.customers] based on specified [CustomerSortMethod.SortBy] type. Doing so
-   * will reverse the order — Ascending becomes descending and vice versa. Use [onSortMethodChanged]
-   * that takes a [CustomerSortMethod] if you want to apply the order by yourself.
+   * Sort [PaginationState.paginatedItems] based on specified [CustomerSortMethod.SortBy] type.
+   * Doing so will reverse the order — Ascending becomes descending and vice versa. Use
+   * [onSortMethodChanged] that takes a [CustomerSortMethod] if you want to apply the order by
+   * yourself.
    */
-  fun onSortMethodChanged(
-      sortBy: CustomerSortMethod.SortBy,
-      customers: List<CustomerModel> = _uiState.safeValue.customers
-  ) {
+  fun onSortMethodChanged(sortBy: CustomerSortMethod.SortBy) {
     onSortMethodChanged(
         CustomerSortMethod(
             sortBy,
@@ -153,8 +209,7 @@ constructor(
               !_uiState.safeValue.sortMethod.isAscending
             } else {
               _uiState.safeValue.sortMethod.isAscending
-            }),
-        customers)
+            }))
   }
 
   fun onSortMethodDialogShown() {
@@ -165,9 +220,9 @@ constructor(
     _uiState.setValue(_uiState.safeValue.copy(isSortMethodDialogShown = false))
   }
 
-  fun onDeleteCustomer(customer: CustomerModel) {
+  fun onDeleteCustomer(customerId: Long?) {
     viewModelScope.launch(_dispatcher) {
-      _customerRepository.delete(customer.id).let { effected ->
+      _customerRepository.delete(customerId).let { effected ->
         _onSnackbarShown(
             if (effected > 0) {
               PluralResource(R.plurals.customer_deleted_n_customer, effected, effected)
@@ -200,15 +255,11 @@ constructor(
     }
   }
 
-  private suspend fun _selectAllCustomers(): List<CustomerModel> = _customerRepository.selectAll()
-
-  private fun _loadAllCustomers() {
+  private fun _onReloadPage(firstVisiblePageNumber: Int, lastVisiblePageNumber: Int) {
     viewModelScope.launch(_dispatcher) {
-      val customers: List<CustomerModel> = _selectAllCustomers()
       val isTableEmpty: Boolean = _customerRepository.isTableEmpty()
-      withContext(Dispatchers.Main) {
+      _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
         _onNoCustomersAddedIllustrationVisible(isTableEmpty)
-        filterView._onFiltersChanged(customers = customers)
       }
     }
   }

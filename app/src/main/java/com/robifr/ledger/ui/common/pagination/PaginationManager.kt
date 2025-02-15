@@ -17,7 +17,6 @@
 package com.robifr.ledger.ui.common.pagination
 
 import androidx.recyclerview.widget.RecyclerView
-import com.robifr.ledger.data.model.Info
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import kotlin.math.ceil
 import kotlin.math.max
@@ -30,7 +29,7 @@ import kotlinx.coroutines.withContext
 
 // If you ever come here wondering why the recycler view's holder doesn't update or seems to do
 // nothing. Try adjusting the `threshold` in `PaginationScrollListener`. Sometimes that helps.
-class PaginationManager<T : Info>(
+class PaginationManager<T>(
     val state: () -> PaginationState<T>,
     val onStateChanged: (PaginationState<T>) -> Unit,
     val maxPaginationLimit: Int = 20,

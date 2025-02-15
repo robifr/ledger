@@ -58,6 +58,7 @@ constructor(
           onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.customers, it) },
           onSync = { _, updatedModels -> _onCustomersChanged(updatedModels) })
   private var _searchJob: Job? = null
+  private var _expandedCustomerJob: Job? = null
 
   private val _uiEvent: SafeMutableLiveData<SearchCustomerEvent> =
       SafeMutableLiveData(SearchCustomerEvent())
@@ -112,16 +113,23 @@ constructor(
   }
 
   fun onExpandedCustomerIndexChanged(index: Int) {
-    // Update both previous and current expanded product. +1 offset because header holder.
-    _onRecyclerAdapterRefreshed(
-        RecyclerAdapterState.ItemChanged(
-            listOfNotNull(
-                _uiState.safeValue.expandedCustomerIndex.takeIf { it != -1 && it != index }?.inc(),
-                index + 1)))
-    _uiState.setValue(
-        _uiState.safeValue.copy(
-            expandedCustomerIndex =
-                if (_uiState.safeValue.expandedCustomerIndex != index) index else -1))
+    _expandedCustomerJob?.cancel()
+    _expandedCustomerJob =
+        viewModelScope.launch {
+          delay(200)
+          // Update both previous and current expanded customer. +1 offset because header holder.
+          _onRecyclerAdapterRefreshed(
+              RecyclerAdapterState.ItemChanged(
+                  listOfNotNull(
+                      _uiState.safeValue.expandedCustomerIndex
+                          .takeIf { it != -1 && it != index }
+                          ?.inc(),
+                      index + 1)))
+          _uiState.setValue(
+              _uiState.safeValue.copy(
+                  expandedCustomerIndex =
+                      if (_uiState.safeValue.expandedCustomerIndex != index) index else -1))
+        }
   }
 
   fun onCustomerMenuDialogShown(selectedCustomer: CustomerModel) {
@@ -144,9 +152,9 @@ constructor(
     }
   }
 
-  fun onDeleteCustomer(customer: CustomerModel) {
+  fun onDeleteCustomer(customerId: Long?) {
     viewModelScope.launch(_dispatcher) {
-      _customerRepository.delete(customer.id).also { effected ->
+      _customerRepository.delete(customerId).also { effected ->
         _onSnackbarShown(
             if (effected > 0) {
               PluralResource(R.plurals.searchCustomer_deleted_n_customer, effected, effected)

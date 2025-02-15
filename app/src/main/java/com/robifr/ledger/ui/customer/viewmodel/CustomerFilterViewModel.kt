@@ -17,27 +17,14 @@
 package com.robifr.ledger.ui.customer.viewmodel
 
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.lifecycle.viewModelScope
-import com.robifr.ledger.data.display.CustomerFilterer
 import com.robifr.ledger.data.display.CustomerFilters
-import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
 import com.robifr.ledger.util.CurrencyFormat
 import java.math.BigDecimal
 import java.text.ParseException
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-class CustomerFilterViewModel(
-    private val _viewModel: CustomerViewModel,
-    private val _dispatcher: CoroutineDispatcher,
-    private val _selectAllCustomers: suspend () -> List<CustomerModel>
-) {
-  private val _filterer: CustomerFilterer = CustomerFilterer()
-
+class CustomerFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) {
   private val _uiState: SafeMutableLiveData<CustomerFilterState> =
       SafeMutableLiveData(
           CustomerFilterState(
@@ -71,18 +58,11 @@ class CustomerFilterViewModel(
 
   fun onDialogClosed() {
     _uiState.setValue(_uiState.safeValue.copy(isDialogShown = false))
-    _viewModel.viewModelScope.launch(_dispatcher) {
-      _selectAllCustomers().let {
-        withContext(Dispatchers.Main) { _onFiltersChanged(customers = it) }
-      }
-    }
+    _onFiltersChanged()
+    _onReloadFromInitialPage()
   }
 
-  fun _onFiltersChanged(
-      filters: CustomerFilters = _parseInputtedFilters(),
-      customers: List<CustomerModel> = _viewModel.uiState.safeValue.customers
-  ) {
-    _filterer.filters = filters
+  fun _onFiltersChanged(filters: CustomerFilters = _parseInputtedFilters()) {
     onMinBalanceTextChanged(
         filters.filteredBalance.first?.let {
           CurrencyFormat.formatCents(
@@ -101,10 +81,9 @@ class CustomerFilterViewModel(
         filters.filteredDebt.second?.let {
           CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } ?: "")
-    _viewModel.onCustomersChanged(_filterer.filter(customers))
   }
 
-  private fun _parseInputtedFilters(): CustomerFilters {
+  fun _parseInputtedFilters(): CustomerFilters {
     // All these nullable value to represent unbounded range.
     var minBalance: Long? = null
     try {
