@@ -62,7 +62,7 @@ class CustomerFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) 
     _onReloadFromInitialPage()
   }
 
-  fun _onFiltersChanged(filters: CustomerFilters = _parseInputtedFilters()) {
+  private fun _onFiltersChanged(filters: CustomerFilters = _parseInputtedFilters()) {
     onMinBalanceTextChanged(
         filters.filteredBalance.first?.let {
           CurrencyFormat.formatCents(

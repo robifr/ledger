@@ -76,7 +76,7 @@ constructor(
                 })
           },
           _countTotalItem = {
-            _queueRepository.countFilteredQueues(filterView.parseInputtedFilters())
+            _queueRepository.countFilteredQueues(filterView._parseInputtedFilters())
           },
           _selectItemsByPageOffset = { pageNumber, limit ->
             // Queue fragment is the first fragment to be loaded during the initial app run.
@@ -86,7 +86,7 @@ constructor(
                   pageNumber,
                   limit,
                   _uiState.safeValue.sortMethod,
-                  filterView.parseInputtedFilters())
+                  filterView._parseInputtedFilters())
             } else {
               listOf()
             }

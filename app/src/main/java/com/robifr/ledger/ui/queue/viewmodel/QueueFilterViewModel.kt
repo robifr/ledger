@@ -74,7 +74,7 @@ class QueueFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) {
     _onReloadFromInitialPage()
   }
 
-  fun _onFiltersChanged(filters: QueueFilters = parseInputtedFilters()) {
+  private fun _onFiltersChanged(filters: QueueFilters = _parseInputtedFilters()) {
     onNullCustomerShown(filters.isNullCustomerShown)
     onCustomerIdsChanged(filters.filteredCustomerIds)
     onStatusChanged(filters.filteredStatus)
@@ -89,7 +89,7 @@ class QueueFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) {
         } ?: "")
   }
 
-  fun parseInputtedFilters(): QueueFilters {
+  fun _parseInputtedFilters(): QueueFilters {
     // All these nullable value to represent unbounded range.
     var minTotalPrice: BigDecimal? = null
     try {
