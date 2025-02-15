@@ -19,7 +19,6 @@ package com.robifr.ledger.data.model
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
 import androidx.room.TypeConverters
-import com.robifr.ledger.data.model.QueueModel.Status
 import com.robifr.ledger.local.BigDecimalConverter
 import com.robifr.ledger.local.InstantConverter
 import java.math.BigDecimal
@@ -29,7 +28,7 @@ data class QueuePaginatedInfo(
     @ColumnInfo(name = "id") override val id: Long?,
     @ColumnInfo(name = "customer_id") val customerId: Long?,
     @ColumnInfo(name = "customer_name") val customerName: String?,
-    @ColumnInfo(name = "status") val status: Status,
+    @ColumnInfo(name = "status") val status: QueueModel.Status,
     @ColumnInfo(name = "date") @field:TypeConverters(InstantConverter::class) val date: Instant,
     @ColumnInfo(name = "grand_total_price")
     @field:TypeConverters(BigDecimalConverter::class)
@@ -41,7 +40,7 @@ data class QueuePaginatedInfo(
       id: Long?,
       customerId: Long?,
       customerName: String?,
-      status: Status,
+      status: QueueModel.Status,
       date: Instant,
       grandTotalPrice: BigDecimal
   ) : this(id, customerId, customerName, status, date, grandTotalPrice, null)
