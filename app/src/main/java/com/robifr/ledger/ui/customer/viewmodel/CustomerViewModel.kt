@@ -74,7 +74,7 @@ constructor(
             _customerRepository.countFilteredCustomers(filterView._parseInputtedFilters())
           },
           _selectItemsByPageOffset = { pageNumber, limit ->
-            _customerRepository.selectByPageOffset(
+            _customerRepository.selectPaginatedInfoByOffset(
                 pageNumber,
                 limit,
                 _uiState.safeValue.sortMethod,

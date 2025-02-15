@@ -71,13 +71,13 @@ class CustomerRepository(private val _localDao: CustomerDao) : Queryable<Custome
 
   suspend fun search(query: String): List<CustomerModel> = _mapFields(_localDao.search(query))
 
-  suspend fun selectByPageOffset(
+  suspend fun selectPaginatedInfoByOffset(
       pageNumber: Int,
       limit: Int,
       sortMethod: CustomerSortMethod,
       filters: CustomerFilters
   ): List<CustomerPaginatedInfo> =
-      _localDao.selectByPageOffset(
+      _localDao.selectPaginatedInfoByOffset(
           pageNumber = pageNumber,
           limit = limit,
           sortBy = sortMethod.sortBy,

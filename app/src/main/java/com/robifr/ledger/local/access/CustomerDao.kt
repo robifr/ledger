@@ -96,7 +96,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
       LIMIT :limit OFFSET (:pageNumber - 1) * :limit
       """)
   @TypeConverters(BigDecimalConverter::class)
-  abstract fun selectByPageOffset(
+  abstract fun selectPaginatedInfoByOffset(
       pageNumber: Int,
       limit: Int,
       // Sort options from `CustomerSortMethod`.

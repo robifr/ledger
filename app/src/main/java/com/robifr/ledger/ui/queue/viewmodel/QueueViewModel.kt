@@ -82,7 +82,7 @@ constructor(
             // Queue fragment is the first fragment to be loaded during the initial app run.
             // It's essential to ensure that all necessary permissions are granted.
             if (Environment.isExternalStorageManager()) {
-              _queueRepository.selectByPageOffset(
+              _queueRepository.selectPaginatedInfoByOffset(
                   pageNumber,
                   limit,
                   _uiState.safeValue.sortMethod,

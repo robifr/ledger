@@ -85,7 +85,7 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
       LIMIT :limit OFFSET (:pageNumber - 1) * :limit
       """)
   @TypeConverters(BigDecimalConverter::class, InstantConverter::class)
-  abstract fun selectByPageOffset(
+  abstract fun selectPaginatedInfoByOffset(
       pageNumber: Int,
       limit: Int,
       // Sort options from `QueueSortMethod`.

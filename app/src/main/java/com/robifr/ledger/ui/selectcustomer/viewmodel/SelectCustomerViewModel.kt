@@ -73,7 +73,7 @@ constructor(
             _customerRepository.countFilteredCustomers(CustomerFilters(null to null, null to null))
           },
           _selectItemsByPageOffset = { pageNumber, limit ->
-            _customerRepository.selectByPageOffset(
+            _customerRepository.selectPaginatedInfoByOffset(
                 pageNumber,
                 limit,
                 CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),

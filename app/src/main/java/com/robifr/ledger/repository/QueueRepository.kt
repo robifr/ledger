@@ -142,13 +142,13 @@ class QueueRepository(
   suspend fun selectAllInRange(startDate: ZonedDateTime, endDate: ZonedDateTime): List<QueueModel> =
       _localDao.selectAllInRange(startDate.toInstant(), endDate.toInstant()).map { _mapFields(it) }
 
-  suspend fun selectByPageOffset(
+  suspend fun selectPaginatedInfoByOffset(
       pageNumber: Int,
       limit: Int,
       sortMethod: QueueSortMethod,
       filters: QueueFilters
   ): List<QueuePaginatedInfo> =
-      _localDao.selectByPageOffset(
+      _localDao.selectPaginatedInfoByOffset(
           pageNumber = pageNumber,
           limit = limit,
           sortBy = sortMethod.sortBy,
