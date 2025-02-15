@@ -19,12 +19,15 @@ package com.robifr.ledger.ui.selectcustomer.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.robifr.ledger.data.ModelSynchronizer
-import com.robifr.ledger.data.display.CustomerSorter
+import com.robifr.ledger.data.display.CustomerFilters
+import com.robifr.ledger.data.display.CustomerSortMethod
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ModelSyncListener
+import com.robifr.ledger.ui.common.pagination.PaginationManager
+import com.robifr.ledger.ui.common.pagination.PaginationState
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
@@ -33,9 +36,9 @@ import com.robifr.ledger.ui.selectcustomer.SelectCustomerFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class SelectCustomerViewModel
@@ -45,14 +48,44 @@ constructor(
     @IoDispatcher private val _dispatcher: CoroutineDispatcher,
     private val _customerRepository: CustomerRepository
 ) : ViewModel() {
-  private val _sorter: CustomerSorter = CustomerSorter()
+  private var _expandedCustomerJob: Job? = null
+  private val _paginationManager: PaginationManager<CustomerPaginatedInfo> =
+      PaginationManager(
+          state = { _uiState.safeValue.pagination },
+          onStateChanged = { _uiState.setValue(_uiState.safeValue.copy(pagination = it)) },
+          _coroutineScope = viewModelScope,
+          _dispatcher = _dispatcher,
+          _onNotifyRecyclerState = {
+            _onRecyclerAdapterRefreshed(
+                when (it) {
+                  // +1 offset because header holder.
+                  is RecyclerAdapterState.ItemRangeChanged ->
+                      RecyclerAdapterState.ItemRangeChanged(
+                          it.positionStart + 1, it.itemCount, it.payload)
+                  is RecyclerAdapterState.ItemRangeInserted ->
+                      RecyclerAdapterState.ItemRangeInserted(it.positionStart + 1, it.itemCount)
+                  is RecyclerAdapterState.ItemRangeRemoved ->
+                      RecyclerAdapterState.ItemRangeRemoved(it.positionStart + 1, it.itemCount)
+                  else -> it
+                })
+          },
+          _countTotalItem = {
+            _customerRepository.countFilteredCustomers(CustomerFilters(null to null, null to null))
+          },
+          _selectItemsByPageOffset = { pageNumber, limit ->
+            _customerRepository.selectByPageOffset(
+                pageNumber,
+                limit,
+                CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
+                CustomerFilters(null to null, null to null))
+          })
   private val _customerChangedListener: ModelSyncListener<CustomerModel, CustomerModel> =
       ModelSyncListener(
-          onAdd = { ModelSynchronizer.addModel(_uiState.safeValue.customers, it) },
-          onUpdate = { ModelSynchronizer.updateModel(_uiState.safeValue.customers, it) },
-          onDelete = { ModelSynchronizer.deleteModel(_uiState.safeValue.customers, it) },
-          onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.customers, it) },
-          onSync = { _, updatedModels -> _onCustomersChanged(updatedModels) })
+          onSync = { _, _ ->
+            _onReloadPage(
+                _uiState.safeValue.pagination.firstLoadedPageNumber,
+                _uiState.safeValue.pagination.lastLoadedPageNumber)
+          })
 
   private val _uiEvent: SafeMutableLiveData<SelectCustomerEvent> =
       SafeMutableLiveData(SelectCustomerEvent())
@@ -66,7 +99,15 @@ constructor(
                   savedStateHandle.get<CustomerModel>(
                       SelectCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_PARCELABLE.key()),
               selectedCustomerOnDatabase = null,
-              customers = listOf(),
+              pagination =
+                  PaginationState(
+                      isLoading = false,
+                      firstLoadedPageNumber = 1,
+                      lastLoadedPageNumber = 1,
+                      isRecyclerStateIdle = false,
+                      paginatedItems = listOf(),
+                      totalItem = 0,
+                  ),
               expandedCustomerIndex = -1,
               isSelectedCustomerPreviewExpanded = false))
   val uiState: SafeLiveData<SelectCustomerState>
@@ -75,11 +116,45 @@ constructor(
   init {
     _customerRepository.addModelChangedListener(_customerChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    _loadAllCustomers()
+    _onReloadPage(1, 1)
   }
 
   override fun onCleared() {
     _customerRepository.removeModelChangedListener(_customerChangedListener)
+  }
+
+  fun onLoadPreviousPage() {
+    _paginationManager.onLoadPreviousPage {
+      if (_uiState.safeValue.expandedCustomer == null) return@onLoadPreviousPage
+      // Re-expand current expanded customer.
+      val expandedCustomerIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedCustomer?.id
+          }
+      if (expandedCustomerIndex != -1) {
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedCustomerIndex + 1))
+      }
+    }
+  }
+
+  fun onLoadNextPage() {
+    _paginationManager.onLoadNextPage {
+      if (_uiState.safeValue.expandedCustomer == null) return@onLoadNextPage
+      // Re-expand current expanded customer.
+      val expandedCustomerIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedCustomer?.id
+          }
+      if (expandedCustomerIndex != -1) {
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedCustomerIndex + 1))
+      }
+    }
+  }
+
+  fun onRecyclerStateIdle(isIdle: Boolean) {
+    _paginationManager.onRecyclerStateIdleNotifyItemRangeChanged(isIdle)
   }
 
   fun onSelectedCustomerPreviewExpanded(isExpanded: Boolean) {
@@ -88,30 +163,31 @@ constructor(
   }
 
   fun onExpandedCustomerIndexChanged(index: Int) {
-    // Update both previous and current expanded product. +1 offset because header holder.
-    _onRecyclerAdapterRefreshed(
-        RecyclerAdapterState.ItemChanged(
-            listOfNotNull(
-                _uiState.safeValue.expandedCustomerIndex.takeIf { it != -1 && it != index }?.inc(),
-                index + 1)))
-    _uiState.setValue(
-        _uiState.safeValue.copy(
-            expandedCustomerIndex =
-                if (_uiState.safeValue.expandedCustomerIndex != index) index else -1))
+    _expandedCustomerJob?.cancel()
+    _expandedCustomerJob =
+        viewModelScope.launch {
+          delay(200)
+          val previousExpandedIndex: Int = _uiState.safeValue.expandedCustomerIndex
+          val shouldExpand: Boolean = previousExpandedIndex != index
+          // Unlike queue, there's no need to load for the customer's
+          // `CustomerPaginatedInfo.fullModel`. They're loaded by default.
+          _uiState.setValue(
+              _uiState.safeValue.copy(expandedCustomerIndex = if (shouldExpand) index else -1))
+          // Update both previous and current expanded customer. +1 offset because header holder.
+          _onRecyclerAdapterRefreshed(
+              RecyclerAdapterState.ItemChanged(
+                  listOfNotNull(
+                      previousExpandedIndex.takeIf { it != -1 && it != index }?.inc(), index + 1)))
+        }
   }
 
-  fun onCustomerSelected(customer: CustomerModel?) {
+  fun onCustomerSelected(customer: CustomerPaginatedInfo?) {
     viewModelScope.launch {
       _uiEvent.updateEvent(
           data = SelectCustomerResultState(customer?.id),
           onSet = { this?.copy(selectResult = it) },
           onReset = { this?.copy(selectResult = null) })
     }
-  }
-
-  private fun _onCustomersChanged(customers: List<CustomerModel>) {
-    _uiState.setValue(_uiState.safeValue.copy(customers = _sorter.sort(customers)))
-    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
   }
 
   private fun _onSelectedCustomerOnDatabaseChanged(customer: CustomerModel?) {
@@ -129,15 +205,11 @@ constructor(
     }
   }
 
-  private suspend fun _selectAllCustomers(): List<CustomerModel> = _customerRepository.selectAll()
-
-  private fun _loadAllCustomers() {
+  private fun _onReloadPage(firstVisiblePageNumber: Int, lastVisiblePageNumber: Int) {
     viewModelScope.launch(_dispatcher) {
-      val customers: List<CustomerModel> = _selectAllCustomers()
       val selectedCustomerOnDb: CustomerModel? =
           _customerRepository.selectById(_uiState.safeValue.initialSelectedCustomer?.id)
-      withContext(Dispatchers.Main) {
-        _onCustomersChanged(customers)
+      _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
         _onSelectedCustomerOnDatabaseChanged(selectedCustomerOnDb)
       }
     }

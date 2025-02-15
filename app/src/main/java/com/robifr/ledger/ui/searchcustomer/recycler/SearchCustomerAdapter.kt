@@ -44,13 +44,19 @@ class SearchCustomerAdapter(private val _fragment: SearchCustomerFragment) :
                 _initialSelectedCustomerIds = {
                   _fragment.searchCustomerViewModel.uiState.safeValue.initialSelectedCustomerIds
                 },
-                _customers = { _fragment.searchCustomerViewModel.uiState.safeValue.customers },
-                _onCustomerSelected = _fragment.searchCustomerViewModel::onCustomerSelected,
-                _expandedCustomerIndex = {
-                  _fragment.searchCustomerViewModel.uiState.safeValue.expandedCustomerIndex
+                _customers = {
+                  _fragment.searchCustomerViewModel.uiState.safeValue.customers.map {
+                    CustomerPaginatedInfo(it)
+                  }
+                },
+                _onCustomerSelected = {
+                  _fragment.searchCustomerViewModel.onCustomerSelected(it.fullModel)
                 },
                 _onExpandedCustomerIndexChanged =
-                    _fragment.searchCustomerViewModel::onExpandedCustomerIndexChanged)
+                    _fragment.searchCustomerViewModel::onExpandedCustomerIndexChanged,
+                _expandedCustomer = {
+                  _fragment.searchCustomerViewModel.uiState.safeValue.expandedCustomer
+                })
           } else {
             CustomerListHolder(
                 _cardBinding = cardBinding,

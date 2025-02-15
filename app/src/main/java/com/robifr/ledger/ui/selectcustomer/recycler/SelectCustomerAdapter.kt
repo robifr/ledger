@@ -52,13 +52,15 @@ class SelectCustomerAdapter(private val _fragment: SelectCustomerFragment) :
                 listOfNotNull(
                     _fragment.selectCustomerViewModel.uiState.safeValue.initialSelectedCustomer?.id)
               },
-              _customers = { _fragment.selectCustomerViewModel.uiState.safeValue.customers },
-              _onCustomerSelected = _fragment.selectCustomerViewModel::onCustomerSelected,
-              _expandedCustomerIndex = {
-                _fragment.selectCustomerViewModel.uiState.safeValue.expandedCustomerIndex
+              _customers = {
+                _fragment.selectCustomerViewModel.uiState.safeValue.pagination.paginatedItems
               },
+              _onCustomerSelected = _fragment.selectCustomerViewModel::onCustomerSelected,
               _onExpandedCustomerIndexChanged =
-                  _fragment.selectCustomerViewModel::onExpandedCustomerIndexChanged)
+                  _fragment.selectCustomerViewModel::onExpandedCustomerIndexChanged,
+              _expandedCustomer = {
+                _fragment.selectCustomerViewModel.uiState.safeValue.expandedCustomer
+              })
     }
   }
 
@@ -71,7 +73,7 @@ class SelectCustomerAdapter(private val _fragment: SelectCustomerFragment) :
 
   override fun getItemCount(): Int =
       // +1 offset because header holder.
-      _fragment.selectCustomerViewModel.uiState.safeValue.customers.size + 1
+      _fragment.selectCustomerViewModel.uiState.safeValue.pagination.paginatedItems.size + 1
 
   override fun getItemViewType(position: Int): Int =
       when (position) {

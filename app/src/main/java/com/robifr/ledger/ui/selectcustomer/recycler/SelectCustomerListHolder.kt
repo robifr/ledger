@@ -22,16 +22,17 @@ import androidx.core.view.isVisible
 import com.robifr.ledger.R
 import com.robifr.ledger.components.CustomerCardWideComponent
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.databinding.CustomerCardWideBinding
 import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class SelectCustomerListHolder(
     private val _cardBinding: CustomerCardWideBinding,
     private val _initialSelectedCustomerIds: () -> List<Long>,
-    private val _customers: () -> List<CustomerModel>,
-    private val _onCustomerSelected: (CustomerModel) -> Unit,
-    private val _expandedCustomerIndex: () -> Int,
-    private val _onExpandedCustomerIndexChanged: (Int) -> Unit
+    private val _customers: () -> List<CustomerPaginatedInfo>,
+    private val _onCustomerSelected: (CustomerPaginatedInfo) -> Unit,
+    private val _onExpandedCustomerIndexChanged: (Int) -> Unit,
+    private val _expandedCustomer: () -> CustomerModel?
 ) : RecyclerViewHolder(_cardBinding.root), View.OnClickListener {
   private var _customerIndex: Int = -1
   private val _card: CustomerCardWideComponent =
@@ -51,11 +52,9 @@ class SelectCustomerListHolder(
   override fun bind(itemIndex: Int) {
     _customerIndex = itemIndex
     _card.reset()
-    _card.setNormalCardCustomer(_customers()[_customerIndex])
+    _customers()[_customerIndex].fullModel?.let { _card.setNormalCardCustomer(it) }
     _card.setCardChecked(_initialSelectedCustomerIds().contains(_customers()[_customerIndex].id))
-    setCardExpanded(
-        _expandedCustomerIndex() != -1 &&
-            _customers()[_customerIndex] == _customers()[_expandedCustomerIndex()])
+    _setCardExpanded(_customers()[_customerIndex].id == _expandedCustomer()?.id)
   }
 
   override fun onClick(view: View?) {
@@ -64,9 +63,11 @@ class SelectCustomerListHolder(
     }
   }
 
-  fun setCardExpanded(isExpanded: Boolean) {
+  private fun _setCardExpanded(isExpanded: Boolean) {
     _card.setCardExpanded(isExpanded)
     // Only fill the view when it's shown on screen.
-    if (isExpanded) _card.setExpandedCardCustomer(_customers()[_customerIndex])
+    if (isExpanded) {
+      _customers()[_customerIndex].fullModel?.let { _card.setExpandedCardCustomer(it) }
+    }
   }
 }
