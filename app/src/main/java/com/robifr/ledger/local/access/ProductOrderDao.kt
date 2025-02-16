@@ -20,9 +20,13 @@ import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.TypeConverters
 import androidx.room.Update
 import androidx.room.Upsert
 import com.robifr.ledger.data.model.ProductOrderModel
+import com.robifr.ledger.data.model.ProductOrderProductInfo
+import com.robifr.ledger.local.InstantConverter
+import java.time.Instant
 
 @Dao
 abstract class ProductOrderDao : QueryAccessible<ProductOrderModel> {
@@ -79,4 +83,26 @@ abstract class ProductOrderDao : QueryAccessible<ProductOrderModel> {
 
   @Query("SELECT * FROM product_order WHERE queue_id = :queueId")
   abstract fun selectAllByQueueId(queueId: Long?): List<ProductOrderModel>
+
+  @Query(
+      """
+      SELECT
+          product_order.id,
+          product_order.queue_id,
+          product_order.product_id,
+          product_order.product_name,
+          product_order.product_price,
+          product_order.quantity
+      FROM product_order
+      LEFT JOIN (
+        SELECT queue.id, queue.date FROM queue
+      ) AS queue
+      ON queue.id = product_order.queue_id
+      WHERE queue.date BETWEEN :dateStart AND :dateEnd
+      """)
+  @TypeConverters(InstantConverter::class)
+  abstract fun selectAllProductInfoInRange(
+      dateStart: Instant,
+      dateEnd: Instant
+  ): List<ProductOrderProductInfo>
 }

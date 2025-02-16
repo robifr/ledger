@@ -17,7 +17,9 @@
 package com.robifr.ledger.repository
 
 import com.robifr.ledger.data.model.ProductOrderModel
+import com.robifr.ledger.data.model.ProductOrderProductInfo
 import com.robifr.ledger.local.access.ProductOrderDao
+import java.time.ZonedDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -104,6 +106,12 @@ class ProductOrderRepository(private val _localDao: ProductOrderDao) :
 
   suspend fun selectAllByQueueId(queueId: Long?): List<ProductOrderModel> =
       _localDao.selectAllByQueueId(queueId)
+
+  suspend fun selectAllProductInfoInRange(
+      dateStart: ZonedDateTime,
+      dateEnd: ZonedDateTime
+  ): List<ProductOrderProductInfo> =
+      _localDao.selectAllProductInfoInRange(dateStart.toInstant(), dateEnd.toInstant())
 
   private suspend fun _notifyModelAdded(models: List<ProductOrderModel>) {
     withContext(Dispatchers.Main) { _modelChangedListeners.forEach { it.onModelAdded(models) } }

@@ -24,7 +24,6 @@ import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.local.TransactionProvider
 import com.robifr.ledger.local.access.QueueDao
-import java.time.ZonedDateTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -139,18 +138,13 @@ class QueueRepository(
     return effectedRows
   }
 
-  suspend fun selectAllInRange(startDate: ZonedDateTime, endDate: ZonedDateTime): List<QueueModel> =
-      _localDao.selectAllInRange(startDate.toInstant(), endDate.toInstant()).map { _mapFields(it) }
-
-  suspend fun selectPaginatedInfoByOffset(
-      pageNumber: Int,
-      limit: Int,
+  suspend fun selectAllPaginatedInfo(
       sortMethod: QueueSortMethod,
-      filters: QueueFilters
+      filters: QueueFilters,
+      shouldCalculateGrandTotalPrice: Boolean = true
   ): List<QueuePaginatedInfo> =
-      _localDao.selectPaginatedInfoByOffset(
-          pageNumber = pageNumber,
-          limit = limit,
+      _localDao.selectAllPaginatedInfo(
+          shouldCalculateGrandTotalPrice = shouldCalculateGrandTotalPrice,
           sortBy = sortMethod.sortBy,
           isAscending = sortMethod.isAscending,
           filteredCustomerIds = filters.filteredCustomerIds,
@@ -161,8 +155,33 @@ class QueueRepository(
           filteredDateStart = filters.filteredDate.dateStart.toInstant(),
           filteredDateEnd = filters.filteredDate.dateEnd.toInstant())
 
-  suspend fun countFilteredQueues(filters: QueueFilters): Long =
+  suspend fun selectPaginatedInfoByOffset(
+      pageNumber: Int,
+      limit: Int,
+      sortMethod: QueueSortMethod,
+      filters: QueueFilters,
+      shouldCalculateGrandTotalPrice: Boolean = true
+  ): List<QueuePaginatedInfo> =
+      _localDao.selectPaginatedInfoByOffset(
+          pageNumber = pageNumber,
+          limit = limit,
+          shouldCalculateGrandTotalPrice = shouldCalculateGrandTotalPrice,
+          sortBy = sortMethod.sortBy,
+          isAscending = sortMethod.isAscending,
+          filteredCustomerIds = filters.filteredCustomerIds,
+          isNullCustomerShown = filters.isNullCustomerShown,
+          filteredStatus = filters.filteredStatus,
+          filteredMinTotalPrice = filters.filteredTotalPrice.first,
+          filteredMaxTotalPrice = filters.filteredTotalPrice.second,
+          filteredDateStart = filters.filteredDate.dateStart.toInstant(),
+          filteredDateEnd = filters.filteredDate.dateEnd.toInstant())
+
+  suspend fun countFilteredQueues(
+      filters: QueueFilters,
+      shouldCalculateGrandTotalPrice: Boolean = true
+  ): Long =
       _localDao.countFilteredQueues(
+          shouldCalculateGrandTotalPrice = shouldCalculateGrandTotalPrice,
           filteredCustomerIds = filters.filteredCustomerIds,
           isNullCustomerShown = filters.isNullCustomerShown,
           filteredStatus = filters.filteredStatus,

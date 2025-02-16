@@ -60,9 +60,42 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
 
   @Query("SELECT NOT EXISTS(SELECT 1 FROM queue)") abstract override fun isTableEmpty(): Boolean
 
-  @Query("SELECT * FROM queue WHERE date >= :startDate AND date <= :endDate")
-  @TypeConverters(InstantConverter::class)
-  abstract fun selectAllInRange(startDate: Instant, endDate: Instant): List<QueueModel>
+  @Query(
+      """
+      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      SELECT * FROM filtered_queues_cte
+      -- Sorting based on the data from `QueueSortMethod`.
+      ORDER BY
+          CASE WHEN :sortBy = 'CUSTOMER_NAME' AND :isAscending IS TRUE
+              THEN filtered_queues_cte.customer_name END COLLATE NOCASE ASC,
+          CASE WHEN :sortBy = 'CUSTOMER_NAME' AND :isAscending IS FALSE
+              THEN filtered_queues_cte.customer_name END COLLATE NOCASE DESC,
+          CASE WHEN :sortBy = 'DATE' AND :isAscending IS TRUE
+              THEN filtered_queues_cte.date END ASC,
+          CASE WHEN :sortBy = 'DATE' AND :isAscending IS FALSE
+              THEN filtered_queues_cte.date END DESC,
+          CASE WHEN :sortBy = 'TOTAL_PRICE' AND :isAscending IS TRUE
+              THEN filtered_queues_cte.grand_total_price END ASC,
+          CASE WHEN :sortBy = 'TOTAL_PRICE' AND :isAscending IS FALSE
+              THEN filtered_queues_cte.grand_total_price END DESC
+      """)
+  @TypeConverters(BigDecimalConverter::class, InstantConverter::class)
+  abstract fun selectAllPaginatedInfo(
+      shouldCalculateGrandTotalPrice: Boolean,
+      // Sort options from `QueueSortMethod`.
+      sortBy: QueueSortMethod.SortBy,
+      isAscending: Boolean,
+      // Filter options from `QueueFilters`.
+      filteredCustomerIds: List<Long>,
+      isFilteredCustomerIdsEmpty: Boolean = filteredCustomerIds.isEmpty(),
+      isNullCustomerShown: Boolean,
+      filteredStatus: Set<QueueModel.Status>,
+      isFilteredStatusEmpty: Boolean = filteredStatus.isEmpty(),
+      filteredMinTotalPrice: BigDecimal?,
+      filteredMaxTotalPrice: BigDecimal?,
+      filteredDateStart: Instant,
+      filteredDateEnd: Instant
+  ): List<QueuePaginatedInfo>
 
   @Query(
       """
@@ -88,6 +121,7 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
   abstract fun selectPaginatedInfoByOffset(
       pageNumber: Int,
       limit: Int,
+      shouldCalculateGrandTotalPrice: Boolean,
       // Sort options from `QueueSortMethod`.
       sortBy: QueueSortMethod.SortBy,
       isAscending: Boolean,
@@ -110,6 +144,7 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
       """)
   @TypeConverters(BigDecimalConverter::class, InstantConverter::class)
   abstract fun countFilteredQueues(
+      shouldCalculateGrandTotalPrice: Boolean,
       // Filter options from `QueueFilters`.
       filteredCustomerIds: List<Long>,
       isFilteredCustomerIdsEmpty: Boolean = filteredCustomerIds.isEmpty(),
@@ -142,7 +177,7 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
                 SUM(CAST(product_order.total_price AS NUMERIC)) AS grand_total_price
             FROM product_order
             GROUP BY product_order.queue_id
-          ) ON queue_id = queue.id
+          ) ON :shouldCalculateGrandTotalPrice IS TRUE AND queue_id = queue.id
           LEFT JOIN customer ON customer.id = queue.customer_id
           -- Condition based on the data from `QueueFilters`.
           WHERE
