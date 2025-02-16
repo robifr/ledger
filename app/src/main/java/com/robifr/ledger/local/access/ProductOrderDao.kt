@@ -75,10 +75,10 @@ abstract class ProductOrderDao : QueryAccessible<ProductOrderModel> {
   @Query("SELECT NOT EXISTS(SELECT 1 FROM product_order)")
   abstract override fun isTableEmpty(): Boolean
 
-  /** @return Upserted row ID. -1 for a failed insert operation. */
+  /** @return Upserted row ID or -1 for a failed insert operation. */
   @Upsert abstract fun upsert(productOrder: ProductOrderModel): Long
 
-  /** @return Upserted row IDs. Empty list for a failed insert operation. */
+  /** @return Upserted row IDs or list of -1 for any failed insert operation. */
   @Upsert abstract fun upsert(productOrders: List<ProductOrderModel>): List<Long>
 
   @Query("SELECT * FROM product_order WHERE queue_id = :queueId")

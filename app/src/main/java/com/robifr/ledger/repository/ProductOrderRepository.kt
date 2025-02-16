@@ -88,18 +88,21 @@ class ProductOrderRepository(private val _localDao: ProductOrderDao) :
     }
   }
 
-  /** @return Upserted product order ID. 0 for a failed operation. */
+  /** @return Upserted product order ID. */
   suspend fun upsert(model: ProductOrderModel): Long =
       _localDao
           .upsert(model)
-          .let { rowId -> _localDao.selectIdByRowId(rowId) }
+          .let { rowId -> model.id.takeIf { rowId == -1L } ?: _localDao.selectIdByRowId(rowId) }
           .also { upsertedId -> selectById(upsertedId)?.let { _notifyModelUpserted(listOf(it)) } }
 
-  /** @return Upserted product order IDs. Empty list for a failed operation. */
+  /** @return Upserted product order IDs. */
   suspend fun upsert(models: List<ProductOrderModel>): List<Long> =
       _localDao
           .upsert(models)
-          .let { rowIds -> _localDao.selectIdByRowId(rowIds) }
+          .let { rowIds ->
+            val insertedIds: List<Long> = _localDao.selectIdByRowId(rowIds.filter { it != -1L })
+            models.mapNotNull { it.id }.plus(insertedIds)
+          }
           .also { upsertedIds ->
             selectById(upsertedIds).let { if (it.isNotEmpty()) _notifyModelUpserted(it) }
           }
