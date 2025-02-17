@@ -170,9 +170,12 @@ object CurrencyFormat {
    * @throws ParseException If the input string can't be parsed.
    */
   @Throws(ParseException::class)
-  fun parseToCents(amount: String, languageTag: String): BigDecimal =
-      toCents(parse(amount, languageTag, decimalFractionDigits(languageTag)), languageTag)
-          .stripTrailingZeros()
+  fun parseToCents(
+      amount: String,
+      languageTag: String,
+      fractionDigits: Int = decimalFractionDigits(languageTag)
+  ): BigDecimal =
+      toCents(parse(amount, languageTag, fractionDigits), languageTag).stripTrailingZeros()
 
   /** Scales the given amount from cents to base units based on locale-specific fraction digits. */
   fun fromCents(
@@ -184,11 +187,12 @@ object CurrencyFormat {
       else amount.divide(10.toBigDecimal().pow(fractionDigits), fractionDigits, RoundingMode.DOWN)
 
   /** Scales the given amount from base units to cents based on locale-specific fraction digits. */
-  fun toCents(amount: BigDecimal, languageTag: String): BigDecimal {
-    val fractionDigits: Int = decimalFractionDigits(languageTag)
-    if (fractionDigits == -1) return 0.toBigDecimal()
-    return 10.toBigDecimal().pow(fractionDigits) * amount
-  }
+  fun toCents(
+      amount: BigDecimal,
+      languageTag: String,
+      fractionDigits: Int = decimalFractionDigits(languageTag)
+  ): BigDecimal =
+      if (fractionDigits == -1) 0.toBigDecimal() else 10.toBigDecimal().pow(fractionDigits) * amount
 
   fun isValidToParseAndFormat(
       amount: String,
