@@ -61,15 +61,17 @@ object InfoSynchronizer {
   ): List<I> =
       oldInfo.toMutableList().apply {
         for (newModel in newModels) {
+          var isUpdated: Boolean = false
           for ((i, info) in withIndex()) {
             // Update when having the same ID.
             if (info.id != null && newModel.id != null && info.id == newModel.id) {
               set(i, modelToInfo(newModel))
+              isUpdated = true
               break
             }
-            // Add as new when reached the end of array while can't find info with the same ID.
-            if (i == size - 1) add(modelToInfo(newModel))
           }
+          // Add as new when reached the end of array while can't find info with the same ID.
+          if (!isUpdated) add(modelToInfo(newModel))
         }
       }
 }

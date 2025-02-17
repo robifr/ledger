@@ -49,15 +49,17 @@ object ModelSynchronizer {
   fun <M : Model> upsertModel(oldModels: List<M>, newModels: List<M>): List<M> =
       oldModels.toMutableList().apply {
         for (newModel in newModels) {
+          var isUpdated: Boolean = false
           for ((i, oldModel) in withIndex()) {
             // Update when having the same ID.
             if (oldModel.id != null && newModel.id != null && oldModel.id == newModel.id) {
               set(i, newModel)
+              isUpdated = true
               break
             }
-            // Add as new when reached the end of array while can't find model with the same ID.
-            if (i == size - 1) add(newModel)
           }
+          // Add as new when reached the end of array while can't find model with the same ID.
+          if (!isUpdated) add(newModel)
         }
       }
 }
