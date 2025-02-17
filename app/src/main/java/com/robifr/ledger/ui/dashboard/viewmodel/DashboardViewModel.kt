@@ -114,8 +114,8 @@ constructor(
       _queueRepository.selectDateInfoById(queueIds = queueIds)
 
   private suspend fun _selectAllCustomersWithBalance(): List<CustomerBalanceInfo> =
-      _customerRepository.selectAllInfoWithBalance()
+      _customerRepository.selectAllBalanceInfoWithBalance()
 
   private suspend fun _selectAllCustomersWithDebt(): List<CustomerDebtInfo> =
-      _customerRepository.selectAllInfoWithDebt()
+      _customerRepository.selectAllDebtInfoWithDebt()
 }

@@ -94,10 +94,11 @@ class CustomerRepository(private val _localDao: CustomerDao) : Queryable<Custome
           filteredMinDebt = filters.filteredDebt.first,
           filteredMaxDebt = filters.filteredDebt.second)
 
-  suspend fun selectAllInfoWithBalance(): List<CustomerBalanceInfo> =
-      _localDao.selectAllInfoWithBalance()
+  suspend fun selectAllBalanceInfoWithBalance(): List<CustomerBalanceInfo> =
+      _localDao.selectAllBalanceInfoWithBalance()
 
-  suspend fun selectAllInfoWithDebt(): List<CustomerDebtInfo> = _localDao.selectAllInfoWithDebt()
+  suspend fun selectAllDebtInfoWithDebt(): List<CustomerDebtInfo> =
+      _localDao.selectAllDebtInfoWithDebt()
 
   private suspend fun _notifyModelAdded(models: List<CustomerModel>) {
     withContext(Dispatchers.Main) { _modelChangedListeners.forEach { it.onModelAdded(models) } }

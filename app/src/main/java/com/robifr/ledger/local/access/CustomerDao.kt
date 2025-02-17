@@ -124,9 +124,10 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   ): Long
 
   @Query("SELECT id, balance FROM customer WHERE balance > 0")
-  abstract fun selectAllInfoWithBalance(): List<CustomerBalanceInfo>
+  abstract fun selectAllBalanceInfoWithBalance(): List<CustomerBalanceInfo>
 
-  @Transaction open fun selectAllInfoWithDebt(): List<CustomerDebtInfo> = _selectAllInfoWithDebt()
+  @Transaction
+  open fun selectAllDebtInfoWithDebt(): List<CustomerDebtInfo> = _selectAllDebtInfoWithDebt()
 
   @Query(
       """
@@ -134,7 +135,9 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
       SELECT id, debt FROM total_debt_cte WHERE debt < 0
       """)
   @TypeConverters(BigDecimalConverter::class)
-  protected abstract fun _selectAllInfoWithDebt(customerId: Long? = null): List<CustomerDebtInfo>
+  protected abstract fun _selectAllDebtInfoWithDebt(
+      customerId: Long? = null
+  ): List<CustomerDebtInfo>
 
   @Transaction
   open fun search(query: String): List<CustomerModel> {
