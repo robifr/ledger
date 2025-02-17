@@ -20,6 +20,7 @@ import com.robifr.ledger.data.display.QueueFilters
 import com.robifr.ledger.data.display.QueueSortMethod
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
+import com.robifr.ledger.data.model.QueueDateInfo
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.local.TransactionProvider
@@ -189,6 +190,9 @@ class QueueRepository(
           filteredMaxTotalPrice = filters.filteredTotalPrice.second,
           filteredDateStart = filters.filteredDate.dateStart.toInstant(),
           filteredDateEnd = filters.filteredDate.dateEnd.toInstant())
+
+  suspend fun selectDateInfoById(queueIds: List<Long>): List<QueueDateInfo> =
+      _localDao.selectDateInfoById(queueIds)
 
   private suspend fun _notifyModelAdded(models: List<QueueModel>) {
     withContext(Dispatchers.Main) { _modelChangedListeners.forEach { it.onModelAdded(models) } }

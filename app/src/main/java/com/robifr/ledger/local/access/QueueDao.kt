@@ -22,6 +22,7 @@ import androidx.room.Query
 import androidx.room.TypeConverters
 import androidx.room.Update
 import com.robifr.ledger.data.display.QueueSortMethod
+import com.robifr.ledger.data.model.QueueDateInfo
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.local.BigDecimalConverter
@@ -156,6 +157,10 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
       filteredDateStart: Instant,
       filteredDateEnd: Instant
   ): Long
+
+  @Query("SELECT id, date FROM queue WHERE id IN (:queueIds)")
+  @TypeConverters(InstantConverter::class)
+  abstract fun selectDateInfoById(queueIds: List<Long>): List<QueueDateInfo>
 
   companion object {
     @Language("RoomSql")
