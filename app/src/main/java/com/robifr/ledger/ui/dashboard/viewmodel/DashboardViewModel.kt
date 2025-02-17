@@ -17,11 +17,18 @@
 package com.robifr.ledger.ui.dashboard.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.robifr.ledger.data.display.QueueDate
+import com.robifr.ledger.data.display.QueueFilters
+import com.robifr.ledger.data.display.QueueSortMethod
 import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
+import com.robifr.ledger.data.model.ProductOrderProductInfo
+import com.robifr.ledger.data.model.QueueDateInfo
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.CustomerRepository
+import com.robifr.ledger.repository.ProductOrderRepository
 import com.robifr.ledger.repository.QueueRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.time.ZonedDateTime
@@ -34,18 +41,25 @@ class DashboardViewModel
 constructor(
     @IoDispatcher private val _dispatcher: CoroutineDispatcher,
     private val _queueRepository: QueueRepository,
+    private val _productOrderRepository: ProductOrderRepository,
     private val _customerRepository: CustomerRepository
 ) : ViewModel() {
   val summaryView: DashboardSummaryViewModel =
       DashboardSummaryViewModel(
           _viewModel = this,
           _dispatcher = _dispatcher,
-          _selectAllQueuesInRange = ::_selectAllQueuesInRange)
+          _selectAllQueuesInRange = { startDate, endDate ->
+            _selectAllQueuesInRange(startDate, endDate, false)
+          },
+          _selectAllProductsSoldInRange = ::_selectAllProductsSoldInRange,
+          _selectDateInfoById = ::_selectDateInfoById)
   val revenueView: DashboardRevenueViewModel =
       DashboardRevenueViewModel(
           _viewModel = this,
           _dispatcher = _dispatcher,
-          _selectAllQueuesInRange = ::_selectAllQueuesInRange)
+          _selectAllQueuesInRange = { startDate, endDate ->
+            _selectAllQueuesInRange(startDate, endDate, true)
+          })
   val balanceView: DashboardBalanceViewModel =
       DashboardBalanceViewModel(
           _viewModel = this,
@@ -56,6 +70,7 @@ constructor(
   init {
     _queueRepository.addModelChangedListener(summaryView._queueChangedListener)
     _queueRepository.addModelChangedListener(revenueView._queueChangedListener)
+    _productOrderRepository.addModelChangedListener(summaryView._productOrderChangedListener)
     _customerRepository.addModelChangedListener(balanceView._customerBalanceChangedListener)
     _customerRepository.addModelChangedListener(balanceView._customerDebtChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
@@ -68,14 +83,35 @@ constructor(
   override fun onCleared() {
     _queueRepository.removeModelChangedListener(summaryView._queueChangedListener)
     _queueRepository.removeModelChangedListener(revenueView._queueChangedListener)
+    _productOrderRepository.removeModelChangedListener(summaryView._productOrderChangedListener)
     _customerRepository.removeModelChangedListener(balanceView._customerBalanceChangedListener)
     _customerRepository.removeModelChangedListener(balanceView._customerDebtChangedListener)
   }
 
   private suspend fun _selectAllQueuesInRange(
       startDate: ZonedDateTime,
-      endDate: ZonedDateTime
-  ): List<QueueModel> = _queueRepository.selectAllInRange(startDate, endDate)
+      endDate: ZonedDateTime,
+      shouldCalculateGrandTotalPrice: Boolean
+  ): List<QueuePaginatedInfo> =
+      _queueRepository.selectAllPaginatedInfo(
+          sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true),
+          filters =
+              QueueFilters(
+                  filteredCustomerIds = listOf(),
+                  isNullCustomerShown = true,
+                  filteredStatus = QueueModel.Status.entries.toSet(),
+                  filteredDate = QueueDate(startDate, endDate),
+                  filteredTotalPrice = null to null),
+          shouldCalculateGrandTotalPrice = shouldCalculateGrandTotalPrice)
+
+  private suspend fun _selectAllProductsSoldInRange(
+      dateStart: ZonedDateTime,
+      dateEnd: ZonedDateTime
+  ): List<ProductOrderProductInfo> =
+      _productOrderRepository.selectAllProductInfoInRange(dateStart, dateEnd)
+
+  private suspend fun _selectDateInfoById(queueIds: List<Long>): List<QueueDateInfo> =
+      _queueRepository.selectDateInfoById(queueIds = queueIds)
 
   private suspend fun _selectAllCustomersWithBalance(): List<CustomerBalanceInfo> =
       _customerRepository.selectAllInfoWithBalance()

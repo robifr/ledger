@@ -31,8 +31,8 @@ import com.robifr.ledger.R
 import com.robifr.ledger.assetbinding.JsInterface
 import com.robifr.ledger.assetbinding.chart.ChartData
 import com.robifr.ledger.data.display.QueueDate
-import com.robifr.ledger.data.model.CustomerModel
-import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.CustomerNameInfo
+import com.robifr.ledger.data.model.ProductNameInfo
 import com.robifr.ledger.databinding.DashboardCardSummaryListItemBinding
 import com.robifr.ledger.ui.dashboard.chart.Chart
 import com.robifr.ledger.ui.dashboard.chart.ChartWebViewClient
@@ -172,7 +172,7 @@ class DashboardSummary(private val _fragment: DashboardFragment) : View.OnClickL
   }
 
   /** @param customers [DashboardSummaryState.mostActiveCustomers] */
-  fun displayMostActiveCustomersList(customers: Map<CustomerModel, Int>) {
+  fun displayMostActiveCustomersList(customers: Map<CustomerNameInfo, Int>) {
     TransitionManager.endTransitions(_fragment.fragmentBinding.root)
     TransitionManager.beginDelayedTransition(_fragment.fragmentBinding.root, ChangeBounds())
     _fragment.fragmentBinding.summary.chart.isGone = true
@@ -210,7 +210,7 @@ class DashboardSummary(private val _fragment: DashboardFragment) : View.OnClickL
   }
 
   /** @param products [DashboardSummaryState.mostProductsSold] */
-  fun displayMostProductsSoldList(products: Map<ProductModel, BigDecimal>) {
+  fun displayMostProductsSoldList(products: Map<ProductNameInfo, BigDecimal>) {
     TransitionManager.endTransitions(_fragment.fragmentBinding.root)
     TransitionManager.beginDelayedTransition(_fragment.fragmentBinding.root, ChangeBounds())
     _fragment.fragmentBinding.summary.chart.isGone = true

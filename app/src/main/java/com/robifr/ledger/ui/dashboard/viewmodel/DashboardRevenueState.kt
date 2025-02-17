@@ -21,13 +21,14 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.ui.dashboard.DashboardRevenue
 import java.math.BigDecimal
 
 data class DashboardRevenueState(
     val isDateDialogShown: Boolean,
     val date: QueueDate,
-    val queues: List<QueueModel>,
+    val queues: List<QueuePaginatedInfo>,
     val displayedChart: DashboardRevenue.OverviewType
 ) {
   @StringRes
@@ -36,14 +37,10 @@ data class DashboardRevenueState(
           .find { it.languageTag == AppCompatDelegate.getApplicationLocales().toLanguageTags() }
           ?.shortDateFormat ?: LanguageOption.ENGLISH_US.shortDateFormat
 
+  /** Total income from the completed queues only. */
   fun receivedIncome(): BigDecimal =
-      queues
-          .asSequence()
-          // Received income are from the completed queues only.
-          .filter { it.status == QueueModel.Status.COMPLETED }
-          .flatMap { it.productOrders }
-          .sumOf { it.totalPrice }
+      queues.filter { it.status == QueueModel.Status.COMPLETED }.sumOf { it.grandTotalPrice }
 
-  fun projectedIncome(): BigDecimal =
-      queues.asSequence().flatMap { it.productOrders }.sumOf { it.totalPrice }
+  /** Total income from any queues. */
+  fun projectedIncome(): BigDecimal = queues.sumOf { it.grandTotalPrice }
 }

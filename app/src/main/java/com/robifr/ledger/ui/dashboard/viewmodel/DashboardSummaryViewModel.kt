@@ -22,10 +22,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.assetbinding.chart.ChartData
 import com.robifr.ledger.assetbinding.chart.ChartUtil
-import com.robifr.ledger.data.ModelSynchronizer
+import com.robifr.ledger.data.InfoSynchronizer
 import com.robifr.ledger.data.display.QueueDate
-import com.robifr.ledger.data.display.QueueFilterer
+import com.robifr.ledger.data.model.ProductOrderModel
+import com.robifr.ledger.data.model.ProductOrderProductInfo
+import com.robifr.ledger.data.model.QueueDateInfo
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
@@ -46,19 +49,66 @@ class DashboardSummaryViewModel(
     private val _viewModel: DashboardViewModel,
     private val _dispatcher: CoroutineDispatcher,
     private val _selectAllQueuesInRange:
-        suspend (startDate: ZonedDateTime, endDate: ZonedDateTime) -> List<QueueModel>
+        suspend (startDate: ZonedDateTime, endDate: ZonedDateTime) -> List<QueuePaginatedInfo>,
+    private val _selectAllProductsSoldInRange:
+        suspend (startDate: ZonedDateTime, endDate: ZonedDateTime) -> List<ProductOrderProductInfo>,
+    private val _selectDateInfoById: suspend (queueIds: List<Long>) -> List<QueueDateInfo>
 ) {
-  val _queueChangedListener: ModelSyncListener<QueueModel, QueueModel> =
+  val _queueChangedListener: ModelSyncListener<QueueModel, QueuePaginatedInfo> =
       ModelSyncListener(
-          onAdd = { ModelSynchronizer.addModel(_uiState.safeValue.queues, it) },
-          onUpdate = { ModelSynchronizer.updateModel(_uiState.safeValue.queues, it) },
-          onDelete = { ModelSynchronizer.deleteModel(_uiState.safeValue.queues, it) },
-          onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.queues, it) },
-          onSync = { _, updatedModels ->
+          onAdd = { InfoSynchronizer.addInfo(_uiState.safeValue.queues, it, ::QueuePaginatedInfo) },
+          onUpdate = {
+            // Use upsert instead of update. When there's a queue (which previously isn't included
+            // within the current list) with their `QueueModel.date` being updated to the current
+            // selected date range, they wouldn't get included if you do an update. Simply because
+            // update will updates if there's a matching queue found.
+            InfoSynchronizer.upsertInfo(_uiState.safeValue.queues, it, ::QueuePaginatedInfo)
+          },
+          onDelete = { InfoSynchronizer.deleteInfo(_uiState.safeValue.queues, it) },
+          onUpsert = {
+            InfoSynchronizer.upsertInfo(_uiState.safeValue.queues, it, ::QueuePaginatedInfo)
+          },
+          onSync = { models, updatedModels ->
             _onQueuesChanged(
-                QueueFilterer()
-                    .apply { filters = filters.copy(filteredDate = _uiState.safeValue.date) }
-                    .filter(updatedModels))
+                updatedModels.filterNot {
+                  it.date.isBefore(_uiState.safeValue.date.dateStart.toInstant()) ||
+                      it.date.isAfter(_uiState.safeValue.date.dateEnd.toInstant())
+                })
+          })
+  val _productOrderChangedListener: ModelSyncListener<ProductOrderModel, ProductOrderProductInfo> =
+      ModelSyncListener(
+          onAdd = {
+            InfoSynchronizer.addInfo(_uiState.safeValue.productsSold, it, ::ProductOrderProductInfo)
+          },
+          onUpdate = {
+            // Use upsert instead of update. When there's a queue (which previously isn't included
+            // within the current list) with their `QueueModel.date` being updated to the current
+            // selected date range, they wouldn't get included if you do an update. Simply because
+            // update will updates if there's a matching queue found.
+            InfoSynchronizer.upsertInfo(
+                _uiState.safeValue.productsSold, it, ::ProductOrderProductInfo)
+          },
+          onDelete = { InfoSynchronizer.deleteInfo(_uiState.safeValue.productsSold, it) },
+          onUpsert = {
+            InfoSynchronizer.upsertInfo(
+                _uiState.safeValue.productsSold, it, ::ProductOrderProductInfo)
+          },
+          onSync = { models, updatedModels ->
+            _viewModel.viewModelScope.launch(_dispatcher) {
+              // Get list of notified queues whose date isn't in range of current selected date.
+              val excludedQueueDateInfo: List<QueueDateInfo> =
+                  _selectDateInfoById(models.mapNotNull { it.queueId }.distinct()).filterNot {
+                    it.date.isBefore(_uiState.safeValue.date.dateStart.toInstant()) ||
+                        it.date.isAfter(_uiState.safeValue.date.dateEnd.toInstant())
+                  }
+              // Then remove every referenced product orders with the same queue ID if they're in
+              // the exclusion list.
+              val filteredProductsSold: List<ProductOrderProductInfo> =
+                  updatedModels.filterNot { productOrder ->
+                    excludedQueueDateInfo.find { it.id == productOrder.queueId } != null
+                  }
+              withContext(Dispatchers.Main) { _onProductsSoldChanged(filteredProductsSold) }
+            }
           })
 
   private val _uiState: SafeMutableLiveData<DashboardSummaryState> =
@@ -67,6 +117,7 @@ class DashboardSummaryViewModel(
               isDateDialogShown = false,
               date = QueueDate(QueueDate.Range.ALL_TIME),
               queues = listOf(),
+              productsSold = listOf(),
               displayedChart = DashboardSummary.OverviewType.TOTAL_QUEUES))
   val uiState: SafeLiveData<DashboardSummaryState>
     get() = _uiState
@@ -111,14 +162,23 @@ class DashboardSummaryViewModel(
     _uiState.setValue(_uiState.safeValue.copy(isDateDialogShown = false))
   }
 
-  fun _onQueuesChanged(queues: List<QueueModel>) {
-    _uiState.setValue(_uiState.safeValue.copy(queues = queues))
+  fun _onQueuesChanged(queueInfo: List<QueuePaginatedInfo>) {
+    _uiState.setValue(_uiState.safeValue.copy(queues = queueInfo))
+  }
+
+  fun _onProductsSoldChanged(productOrderInfo: List<ProductOrderProductInfo>) {
+    _uiState.setValue(_uiState.safeValue.copy(productsSold = productOrderInfo))
   }
 
   fun _loadAllQueuesInRange(date: QueueDate = _uiState.safeValue.date) {
     _viewModel.viewModelScope.launch(_dispatcher) {
-      _selectAllQueuesInRange(date.dateStart, date.dateEnd).let {
-        withContext(Dispatchers.Main) { _onQueuesChanged(it) }
+      val queueInfo: List<QueuePaginatedInfo> =
+          _selectAllQueuesInRange(date.dateStart, date.dateEnd)
+      val productOrderInfo: List<ProductOrderProductInfo> =
+          _selectAllProductsSoldInRange(date.dateStart, date.dateEnd)
+      withContext(Dispatchers.Main) {
+        _onQueuesChanged(queueInfo)
+        _onProductsSoldChanged(productOrderInfo)
       }
     }
   }
@@ -140,7 +200,7 @@ class DashboardSummaryViewModel(
     var maxValue: Int = yAxisTicks - 1
     // Sum the values if the date is equal. The queues also have to be sorted by date
     // because D3.js draws everything in order.
-    for (queue in _uiState.safeValue.queues.sortedBy { it.date }) {
+    for (queue in _uiState.safeValue.queues) {
       rawDataSummed
           .merge(
               ChartUtil.toDateTime(queue.date.atZone(ZoneId.systemDefault()), dateStart to dateEnd),

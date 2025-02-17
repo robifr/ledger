@@ -25,10 +25,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.assetbinding.chart.ChartData
 import com.robifr.ledger.assetbinding.chart.ChartUtil
-import com.robifr.ledger.data.ModelSynchronizer
+import com.robifr.ledger.data.InfoSynchronizer
 import com.robifr.ledger.data.display.QueueDate
-import com.robifr.ledger.data.display.QueueFilterer
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
@@ -49,19 +49,28 @@ class DashboardRevenueViewModel(
     private val _viewModel: DashboardViewModel,
     private val _dispatcher: CoroutineDispatcher,
     private val _selectAllQueuesInRange:
-        suspend (startDate: ZonedDateTime, endDate: ZonedDateTime) -> List<QueueModel>
+        suspend (startDate: ZonedDateTime, endDate: ZonedDateTime) -> List<QueuePaginatedInfo>
 ) {
-  val _queueChangedListener: ModelSyncListener<QueueModel, QueueModel> =
+  val _queueChangedListener: ModelSyncListener<QueueModel, QueuePaginatedInfo> =
       ModelSyncListener(
-          onAdd = { ModelSynchronizer.addModel(_uiState.safeValue.queues, it) },
-          onUpdate = { ModelSynchronizer.updateModel(_uiState.safeValue.queues, it) },
-          onDelete = { ModelSynchronizer.deleteModel(_uiState.safeValue.queues, it) },
-          onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.queues, it) },
+          onAdd = { InfoSynchronizer.addInfo(_uiState.safeValue.queues, it, ::QueuePaginatedInfo) },
+          onUpdate = {
+            // Use upsert instead of update. When there's a queue (which previously isn't included
+            // within the current list) with their `QueueModel.date` being updated to the current
+            // selected date range, they wouldn't get included if you do an update. Simply because
+            // update will updates if there's a matching queue found.
+            InfoSynchronizer.upsertInfo(_uiState.safeValue.queues, it, ::QueuePaginatedInfo)
+          },
+          onDelete = { InfoSynchronizer.deleteInfo(_uiState.safeValue.queues, it) },
+          onUpsert = {
+            InfoSynchronizer.upsertInfo(_uiState.safeValue.queues, it, ::QueuePaginatedInfo)
+          },
           onSync = { _, updatedModels ->
             _onQueuesChanged(
-                QueueFilterer()
-                    .apply { filters = filters.copy(filteredDate = _uiState.safeValue.date) }
-                    .filter(updatedModels))
+                updatedModels.filterNot {
+                  it.date.isBefore(_uiState.safeValue.date.dateStart.toInstant()) ||
+                      it.date.isAfter(_uiState.safeValue.date.dateEnd.toInstant())
+                })
           })
 
   private val _uiState: SafeMutableLiveData<DashboardRevenueState> =
@@ -107,7 +116,7 @@ class DashboardRevenueViewModel(
     _uiState.setValue(_uiState.safeValue.copy(isDateDialogShown = false))
   }
 
-  fun _onQueuesChanged(queues: List<QueueModel>) {
+  fun _onQueuesChanged(queues: List<QueuePaginatedInfo>) {
     _uiState.setValue(_uiState.safeValue.copy(queues = queues))
   }
 
@@ -153,12 +162,12 @@ class DashboardRevenueViewModel(
     var maxValue: BigDecimal = (yAxisTicks - 1).toBigDecimal()
     // Sum the values if the date and overview type are equal.
     // The queues also have to be sorted by date because D3.js draws everything in order.
-    for (queue in _uiState.safeValue.queues.sortedBy { it.date }) {
+    for (queue in _uiState.safeValue.queues) {
       val formattedDate: String =
           ChartUtil.toDateTime(queue.date.atZone(ZoneId.systemDefault()), dateStart to dateEnd)
       val parsedGrandTotalPriceFromCents: BigDecimal =
           CurrencyFormat.fromCents(
-              queue.grandTotalPrice(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
+              queue.grandTotalPrice, AppCompatDelegate.getApplicationLocales().toLanguageTags())
       // Received income are from the completed queue only.
       if (queue.status == QueueModel.Status.COMPLETED) {
         rawDataSummed

@@ -20,16 +20,19 @@ import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatDelegate
 import com.robifr.ledger.data.display.LanguageOption
 import com.robifr.ledger.data.display.QueueDate
-import com.robifr.ledger.data.model.CustomerModel
-import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.CustomerNameInfo
+import com.robifr.ledger.data.model.ProductNameInfo
+import com.robifr.ledger.data.model.ProductOrderProductInfo
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
 import com.robifr.ledger.ui.dashboard.DashboardSummary
 import java.math.BigDecimal
 
 data class DashboardSummaryState(
     val isDateDialogShown: Boolean,
     val date: QueueDate,
-    val queues: List<QueueModel>,
+    val queues: List<QueuePaginatedInfo>,
+    val productsSold: List<ProductOrderProductInfo>,
     val displayedChart: DashboardSummary.OverviewType
 ) {
   @StringRes
@@ -44,30 +47,29 @@ data class DashboardSummaryState(
       queues.asSequence().mapNotNull { it.customerId }.distinct().count()
 
   /** @return Map of the most active customers with their queue counts. */
-  fun mostActiveCustomers(): Map<CustomerModel, Int> =
+  fun mostActiveCustomers(): Map<CustomerNameInfo, Int> =
       queues
           .asSequence()
-          .mapNotNull { queue -> queue.customer?.let { it to 1 } }
-          .groupBy({ it.first }, { it.second })
-          .mapValues { it.value.size }
+          .mapNotNull { queue ->
+            queue.customerName?.let { CustomerNameInfo(queue.customerId, it) }
+          }
+          .groupingBy { it }
+          .eachCount()
           .toList()
           .sortedByDescending { it.second }
           .take(4)
           .toMap()
 
-  fun totalProductsSold(): BigDecimal =
-      queues
-          .asSequence()
-          .flatMap { it.productOrders.asSequence() }
-          .sumOf { it.quantity.toBigDecimal() }
+  fun totalProductsSold(): BigDecimal = productsSold.sumOf { it.quantity.toBigDecimal() }
 
   /** @return Map of the most products sold with their quantity counts. */
-  fun mostProductsSold(): Map<ProductModel, BigDecimal> =
-      queues
+  fun mostProductsSold(): Map<ProductNameInfo, BigDecimal> =
+      productsSold
           .asSequence()
-          .flatMap { it.productOrders }
           .mapNotNull { productOrder ->
-            productOrder.referencedProduct()?.let { it to productOrder.quantity.toBigDecimal() }
+            productOrder.productName?.let {
+              ProductNameInfo(productOrder.productId, it) to productOrder.quantity.toBigDecimal()
+            }
           }
           .groupBy({ it.first }, { it.second })
           .mapValues { entry -> entry.value.sumOf { it } }
