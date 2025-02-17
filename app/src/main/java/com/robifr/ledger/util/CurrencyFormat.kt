@@ -175,11 +175,13 @@ object CurrencyFormat {
           .stripTrailingZeros()
 
   /** Scales the given amount from cents to base units based on locale-specific fraction digits. */
-  fun fromCents(amount: BigDecimal, languageTag: String): BigDecimal {
-    val fractionDigits: Int = decimalFractionDigits(languageTag)
-    if (fractionDigits == -1) return 0.toBigDecimal()
-    return amount.divide(10.toBigDecimal().pow(fractionDigits), fractionDigits, RoundingMode.DOWN)
-  }
+  fun fromCents(
+      amount: BigDecimal,
+      languageTag: String,
+      fractionDigits: Int = decimalFractionDigits(languageTag)
+  ): BigDecimal =
+      if (fractionDigits == -1) 0.toBigDecimal()
+      else amount.divide(10.toBigDecimal().pow(fractionDigits), fractionDigits, RoundingMode.DOWN)
 
   /** Scales the given amount from base units to cents based on locale-specific fraction digits. */
   fun toCents(amount: BigDecimal, languageTag: String): BigDecimal {

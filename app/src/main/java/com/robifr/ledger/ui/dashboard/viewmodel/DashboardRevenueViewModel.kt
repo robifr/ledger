@@ -155,6 +155,8 @@ class DashboardRevenueViewModel(
         }
     val dateEnd: ZonedDateTime = _uiState.safeValue.date.dateEnd
 
+    val languageTags: String = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+    val decimalFractionDigits: Int = CurrencyFormat.decimalFractionDigits(languageTags)
     // The key is a formatted date with overview type as a secondary key.
     val rawDataSummed: LinkedHashMap<Pair<String, DashboardRevenue.OverviewType>, BigDecimal> =
         linkedMapOf()
@@ -165,9 +167,11 @@ class DashboardRevenueViewModel(
     for (queue in _uiState.safeValue.queues) {
       val formattedDate: String =
           ChartUtil.toDateTime(queue.date.atZone(ZoneId.systemDefault()), dateStart to dateEnd)
+      // WARNING! There's a massive performance issue with the cents parser below, due to constant
+      //    object recreation for `languageTags` and `decimalFractionDigits`. Noticeable when the
+      //    queue is thousands. That's why they're instantiated outside the for-loop.
       val parsedGrandTotalPriceFromCents: BigDecimal =
-          CurrencyFormat.fromCents(
-              queue.grandTotalPrice, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+          CurrencyFormat.fromCents(queue.grandTotalPrice, languageTags, decimalFractionDigits)
       // Received income are from the completed queue only.
       if (queue.status == QueueModel.Status.COMPLETED) {
         rawDataSummed
