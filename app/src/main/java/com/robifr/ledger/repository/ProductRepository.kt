@@ -16,7 +16,11 @@
 
 package com.robifr.ledger.repository
 
+import com.robifr.ledger.data.display.ProductFilters
+import com.robifr.ledger.data.display.ProductSortMethod
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductPaginatedInfo
 import com.robifr.ledger.local.access.ProductDao
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -61,6 +65,25 @@ class ProductRepository(private val _localDao: ProductDao) : Queryable<ProductMo
       if (effectedRows > 0) _notifyModelDeleted(listOf(deletedProduct))
     }
   }
+
+  suspend fun selectPaginatedInfoByOffset(
+      pageNumber: Int,
+      limit: Int,
+      sortMethod: ProductSortMethod,
+      filters: ProductFilters
+  ): List<ProductPaginatedInfo> =
+      _localDao.selectPaginatedInfoByOffset(
+          pageNumber = pageNumber,
+          limit = limit,
+          sortBy = sortMethod.sortBy,
+          isAscending = sortMethod.isAscending,
+          filteredMinPrice = filters.filteredPrice.first,
+          filteredMaxPrice = filters.filteredPrice.second)
+
+  suspend fun countFilteredProducts(filters: ProductFilters): Long =
+      _localDao.countFilteredProducts(
+          filteredMinPrice = filters.filteredPrice.first,
+          filteredMaxPrice = filters.filteredPrice.second)
 
   suspend fun search(query: String): List<ProductModel> = _localDao.search(query)
 

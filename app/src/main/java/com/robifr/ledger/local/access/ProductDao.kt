@@ -20,10 +20,16 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
+import androidx.room.TypeConverters
 import androidx.room.Update
+import com.robifr.ledger.data.display.ProductSortMethod
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.data.model.ProductFtsModel
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductPaginatedInfo
+import com.robifr.ledger.local.BigDecimalConverter
 import com.robifr.ledger.local.FtsStringConverter
+import org.intellij.lang.annotations.Language
 
 @Dao
 abstract class ProductDao : QueryAccessible<ProductModel> {
@@ -71,6 +77,46 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
 
   @Query("SELECT NOT EXISTS(SELECT 1 FROM product)") abstract override fun isTableEmpty(): Boolean
 
+  @Query(
+      """
+      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      SELECT * FROM filtered_products_cte
+      -- Sorting based on the data from `ProductSortMethod`.
+      ORDER BY
+          CASE WHEN :sortBy = 'NAME' AND :isAscending IS TRUE
+              THEN filtered_products_cte.name END COLLATE NOCASE ASC,
+          CASE WHEN :sortBy = 'NAME' AND :isAscending IS FALSE
+              THEN filtered_products_cte.name END COLLATE NOCASE DESC,
+          CASE WHEN :sortBy = 'PRICE' AND :isAscending IS TRUE
+              THEN filtered_products_cte.price END ASC,
+          CASE WHEN :sortBy = 'PRICE' AND :isAscending IS FALSE
+              THEN filtered_products_cte.price END DESC
+      LIMIT :limit OFFSET (:pageNumber - 1) * :limit
+      """)
+  @TypeConverters(BigDecimalConverter::class)
+  abstract fun selectPaginatedInfoByOffset(
+      pageNumber: Int,
+      limit: Int,
+      // Sort options from `ProductSortMethod`.
+      sortBy: ProductSortMethod.SortBy,
+      isAscending: Boolean,
+      // Filter options from `ProductFilters`.
+      filteredMinPrice: Long?,
+      filteredMaxPrice: Long?
+  ): List<ProductPaginatedInfo>
+
+  @Query(
+      """
+      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      SELECT COUNT(*) FROM filtered_products_cte
+      """)
+  @TypeConverters(BigDecimalConverter::class)
+  abstract fun countFilteredProducts(
+      // Filter options from `ProductFilters`.
+      filteredMinPrice: Long?,
+      filteredMaxPrice: Long?
+  ): Long
+
   @Transaction
   open fun search(query: String): List<ProductModel> {
     val escapedQuery: String = query.replace("\"".toRegex(), "\"\"")
@@ -112,4 +158,23 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
    * @return Inserted row ID.
    */
   @Insert protected abstract fun _insertFts(productFts: ProductFtsModel): Long
+
+  companion object {
+    @Language("RoomSql")
+    private const val _CTE_SELECT_PAGINATED_WITH_FILTER: String =
+        """
+        WITH filtered_products_cte AS (
+          SELECT
+              product.id AS id,
+              product.name AS name,
+              product.price AS price
+          FROM product
+          -- Condition based on the data from `ProductFilters`.
+          WHERE
+              -- Filter by price range.
+              (:filteredMinPrice IS NULL OR price >= :filteredMinPrice)
+              AND (:filteredMaxPrice IS NULL OR price <= :filteredMaxPrice)
+        )
+        """
+  }
 }
