@@ -203,6 +203,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
           WHERE
               (:customerId IS NULL OR queue.customer_id = :customerId)
               AND queue.status = 'UNPAID'
+          GROUP BY queue.customer_id
         )
         """
 
