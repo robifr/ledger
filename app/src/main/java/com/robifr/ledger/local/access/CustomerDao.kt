@@ -195,11 +195,13 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
     private const val _CTE_COUNT_DEBT_BY_ID: String =
         """
         WITH total_debt_cte AS (
-          SELECT queue.customer_id AS id,
+          SELECT
+              queue.customer_id AS id,
               -IFNULL(SUM(ABS(product_order.total_price)), 0) AS debt
           FROM product_order
           JOIN queue ON queue.id = product_order.queue_id
-          WHERE (:customerId IS NULL OR queue.customer_id = :customerId)
+          WHERE
+              (:customerId IS NULL OR queue.customer_id = :customerId)
               AND queue.status = 'UNPAID'
         )
         """
