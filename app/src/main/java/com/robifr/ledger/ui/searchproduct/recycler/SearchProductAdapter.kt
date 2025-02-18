@@ -44,13 +44,19 @@ class SearchProductAdapter(private val _fragment: SearchProductFragment) :
                 _initialSelectedProductIds = {
                   _fragment.searchProductViewModel.uiState.safeValue.initialSelectedProductIds
                 },
-                _products = { _fragment.searchProductViewModel.uiState.safeValue.products },
-                _onProductSelected = _fragment.searchProductViewModel::onProductSelected,
-                _expandedProductIndex = {
-                  _fragment.searchProductViewModel.uiState.safeValue.expandedProductIndex
+                _products = {
+                  _fragment.searchProductViewModel.uiState.safeValue.products.map {
+                    ProductPaginatedInfo(it)
+                  }
+                },
+                _onProductSelected = {
+                  _fragment.searchProductViewModel.onProductSelected(it.fullModel)
                 },
                 _onExpandedProductIndexChanged =
-                    _fragment.searchProductViewModel::onExpandedProductIndexChanged)
+                    _fragment.searchProductViewModel::onExpandedProductIndexChanged,
+                _expandedProduct = {
+                  _fragment.searchProductViewModel.uiState.safeValue.expandedProduct
+                })
           } else {
             ProductListHolder(
                 _cardBinding = cardBinding,

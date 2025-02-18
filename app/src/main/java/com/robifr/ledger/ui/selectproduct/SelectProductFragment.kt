@@ -35,6 +35,7 @@ import com.robifr.ledger.R
 import com.robifr.ledger.databinding.ListableFragmentBinding
 import com.robifr.ledger.ui.common.navigation.FragmentResultKey
 import com.robifr.ledger.ui.common.navigation.OnBackPressedHandler
+import com.robifr.ledger.ui.common.pagination.PaginationScrollListener
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
 import com.robifr.ledger.ui.selectproduct.recycler.SelectProductAdapter
@@ -85,8 +86,19 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
     fragmentBinding.toolbar.setTitle(R.string.selectProduct)
     fragmentBinding.toolbar.setOnMenuItemClickListener(this)
     fragmentBinding.horizontalToolbar.isGone = true
-    fragmentBinding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+    val layoutManager: LinearLayoutManager = LinearLayoutManager(requireContext())
+    fragmentBinding.recyclerView.layoutManager = layoutManager
     fragmentBinding.recyclerView.adapter = _adapter
+    fragmentBinding.recyclerView.addOnScrollListener(
+        PaginationScrollListener(
+            _layoutManager = layoutManager,
+            _onLoadPreviousPage = { selectProductViewModel.onLoadPreviousPage() },
+            _onLoadNextPage = { selectProductViewModel.onLoadNextPage() },
+            _isLoading = { selectProductViewModel.uiState.safeValue.pagination.isLoading },
+            _onStateIdle = selectProductViewModel::onRecyclerStateIdle,
+            _maxItems = {
+              selectProductViewModel.uiState.safeValue.pagination.paginatedItems.size
+            }))
     fragmentBinding.recyclerView.setItemViewCacheSize(0)
     selectProductViewModel.uiEvent.observe(viewLifecycleOwner, ::_onUiEvent)
   }
@@ -150,7 +162,12 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
       is RecyclerAdapterState.DataSetChanged -> _adapter.notifyDataSetChanged()
       is RecyclerAdapterState.ItemChanged ->
           state.indexes.forEach { _adapter.notifyItemChanged(it) }
-      else -> Unit
+      is RecyclerAdapterState.ItemRangeChanged ->
+          _adapter.notifyItemRangeChanged(state.positionStart, state.itemCount, state.payload)
+      is RecyclerAdapterState.ItemRangeInserted ->
+          _adapter.notifyItemRangeInserted(state.positionStart, state.itemCount)
+      is RecyclerAdapterState.ItemRangeRemoved ->
+          _adapter.notifyItemRangeRemoved(state.positionStart, state.itemCount)
     }
   }
 
@@ -160,7 +177,7 @@ class SelectProductFragment : Fragment(), Toolbar.OnMenuItemClickListener {
         val productId: Long =
             result.getLong(SearchProductFragment.Result.SELECTED_PRODUCT_ID_LONG.key())
         if (productId != 0L) {
-          selectProductViewModel.uiState.safeValue.products
+          selectProductViewModel.uiState.safeValue.pagination.paginatedItems
               .find { it.id != null && it.id == productId }
               .let { selectProductViewModel.onProductSelected(it) }
         }

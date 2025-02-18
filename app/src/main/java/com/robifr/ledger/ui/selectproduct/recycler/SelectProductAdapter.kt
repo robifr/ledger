@@ -51,13 +51,15 @@ class SelectProductAdapter(private val _fragment: SelectProductFragment) :
                 listOfNotNull(
                     _fragment.selectProductViewModel.uiState.safeValue.initialSelectedProduct?.id)
               },
-              _products = { _fragment.selectProductViewModel.uiState.safeValue.products },
-              _onProductSelected = _fragment.selectProductViewModel::onProductSelected,
-              _expandedProductIndex = {
-                _fragment.selectProductViewModel.uiState.safeValue.expandedProductIndex
+              _products = {
+                _fragment.selectProductViewModel.uiState.safeValue.pagination.paginatedItems
               },
+              _onProductSelected = _fragment.selectProductViewModel::onProductSelected,
               _onExpandedProductIndexChanged =
-                  _fragment.selectProductViewModel::onExpandedProductIndexChanged)
+                  _fragment.selectProductViewModel::onExpandedProductIndexChanged,
+              _expandedProduct = {
+                _fragment.selectProductViewModel.uiState.safeValue.expandedProduct
+              })
     }
   }
 
@@ -70,7 +72,7 @@ class SelectProductAdapter(private val _fragment: SelectProductFragment) :
 
   override fun getItemCount(): Int =
       // +1 offset because header holder.
-      _fragment.selectProductViewModel.uiState.safeValue.products.size + 1
+      _fragment.selectProductViewModel.uiState.safeValue.pagination.paginatedItems.size + 1
 
   override fun getItemViewType(position: Int): Int =
       when (position) {

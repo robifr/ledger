@@ -22,16 +22,17 @@ import androidx.core.view.isVisible
 import com.robifr.ledger.R
 import com.robifr.ledger.components.ProductCardWideComponent
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductPaginatedInfo
 import com.robifr.ledger.databinding.ProductCardWideBinding
 import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class SelectProductListHolder(
     private val _cardBinding: ProductCardWideBinding,
     private val _initialSelectedProductIds: () -> List<Long>,
-    private val _products: () -> List<ProductModel>,
-    private val _onProductSelected: (ProductModel) -> Unit,
-    private val _expandedProductIndex: () -> Int,
-    private val _onExpandedProductIndexChanged: (Int) -> Unit
+    private val _products: () -> List<ProductPaginatedInfo>,
+    private val _onProductSelected: (ProductPaginatedInfo) -> Unit,
+    private val _onExpandedProductIndexChanged: (Int) -> Unit,
+    private val _expandedProduct: () -> ProductModel?
 ) : RecyclerViewHolder(_cardBinding.root), View.OnClickListener {
   private var _productIndex: Int = -1
   private val _card: ProductCardWideComponent =
@@ -51,11 +52,9 @@ class SelectProductListHolder(
   override fun bind(itemIndex: Int) {
     _productIndex = itemIndex
     _card.reset()
-    _card.setNormalCardProduct(_products()[_productIndex])
+    _products()[_productIndex].fullModel?.let { _card.setNormalCardProduct(it) }
     _card.setCardChecked(_initialSelectedProductIds().contains(_products()[_productIndex].id))
-    _setCardExpanded(
-        _expandedProductIndex() != -1 &&
-            _products()[_productIndex] == _products()[_expandedProductIndex()])
+    _setCardExpanded(_products()[_productIndex].id == _expandedProduct()?.id)
   }
 
   override fun onClick(view: View?) {
@@ -67,6 +66,6 @@ class SelectProductListHolder(
   private fun _setCardExpanded(isExpanded: Boolean) {
     _card.setCardExpanded(isExpanded)
     // Only fill the view when it's shown on screen.
-    if (isExpanded) _card.setExpandedCardProduct(_products()[_productIndex])
+    if (isExpanded) _products()[_productIndex].fullModel?.let { _card.setExpandedCardProduct(it) }
   }
 }

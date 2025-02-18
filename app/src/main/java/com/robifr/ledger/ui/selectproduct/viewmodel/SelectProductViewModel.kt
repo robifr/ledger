@@ -19,12 +19,15 @@ package com.robifr.ledger.ui.selectproduct.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.robifr.ledger.data.ModelSynchronizer
-import com.robifr.ledger.data.display.ProductSorter
+import com.robifr.ledger.data.display.ProductFilters
+import com.robifr.ledger.data.display.ProductSortMethod
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductPaginatedInfo
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.ProductRepository
+import com.robifr.ledger.ui.common.pagination.PaginationManager
+import com.robifr.ledger.ui.common.pagination.PaginationState
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
@@ -33,9 +36,9 @@ import com.robifr.ledger.ui.selectproduct.SelectProductFragment
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class SelectProductViewModel
@@ -45,14 +48,44 @@ constructor(
     @IoDispatcher private val _dispatcher: CoroutineDispatcher,
     private val _productRepository: ProductRepository
 ) : ViewModel() {
-  private val _sorter: ProductSorter = ProductSorter()
+  private var _expandedProductJob: Job? = null
+  private val _paginationManager: PaginationManager<ProductPaginatedInfo> =
+      PaginationManager(
+          state = { _uiState.safeValue.pagination },
+          onStateChanged = { _uiState.setValue(_uiState.safeValue.copy(pagination = it)) },
+          _coroutineScope = viewModelScope,
+          _dispatcher = _dispatcher,
+          _onNotifyRecyclerState = {
+            _onRecyclerAdapterRefreshed(
+                when (it) {
+                  // +1 offset because header holder.
+                  is RecyclerAdapterState.ItemRangeChanged ->
+                      RecyclerAdapterState.ItemRangeChanged(
+                          it.positionStart + 1, it.itemCount, it.payload)
+                  is RecyclerAdapterState.ItemRangeInserted ->
+                      RecyclerAdapterState.ItemRangeInserted(it.positionStart + 1, it.itemCount)
+                  is RecyclerAdapterState.ItemRangeRemoved ->
+                      RecyclerAdapterState.ItemRangeRemoved(it.positionStart + 1, it.itemCount)
+                  else -> it
+                })
+          },
+          _countTotalItem = {
+            _productRepository.countFilteredProducts(ProductFilters(null to null))
+          },
+          _selectItemsByPageOffset = { pageNumber, limit ->
+            _productRepository.selectPaginatedInfoByOffset(
+                pageNumber,
+                limit,
+                ProductSortMethod(ProductSortMethod.SortBy.NAME, true),
+                ProductFilters(null to null))
+          })
   private val _productChangedListener: ModelSyncListener<ProductModel, ProductModel> =
       ModelSyncListener(
-          onAdd = { ModelSynchronizer.addModel(_uiState.safeValue.products, it) },
-          onUpdate = { ModelSynchronizer.updateModel(_uiState.safeValue.products, it) },
-          onDelete = { ModelSynchronizer.deleteModel(_uiState.safeValue.products, it) },
-          onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.products, it) },
-          onSync = { _, updatedModels -> _onProductsChanged(updatedModels) })
+          onSync = { _, _ ->
+            _onReloadPage(
+                _uiState.safeValue.pagination.firstLoadedPageNumber,
+                _uiState.safeValue.pagination.lastLoadedPageNumber)
+          })
 
   private val _uiEvent: SafeMutableLiveData<SelectProductEvent> =
       SafeMutableLiveData(SelectProductEvent())
@@ -66,7 +99,15 @@ constructor(
                   savedStateHandle.get<ProductModel>(
                       SelectProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_PARCELABLE.key()),
               selectedProductOnDatabase = null,
-              products = listOf(),
+              pagination =
+                  PaginationState(
+                      isLoading = false,
+                      firstLoadedPageNumber = 1,
+                      lastLoadedPageNumber = 1,
+                      isRecyclerStateIdle = false,
+                      paginatedItems = listOf(),
+                      totalItem = 0,
+                  ),
               expandedProductIndex = -1,
               isSelectedProductPreviewExpanded = false))
   val uiState: SafeLiveData<SelectProductState>
@@ -75,11 +116,45 @@ constructor(
   init {
     _productRepository.addModelChangedListener(_productChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    _loadAllProducts()
+    _onReloadPage(1, 1)
   }
 
   override fun onCleared() {
     _productRepository.removeModelChangedListener(_productChangedListener)
+  }
+
+  fun onLoadPreviousPage() {
+    _paginationManager.onLoadPreviousPage {
+      if (_uiState.safeValue.expandedProduct == null) return@onLoadPreviousPage
+      // Re-expand current expanded product.
+      val expandedProductIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedProduct?.id
+          }
+      if (expandedProductIndex != -1) {
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedProductIndex + 1))
+      }
+    }
+  }
+
+  fun onLoadNextPage() {
+    _paginationManager.onLoadNextPage {
+      if (_uiState.safeValue.expandedProduct == null) return@onLoadNextPage
+      // Re-expand current expanded product.
+      val expandedProductIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedProduct?.id
+          }
+      if (expandedProductIndex != -1) {
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedProductIndex + 1))
+      }
+    }
+  }
+
+  fun onRecyclerStateIdle(isIdle: Boolean) {
+    _paginationManager.onRecyclerStateIdleNotifyItemRangeChanged(isIdle)
   }
 
   fun onSelectedProductPreviewExpanded(isExpanded: Boolean) {
@@ -88,30 +163,31 @@ constructor(
   }
 
   fun onExpandedProductIndexChanged(index: Int) {
-    // Update both previous and current expanded product. +1 offset because header holder.
-    _onRecyclerAdapterRefreshed(
-        RecyclerAdapterState.ItemChanged(
-            listOfNotNull(
-                _uiState.safeValue.expandedProductIndex.takeIf { it != -1 && it != index }?.inc(),
-                index + 1)))
-    _uiState.setValue(
-        _uiState.safeValue.copy(
-            expandedProductIndex =
-                if (_uiState.safeValue.expandedProductIndex != index) index else -1))
+    _expandedProductJob?.cancel()
+    _expandedProductJob =
+        viewModelScope.launch {
+          delay(200)
+          val previousExpandedIndex: Int = _uiState.safeValue.expandedProductIndex
+          val shouldExpand: Boolean = previousExpandedIndex != index
+          // Unlike queue, there's no need to load for the product's
+          // `ProductPaginatedInfo.fullModel`. They're loaded by default.
+          _uiState.setValue(
+              _uiState.safeValue.copy(expandedProductIndex = if (shouldExpand) index else -1))
+          // Update both previous and current expanded product. +1 offset because header holder.
+          _onRecyclerAdapterRefreshed(
+              RecyclerAdapterState.ItemChanged(
+                  listOfNotNull(
+                      previousExpandedIndex.takeIf { it != -1 && it != index }?.inc(), index + 1)))
+        }
   }
 
-  fun onProductSelected(product: ProductModel?) {
+  fun onProductSelected(product: ProductPaginatedInfo?) {
     viewModelScope.launch {
       _uiEvent.updateEvent(
           data = SelectProductResultState(product?.id),
           onSet = { this?.copy(selectResult = it) },
           onReset = { this?.copy(selectResult = null) })
     }
-  }
-
-  private fun _onProductsChanged(products: List<ProductModel>) {
-    _uiState.setValue(_uiState.safeValue.copy(products = _sorter.sort(products)))
-    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
   }
 
   private fun _onSelectedProductOnDatabaseChanged(product: ProductModel?) {
@@ -129,15 +205,11 @@ constructor(
     }
   }
 
-  private suspend fun _selectAllProducts(): List<ProductModel> = _productRepository.selectAll()
-
-  private fun _loadAllProducts() {
+  private fun _onReloadPage(firstVisiblePageNumber: Int, lastVisiblePageNumber: Int) {
     viewModelScope.launch(_dispatcher) {
-      val products: List<ProductModel> = _selectAllProducts()
       val selectedProductOnDb: ProductModel? =
           _productRepository.selectById(_uiState.safeValue.initialSelectedProduct?.id)
-      withContext(Dispatchers.Main) {
-        _onProductsChanged(products)
+      _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
         _onSelectedProductOnDatabaseChanged(selectedProductOnDb)
       }
     }
