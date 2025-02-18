@@ -18,9 +18,6 @@ package com.robifr.ledger.data.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
-import androidx.room.TypeConverters
-import com.robifr.ledger.local.BigDecimalConverter
-import com.robifr.ledger.local.InstantConverter
 import java.math.BigDecimal
 import java.time.Instant
 
@@ -29,10 +26,8 @@ data class QueuePaginatedInfo(
     @ColumnInfo(name = "customer_id") val customerId: Long?,
     @ColumnInfo(name = "customer_name") val customerName: String?,
     @ColumnInfo(name = "status") val status: QueueModel.Status,
-    @ColumnInfo(name = "date") @field:TypeConverters(InstantConverter::class) val date: Instant,
-    @ColumnInfo(name = "grand_total_price")
-    @field:TypeConverters(BigDecimalConverter::class)
-    val grandTotalPrice: BigDecimal,
+    @ColumnInfo(name = "date") val date: Instant,
+    @ColumnInfo(name = "grand_total_price") val grandTotalPrice: BigDecimal,
     @Ignore val fullModel: QueueModel? = null
 ) : Info {
   /** Reserved constructor to be used by Room upon querying. */

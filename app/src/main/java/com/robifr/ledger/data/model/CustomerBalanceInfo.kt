@@ -16,6 +16,11 @@
 
 package com.robifr.ledger.data.model
 
-data class CustomerBalanceInfo(override val id: Long?, val balance: Long) : Info {
+import androidx.room.ColumnInfo
+
+data class CustomerBalanceInfo(
+    @ColumnInfo(name = "id") override val id: Long?,
+    @ColumnInfo(name = "balance") val balance: Long
+) : Info {
   constructor(customer: CustomerModel) : this(customer.id, customer.balance)
 }

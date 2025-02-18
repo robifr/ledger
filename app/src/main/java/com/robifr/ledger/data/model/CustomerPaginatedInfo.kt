@@ -18,17 +18,13 @@ package com.robifr.ledger.data.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Ignore
-import androidx.room.TypeConverters
-import com.robifr.ledger.local.BigDecimalConverter
 import java.math.BigDecimal
 
 data class CustomerPaginatedInfo(
     @ColumnInfo(name = "id") override val id: Long?,
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "balance") val balance: Long,
-    @ColumnInfo(name = "debt")
-    @field:TypeConverters(BigDecimalConverter::class)
-    val debt: BigDecimal,
+    @ColumnInfo(name = "debt") val debt: BigDecimal,
     @Ignore val fullModel: CustomerModel? = null
 ) : Info {
   /** Reserved constructor to be used by Room upon querying. */

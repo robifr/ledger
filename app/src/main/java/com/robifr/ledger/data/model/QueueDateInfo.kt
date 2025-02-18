@@ -17,13 +17,11 @@
 package com.robifr.ledger.data.model
 
 import androidx.room.ColumnInfo
-import androidx.room.TypeConverters
-import com.robifr.ledger.local.InstantConverter
 import java.time.Instant
 
 data class QueueDateInfo(
     @ColumnInfo(name = "id") override val id: Long? = null,
-    @ColumnInfo(name = "date") @field:TypeConverters(InstantConverter::class) val date: Instant
+    @ColumnInfo(name = "date") val date: Instant
 ) : Info {
   constructor(queue: QueueModel) : this(queue.id, queue.date)
 }

@@ -16,8 +16,12 @@
 
 package com.robifr.ledger.data.model
 
+import androidx.room.ColumnInfo
 import java.math.BigDecimal
 
-data class CustomerDebtInfo(override val id: Long?, val debt: BigDecimal) : Info {
+data class CustomerDebtInfo(
+    @ColumnInfo(name = "id") override val id: Long?,
+    @ColumnInfo(name = "debt") val debt: BigDecimal
+) : Info {
   constructor(customer: CustomerModel) : this(customer.id, customer.debt)
 }
