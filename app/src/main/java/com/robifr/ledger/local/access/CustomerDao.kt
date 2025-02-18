@@ -42,6 +42,8 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
     return rowId
   }
 
+  @Insert protected abstract fun _insert(customer: CustomerModel): Long
+
   @Transaction
   override fun update(customer: CustomerModel): Int {
     val rowId: Long = selectRowIdById(customer.id)
@@ -51,11 +53,15 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
     return effectedRow
   }
 
+  @Update protected abstract fun _update(customer: CustomerModel): Int
+
   @Transaction
   override fun delete(customerId: Long?): Int {
     _deleteFts(selectRowIdById(customerId))
     return _delete(customerId)
   }
+
+  @Query("DELETE FROM customer WHERE id = :customerId") abstract fun _delete(customerId: Long?): Int
 
   @Query("SELECT * FROM customer") abstract override fun selectAll(): List<CustomerModel>
 
@@ -147,20 +153,6 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
 
   @Query(
       """
-      ${_CTE_COUNT_DEBT_BY_ID}
-      SELECT debt FROM total_debt_cte
-      """)
-  @TypeConverters(BigDecimalConverter::class)
-  abstract fun totalDebtById(customerId: Long?): BigDecimal
-
-  @Insert protected abstract fun _insert(customer: CustomerModel): Long
-
-  @Update protected abstract fun _update(customer: CustomerModel): Int
-
-  @Query("DELETE FROM customer WHERE id = :customerId") abstract fun _delete(customerId: Long?): Int
-
-  @Query(
-      """
       SELECT * FROM customer
       /**
        * Use where-in clause because we don't want the data get overriden
@@ -173,6 +165,14 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
       ORDER BY customer.name
       """)
   protected abstract fun _search(query: String): List<CustomerModel>
+
+  @Query(
+      """
+      ${_CTE_COUNT_DEBT_BY_ID}
+      SELECT debt FROM total_debt_cte
+      """)
+  @TypeConverters(BigDecimalConverter::class)
+  abstract fun totalDebtById(customerId: Long?): BigDecimal
 
   /**
    * Delete customer virtual row from FTS table. It should be used before updating or deleting

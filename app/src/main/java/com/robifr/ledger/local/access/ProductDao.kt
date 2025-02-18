@@ -39,6 +39,8 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
     return rowId
   }
 
+  @Insert protected abstract fun _insert(product: ProductModel): Long
+
   @Transaction
   override fun update(product: ProductModel): Int {
     val rowId: Long = selectRowIdById(product.id)
@@ -48,11 +50,15 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
     return effectedRow
   }
 
+  @Update protected abstract fun _update(product: ProductModel): Int
+
   @Transaction
   override fun delete(productId: Long?): Int {
     _deleteFts(selectRowIdById(productId))
     return _delete(productId)
   }
+
+  @Query("DELETE FROM product WHERE id = :productId") abstract fun _delete(productId: Long?): Int
 
   @Query("SELECT * FROM product") abstract override fun selectAll(): List<ProductModel>
 
@@ -121,12 +127,6 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
     val escapedQuery: String = query.replace("\"".toRegex(), "\"\"")
     return _search("*\"${FtsStringConverter.toFtsSpacedString(escapedQuery)}\"*")
   }
-
-  @Insert protected abstract fun _insert(product: ProductModel): Long
-
-  @Update protected abstract fun _update(product: ProductModel): Int
-
-  @Query("DELETE FROM product WHERE id = :productId") abstract fun _delete(productId: Long?): Int
 
   @Query(
       """
