@@ -23,7 +23,6 @@ import androidx.room.Transaction
 import androidx.room.TypeConverters
 import androidx.room.Update
 import com.robifr.ledger.data.display.ProductSortMethod
-import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.data.model.ProductFtsModel
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.data.model.ProductPaginatedInfo

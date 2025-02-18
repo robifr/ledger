@@ -18,15 +18,16 @@ package com.robifr.ledger.ui.product.recycler
 
 import com.robifr.ledger.components.ProductCardWideComponent
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductPaginatedInfo
 import com.robifr.ledger.databinding.ProductCardWideBinding
 import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class ProductListHolder(
     private val _cardBinding: ProductCardWideBinding,
-    private val _products: () -> List<ProductModel>,
-    private val _expandedProductIndex: () -> Int,
+    private val _products: () -> List<ProductPaginatedInfo>,
     private val _onExpandedProductIndexChanged: (Int) -> Unit,
-    private val _onProductMenuDialogShown: (selectedProduct: ProductModel) -> Unit
+    private val _expandedProduct: () -> ProductModel?,
+    private val _onProductMenuDialogShown: (selectedProduct: ProductPaginatedInfo) -> Unit
 ) : RecyclerViewHolder(_cardBinding.root) {
   private var _productIndex: Int = -1
   private val _card: ProductCardWideComponent =
@@ -45,15 +46,13 @@ class ProductListHolder(
   override fun bind(itemIndex: Int) {
     _productIndex = itemIndex
     _card.reset()
-    _card.setNormalCardProduct(_products()[_productIndex])
-    _setCardExpanded(
-        _expandedProductIndex() != -1 &&
-            _products()[_productIndex] == _products()[_expandedProductIndex()])
+    _products()[_productIndex].fullModel?.let { _card.setNormalCardProduct(it) }
+    _setCardExpanded(_products()[_productIndex].id == _expandedProduct()?.id)
   }
 
   private fun _setCardExpanded(isExpanded: Boolean) {
     _card.setCardExpanded(isExpanded)
     // Only fill the view when it's shown on screen.
-    if (isExpanded) _card.setExpandedCardProduct(_products()[_productIndex])
+    if (isExpanded) _products()[_productIndex].fullModel?.let { _card.setExpandedCardProduct(it) }
   }
 }

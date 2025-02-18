@@ -17,26 +17,13 @@
 package com.robifr.ledger.ui.product.viewmodel
 
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.lifecycle.viewModelScope
-import com.robifr.ledger.data.display.ProductFilterer
 import com.robifr.ledger.data.display.ProductFilters
-import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
 import com.robifr.ledger.util.CurrencyFormat
 import java.text.ParseException
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
-class ProductFilterViewModel(
-    private val _viewModel: ProductViewModel,
-    private val _dispatcher: CoroutineDispatcher,
-    private val _selectAllProducts: suspend () -> List<ProductModel>
-) {
-  private val _filterer: ProductFilterer = ProductFilterer()
-
+class ProductFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) {
   private val _uiState: SafeMutableLiveData<ProductFilterState> =
       SafeMutableLiveData(
           ProductFilterState(isDialogShown = false, formattedMinPrice = "", formattedMaxPrice = ""))
@@ -57,18 +44,11 @@ class ProductFilterViewModel(
 
   fun onDialogClosed() {
     _uiState.setValue(_uiState.safeValue.copy(isDialogShown = false))
-    _viewModel.viewModelScope.launch(_dispatcher) {
-      _selectAllProducts().let {
-        withContext(Dispatchers.Main) { _onFiltersChanged(_parseInputtedFilters(), it) }
-      }
-    }
+    _onFiltersChanged()
+    _onReloadFromInitialPage()
   }
 
-  fun _onFiltersChanged(
-      filters: ProductFilters = _parseInputtedFilters(),
-      products: List<ProductModel> = _viewModel.uiState.safeValue.products
-  ) {
-    _filterer.filters = filters
+  private fun _onFiltersChanged(filters: ProductFilters = _parseInputtedFilters()) {
     onMinPriceTextChanged(
         filters.filteredPrice.first?.let {
           CurrencyFormat.formatCents(
@@ -79,10 +59,9 @@ class ProductFilterViewModel(
           CurrencyFormat.formatCents(
               it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
         } ?: "")
-    _viewModel.onProductsChanged(_filterer.filter(products))
   }
 
-  private fun _parseInputtedFilters(): ProductFilters {
+  fun _parseInputtedFilters(): ProductFilters {
     // All these nullable value to represent unbounded range.
     var minPrice: Long? = null
     try {

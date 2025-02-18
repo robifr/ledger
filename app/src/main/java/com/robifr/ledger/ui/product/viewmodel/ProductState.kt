@@ -18,17 +18,25 @@ package com.robifr.ledger.ui.product.viewmodel
 
 import com.robifr.ledger.data.display.ProductSortMethod
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductPaginatedInfo
+import com.robifr.ledger.ui.common.pagination.PaginationState
 
 /**
- * @property expandedProductIndex Currently expanded product index from [products]. -1 to represent
- *   none being expanded.
+ * @property expandedProductIndex Currently expanded product index from
+ *   [PaginationState.paginatedItems]. -1 to represent none being expanded.
  */
 data class ProductState(
-    val products: List<ProductModel>,
+    val pagination: PaginationState<ProductPaginatedInfo>,
     val expandedProductIndex: Int,
     val isProductMenuDialogShown: Boolean,
-    val selectedProductMenu: ProductModel?,
+    val selectedProductMenu: ProductPaginatedInfo?,
     val isNoProductsAddedIllustrationVisible: Boolean,
     val sortMethod: ProductSortMethod,
     val isSortMethodDialogShown: Boolean
-)
+) {
+  val expandedProduct: ProductModel?
+    get() =
+        // The full model is always loaded by default.
+        if (expandedProductIndex != -1) pagination.paginatedItems[expandedProductIndex].fullModel
+        else null
+}

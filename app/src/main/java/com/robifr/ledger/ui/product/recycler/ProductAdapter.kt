@@ -31,17 +31,19 @@ class ProductAdapter(private val _fragment: ProductFragment) :
             ProductHeaderHolder(
                 _textBinding =
                     ListableListTextBinding.inflate(_fragment.layoutInflater, parent, false),
-                _products = { _fragment.productViewModel.uiState.safeValue.products })
+                _totalProducts = {
+                  _fragment.productViewModel.uiState.safeValue.pagination.totalItem
+                })
         else ->
             ProductListHolder(
                 _cardBinding =
                     ProductCardWideBinding.inflate(_fragment.layoutInflater, parent, false),
-                _products = { _fragment.productViewModel.uiState.safeValue.products },
-                _expandedProductIndex = {
-                  _fragment.productViewModel.uiState.safeValue.expandedProductIndex
+                _products = {
+                  _fragment.productViewModel.uiState.safeValue.pagination.paginatedItems
                 },
                 _onExpandedProductIndexChanged =
                     _fragment.productViewModel::onExpandedProductIndexChanged,
+                _expandedProduct = { _fragment.productViewModel.uiState.safeValue.expandedProduct },
                 _onProductMenuDialogShown = _fragment.productViewModel::onProductMenuDialogShown)
       }
 
@@ -54,7 +56,7 @@ class ProductAdapter(private val _fragment: ProductFragment) :
 
   override fun getItemCount(): Int =
       // +1 offset because header holder.
-      _fragment.productViewModel.uiState.safeValue.products.size + 1
+      _fragment.productViewModel.uiState.safeValue.pagination.paginatedItems.size + 1
 
   override fun getItemViewType(position: Int): Int =
       when (position) {

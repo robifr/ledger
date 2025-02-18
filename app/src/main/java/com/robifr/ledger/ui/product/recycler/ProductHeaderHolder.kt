@@ -19,13 +19,12 @@ package com.robifr.ledger.ui.product.recycler
 import android.util.TypedValue
 import androidx.core.text.HtmlCompat
 import com.robifr.ledger.R
-import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.databinding.ListableListTextBinding
 import com.robifr.ledger.ui.common.RecyclerViewHolder
 
 class ProductHeaderHolder(
     private val _textBinding: ListableListTextBinding,
-    private val _products: () -> List<ProductModel>
+    private val _totalProducts: () -> Long
 ) : RecyclerViewHolder(_textBinding.root) {
   init {
     _textBinding.text.setTextSize(
@@ -36,7 +35,9 @@ class ProductHeaderHolder(
     _textBinding.text.text =
         HtmlCompat.fromHtml(
             itemView.context.resources.getQuantityString(
-                R.plurals.product_displaying_n_product, _products().size, _products().size),
+                R.plurals.product_displaying_n_product,
+                _totalProducts().toInt(),
+                _totalProducts().toInt()),
             HtmlCompat.FROM_HTML_MODE_LEGACY)
   }
 }

@@ -58,6 +58,7 @@ constructor(
           onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.products, it) },
           onSync = { _, updatedModels -> _onProductsChanged(updatedModels) })
   private var _searchJob: Job? = null
+  private var _expandedProductJob: Job? = null
 
   private val _uiEvent: SafeMutableLiveData<SearchProductEvent> =
       SafeMutableLiveData(SearchProductEvent())
@@ -112,16 +113,23 @@ constructor(
   }
 
   fun onExpandedProductIndexChanged(index: Int) {
-    // Update both previous and current expanded product. +1 offset because header holder.
-    _onRecyclerAdapterRefreshed(
-        RecyclerAdapterState.ItemChanged(
-            listOfNotNull(
-                _uiState.safeValue.expandedProductIndex.takeIf { it != -1 && it != index }?.inc(),
-                index + 1)))
-    _uiState.setValue(
-        _uiState.safeValue.copy(
-            expandedProductIndex =
-                if (_uiState.safeValue.expandedProductIndex != index) index else -1))
+    _expandedProductJob?.cancel()
+    _expandedProductJob =
+        viewModelScope.launch {
+          delay(200)
+          // Update both previous and current expanded product. +1 offset because header holder.
+          _onRecyclerAdapterRefreshed(
+              RecyclerAdapterState.ItemChanged(
+                  listOfNotNull(
+                      _uiState.safeValue.expandedProductIndex
+                          .takeIf { it != -1 && it != index }
+                          ?.inc(),
+                      index + 1)))
+          _uiState.setValue(
+              _uiState.safeValue.copy(
+                  expandedProductIndex =
+                      if (_uiState.safeValue.expandedProductIndex != index) index else -1))
+        }
   }
 
   fun onProductMenuDialogShown(selectedProduct: ProductModel) {
@@ -144,9 +152,9 @@ constructor(
     }
   }
 
-  fun onDeleteProduct(product: ProductModel) {
+  fun onDeleteProduct(productId: Long?) {
     viewModelScope.launch(_dispatcher) {
-      _productRepository.delete(product.id).also { effected ->
+      _productRepository.delete(productId).also { effected ->
         _onSnackbarShown(
             if (effected > 0) {
               PluralResource(R.plurals.searchProduct_deleted_n_product, effected, effected)

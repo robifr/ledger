@@ -25,7 +25,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.robifr.ledger.R
-import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductPaginatedInfo
 import com.robifr.ledger.databinding.ProductCardDialogMenuBinding
 import com.robifr.ledger.ui.editproduct.EditProductFragment
 
@@ -39,7 +39,10 @@ class ProductMenu(private val _fragment: Fragment, private val _onDialogClosed: 
         setOnDismissListener { _onDialogClosed() }
       }
 
-  fun showDialog(selectedProduct: ProductModel, onDeleteProduct: (ProductModel) -> Unit) {
+  fun showDialog(
+      selectedProduct: ProductPaginatedInfo,
+      onDeleteProduct: (productId: Long?) -> Unit
+  ) {
     _dialogBinding.editButton.setOnClickListener {
       val productId: Long = selectedProduct.id ?: return@setOnClickListener
       _fragment
@@ -68,7 +71,7 @@ class ProductMenu(private val _fragment: Fragment, private val _onDialogClosed: 
                   HtmlCompat.FROM_HTML_MODE_LEGACY))
           .setNegativeButton(R.string.action_cancel) { _, _ -> }
           .setPositiveButton(R.string.action_delete) { _, _ ->
-            onDeleteProduct(selectedProduct)
+            onDeleteProduct(selectedProduct.id)
             _onDialogClosed()
           }
           .show()

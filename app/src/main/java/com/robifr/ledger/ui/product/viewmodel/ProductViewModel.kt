@@ -19,16 +19,17 @@ package com.robifr.ledger.ui.product.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
-import com.robifr.ledger.data.ModelSynchronizer
 import com.robifr.ledger.data.display.ProductSortMethod
-import com.robifr.ledger.data.display.ProductSorter
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductPaginatedInfo
 import com.robifr.ledger.di.IoDispatcher
 import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.ui.common.PluralResource
 import com.robifr.ledger.ui.common.StringResource
 import com.robifr.ledger.ui.common.StringResourceType
+import com.robifr.ledger.ui.common.pagination.PaginationManager
+import com.robifr.ledger.ui.common.pagination.PaginationState
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
@@ -37,9 +38,9 @@ import com.robifr.ledger.ui.common.state.updateEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @HiltViewModel
 class ProductViewModel
@@ -48,21 +49,43 @@ constructor(
     @IoDispatcher private val _dispatcher: CoroutineDispatcher,
     private val _productRepository: ProductRepository
 ) : ViewModel() {
-  private val _sorter: ProductSorter = ProductSorter()
+  private var _expandedProductJob: Job? = null
+  private val _paginationManager: PaginationManager<ProductPaginatedInfo> =
+      PaginationManager(
+          state = { _uiState.safeValue.pagination },
+          onStateChanged = { _uiState.setValue(_uiState.safeValue.copy(pagination = it)) },
+          _coroutineScope = viewModelScope,
+          _dispatcher = _dispatcher,
+          _onNotifyRecyclerState = {
+            _onRecyclerAdapterRefreshed(
+                when (it) {
+                  // +1 offset because header holder.
+                  is RecyclerAdapterState.ItemRangeChanged ->
+                      RecyclerAdapterState.ItemRangeChanged(
+                          it.positionStart + 1, it.itemCount, it.payload)
+                  is RecyclerAdapterState.ItemRangeInserted ->
+                      RecyclerAdapterState.ItemRangeInserted(it.positionStart + 1, it.itemCount)
+                  is RecyclerAdapterState.ItemRangeRemoved ->
+                      RecyclerAdapterState.ItemRangeRemoved(it.positionStart + 1, it.itemCount)
+                  else -> it
+                })
+          },
+          _countTotalItem = {
+            _productRepository.countFilteredProducts(filterView._parseInputtedFilters())
+          },
+          _selectItemsByPageOffset = { pageNumber, limit ->
+            _productRepository.selectPaginatedInfoByOffset(
+                pageNumber,
+                limit,
+                _uiState.safeValue.sortMethod,
+                filterView._parseInputtedFilters())
+          })
   private val _productChangedListener: ModelSyncListener<ProductModel, ProductModel> =
       ModelSyncListener(
-          onAdd = { ModelSynchronizer.addModel(_uiState.safeValue.products, it) },
-          onUpdate = { ModelSynchronizer.updateModel(_uiState.safeValue.products, it) },
-          onDelete = { ModelSynchronizer.deleteModel(_uiState.safeValue.products, it) },
-          onUpsert = { ModelSynchronizer.upsertModel(_uiState.safeValue.products, it) },
-          onSync = { _, updatedModels ->
-            viewModelScope.launch(_dispatcher) {
-              val isTableEmpty: Boolean = _productRepository.isTableEmpty()
-              withContext(Dispatchers.Main) {
-                _setNoProductsAddedIllustrationVisible(isTableEmpty)
-                filterView._onFiltersChanged(products = updatedModels)
-              }
-            }
+          onSync = { _, _ ->
+            _onReloadPage(
+                _uiState.safeValue.pagination.firstLoadedPageNumber,
+                _uiState.safeValue.pagination.lastLoadedPageNumber)
           })
 
   private val _uiEvent: SafeMutableLiveData<ProductEvent> = SafeMutableLiveData(ProductEvent())
@@ -72,51 +95,90 @@ constructor(
   private val _uiState: SafeMutableLiveData<ProductState> =
       SafeMutableLiveData(
           ProductState(
-              products = listOf(),
+              pagination =
+                  PaginationState(
+                      isLoading = false,
+                      firstLoadedPageNumber = 1,
+                      lastLoadedPageNumber = 1,
+                      isRecyclerStateIdle = false,
+                      paginatedItems = listOf(),
+                      totalItem = 0,
+                  ),
               expandedProductIndex = -1,
               isProductMenuDialogShown = false,
               selectedProductMenu = null,
-              sortMethod = _sorter.sortMethod,
+              sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, true),
               isNoProductsAddedIllustrationVisible = false,
               isSortMethodDialogShown = false))
   val uiState: SafeLiveData<ProductState>
     get() = _uiState
 
-  val filterView: ProductFilterViewModel =
-      ProductFilterViewModel(
-          _viewModel = this,
-          _dispatcher = _dispatcher,
-          _selectAllProducts = { _selectAllProducts() })
+  val filterView: ProductFilterViewModel = ProductFilterViewModel { _onReloadPage(1, 1) }
 
   init {
     _productRepository.addModelChangedListener(_productChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    _loadAllProducts()
+    _onReloadPage(1, 1)
   }
 
   override fun onCleared() {
     _productRepository.removeModelChangedListener(_productChangedListener)
   }
 
-  fun onProductsChanged(products: List<ProductModel>) {
-    _uiState.setValue(_uiState.safeValue.copy(products = _sorter.sort(products)))
-    _onRecyclerAdapterRefreshed(RecyclerAdapterState.DataSetChanged)
+  fun onLoadPreviousPage() {
+    _paginationManager.onLoadPreviousPage {
+      if (_uiState.safeValue.expandedProduct == null) return@onLoadPreviousPage
+      // Re-expand current expanded product.
+      val expandedProductIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedProduct?.id
+          }
+      if (expandedProductIndex != -1) {
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedProductIndex + 1))
+      }
+    }
+  }
+
+  fun onLoadNextPage() {
+    _paginationManager.onLoadNextPage {
+      if (_uiState.safeValue.expandedProduct == null) return@onLoadNextPage
+      // Re-expand current expanded product.
+      val expandedProductIndex: Int =
+          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+            it.id == _uiState.safeValue.expandedProduct?.id
+          }
+      if (expandedProductIndex != -1) {
+        // +1 offset because header holder.
+        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedProductIndex + 1))
+      }
+    }
+  }
+
+  fun onRecyclerStateIdle(isIdle: Boolean) {
+    _paginationManager.onRecyclerStateIdleNotifyItemRangeChanged(isIdle)
   }
 
   fun onExpandedProductIndexChanged(index: Int) {
-    // Update both previous and current expanded product. +1 offset because header holder.
-    _onRecyclerAdapterRefreshed(
-        RecyclerAdapterState.ItemChanged(
-            listOfNotNull(
-                _uiState.safeValue.expandedProductIndex.takeIf { it != -1 && it != index }?.inc(),
-                index + 1)))
-    _uiState.setValue(
-        _uiState.safeValue.copy(
-            expandedProductIndex =
-                if (_uiState.safeValue.expandedProductIndex != index) index else -1))
+    _expandedProductJob?.cancel()
+    _expandedProductJob =
+        viewModelScope.launch {
+          delay(200)
+          val previousExpandedIndex: Int = _uiState.safeValue.expandedProductIndex
+          val shouldExpand: Boolean = previousExpandedIndex != index
+          // Unlike queue, there's no need to load for the product's
+          // `ProductPaginatedInfo.fullModel`. They're loaded by default.
+          _uiState.setValue(
+              _uiState.safeValue.copy(expandedProductIndex = if (shouldExpand) index else -1))
+          // Update both previous and current expanded product. +1 offset because header holder.
+          _onRecyclerAdapterRefreshed(
+              RecyclerAdapterState.ItemChanged(
+                  listOfNotNull(
+                      previousExpandedIndex.takeIf { it != -1 && it != index }?.inc(), index + 1)))
+        }
   }
 
-  fun onProductMenuDialogShown(selectedProduct: ProductModel) {
+  fun onProductMenuDialogShown(selectedProduct: ProductPaginatedInfo) {
     _uiState.setValue(
         _uiState.safeValue.copy(
             isProductMenuDialogShown = true, selectedProductMenu = selectedProduct))
@@ -127,24 +189,18 @@ constructor(
         _uiState.safeValue.copy(isProductMenuDialogShown = false, selectedProductMenu = null))
   }
 
-  fun onSortMethodChanged(
-      sortMethod: ProductSortMethod,
-      products: List<ProductModel> = _uiState.safeValue.products
-  ) {
-    _sorter.sortMethod = sortMethod
+  fun onSortMethodChanged(sortMethod: ProductSortMethod) {
     _uiState.setValue(_uiState.safeValue.copy(sortMethod = sortMethod))
-    onProductsChanged(products)
+    _onReloadPage(1, 1)
   }
 
   /**
-   * Sort [ProductState.products] based on specified [ProductSortMethod.SortBy] type. Doing so will
-   * reverse the order — Ascending becomes descending and vice versa. Use [onSortMethodChanged] that
-   * takes a [ProductSortMethod] if you want to apply the order by yourself.
+   * Sort [PaginationState.paginatedItems] based on specified [ProductSortMethod.SortBy] type. Doing
+   * so will reverse the order — Ascending becomes descending and vice versa. Use
+   * [onSortMethodChanged] that takes a [ProductSortMethod] if you want to apply the order by
+   * yourself.
    */
-  fun onSortMethodChanged(
-      sortBy: ProductSortMethod.SortBy,
-      products: List<ProductModel> = _uiState.safeValue.products
-  ) {
+  fun onSortMethodChanged(sortBy: ProductSortMethod.SortBy) {
     onSortMethodChanged(
         ProductSortMethod(
             sortBy,
@@ -153,8 +209,7 @@ constructor(
               !_uiState.safeValue.sortMethod.isAscending
             } else {
               _uiState.safeValue.sortMethod.isAscending
-            }),
-        products)
+            }))
   }
 
   fun onSortMethodDialogShown() {
@@ -165,9 +220,9 @@ constructor(
     _uiState.setValue(_uiState.safeValue.copy(isSortMethodDialogShown = false))
   }
 
-  fun onDeleteProduct(product: ProductModel) {
+  fun onDeleteProduct(productId: Long?) {
     viewModelScope.launch(_dispatcher) {
-      _productRepository.delete(product.id).let { effected ->
+      _productRepository.delete(productId).let { effected ->
         _onSnackbarShown(
             if (effected > 0) {
               PluralResource(R.plurals.product_deleted_n_product, effected, effected)
@@ -200,15 +255,11 @@ constructor(
     }
   }
 
-  private suspend fun _selectAllProducts(): List<ProductModel> = _productRepository.selectAll()
-
-  private fun _loadAllProducts() {
+  private fun _onReloadPage(firstVisiblePageNumber: Int, lastVisiblePageNumber: Int) {
     viewModelScope.launch(_dispatcher) {
-      val products: List<ProductModel> = _selectAllProducts()
       val isTableEmpty: Boolean = _productRepository.isTableEmpty()
-      withContext(Dispatchers.Main) {
+      _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
         _setNoProductsAddedIllustrationVisible(isTableEmpty)
-        filterView._onFiltersChanged(products = products)
       }
     }
   }

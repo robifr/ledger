@@ -18,7 +18,6 @@ package com.robifr.ledger.repository
 
 import com.robifr.ledger.data.display.ProductFilters
 import com.robifr.ledger.data.display.ProductSortMethod
-import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.data.model.ProductPaginatedInfo
 import com.robifr.ledger.local.access.ProductDao

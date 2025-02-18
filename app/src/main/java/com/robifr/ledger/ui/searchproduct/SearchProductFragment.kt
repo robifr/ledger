@@ -33,6 +33,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.robifr.ledger.R
+import com.robifr.ledger.data.model.ProductPaginatedInfo
 import com.robifr.ledger.databinding.SearchableFragmentBinding
 import com.robifr.ledger.ui.common.navigation.FragmentResultKey
 import com.robifr.ledger.ui.common.navigation.OnBackPressedHandler
@@ -171,7 +172,7 @@ class SearchProductFragment : Fragment(), SearchView.OnQueryTextListener {
     // FIXME: Product menu dialog doesn't get retained (it close) when configuration changes.
     if (state.isProductMenuDialogShown) {
       state.selectedProductMenu?.let {
-        _productMenu.showDialog(it, searchProductViewModel::onDeleteProduct)
+        _productMenu.showDialog(ProductPaginatedInfo(it), searchProductViewModel::onDeleteProduct)
       }
     } else {
       _productMenu.dismissDialog()

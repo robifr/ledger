@@ -18,6 +18,7 @@ package com.robifr.ledger.ui.searchproduct.recycler
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.robifr.ledger.data.model.ProductPaginatedInfo
 import com.robifr.ledger.databinding.ListableListTextBinding
 import com.robifr.ledger.databinding.ProductCardWideBinding
 import com.robifr.ledger.ui.common.RecyclerViewHolder
@@ -53,14 +54,21 @@ class SearchProductAdapter(private val _fragment: SearchProductFragment) :
           } else {
             ProductListHolder(
                 _cardBinding = cardBinding,
-                _products = { _fragment.searchProductViewModel.uiState.safeValue.products },
-                _expandedProductIndex = {
-                  _fragment.searchProductViewModel.uiState.safeValue.expandedProductIndex
+                _products = {
+                  _fragment.searchProductViewModel.uiState.safeValue.products.map {
+                    ProductPaginatedInfo(it)
+                  }
                 },
                 _onExpandedProductIndexChanged =
                     _fragment.searchProductViewModel::onExpandedProductIndexChanged,
-                _onProductMenuDialogShown =
-                    _fragment.searchProductViewModel::onProductMenuDialogShown)
+                _expandedProduct = {
+                  _fragment.searchProductViewModel.uiState.safeValue.expandedProduct
+                },
+                _onProductMenuDialogShown = { info ->
+                  info.fullModel?.let {
+                    _fragment.searchProductViewModel.onProductMenuDialogShown(it)
+                  }
+                })
           }
         }
       }
