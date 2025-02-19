@@ -17,7 +17,6 @@
 package com.robifr.ledger.repository
 
 import com.robifr.ledger.MainCoroutineExtension
-import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
@@ -84,7 +83,8 @@ class QueueRepositoryTest {
     _transactionProvider = mockk()
     _modelChangedListener = spyk()
     _localDao = FakeQueueDao(mutableListOf(_queue))
-    _productOrderDao = FakeProductOrderDao(mutableListOf(_productOrder))
+    _productOrderDao =
+        FakeProductOrderDao(data = mutableListOf(_productOrder), queueData = mutableListOf(_queue))
     _productOrderRepository = ProductOrderRepository(_productOrderDao)
     _customerDao =
         FakeCustomerDao(
@@ -117,14 +117,6 @@ class QueueRepositoryTest {
         {
           runTest {
             assertEquals(listOf(_queue), _queueRepository.selectById(listOfNotNull(_queue.id)))
-          }
-        },
-        {
-          runTest {
-            assertEquals(
-                listOf(_queue),
-                _queueRepository.selectAllInRange(
-                    QueueDate.Range.ALL_TIME.dateStart(), QueueDate.Range.ALL_TIME.dateEnd()))
           }
         })
   }
@@ -342,7 +334,7 @@ class QueueRepositoryTest {
           runTest {
             assertEquals(
                 listOfNotNull(deletedQueue).size,
-                _queueRepository.delete(_queue.copy(id = initialId)),
+                _queueRepository.delete(initialId),
                 "Return the number of effected rows")
           }
         },
@@ -368,7 +360,7 @@ class QueueRepositoryTest {
       updatedCustomer: CustomerModel?,
       updatedCustomerIndex: Int
   ) = runTest {
-    _queueRepository.delete(_queue.copy(id = initialId))
+    _queueRepository.delete(initialId)
     assertEquals(
         updatedCustomer?.copy(
             balance = updatedCustomer.balance + _productOrder.totalPrice.toLong()),

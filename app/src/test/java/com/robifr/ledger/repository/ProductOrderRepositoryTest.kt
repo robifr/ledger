@@ -18,10 +18,12 @@ package com.robifr.ledger.repository
 
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.ProductOrderModel
+import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.local.access.FakeProductOrderDao
 import io.mockk.clearAllMocks
 import io.mockk.spyk
 import io.mockk.verify
+import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -50,12 +52,22 @@ class ProductOrderRepositoryTest {
           productPrice = 100L,
           quantity = 1.0,
           discount = 0L)
+  private val _queue: QueueModel =
+      QueueModel(
+          id = 111L,
+          customerId = null,
+          customer = null,
+          status = QueueModel.Status.COMPLETED,
+          date = Instant.now(),
+          paymentMethod = QueueModel.PaymentMethod.ACCOUNT_BALANCE,
+          productOrders = listOf(_productOrder))
 
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
     _modelChangedListener = spyk()
-    _localDao = FakeProductOrderDao(mutableListOf(_productOrder))
+    _localDao =
+        FakeProductOrderDao(data = mutableListOf(_productOrder), queueData = mutableListOf(_queue))
     _productOrderRepository = ProductOrderRepository(_localDao)
     _productOrderRepository.addModelChangedListener(_modelChangedListener)
   }
@@ -167,7 +179,7 @@ class ProductOrderRepositoryTest {
                 if (isUsingList) {
                   _productOrderRepository.delete(listOf(_productOrder.copy(id = initialId)))
                 } else {
-                  _productOrderRepository.delete(_productOrder.copy(id = initialId))
+                  _productOrderRepository.delete(initialId)
                 },
                 "Return the number of effected rows")
           }
@@ -211,7 +223,7 @@ class ProductOrderRepositoryTest {
                 } else {
                   _productOrderRepository.upsert(_productOrder.copy(id = initialId))
                 },
-                "Return the upserted product order row ID")
+                "Return the upserted product order ID")
           }
         },
         {

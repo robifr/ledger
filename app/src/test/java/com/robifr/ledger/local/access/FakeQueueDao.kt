@@ -18,10 +18,14 @@ package com.robifr.ledger.local.access
 
 import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.display.QueueFilterer
+import com.robifr.ledger.data.display.QueueSortMethod
+import com.robifr.ledger.data.display.QueueSorter
+import com.robifr.ledger.data.model.QueueDateInfo
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.ZoneId
-import java.time.ZonedDateTime
 
 data class FakeQueueDao(
     override val data: MutableList<QueueModel>,
@@ -33,7 +37,7 @@ data class FakeQueueDao(
 
   override fun update(queue: QueueModel): Int = super<FakeQueryAccessible>.update(queue)
 
-  override fun delete(queue: QueueModel): Int = super<FakeQueryAccessible>.delete(queue)
+  override fun delete(queueId: Long?): Int = super<FakeQueryAccessible>.delete(queueId)
 
   override fun selectAll(): List<QueueModel> = super<FakeQueryAccessible>.selectAll()
 
@@ -57,15 +61,110 @@ data class FakeQueueDao(
 
   override fun isTableEmpty(): Boolean = super<FakeQueryAccessible>.isTableEmpty()
 
-  override fun selectAllInRange(startDate: Instant, endDate: Instant): List<QueueModel> =
-      QueueFilterer()
-          .apply {
-            filters =
-                filters.copy(
-                    filteredDate =
-                        QueueDate(
-                            ZonedDateTime.ofInstant(startDate, ZoneId.systemDefault()),
-                            ZonedDateTime.ofInstant(endDate, ZoneId.systemDefault())))
-          }
-          .filter(data)
+  override fun selectAllPaginatedInfo(
+      shouldCalculateGrandTotalPrice: Boolean,
+      sortBy: QueueSortMethod.SortBy,
+      isAscending: Boolean,
+      filteredCustomerIds: List<Long>,
+      isFilteredCustomerIdsEmpty: Boolean,
+      isNullCustomerShown: Boolean,
+      filteredStatus: Set<QueueModel.Status>,
+      isFilteredStatusEmpty: Boolean,
+      filteredMinTotalPrice: BigDecimal?,
+      filteredMaxTotalPrice: BigDecimal?,
+      filteredDateStart: Instant,
+      filteredDateEnd: Instant
+  ): List<QueuePaginatedInfo> {
+    val filterer: QueueFilterer =
+        QueueFilterer().apply {
+          filters =
+              filters.copy(
+                  filteredCustomerIds = filteredCustomerIds,
+                  isNullCustomerShown = isNullCustomerShown,
+                  filteredStatus = filteredStatus,
+                  filteredTotalPrice = filteredMinTotalPrice to filteredMaxTotalPrice,
+                  filteredDate =
+                      QueueDate(
+                          filteredDateStart.atZone(ZoneId.systemDefault()),
+                          filteredDateEnd.atZone(ZoneId.systemDefault())))
+        }
+    val sorter: QueueSorter =
+        QueueSorter().apply {
+          sortMethod = sortMethod.copy(sortBy = sortBy, isAscending = isAscending)
+        }
+    return sorter.sort(filterer.filter(data)).map { QueuePaginatedInfo(it) }
+  }
+
+  override fun selectPaginatedInfoByOffset(
+      pageNumber: Int,
+      limit: Int,
+      shouldCalculateGrandTotalPrice: Boolean,
+      sortBy: QueueSortMethod.SortBy,
+      isAscending: Boolean,
+      filteredCustomerIds: List<Long>,
+      isFilteredCustomerIdsEmpty: Boolean,
+      isNullCustomerShown: Boolean,
+      filteredStatus: Set<QueueModel.Status>,
+      isFilteredStatusEmpty: Boolean,
+      filteredMinTotalPrice: BigDecimal?,
+      filteredMaxTotalPrice: BigDecimal?,
+      filteredDateStart: Instant,
+      filteredDateEnd: Instant
+  ): List<QueuePaginatedInfo> {
+    val filterer: QueueFilterer =
+        QueueFilterer().apply {
+          filters =
+              filters.copy(
+                  filteredCustomerIds = filteredCustomerIds,
+                  isNullCustomerShown = isNullCustomerShown,
+                  filteredStatus = filteredStatus,
+                  filteredTotalPrice = filteredMinTotalPrice to filteredMaxTotalPrice,
+                  filteredDate =
+                      QueueDate(
+                          filteredDateStart.atZone(ZoneId.systemDefault()),
+                          filteredDateEnd.atZone(ZoneId.systemDefault())))
+        }
+    val sorter: QueueSorter =
+        QueueSorter().apply {
+          sortMethod = sortMethod.copy(sortBy = sortBy, isAscending = isAscending)
+        }
+    return sorter
+        .sort(filterer.filter(data))
+        .asSequence()
+        .drop((pageNumber - 1) * limit)
+        .take(limit)
+        .map { QueuePaginatedInfo(it) }
+        .toList()
+  }
+
+  override fun countFilteredQueues(
+      shouldCalculateGrandTotalPrice: Boolean,
+      filteredCustomerIds: List<Long>,
+      isFilteredCustomerIdsEmpty: Boolean,
+      isNullCustomerShown: Boolean,
+      filteredStatus: Set<QueueModel.Status>,
+      isFilteredStatusEmpty: Boolean,
+      filteredMinTotalPrice: BigDecimal?,
+      filteredMaxTotalPrice: BigDecimal?,
+      filteredDateStart: Instant,
+      filteredDateEnd: Instant
+  ): Long {
+    val filterer: QueueFilterer =
+        QueueFilterer().apply {
+          filters =
+              filters.copy(
+                  filteredCustomerIds = filteredCustomerIds,
+                  isNullCustomerShown = isNullCustomerShown,
+                  filteredStatus = filteredStatus,
+                  filteredTotalPrice = filteredMinTotalPrice to filteredMaxTotalPrice,
+                  filteredDate =
+                      QueueDate(
+                          filteredDateStart.atZone(ZoneId.systemDefault()),
+                          filteredDateEnd.atZone(ZoneId.systemDefault())))
+        }
+    return filterer.filter(data).size.toLong()
+  }
+
+  override fun selectDateInfoById(queueIds: List<Long>): List<QueueDateInfo> =
+      data.asSequence().filter { it.id in queueIds }.map { QueueDateInfo(it) }.toList()
 }

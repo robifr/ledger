@@ -16,9 +16,14 @@
 
 package com.robifr.ledger.local.access
 
+import com.robifr.ledger.data.display.CustomerFilterer
+import com.robifr.ledger.data.display.CustomerSortMethod
+import com.robifr.ledger.data.display.CustomerSorter
 import com.robifr.ledger.data.model.CustomerBalanceInfo
+import com.robifr.ledger.data.model.CustomerDebtInfo
 import com.robifr.ledger.data.model.CustomerFtsModel
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
 import java.math.BigDecimal
@@ -33,9 +38,15 @@ data class FakeCustomerDao(
 
   override fun insert(customer: CustomerModel): Long = super<FakeQueryAccessible>.insert(customer)
 
+  override fun _insert(customer: CustomerModel): Long = insert(customer)
+
   override fun update(customer: CustomerModel): Int = super<FakeQueryAccessible>.update(customer)
 
-  override fun delete(customer: CustomerModel): Int = super<FakeQueryAccessible>.delete(customer)
+  override fun _update(customer: CustomerModel): Int = update(customer)
+
+  override fun delete(customerId: Long?): Int = super<FakeQueryAccessible>.delete(customerId)
+
+  override fun _delete(customerId: Long?): Int = delete(customerId)
 
   override fun selectAll(): List<CustomerModel> = super<FakeQueryAccessible>.selectAll()
 
@@ -59,7 +70,53 @@ data class FakeCustomerDao(
 
   override fun isTableEmpty(): Boolean = super<FakeQueryAccessible>.isTableEmpty()
 
-  override fun selectAllInfoWithBalance(): List<CustomerBalanceInfo> =
+  override fun selectPaginatedInfoByOffset(
+      pageNumber: Int,
+      limit: Int,
+      sortBy: CustomerSortMethod.SortBy,
+      isAscending: Boolean,
+      filteredMinBalance: Long?,
+      filteredMaxBalance: Long?,
+      filteredMinDebt: BigDecimal?,
+      filteredMaxDebt: BigDecimal?
+  ): List<CustomerPaginatedInfo> {
+    val filterer: CustomerFilterer =
+        CustomerFilterer().apply {
+          filters =
+              filters.copy(
+                  filteredBalance = filteredMinBalance to filteredMaxBalance,
+                  filteredDebt = filteredMinDebt to filteredMaxDebt)
+        }
+    val sorter: CustomerSorter =
+        CustomerSorter().apply {
+          sortMethod = sortMethod.copy(sortBy = sortBy, isAscending = isAscending)
+        }
+    return sorter
+        .sort(filterer.filter(data))
+        .asSequence()
+        .drop((pageNumber - 1) * limit)
+        .take(limit)
+        .map { CustomerPaginatedInfo(it) }
+        .toList()
+  }
+
+  override fun countFilteredCustomers(
+      filteredMinBalance: Long?,
+      filteredMaxBalance: Long?,
+      filteredMinDebt: BigDecimal?,
+      filteredMaxDebt: BigDecimal?
+  ): Long {
+    val filterer: CustomerFilterer =
+        CustomerFilterer().apply {
+          filters =
+              filters.copy(
+                  filteredBalance = filteredMinBalance to filteredMaxBalance,
+                  filteredDebt = filteredMinDebt to filteredMaxDebt)
+        }
+    return filterer.filter(data).size.toLong()
+  }
+
+  override fun selectAllBalanceInfoWithBalance(): List<CustomerBalanceInfo> =
       data
           .asSequence()
           .filter { it.balance > 0L }
@@ -69,29 +126,30 @@ data class FakeCustomerDao(
   override fun search(query: String): List<CustomerModel> =
       _search(query.replace("\"".toRegex(), "\"\""))
 
-  override fun _insert(customer: CustomerModel): Long = insert(customer)
-
-  override fun _update(customer: CustomerModel): Int = update(customer)
-
-  override fun _delete(customer: CustomerModel): Int = delete(customer)
-
-  override fun _selectAllIds(): List<Long> = selectAll().mapNotNull { it.id }
-
   override fun _search(query: String): List<CustomerModel> =
       data.filter { it.name.contains(query, true) }
 
-  override fun _selectUnpaidQueueTotalPrice(customerId: Long?): List<BigDecimal> =
+  override fun totalDebtById(customerId: Long?): BigDecimal =
       if (customerId != null) {
         queueData
             .asSequence()
             .filter { it.customerId == customerId && it.status == QueueModel.Status.UNPAID }
-            .mapNotNull { it.id }
-            .let { queueIds ->
-              productOrderData.filter { it.queueId in queueIds }.map { it.totalPrice }
-            }
+            .flatMap { queue -> productOrderData.filter { it.queueId == queue.id } }
+            .map { it.totalPrice }
+            .fold(0.toBigDecimal()) { acc, totalPrice -> acc.subtract(totalPrice) }
       } else {
-        listOf()
+        0.toBigDecimal()
       }
+
+  override fun selectAllDebtInfoWithDebt(): List<CustomerDebtInfo> =
+      data
+          .asSequence()
+          .filter { it.debt.compareTo(0.toBigDecimal()) < 0 }
+          .map { CustomerDebtInfo(it) }
+          .toList()
+
+  override fun _selectAllDebtInfoWithDebt(customerId: Long?): List<CustomerDebtInfo> =
+      selectAllDebtInfoWithDebt()
 
   override fun _deleteFts(rowId: Long) {}
 

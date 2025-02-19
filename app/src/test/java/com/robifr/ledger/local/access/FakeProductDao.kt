@@ -16,8 +16,12 @@
 
 package com.robifr.ledger.local.access
 
+import com.robifr.ledger.data.display.ProductFilterer
+import com.robifr.ledger.data.display.ProductSortMethod
+import com.robifr.ledger.data.display.ProductSorter
 import com.robifr.ledger.data.model.ProductFtsModel
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductPaginatedInfo
 
 data class FakeProductDao(
     override val data: MutableList<ProductModel>,
@@ -27,9 +31,15 @@ data class FakeProductDao(
 
   override fun insert(product: ProductModel): Long = super<FakeQueryAccessible>.insert(product)
 
+  override fun _insert(product: ProductModel): Long = insert(product)
+
   override fun update(product: ProductModel): Int = super<FakeQueryAccessible>.update(product)
 
-  override fun delete(product: ProductModel): Int = super<FakeQueryAccessible>.delete(product)
+  override fun _update(product: ProductModel): Int = update(product)
+
+  override fun delete(productId: Long?): Int = super<FakeQueryAccessible>.delete(productId)
+
+  override fun _delete(productId: Long?): Int = delete(productId)
 
   override fun selectAll(): List<ProductModel> = super<FakeQueryAccessible>.selectAll()
 
@@ -53,14 +63,41 @@ data class FakeProductDao(
 
   override fun isTableEmpty(): Boolean = super<FakeQueryAccessible>.isTableEmpty()
 
+  override fun selectPaginatedInfoByOffset(
+      pageNumber: Int,
+      limit: Int,
+      sortBy: ProductSortMethod.SortBy,
+      isAscending: Boolean,
+      filteredMinPrice: Long?,
+      filteredMaxPrice: Long?
+  ): List<ProductPaginatedInfo> {
+    val filterer: ProductFilterer =
+        ProductFilterer().apply {
+          filters = filters.copy(filteredPrice = filteredMinPrice to filteredMaxPrice)
+        }
+    val sorter: ProductSorter =
+        ProductSorter().apply {
+          sortMethod = sortMethod.copy(sortBy = sortBy, isAscending = isAscending)
+        }
+    return sorter
+        .sort(filterer.filter(data))
+        .asSequence()
+        .drop((pageNumber - 1) * limit)
+        .take(limit)
+        .map { ProductPaginatedInfo(it) }
+        .toList()
+  }
+
+  override fun countFilteredProducts(filteredMinPrice: Long?, filteredMaxPrice: Long?): Long {
+    val filterer: ProductFilterer =
+        ProductFilterer().apply {
+          filters = filters.copy(filteredPrice = filteredMinPrice to filteredMaxPrice)
+        }
+    return filterer.filter(data).size.toLong()
+  }
+
   override fun search(query: String): List<ProductModel> =
       _search(query.replace("\"".toRegex(), "\"\""))
-
-  override fun _insert(product: ProductModel): Long = insert(product)
-
-  override fun _update(product: ProductModel): Int = update(product)
-
-  override fun _delete(product: ProductModel): Int = delete(product)
 
   override fun _search(query: String): List<ProductModel> =
       data.filter { it.name.contains(query, true) }

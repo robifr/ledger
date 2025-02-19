@@ -38,8 +38,11 @@ interface FakeQueryAccessible<M : Model> : QueryAccessible<M> {
       if (isExistsById(model.id)) data.set(selectRowIdById(model.id).toInt(), model).let { 1 }
       else 0
 
-  override fun delete(model: M): Int =
-      if (isExistsById(model.id)) data.remove(model).let { 1 } else 0
+  override fun delete(id: Long?): Int {
+    val initialSize: Int = data.size
+    data.removeIf { it.id == id }
+    return initialSize - data.size
+  }
 
   override fun selectAll(): List<M> = data
 
@@ -58,6 +61,14 @@ interface FakeQueryAccessible<M : Model> : QueryAccessible<M> {
   override fun isExistsById(id: Long?): Boolean = selectById(id) != null
 
   override fun isTableEmpty(): Boolean = data.isEmpty()
+
+  fun upsert(model: M): Long =
+      if (isExistsById(model.id)) {
+        update(model)
+        -1
+      } else {
+        insert(model)
+      }
 
   fun assignId(model: M, id: Long): M
 }

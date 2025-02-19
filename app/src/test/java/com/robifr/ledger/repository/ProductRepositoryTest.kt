@@ -128,7 +128,7 @@ class ProductRepositoryTest {
           runTest {
             assertEquals(
                 listOfNotNull(deletedProduct).size,
-                _productRepository.delete(_product.copy(id = initialId)),
+                _productRepository.delete(initialId),
                 "Return the number of effected rows")
           }
         },

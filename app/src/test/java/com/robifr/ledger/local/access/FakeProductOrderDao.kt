@@ -17,10 +17,14 @@
 package com.robifr.ledger.local.access
 
 import com.robifr.ledger.data.model.ProductOrderModel
+import com.robifr.ledger.data.model.ProductOrderProductInfo
+import com.robifr.ledger.data.model.QueueModel
+import java.time.Instant
 
 data class FakeProductOrderDao(
     override val data: MutableList<ProductOrderModel>,
-    override val idGenerator: FakeIdGenerator = FakeIdGenerator(data.size)
+    override val idGenerator: FakeIdGenerator = FakeIdGenerator(data.size),
+    val queueData: MutableList<QueueModel>
 ) : ProductOrderDao(), FakeQueryAccessible<ProductOrderModel> {
   override fun assignId(model: ProductOrderModel, id: Long): ProductOrderModel = model.copy(id = id)
 
@@ -36,11 +40,11 @@ data class FakeProductOrderDao(
   override fun update(productOrders: List<ProductOrderModel>): Int =
       productOrders.sumOf { update(it) }
 
-  override fun delete(productOrder: ProductOrderModel): Int =
-      super<FakeQueryAccessible>.delete(productOrder)
+  override fun delete(productOrderId: Long?): Int =
+      super<FakeQueryAccessible>.delete(productOrderId)
 
   override fun delete(productOrders: List<ProductOrderModel>): Int =
-      productOrders.reversed().sumOf { delete(it) }
+      productOrders.reversed().sumOf { delete(it.id) }
 
   override fun selectAll(): List<ProductOrderModel> = super<FakeQueryAccessible>.selectAll()
 
@@ -71,16 +75,22 @@ data class FakeProductOrderDao(
   override fun isTableEmpty(): Boolean = super<FakeQueryAccessible>.isTableEmpty()
 
   override fun upsert(productOrder: ProductOrderModel): Long =
-      if (isExistsById(productOrder.id)) {
-        update(productOrder)
-        selectRowIdById(productOrder.id)
-      } else {
-        insert(productOrder)
-      }
+      super<FakeQueryAccessible>.upsert(productOrder)
 
   override fun upsert(productOrders: List<ProductOrderModel>): List<Long> =
-      productOrders.asSequence().map { upsert(it) }.filter { it != -1L }.toList()
+      productOrders.map { upsert(it) }
 
   override fun selectAllByQueueId(queueId: Long?): List<ProductOrderModel> =
       data.filter { it.queueId != null && queueId != null && it.queueId == queueId }
+
+  override fun selectAllProductInfoInRange(
+      dateStart: Instant,
+      dateEnd: Instant
+  ): List<ProductOrderProductInfo> {
+    val queueIds: List<Long> =
+        queueData
+            .filterNot { it.date.isBefore(dateStart) || it.date.isAfter(dateEnd) }
+            .mapNotNull { it.id }
+    return data.filter { queueIds.contains(it.queueId) }.map { ProductOrderProductInfo(it) }
+  }
 }

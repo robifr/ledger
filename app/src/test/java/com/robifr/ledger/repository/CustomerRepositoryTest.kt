@@ -173,7 +173,7 @@ class CustomerRepositoryTest {
           runTest {
             assertEquals(
                 listOfNotNull(deletedCustomer).size,
-                _customerRepository.delete(_customer.copy(id = initialId)),
+                _customerRepository.delete(initialId),
                 "Return the number of effected rows")
           }
         },
