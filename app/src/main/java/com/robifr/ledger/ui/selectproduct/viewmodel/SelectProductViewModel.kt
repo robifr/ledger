@@ -106,7 +106,7 @@ constructor(
                       lastLoadedPageNumber = 1,
                       isRecyclerStateIdle = false,
                       paginatedItems = listOf(),
-                      totalItem = 0,
+                      totalItem = 0L,
                   ),
               expandedProductIndex = -1,
               isSelectedProductPreviewExpanded = false))

@@ -123,7 +123,7 @@ constructor(
                       lastLoadedPageNumber = 1,
                       isRecyclerStateIdle = false,
                       paginatedItems = listOf(),
-                      totalItem = 0,
+                      totalItem = 0L,
                   ),
               expandedQueueIndex = -1,
               expandedQueue = null,
