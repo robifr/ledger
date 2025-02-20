@@ -39,10 +39,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class FilterCustomerViewModel
-@Inject
-constructor(
-    @IoDispatcher private val _dispatcher: CoroutineDispatcher,
+class FilterCustomerViewModel(
+    maxPaginatedItemPerPage: Int = 20,
+    maxPaginatedItemInMemory: Int = maxPaginatedItemPerPage * 3,
+    private val _dispatcher: CoroutineDispatcher,
     private val _customerRepository: CustomerRepository,
     private val _savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -51,6 +51,8 @@ constructor(
       PaginationManager(
           state = { _uiState.safeValue.pagination },
           onStateChanged = { _uiState.setValue(_uiState.safeValue.copy(pagination = it)) },
+          maxItemPerPage = maxPaginatedItemPerPage,
+          maxItemInMemory = maxPaginatedItemInMemory,
           _coroutineScope = viewModelScope,
           _dispatcher = _dispatcher,
           _onNotifyRecyclerState = {
@@ -99,6 +101,16 @@ constructor(
               filteredCustomers = listOf()))
   val uiState: SafeLiveData<FilterCustomerState>
     get() = _uiState
+
+  @Inject
+  constructor(
+      @IoDispatcher dispatcher: CoroutineDispatcher,
+      customerRepository: CustomerRepository,
+      savedStateHandle: SavedStateHandle
+  ) : this(
+      _dispatcher = dispatcher,
+      _customerRepository = customerRepository,
+      _savedStateHandle = savedStateHandle)
 
   init {
     // Setting up initial values inside a fragment is painful. See commit d5604599.

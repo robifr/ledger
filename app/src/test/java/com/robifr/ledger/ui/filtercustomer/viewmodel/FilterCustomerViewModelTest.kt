@@ -23,14 +23,18 @@ import com.robifr.ledger.LifecycleOwnerExtension
 import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
+import com.robifr.ledger.local.access.FakeCustomerDao
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment
 import io.mockk.clearAllMocks
-import io.mockk.coEvery
 import io.mockk.mockk
+import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -52,6 +56,7 @@ class FilterCustomerViewModelTest(
     private val _lifecycleOwner: LifecycleTestOwner
 ) {
   private lateinit var _customerRepository: CustomerRepository
+  private lateinit var _customerDao: FakeCustomerDao
   private lateinit var _viewModel: FilterCustomerViewModel
   private lateinit var _uiEventObserver: Observer<FilterCustomerEvent>
 
@@ -62,12 +67,20 @@ class FilterCustomerViewModelTest(
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    _customerRepository = mockk()
+    _customerDao =
+        FakeCustomerDao(
+            data = mutableListOf(_firstCustomer, _secondCustomer, _thirdCustomer),
+            queueData = mutableListOf(),
+            productOrderData = mutableListOf())
+    _customerRepository = spyk(CustomerRepository(_customerDao))
     _uiEventObserver = mockk(relaxed = true)
-
-    coEvery { _customerRepository.selectAll() } returns
-        listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
-    _viewModel = FilterCustomerViewModel(_dispatcher, _customerRepository, SavedStateHandle())
+    _viewModel =
+        FilterCustomerViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            _dispatcher = _dispatcher,
+            _customerRepository = _customerRepository,
+            _savedStateHandle = SavedStateHandle())
     _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
 
@@ -75,33 +88,44 @@ class FilterCustomerViewModelTest(
   fun `on initialize with arguments`() {
     _viewModel =
         FilterCustomerViewModel(
-            _dispatcher,
-            _customerRepository,
-            SavedStateHandle().apply {
-              set(
-                  FilterCustomerFragment.Arguments.INITIAL_FILTERED_CUSTOMER_IDS_LONG_ARRAY.key(),
-                  listOfNotNull(_firstCustomer.id).toLongArray())
-            })
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            _dispatcher = _dispatcher,
+            _customerRepository = _customerRepository,
+            _savedStateHandle =
+                SavedStateHandle().apply {
+                  set(
+                      FilterCustomerFragment.Arguments.INITIAL_FILTERED_CUSTOMER_IDS_LONG_ARRAY
+                          .key(),
+                      listOfNotNull(_firstCustomer.id).toLongArray())
+                })
     assertEquals(
         FilterCustomerState(
-            customers = listOf(_firstCustomer, _secondCustomer, _thirdCustomer),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) }),
             expandedCustomerIndex = -1,
-            filteredCustomers = listOf(_firstCustomer)),
+            filteredCustomers = listOf(CustomerPaginatedInfo(_firstCustomer))),
         _viewModel.uiState.safeValue,
         "Match state with the retrieved data from the fragment argument")
   }
 
   @Test
   fun `on initialize with unordered name`() {
-    val firstCustomer: CustomerModel = _firstCustomer.copy(name = "Cal")
-    val secondCustomer: CustomerModel = _secondCustomer.copy(name = "Amy")
-    val thirdCustomer: CustomerModel = _thirdCustomer.copy(name = "Ben")
-    coEvery { _customerRepository.selectAll() } returns
-        listOf(firstCustomer, secondCustomer, thirdCustomer)
-    _viewModel = FilterCustomerViewModel(_dispatcher, _customerRepository, SavedStateHandle())
+    _customerDao.data.clear()
+    _customerDao.data.addAll(mutableListOf(_thirdCustomer, _firstCustomer, _secondCustomer))
+
+    _viewModel =
+        FilterCustomerViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            _dispatcher = _dispatcher,
+            _customerRepository = _customerRepository,
+            _savedStateHandle = SavedStateHandle())
     assertEquals(
-        listOf(secondCustomer, thirdCustomer, firstCustomer),
-        _viewModel.uiState.safeValue.customers,
+        listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
+        _viewModel.uiState.safeValue.pagination.paginatedItems,
         "Sort customers based on their name")
   }
 
@@ -122,13 +146,13 @@ class FilterCustomerViewModelTest(
       recyclerItemIndexToUpdate: List<Int>,
       checkedCustomers: List<CustomerModel>
   ) {
-    _viewModel.onCustomerCheckedChanged(oldCheckedCustomer)
+    _viewModel.onCustomerCheckedChanged(CustomerPaginatedInfo(oldCheckedCustomer))
 
-    _viewModel.onCustomerCheckedChanged(newCheckedCustomer)
+    _viewModel.onCustomerCheckedChanged(CustomerPaginatedInfo(newCheckedCustomer))
     assertAll(
         {
           assertEquals(
-              checkedCustomers,
+              checkedCustomers.map { CustomerPaginatedInfo(it) },
               _viewModel.uiState.safeValue.filteredCustomers,
               "Add checked customer to the filtered customers and remove it when double checked")
         },
@@ -154,10 +178,12 @@ class FilterCustomerViewModelTest(
       newIndex: Int,
       updatedIndexes: List<Int>,
       expandedIndex: Int
-  ) {
+  ) = runTest {
     _viewModel.onExpandedCustomerIndexChanged(oldIndex)
+    advanceUntilIdle()
 
     _viewModel.onExpandedCustomerIndexChanged(newIndex)
+    advanceUntilIdle()
     assertAll(
         {
           assertEquals(
@@ -176,7 +202,9 @@ class FilterCustomerViewModelTest(
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on save`(isAnyCustomerFiltered: Boolean) {
-    if (isAnyCustomerFiltered) _viewModel.onCustomerCheckedChanged(_firstCustomer)
+    if (isAnyCustomerFiltered) {
+      _viewModel.onCustomerCheckedChanged(CustomerPaginatedInfo(_firstCustomer))
+    }
 
     _viewModel.onSave()
     assertEquals(
