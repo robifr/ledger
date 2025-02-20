@@ -23,22 +23,20 @@ import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.display.CustomerSortMethod
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
+import com.robifr.ledger.local.access.FakeCustomerDao
 import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.CustomerRepository
-import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
-import io.mockk.CapturingSlot
-import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.clearMocks
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -62,8 +60,7 @@ class CustomerViewModelTest(
     private val _lifecycleOwner: LifecycleTestOwner
 ) {
   private lateinit var _customerRepository: CustomerRepository
-  private val _customerChangedListenerCaptor: CapturingSlot<ModelSyncListener<CustomerModel>> =
-      slot()
+  private lateinit var _customerDao: FakeCustomerDao
   private lateinit var _viewModel: CustomerViewModel
   private lateinit var _uiEventObserver: Observer<CustomerEvent>
 
@@ -75,29 +72,41 @@ class CustomerViewModelTest(
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    _customerRepository = mockk()
+    _customerDao =
+        FakeCustomerDao(
+            data = mutableListOf(_firstCustomer, _secondCustomer, _thirdCustomer),
+            queueData = mutableListOf(),
+            productOrderData = mutableListOf())
+    _customerRepository = spyk(CustomerRepository(_customerDao))
     _uiEventObserver = mockk(relaxed = true)
-
-    every {
-      _customerRepository.addModelChangedListener(capture(_customerChangedListenerCaptor))
-    } just Runs
-    coEvery { _customerRepository.selectAll() } returns
-        listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
-    coEvery { _customerRepository.isTableEmpty() } returns false
-    _viewModel = CustomerViewModel(_dispatcher, _customerRepository)
+    _viewModel =
+        CustomerViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            _dispatcher = _dispatcher,
+            _customerRepository = _customerRepository)
     _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on initialize with empty data`(isTableEmpty: Boolean) {
-    coEvery { _customerRepository.selectAll() } returns
-        if (isTableEmpty) listOf() else listOf(_firstCustomer)
-    coEvery { _customerRepository.isTableEmpty() } returns isTableEmpty
-    _viewModel = CustomerViewModel(_dispatcher, _customerRepository)
+    _customerDao.data.clear()
+    if (!isTableEmpty) _customerDao.data.add(_firstCustomer)
+
+    _viewModel =
+        CustomerViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            _dispatcher = _dispatcher,
+            _customerRepository = _customerRepository)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
-            customers = if (isTableEmpty) listOf() else listOf(_firstCustomer),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        if (isTableEmpty) listOf()
+                        else listOf(CustomerPaginatedInfo(_firstCustomer))),
             isNoCustomersAddedIllustrationVisible = isTableEmpty),
         _viewModel.uiState.safeValue,
         "Show illustration for no customers added")
@@ -105,52 +114,50 @@ class CustomerViewModelTest(
 
   @Test
   fun `on initialize with unordered name`() {
-    coEvery { _customerRepository.selectAll() } returns
-        listOf(_thirdCustomer, _firstCustomer, _secondCustomer)
-    _viewModel = CustomerViewModel(_dispatcher, _customerRepository)
+    _customerDao.data.clear()
+    _customerDao.data.addAll(mutableListOf(_thirdCustomer, _firstCustomer, _secondCustomer))
+
+    _viewModel =
+        CustomerViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            _dispatcher = _dispatcher,
+            _customerRepository = _customerRepository)
     assertEquals(
-        listOf(_firstCustomer, _secondCustomer, _thirdCustomer),
-        _viewModel.uiState.safeValue.customers,
+        listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
+        _viewModel.uiState.safeValue.pagination.paginatedItems,
         "Sort customers based from the default sort method")
   }
 
   @Test
   fun `on cleared`() {
-    every { _customerRepository.removeModelChangedListener(any()) } just Runs
     _viewModel.onLifecycleOwnerDestroyed()
     assertDoesNotThrow("Remove attached listener from the repository") {
       verify { _customerRepository.removeModelChangedListener(any()) }
     }
   }
 
-  @Test
-  fun `on customers changed with unsorted list`() {
-    _viewModel.onCustomersChanged(listOf(_thirdCustomer, _firstCustomer, _secondCustomer))
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            customers = listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
-        _viewModel.uiState.safeValue,
-        "Update customers with the new sorted list")
-  }
-
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
-  fun `on customer menu dialog shown`(isShown: Boolean) {
-    _viewModel.onCustomersChanged(listOf(_firstCustomer))
+  fun `on customer menu dialog shown`(isShown: Boolean) = runTest {
     _viewModel.onExpandedCustomerIndexChanged(0)
-    _viewModel.onSortMethodChanged(CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true))
+    advanceUntilIdle()
+    _viewModel.onSortMethodChanged(CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false))
     _viewModel.onSortMethodDialogClosed()
 
-    if (isShown) _viewModel.onCustomerMenuDialogShown(_firstCustomer)
+    if (isShown) _viewModel.onCustomerMenuDialogShown(CustomerPaginatedInfo(_thirdCustomer))
     else _viewModel.onCustomerMenuDialogClosed()
     assertEquals(
         CustomerState(
-            customers = listOf(_firstCustomer),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_thirdCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) }),
             expandedCustomerIndex = 0,
             isCustomerMenuDialogShown = isShown,
-            selectedCustomerMenu = if (isShown) _firstCustomer else null,
+            selectedCustomerMenu = if (isShown) CustomerPaginatedInfo(_thirdCustomer) else null,
             isNoCustomersAddedIllustrationVisible = false,
-            sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
+            sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false),
             isSortMethodDialogShown = false),
         _viewModel.uiState.safeValue,
         "Preserve other fields when the dialog shown or closed")
@@ -162,7 +169,10 @@ class CustomerViewModelTest(
     _viewModel.onSortMethodChanged(sortMethod)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
-            customers = listOf(_thirdCustomer, _firstCustomer, _secondCustomer),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_thirdCustomer, _firstCustomer).map { CustomerPaginatedInfo(it) }),
             sortMethod = sortMethod),
         _viewModel.uiState.safeValue,
         "Sort customers based from the sorting method")
@@ -173,7 +183,10 @@ class CustomerViewModelTest(
     _viewModel.onSortMethodChanged(CustomerSortMethod.SortBy.NAME)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
-            customers = listOf(_thirdCustomer, _secondCustomer, _firstCustomer),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_thirdCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) }),
             sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false)),
         _viewModel.uiState.safeValue,
         "Reverse sort order when selecting the same sort option")
@@ -184,7 +197,10 @@ class CustomerViewModelTest(
     _viewModel.onSortMethodChanged(CustomerSortMethod.SortBy.BALANCE)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
-            customers = listOf(_thirdCustomer, _firstCustomer, _secondCustomer),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_thirdCustomer, _firstCustomer).map { CustomerPaginatedInfo(it) }),
             sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.BALANCE, true)),
         _viewModel.uiState.safeValue,
         "Sort customers based from the sorting method")
@@ -192,21 +208,24 @@ class CustomerViewModelTest(
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
-  fun `on sort method dialog shown`(isShown: Boolean) {
-    _viewModel.onCustomersChanged(listOf(_firstCustomer))
-    _viewModel.onExpandedCustomerIndexChanged(-1)
+  fun `on sort method dialog shown`(isShown: Boolean) = runTest {
+    _viewModel.onExpandedCustomerIndexChanged(0)
+    advanceUntilIdle()
     _viewModel.onCustomerMenuDialogClosed()
-    _viewModel.onSortMethodChanged(CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true))
+    _viewModel.onSortMethodChanged(CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false))
 
     if (isShown) _viewModel.onSortMethodDialogShown() else _viewModel.onSortMethodDialogClosed()
     assertEquals(
         CustomerState(
-            customers = listOf(_firstCustomer),
-            expandedCustomerIndex = -1,
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_thirdCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) }),
+            expandedCustomerIndex = 0,
             isCustomerMenuDialogShown = false,
             selectedCustomerMenu = null,
             isNoCustomersAddedIllustrationVisible = false,
-            sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
+            sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false),
             isSortMethodDialogShown = isShown),
         _viewModel.uiState.safeValue,
         "Preserve other fields when the dialog shown or closed")
@@ -226,10 +245,12 @@ class CustomerViewModelTest(
       newIndex: Int,
       updatedIndexes: List<Int>,
       expandedIndex: Int
-  ) {
+  ) = runTest {
     _viewModel.onExpandedCustomerIndexChanged(oldIndex)
+    advanceUntilIdle()
 
     _viewModel.onExpandedCustomerIndexChanged(newIndex)
+    advanceUntilIdle()
     assertAll(
         {
           assertEquals(
@@ -246,50 +267,45 @@ class CustomerViewModelTest(
   }
 
   @ParameterizedTest
-  @ValueSource(ints = [0, 1])
-  fun `on delete product`(effectedRows: Int) {
-    coEvery { _customerRepository.delete(any()) } returns effectedRows
-    _viewModel.onDeleteCustomer(_firstCustomer)
+  @ValueSource(longs = [0L, 111L])
+  fun `on delete customer`(idToDelete: Long) {
+    _viewModel.onDeleteCustomer(idToDelete)
     assertNotNull(
         _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the delete result via snackbar")
   }
 
   @Test
-  fun `on sync customer from database`() {
-    val updatedCustomers: List<CustomerModel> =
-        listOf(
-            _firstCustomer.copy(balance = _firstCustomer.balance + 100L),
-            _secondCustomer,
-            _thirdCustomer)
-    _customerChangedListenerCaptor.captured.onModelUpdated(updatedCustomers)
+  fun `on sync customer from database`() = runTest {
+    val updatedCustomer: CustomerModel =
+        _firstCustomer.copy(balance = _firstCustomer.balance + 100L)
+    _customerRepository.update(updatedCustomer)
     assertEquals(
-        updatedCustomers,
-        _viewModel.uiState.safeValue.customers,
+        listOf(updatedCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
+        _viewModel.uiState.safeValue.pagination.paginatedItems,
         "Sync customers when any are updated in the database")
   }
 
   @Test
-  fun `on sync customer from database result empty data`() {
-    coEvery { _customerRepository.isTableEmpty() } returns true
-
-    _customerChangedListenerCaptor.captured.onModelDeleted(
-        listOf(_firstCustomer, _secondCustomer, _thirdCustomer))
+  fun `on sync customer from database result empty data`() = runTest {
+    _customerRepository.delete(_firstCustomer.id)
+    _customerRepository.delete(_secondCustomer.id)
+    _customerRepository.delete(_thirdCustomer.id)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
-            customers = listOf(), isNoCustomersAddedIllustrationVisible = true),
+            pagination = _viewModel.uiState.safeValue.pagination.copy(paginatedItems = listOf()),
+            isNoCustomersAddedIllustrationVisible = true),
         _viewModel.uiState.safeValue,
         "Show illustration for no customers created")
   }
 
   @Test
-  fun `on state changed result notify recycler adapter dataset changes`() {
+  fun `on state changed result notify recycler adapter dataset changes`() = runTest {
     clearMocks(_uiEventObserver)
-    _customerChangedListenerCaptor.captured.onModelAdded(listOf(_firstCustomer))
-    _viewModel.onCustomersChanged(_viewModel.uiState.safeValue.customers)
+    _customerRepository.add(_firstCustomer.copy(id = null))
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod)
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod.sortBy)
     assertDoesNotThrow("Notify recycler adapter of dataset changes") {
-      verify(exactly = 4) {
+      verify(exactly = 3) {
         _uiEventObserver.onChanged(
             match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
       }

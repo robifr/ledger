@@ -22,13 +22,10 @@ import com.robifr.ledger.InstantTaskExecutorExtension
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.display.CustomerSortMethod
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
+import com.robifr.ledger.local.access.FakeCustomerDao
 import com.robifr.ledger.repository.CustomerRepository
-import io.mockk.Runs
 import io.mockk.clearAllMocks
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -45,6 +42,7 @@ import org.junit.jupiter.params.provider.ValueSource
 @ExtendWith(InstantTaskExecutorExtension::class, MainCoroutineExtension::class)
 class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   private lateinit var _customerRepository: CustomerRepository
+  private lateinit var _customerDao: FakeCustomerDao
   private lateinit var _customerViewModel: CustomerViewModel
   private lateinit var _viewModel: CustomerFilterViewModel
 
@@ -57,14 +55,20 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    _customerRepository = mockk()
+    _customerDao =
+        FakeCustomerDao(
+            data = mutableListOf(_firstCustomer, _secondCustomer, _thirdCustomer),
+            queueData = mutableListOf(),
+            productOrderData = mutableListOf())
+    _customerRepository = CustomerRepository(_customerDao)
     AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-US"))
 
-    every { _customerRepository.addModelChangedListener(any()) } just Runs
-    coEvery { _customerRepository.selectAll() } returns
-        listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
-    coEvery { _customerRepository.isTableEmpty() } returns false
-    _customerViewModel = CustomerViewModel(_dispatcher, _customerRepository)
+    _customerViewModel =
+        CustomerViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            _dispatcher = _dispatcher,
+            _customerRepository = _customerRepository)
     _viewModel = _customerViewModel.filterView
   }
 
@@ -115,14 +119,14 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
     _viewModel.onDialogClosed()
     assertEquals(
-        listOf(_thirdCustomer, _secondCustomer),
-        _customerViewModel.uiState.safeValue.customers,
+        listOf(_thirdCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
+        _customerViewModel.uiState.safeValue.pagination.paginatedItems,
         "Apply filter to the customers while retaining the sorted list")
   }
 
   private fun `_on dialog closed with unbounded balance range cases`(): Array<Array<Any>> =
       arrayOf(
-          arrayOf("$0", "$0", "", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
+          arrayOf("$0", "$0", "", "", listOf(_firstCustomer, _secondCustomer)),
           arrayOf("$0", "$0", "$1.00", "", listOf(_secondCustomer, _thirdCustomer)),
           arrayOf("$0", "$0", "", "$1.00", listOf(_firstCustomer, _secondCustomer)))
 
@@ -144,14 +148,14 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
     _viewModel.onDialogClosed()
     assertEquals(
-        filteredCustomers,
-        _customerViewModel.uiState.safeValue.customers,
+        filteredCustomers.map { CustomerPaginatedInfo(it) },
+        _customerViewModel.uiState.safeValue.pagination.paginatedItems,
         "Include any customer whose balance falls within the unbounded range")
   }
 
   private fun `_on dialog closed with unbounded debt range cases`(): Array<Array<Any>> =
       arrayOf(
-          arrayOf("$0", "$0", "", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
+          arrayOf("$0", "$0", "", "", listOf(_firstCustomer, _secondCustomer)),
           arrayOf("$0", "$0", "-$1.00", "", listOf(_firstCustomer, _secondCustomer)),
           arrayOf("$0", "$0", "$1.00", "", listOf(_firstCustomer, _secondCustomer)),
           arrayOf("$0", "$0", "", "-$1.00", listOf(_secondCustomer, _thirdCustomer)),
@@ -175,8 +179,8 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
     _viewModel.onDialogClosed()
     assertEquals(
-        filteredCustomers,
-        _customerViewModel.uiState.safeValue.customers,
+        filteredCustomers.map { CustomerPaginatedInfo(it) },
+        _customerViewModel.uiState.safeValue.pagination.paginatedItems,
         "Include any customer whose debt falls within the unbounded range")
   }
 
@@ -184,9 +188,9 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
       Array<Array<Any>> =
       arrayOf(
           // `_firstCustomer` was previously excluded.
-          arrayOf("$1.00", "", "", "", listOf(_firstCustomer, _secondCustomer, _thirdCustomer)),
-          // `_firstCustomer` was previously excluded, but then exclude `_thirdCustomer`.
-          arrayOf("$1.00", "", "", "$1.00", listOf(_firstCustomer, _secondCustomer)))
+          arrayOf("$1.00", "", "", "", listOf(_firstCustomer, _secondCustomer)),
+          // `_firstCustomer` was previously excluded, but then exclude `_secondCustomer`.
+          arrayOf("$1.00", "", "", "$0.50", listOf(_firstCustomer)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with customer excluded from previous filter cases")
@@ -206,8 +210,8 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
     _viewModel.onDialogClosed()
     assertEquals(
-        filteredCustomers,
-        _customerViewModel.uiState.safeValue.customers,
+        filteredCustomers.map { CustomerPaginatedInfo(it) },
+        _customerViewModel.uiState.safeValue.pagination.paginatedItems,
         "Include customer from the database that match the filter")
   }
 }
