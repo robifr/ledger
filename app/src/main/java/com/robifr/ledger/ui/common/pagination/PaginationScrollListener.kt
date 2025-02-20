@@ -22,9 +22,9 @@ import androidx.recyclerview.widget.RecyclerView
 class PaginationScrollListener(
     /**
      * The number of remaining items that triggers [_onLoadNextPage] or [_onLoadPreviousPage] during
-     * scrolling. Avoid setting this value too close to [PaginationManager.maxPaginationLimit]
-     * because it may cause unexpected behavior. For example, if both [threshold] and
-     * [PaginationManager.maxPaginationLimit] is 20, and [PaginationManager.maxItemInMemory] is 60,
+     * scrolling. Avoid setting this value too close to [PaginationManager.maxItemPerPage] because
+     * it may cause unexpected behavior. For example, if both [threshold] and
+     * [PaginationManager.maxItemPerPage] is 20, and [PaginationManager.maxItemInMemory] is 60,
      * scrolling far enough to display the item at index 60 may prevent interactions with
      * lower-index items (59, 58, 57, etc.), such as expanding them, from behaving correctly until
      * the item at index 60 is no longer visible.

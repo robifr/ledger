@@ -32,8 +32,8 @@ import kotlinx.coroutines.withContext
 class PaginationManager<T>(
     val state: () -> PaginationState<T>,
     val onStateChanged: (PaginationState<T>) -> Unit,
-    val maxPaginationLimit: Int = 20,
-    val maxItemInMemory: Int = maxPaginationLimit * 3,
+    val maxItemPerPage: Int = 20,
+    val maxItemInMemory: Int = maxItemPerPage * 3,
     private val _coroutineScope: CoroutineScope,
     private val _dispatcher: CoroutineDispatcher,
     private val _onNotifyRecyclerState: (RecyclerAdapterState) -> Unit,
@@ -72,7 +72,7 @@ class PaginationManager<T>(
       }
 
       val totalItem: Long = _countTotalItem()
-      _loadPagedItems(firstLoadedPageNumber, maxPaginationLimit) { newItems ->
+      _loadPagedItems(firstLoadedPageNumber, maxItemPerPage) { newItems ->
         val items: MutableList<T> =
             state().paginatedItems.toMutableList().apply { addAll(0, newItems) }
         // Manage number of item in memory by removing from the last.
@@ -85,12 +85,12 @@ class PaginationManager<T>(
                     firstLoadedPageNumber = firstLoadedPageNumber,
                     // The gap between first and last page should only expands whenever a new page
                     // is loaded. The maximum gap can be calculated as `maxItemInMemory` /
-                    // `maxPaginationLimit`.
+                    // `maxItemPerPage`.
                     lastLoadedPageNumber =
                         if (isItemsInLastPageRemoved) {
                           min(
-                              firstLoadedPageNumber + (maxItemInMemory / maxPaginationLimit) - 1,
-                              ceil(totalItem.toDouble() / maxPaginationLimit.toDouble()).toInt())
+                              firstLoadedPageNumber + (maxItemInMemory / maxItemPerPage) - 1,
+                              ceil(totalItem.toDouble() / maxItemPerPage.toDouble()).toInt())
                         } else {
                           state().lastLoadedPageNumber
                         },
@@ -120,14 +120,14 @@ class PaginationManager<T>(
       val lastLoadedPageNumber: Int =
           min(
               state().lastLoadedPageNumber + 1,
-              ceil(totalItem.toDouble() / maxPaginationLimit.toDouble()).toInt())
+              ceil(totalItem.toDouble() / maxItemPerPage.toDouble()).toInt())
       // Prevent the same paginated items to be loaded.
       if (state().lastLoadedPageNumber == lastLoadedPageNumber) {
         withContext(Dispatchers.Main) { onStateChanged(state().copy(isLoading = false)) }
         return@launch
       }
 
-      _loadPagedItems(lastLoadedPageNumber, maxPaginationLimit) { newItems ->
+      _loadPagedItems(lastLoadedPageNumber, maxItemPerPage) { newItems ->
         val items: MutableList<T> =
             state().paginatedItems.toMutableList().apply { addAll(newItems) }
         // Manage number of item in memory by removing from the first.
@@ -140,10 +140,10 @@ class PaginationManager<T>(
                     isLoading = false,
                     // The gap between first and last page should only expands whenever a new page
                     // is loaded. The maximum gap can be calculated as `maxItemInMemory` /
-                    // `maxPaginationLimit`.
+                    // `maxItemPerPage`.
                     firstLoadedPageNumber =
                         if (isItemsInFirstPageRemoved) {
-                          max(1, lastLoadedPageNumber - (maxItemInMemory / maxPaginationLimit) + 1)
+                          max(1, lastLoadedPageNumber - (maxItemInMemory / maxItemPerPage) + 1)
                         } else {
                           state().firstLoadedPageNumber
                         },
@@ -175,7 +175,7 @@ class PaginationManager<T>(
     _loadPagedItems(
         firstLoadedPageNumber,
         // Load items for pages in the inclusive range of first and last page.
-        maxPaginationLimit * max(1, lastLoadedPageNumber - firstLoadedPageNumber + 1)) {
+        maxItemPerPage * max(1, lastLoadedPageNumber - firstLoadedPageNumber + 1)) {
           onStateChanged(
               state()
                   .copy(
