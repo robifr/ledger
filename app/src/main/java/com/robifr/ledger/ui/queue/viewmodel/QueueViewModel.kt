@@ -96,7 +96,9 @@ constructor(
           onSync = { _, _ ->
             _onReloadPage(
                 _uiState.safeValue.pagination.firstLoadedPageNumber,
-                _uiState.safeValue.pagination.lastLoadedPageNumber)
+                _uiState.safeValue.pagination.lastLoadedPageNumber) {
+                  _onPageLoadedReloadExpandedQueue()
+                }
           })
   private val _customerChangedListener: CustomerSyncListener =
       CustomerSyncListener(
@@ -148,35 +150,11 @@ constructor(
   }
 
   fun onLoadPreviousPage() {
-    _paginationManager.onLoadPreviousPage {
-      if (_uiState.safeValue.expandedQueue == null) return@onLoadPreviousPage
-      // Load full model of current current expanded queue.
-      val expandedQueueIndex: Int =
-          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
-            it.id == _uiState.safeValue.expandedQueue?.id
-          }
-      if (expandedQueueIndex != -1) {
-        _onLoadFullQueue(expandedQueueIndex, _uiState.safeValue.expandedQueue)
-        // +1 offset because header holder.
-        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedQueueIndex + 1))
-      }
-    }
+    _paginationManager.onLoadPreviousPage { _onPageLoadedReloadExpandedQueue() }
   }
 
   fun onLoadNextPage() {
-    _paginationManager.onLoadNextPage {
-      if (_uiState.safeValue.expandedQueue == null) return@onLoadNextPage
-      // Load full model of current current expanded queue.
-      val expandedQueueIndex: Int =
-          _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
-            it.id == _uiState.safeValue.expandedQueue?.id
-          }
-      if (expandedQueueIndex != -1) {
-        _onLoadFullQueue(expandedQueueIndex, _uiState.safeValue.expandedQueue)
-        // +1 offset because header holder.
-        _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedQueueIndex + 1))
-      }
-    }
+    _paginationManager.onLoadNextPage { _onPageLoadedReloadExpandedQueue() }
   }
 
   fun onRecyclerStateIdle(isIdle: Boolean) {
@@ -272,6 +250,20 @@ constructor(
                 }))
   }
 
+  private fun _onPageLoadedReloadExpandedQueue() {
+    if (_uiState.safeValue.expandedQueue == null) return
+    // Re-expand current expanded queue and load full model of it.
+    val expandedQueueIndex: Int =
+        _uiState.safeValue.pagination.paginatedItems.indexOfFirst {
+          it.id == _uiState.safeValue.expandedQueue?.id
+        }
+    if (expandedQueueIndex != -1) {
+      _onLoadFullQueue(expandedQueueIndex, _uiState.safeValue.expandedQueue)
+      // +1 offset because header holder.
+      _onRecyclerAdapterRefreshed(RecyclerAdapterState.ItemChanged(expandedQueueIndex + 1))
+    }
+  }
+
   private fun _onNoQueuesCreatedIllustrationVisible(isVisible: Boolean) {
     _uiState.setValue(_uiState.safeValue.copy(isNoQueuesCreatedIllustrationVisible = isVisible))
   }
@@ -294,11 +286,16 @@ constructor(
     }
   }
 
-  private fun _onReloadPage(firstVisiblePageNumber: Int, lastVisiblePageNumber: Int) {
+  private fun _onReloadPage(
+      firstVisiblePageNumber: Int,
+      lastVisiblePageNumber: Int,
+      onLoad: (List<QueuePaginatedInfo>) -> Unit = {}
+  ) {
     viewModelScope.launch(_dispatcher) {
       val isTableEmpty: Boolean = _queueRepository.isTableEmpty()
       _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
         _onNoQueuesCreatedIllustrationVisible(isTableEmpty)
+        onLoad(it)
       }
     }
   }
