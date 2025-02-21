@@ -16,17 +16,17 @@
 
 package com.robifr.ledger.ui.product.viewmodel
 
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.robifr.ledger.InstantTaskExecutorExtension
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.display.ProductSortMethod
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductPaginatedInfo
+import com.robifr.ledger.local.access.FakeProductDao
 import com.robifr.ledger.repository.ProductRepository
-import io.mockk.Runs
 import io.mockk.clearAllMocks
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
+import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -43,6 +43,7 @@ import org.junit.jupiter.params.provider.ValueSource
 @ExtendWith(InstantTaskExecutorExtension::class, MainCoroutineExtension::class)
 class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   private lateinit var _productRepository: ProductRepository
+  private lateinit var _productDao: FakeProductDao
   private lateinit var _productViewModel: ProductViewModel
   private lateinit var _viewModel: ProductFilterViewModel
 
@@ -53,13 +54,16 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    _productRepository = mockk()
+    _productDao = FakeProductDao(mutableListOf(_firstProduct, _secondProduct, _thirdProduct))
+    _productRepository = spyk(ProductRepository(_productDao))
+    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-US"))
 
-    every { _productRepository.addModelChangedListener(any()) } just Runs
-    coEvery { _productRepository.selectAll() } returns
-        listOf(_firstProduct, _secondProduct, _thirdProduct)
-    coEvery { _productRepository.isTableEmpty() } returns false
-    _productViewModel = ProductViewModel(_dispatcher, _productRepository)
+    _productViewModel =
+        ProductViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            _dispatcher = _dispatcher,
+            _productRepository = _productRepository)
     _viewModel = _productViewModel.filterView
   }
 
@@ -97,14 +101,14 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
     _viewModel.onDialogClosed()
     assertEquals(
-        listOf(_thirdProduct, _secondProduct),
-        _productViewModel.uiState.safeValue.products,
+        listOf(_thirdProduct, _secondProduct).map { ProductPaginatedInfo(it) },
+        _productViewModel.uiState.safeValue.pagination.paginatedItems,
         "Apply filter to the products while retaining the sorted list")
   }
 
   private fun `_on dialog closed with unbounded price range cases`(): Array<Array<Any>> =
       arrayOf(
-          arrayOf("$0", "$0", "", "", listOf(_firstProduct, _secondProduct, _thirdProduct)),
+          arrayOf("$0", "$0", "", "", listOf(_firstProduct, _secondProduct)),
           arrayOf("$0", "$0", "$2.00", "", listOf(_secondProduct, _thirdProduct)),
           arrayOf("$0", "$0", "", "$2.00", listOf(_firstProduct, _secondProduct)))
 
@@ -126,8 +130,8 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
     _viewModel.onDialogClosed()
     assertEquals(
-        filteredProducts,
-        _productViewModel.uiState.safeValue.products,
+        filteredProducts.map { ProductPaginatedInfo(it) },
+        _productViewModel.uiState.safeValue.pagination.paginatedItems,
         "Include any product whose price falls within the unbounded range")
   }
 
@@ -135,9 +139,9 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
       Array<Array<Any>> =
       arrayOf(
           // `_firstProduct` was previously excluded.
-          arrayOf("$2.00", "", "", "", listOf(_firstProduct, _secondProduct, _thirdProduct)),
-          // `_firstProduct` was previously excluded, but then exclude `_thirdProduct`.
-          arrayOf("$2.00", "", "", "$2.00", listOf(_firstProduct, _secondProduct)))
+          arrayOf("$2.00", "", "", "", listOf(_firstProduct, _secondProduct)),
+          // `_firstProduct` was previously excluded, but then exclude `_secondCustomer`.
+          arrayOf("$2.00", "", "", "$1.00", listOf(_firstProduct)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with product excluded from previous filter cases")
@@ -157,8 +161,8 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
     _viewModel.onDialogClosed()
     assertEquals(
-        filteredProduct,
-        _productViewModel.uiState.safeValue.products,
+        filteredProduct.map { ProductPaginatedInfo(it) },
+        _productViewModel.uiState.safeValue.pagination.paginatedItems,
         "Include product from the database that match the filter")
   }
 }
