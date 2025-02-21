@@ -18,15 +18,16 @@ package com.robifr.ledger.ui.dashboard.viewmodel
 
 import com.robifr.ledger.InstantTaskExecutorExtension
 import com.robifr.ledger.MainCoroutineExtension
+import com.robifr.ledger.local.access.FakeCustomerDao
+import com.robifr.ledger.local.access.FakeProductOrderDao
+import com.robifr.ledger.local.access.FakeQueueDao
 import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.CustomerRepository
+import com.robifr.ledger.repository.ProductOrderRepository
 import com.robifr.ledger.repository.QueueRepository
-import io.mockk.Runs
 import io.mockk.clearAllMocks
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
@@ -39,30 +40,38 @@ import org.junit.jupiter.api.extension.ExtendWith
 @ExtendWith(InstantTaskExecutorExtension::class, MainCoroutineExtension::class)
 class DashboardViewModelTest(private val _dispatcher: TestDispatcher) {
   private lateinit var _queueRepository: QueueRepository
+  private lateinit var _queueDao: FakeQueueDao
+  private lateinit var _productOrderRepository: ProductOrderRepository
+  private lateinit var _productOrderDao: FakeProductOrderDao
   private lateinit var _customerRepository: CustomerRepository
+  private lateinit var _customerDao: FakeCustomerDao
   private lateinit var _viewModel: DashboardViewModel
 
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    _queueRepository = mockk()
-    _customerRepository = mockk()
-
-    coEvery { _queueRepository.selectAllInRange(any(), any()) } returns listOf()
-    coEvery { _customerRepository.selectAllInfoWithBalance() } returns listOf()
-    coEvery { _customerRepository.selectAllInfoWithDebt() } returns listOf()
-    every { _queueRepository.addModelChangedListener(any()) } just Runs
-    every { _customerRepository.addModelChangedListener(any()) } just Runs
-    _viewModel = DashboardViewModel(_dispatcher, _queueRepository, _customerRepository)
+    _queueDao = FakeQueueDao(data = mutableListOf())
+    _productOrderDao = FakeProductOrderDao(data = mutableListOf(), queueData = _queueDao.data)
+    _customerDao =
+        FakeCustomerDao(
+            data = mutableListOf(),
+            queueData = _queueDao.data,
+            productOrderData = _productOrderDao.data)
+    _productOrderRepository = spyk(ProductOrderRepository(_productOrderDao))
+    _customerRepository = spyk(CustomerRepository(_customerDao))
+    _queueRepository =
+        spyk(QueueRepository(_queueDao, mockk(), _customerRepository, _productOrderRepository))
+    _viewModel =
+        DashboardViewModel(
+            _dispatcher, _queueRepository, _productOrderRepository, _customerRepository)
   }
 
   @Test
   fun `on cleared`() {
-    every { _queueRepository.removeModelChangedListener(any()) } just Runs
-    every { _customerRepository.removeModelChangedListener(any()) } just Runs
     _viewModel.onLifecycleOwnerDestroyed()
     assertDoesNotThrow("Remove attached listener from the repository") {
       verify(exactly = 2) { _queueRepository.removeModelChangedListener(any()) }
+      verify(exactly = 1) { _productOrderRepository.removeModelChangedListener(any()) }
       verify(exactly = 2) { _customerRepository.removeModelChangedListener(any()) }
     }
   }
