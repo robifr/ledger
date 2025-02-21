@@ -23,23 +23,21 @@ import com.robifr.ledger.LifecycleOwnerExtension
 import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.data.model.CustomerPaginatedInfo
+import com.robifr.ledger.local.access.FakeCustomerDao
 import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.CustomerRepository
-import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.selectcustomer.SelectCustomerFragment
-import io.mockk.CapturingSlot
-import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.clearMocks
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -62,8 +60,7 @@ class SelectCustomerViewModelTest(
     private val _lifecycleOwner: LifecycleTestOwner
 ) {
   private lateinit var _customerRepository: CustomerRepository
-  private val _customerChangedListenerCaptor: CapturingSlot<ModelSyncListener<CustomerModel>> =
-      slot()
+  private lateinit var _customerDao: FakeCustomerDao
   private lateinit var _viewModel: SelectCustomerViewModel
   private lateinit var _uiEventObserver: Observer<SelectCustomerEvent>
 
@@ -74,16 +71,20 @@ class SelectCustomerViewModelTest(
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    _customerRepository = mockk()
+    _customerDao =
+        FakeCustomerDao(
+            data = mutableListOf(_firstCustomer, _secondCustomer, _thirdCustomer),
+            queueData = mutableListOf(),
+            productOrderData = mutableListOf())
+    _customerRepository = spyk(CustomerRepository(_customerDao))
     _uiEventObserver = mockk(relaxed = true)
-
-    every {
-      _customerRepository.addModelChangedListener(capture(_customerChangedListenerCaptor))
-    } just Runs
-    coEvery { _customerRepository.selectAll() } returns
-        listOf(_firstCustomer, _secondCustomer, _thirdCustomer)
-    coEvery { _customerRepository.selectById(any<Long>()) } returns _firstCustomer
-    _viewModel = SelectCustomerViewModel(SavedStateHandle(), _dispatcher, _customerRepository)
+    _viewModel =
+        SelectCustomerViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            savedStateHandle = SavedStateHandle(),
+            _dispatcher = _dispatcher,
+            _customerRepository = _customerRepository)
     _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
 
@@ -91,18 +92,24 @@ class SelectCustomerViewModelTest(
   fun `on initialize with arguments`() {
     _viewModel =
         SelectCustomerViewModel(
-            SavedStateHandle().apply {
-              set(
-                  SelectCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_PARCELABLE.key(),
-                  _firstCustomer)
-            },
-            _dispatcher,
-            _customerRepository)
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            savedStateHandle =
+                SavedStateHandle().apply {
+                  set(
+                      SelectCustomerFragment.Arguments.INITIAL_SELECTED_CUSTOMER_PARCELABLE.key(),
+                      _firstCustomer)
+                },
+            _dispatcher = _dispatcher,
+            _customerRepository = _customerRepository)
     assertEquals(
         SelectCustomerState(
             initialSelectedCustomer = _firstCustomer,
             selectedCustomerOnDatabase = _firstCustomer,
-            customers = listOf(_firstCustomer, _secondCustomer, _thirdCustomer),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) }),
             expandedCustomerIndex = -1,
             isSelectedCustomerPreviewExpanded = false),
         _viewModel.uiState.safeValue,
@@ -111,15 +118,19 @@ class SelectCustomerViewModelTest(
 
   @Test
   fun `on initialize with unordered name`() {
-    val firstCustomer: CustomerModel = _firstCustomer.copy(name = "Cal")
-    val secondCustomer: CustomerModel = _secondCustomer.copy(name = "Amy")
-    val thirdCustomer: CustomerModel = _thirdCustomer.copy(name = "Ben")
-    coEvery { _customerRepository.selectAll() } returns
-        listOf(firstCustomer, secondCustomer, thirdCustomer)
-    _viewModel = SelectCustomerViewModel(SavedStateHandle(), _dispatcher, _customerRepository)
+    _customerDao.data.clear()
+    _customerDao.data.addAll(mutableListOf(_thirdCustomer, _firstCustomer, _secondCustomer))
+
+    _viewModel =
+        SelectCustomerViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            savedStateHandle = SavedStateHandle(),
+            _dispatcher = _dispatcher,
+            _customerRepository = _customerRepository)
     assertEquals(
-        listOf(secondCustomer, thirdCustomer, firstCustomer),
-        _viewModel.uiState.safeValue.customers,
+        listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
+        _viewModel.uiState.safeValue.pagination.paginatedItems,
         "Sort customers based from its name")
   }
 
@@ -133,7 +144,6 @@ class SelectCustomerViewModelTest(
 
   @Test
   fun `on cleared`() {
-    every { _customerRepository.removeModelChangedListener(any()) } just Runs
     _viewModel.onLifecycleOwnerDestroyed()
     assertDoesNotThrow("Remove attached listener from the repository") {
       verify { _customerRepository.removeModelChangedListener(any()) }
@@ -173,10 +183,12 @@ class SelectCustomerViewModelTest(
       newIndex: Int,
       updatedIndexes: List<Int>,
       expandedIndex: Int
-  ) {
+  ) = runTest {
     _viewModel.onExpandedCustomerIndexChanged(oldIndex)
+    advanceUntilIdle()
 
     _viewModel.onExpandedCustomerIndexChanged(newIndex)
+    advanceUntilIdle()
     assertAll(
         {
           assertEquals(
@@ -195,7 +207,8 @@ class SelectCustomerViewModelTest(
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on customer selected`(isCustomerNull: Boolean) {
-    val customer: CustomerModel? = if (!isCustomerNull) _secondCustomer else null
+    val customer: CustomerPaginatedInfo? =
+        if (!isCustomerNull) CustomerPaginatedInfo(_secondCustomer) else null
     _viewModel.onCustomerSelected(customer)
     assertEquals(
         SelectCustomerResultState(customer?.id),
@@ -204,23 +217,20 @@ class SelectCustomerViewModelTest(
   }
 
   @Test
-  fun `on sync customer from database`() {
-    val updatedCustomers: List<CustomerModel> =
-        listOf(
-            _firstCustomer.copy(balance = _firstCustomer.balance + 100L),
-            _secondCustomer,
-            _thirdCustomer)
-    _customerChangedListenerCaptor.captured.onModelUpdated(updatedCustomers)
+  fun `on sync customer from database`() = runTest {
+    val updatedCustomer: CustomerModel =
+        _firstCustomer.copy(balance = _firstCustomer.balance + 100L)
+    _customerRepository.update(updatedCustomer)
     assertEquals(
-        updatedCustomers,
-        _viewModel.uiState.safeValue.customers,
+        listOf(updatedCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
+        _viewModel.uiState.safeValue.pagination.paginatedItems,
         "Sync customers when any are updated in the database")
   }
 
   @Test
-  fun `on state changed result notify recycler adapter dataset changes`() {
+  fun `on state changed result notify recycler adapter dataset changes`() = runTest {
     clearMocks(_uiEventObserver)
-    _customerChangedListenerCaptor.captured.onModelAdded(listOf(_firstCustomer))
+    _customerRepository.add(_firstCustomer.copy(id = null))
     assertDoesNotThrow("Notify recycler adapter of dataset changes") {
       verify(exactly = 1) {
         _uiEventObserver.onChanged(
