@@ -23,21 +23,16 @@ import com.robifr.ledger.LifecycleOwnerExtension
 import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.local.access.FakeProductDao
 import com.robifr.ledger.onLifecycleOwnerDestroyed
-import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.searchproduct.SearchProductFragment
-import io.mockk.CapturingSlot
-import io.mockk.Runs
 import io.mockk.clearAllMocks
-import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
@@ -66,19 +61,18 @@ class SearchProductViewModelTest(
     private val _lifecycleOwner: LifecycleTestOwner
 ) {
   private lateinit var _productRepository: ProductRepository
-  private val _productChangedListenerCaptor: CapturingSlot<ModelSyncListener<ProductModel>> = slot()
+  private lateinit var _productDao: FakeProductDao
   private lateinit var _viewModel: SearchProductViewModel
   private lateinit var _uiEventObserver: Observer<SearchProductEvent>
+
+  private val _product: ProductModel = ProductModel(id = 111L, name = "Apple", price = 100L)
 
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    _productRepository = mockk()
+    _productDao = FakeProductDao(mutableListOf(_product))
+    _productRepository = spyk(ProductRepository(_productDao))
     _uiEventObserver = mockk(relaxed = true)
-
-    every {
-      _productRepository.addModelChangedListener(capture(_productChangedListenerCaptor))
-    } just Runs
     _viewModel = SearchProductViewModel(SavedStateHandle(), _dispatcher, _productRepository)
     _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
@@ -131,7 +125,6 @@ class SearchProductViewModelTest(
 
   @Test
   fun `on cleared`() {
-    every { _productRepository.removeModelChangedListener(any()) } just Runs
     _viewModel.onLifecycleOwnerDestroyed()
     assertDoesNotThrow("Remove attached listener from the repository") {
       verify { _productRepository.removeModelChangedListener(any()) }
@@ -140,7 +133,6 @@ class SearchProductViewModelTest(
 
   @Test
   fun `on search with fast input`() = runTest {
-    coEvery { _productRepository.search(any()) } returns listOf()
     _viewModel.onSearch("A")
     _viewModel.onSearch("B")
     _viewModel.onSearch("C")
@@ -152,12 +144,10 @@ class SearchProductViewModelTest(
 
   @Test
   fun `on search with complete query`() = runTest {
-    val product: ProductModel = ProductModel(id = 111L, name = "Apple")
-    coEvery { _productRepository.search(any()) } returns listOf(product)
     _viewModel.onSearch("A")
     advanceUntilIdle()
     assertEquals(
-        _viewModel.uiState.safeValue.copy(query = "A", products = listOf(product)),
+        _viewModel.uiState.safeValue.copy(query = "A", products = listOf(_product)),
         _viewModel.uiState.safeValue,
         "Update products based from the queried search result")
   }
@@ -176,10 +166,12 @@ class SearchProductViewModelTest(
       newIndex: Int,
       updatedIndexes: List<Int>,
       expandedIndex: Int
-  ) {
+  ) = runTest {
     _viewModel.onExpandedProductIndexChanged(oldIndex)
+    advanceUntilIdle()
 
     _viewModel.onExpandedProductIndexChanged(newIndex)
+    advanceUntilIdle()
     assertAll(
         {
           assertEquals(
@@ -197,7 +189,7 @@ class SearchProductViewModelTest(
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
-  fun `on product menu dialog shown`(isShown: Boolean) {
+  fun `on product menu dialog shown`(isShown: Boolean) = runTest {
     _viewModel =
         SearchProductViewModel(
             SavedStateHandle().apply {
@@ -211,9 +203,9 @@ class SearchProductViewModelTest(
             _dispatcher,
             _productRepository)
     _viewModel.onExpandedProductIndexChanged(0)
+    advanceUntilIdle()
 
-    val selectedProduct: ProductModel = ProductModel(id = 111L, name = "Apple")
-    if (isShown) _viewModel.onProductMenuDialogShown(selectedProduct)
+    if (isShown) _viewModel.onProductMenuDialogShown(_product)
     else _viewModel.onProductMenuDialogClosed()
     assertEquals(
         SearchProductState(
@@ -225,7 +217,7 @@ class SearchProductViewModelTest(
             products = listOf(),
             expandedProductIndex = 0,
             isProductMenuDialogShown = isShown,
-            selectedProductMenu = if (isShown) selectedProduct else null),
+            selectedProductMenu = if (isShown) _product else null),
         _viewModel.uiState.safeValue,
         "Preserve other fields when the dialog shown or closed")
   }
@@ -233,8 +225,7 @@ class SearchProductViewModelTest(
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on product selected`(isProductNull: Boolean) {
-    val product: ProductModel? =
-        if (!isProductNull) ProductModel(id = 111L, name = "Apple") else null
+    val product: ProductModel? = if (!isProductNull) _product else null
     _viewModel.onProductSelected(product)
     assertEquals(
         SearchProductResultState(product?.id),
@@ -242,10 +233,10 @@ class SearchProductViewModelTest(
         "Update result state based from the selected product")
   }
 
-  @Test
-  fun `on delete product`() {
-    coEvery { _productRepository.delete(any()) } returns 1
-    _viewModel.onDeleteProduct(ProductModel(id = 111L, name = "Apple"))
+  @ParameterizedTest
+  @ValueSource(longs = [0L, 111L])
+  fun `on delete product`(idToDelete: Long) {
+    _viewModel.onDeleteProduct(idToDelete)
     assertNotNull(
         _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the delete result via snackbar")
   }
@@ -253,8 +244,7 @@ class SearchProductViewModelTest(
   @Test
   fun `on search ui state changed`() {
     val searchState: SearchState =
-        SearchState(
-            products = listOf(ProductModel(name = "Apple")), customers = listOf(), query = "A")
+        SearchState(products = listOf(_product), customers = listOf(), query = "A")
     _viewModel.onSearchUiStateChanged(searchState)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
@@ -265,13 +255,11 @@ class SearchProductViewModelTest(
 
   @Test
   fun `on sync product from database`() = runTest {
-    val product: ProductModel = ProductModel(id = 111L, name = "Apple", price = 100L)
-    coEvery { _productRepository.search(any()) } returns listOf(product)
     _viewModel.onSearch("Apple")
     advanceUntilIdle()
 
-    val updatedProduct: ProductModel = product.copy(price = product.price + 100L)
-    _productChangedListenerCaptor.captured.onModelUpdated(listOf(updatedProduct))
+    val updatedProduct: ProductModel = _product.copy(price = _product.price + 100L)
+    _productRepository.update(updatedProduct)
     assertEquals(
         listOf(updatedProduct),
         _viewModel.uiState.safeValue.products,
@@ -280,9 +268,7 @@ class SearchProductViewModelTest(
 
   @Test
   fun `on state changed result notify recycler adapter dataset changes`() = runTest {
-    _productChangedListenerCaptor.captured.onModelAdded(
-        listOf(ProductModel(id = 111L, name = "Apple")))
-    coEvery { _productRepository.search(any()) } returns listOf()
+    _productRepository.add(_product.copy(id = null))
     _viewModel.onSearch(_viewModel.uiState.safeValue.query)
     advanceUntilIdle()
     _viewModel.onSearchUiStateChanged(SearchState(listOf(), listOf(), ""))
