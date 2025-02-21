@@ -26,28 +26,33 @@ import com.robifr.ledger.data.display.QueueSortMethod
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
+import com.robifr.ledger.local.TransactionProvider
+import com.robifr.ledger.local.access.FakeCustomerDao
+import com.robifr.ledger.local.access.FakeProductOrderDao
+import com.robifr.ledger.local.access.FakeQueueDao
 import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.CustomerRepository
-import com.robifr.ledger.repository.ModelChangedListener
-import com.robifr.ledger.repository.ModelSyncListener
+import com.robifr.ledger.repository.ProductOrderRepository
 import com.robifr.ledger.repository.QueueRepository
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import io.mockk.CapturingSlot
-import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -70,11 +75,14 @@ class QueueViewModelTest(
     private val _dispatcher: TestDispatcher,
     private val _lifecycleOwner: LifecycleTestOwner
 ) {
+  private lateinit var _transactionProvider: TransactionProvider
+  private val _withTransactionCaptor: CapturingSlot<suspend () -> Any> = slot()
   private lateinit var _queueRepository: QueueRepository
+  private lateinit var _queueDao: FakeQueueDao
+  private lateinit var _productOrderRepository: ProductOrderRepository
+  private lateinit var _productOrderDao: FakeProductOrderDao
   private lateinit var _customerRepository: CustomerRepository
-  private val _queueChangedListenerCaptor: CapturingSlot<ModelSyncListener<QueueModel>> = slot()
-  private val _customerChangedListenerCaptor: CapturingSlot<ModelChangedListener<CustomerModel>> =
-      slot()
+  private lateinit var _customerDao: FakeCustomerDao
   private lateinit var _viewModel: QueueViewModel
   private lateinit var _uiEventObserver: Observer<QueueEvent>
 
@@ -112,20 +120,34 @@ class QueueViewModelTest(
   fun beforeEach() {
     clearAllMocks()
     mockkStatic(Environment::class)
-    _queueRepository = mockk()
-    _customerRepository = mockk()
+    _transactionProvider = mockk()
+    _queueDao = FakeQueueDao(data = mutableListOf(_firstQueue, _secondQueue, _thirdQueue))
+    _productOrderDao =
+        FakeProductOrderDao(
+            data = _queueDao.data.flatMap { it.productOrders }.toMutableList(),
+            queueData = _queueDao.data)
+    _customerDao =
+        FakeCustomerDao(
+            data = _queueDao.data.mapNotNull { it.customer }.toMutableList(),
+            queueData = _queueDao.data,
+            productOrderData = _productOrderDao.data)
+    _customerRepository = spyk(CustomerRepository(_customerDao))
+    _productOrderRepository = spyk(ProductOrderRepository(_productOrderDao))
+    coEvery { _transactionProvider.withTransaction(capture(_withTransactionCaptor)) } coAnswers
+        {
+          _withTransactionCaptor.captured.invoke()
+        }
+    _queueRepository =
+        spyk(
+            QueueRepository(
+                _queueDao, _transactionProvider, _customerRepository, _productOrderRepository))
     _uiEventObserver = mockk(relaxed = true)
 
-    every { _queueRepository.addModelChangedListener(capture(_queueChangedListenerCaptor)) } just
-        Runs
-    every {
-      _customerRepository.addModelChangedListener(capture(_customerChangedListenerCaptor))
-    } just Runs
     every { Environment.isExternalStorageManager() } returns true
-    coEvery { _queueRepository.selectAll() } returns listOf(_firstQueue, _secondQueue, _thirdQueue)
-    coEvery { _queueRepository.isTableEmpty() } returns false
     _viewModel =
         QueueViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _queueRepository = _queueRepository,
             _customerRepository = _customerRepository)
@@ -138,29 +160,37 @@ class QueueViewModelTest(
     every { Environment.isExternalStorageManager() } returns isPermissionGranted
     _viewModel =
         QueueViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _queueRepository = _queueRepository,
             _customerRepository = _customerRepository)
     assertEquals(
-        if (isPermissionGranted) listOf(_firstQueue, _secondQueue, _thirdQueue) else listOf(),
-        _viewModel.uiState.safeValue.queues,
+        if (isPermissionGranted) listOf(_firstQueue, _secondQueue).map { QueuePaginatedInfo(it) }
+        else listOf(),
+        _viewModel.uiState.safeValue.pagination.paginatedItems,
         "Prevent to load all queues when storage permission is denied")
   }
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on initialize with empty data`(isTableEmpty: Boolean) {
-    coEvery { _queueRepository.selectAll() } returns
-        if (isTableEmpty) listOf() else listOf(_firstQueue)
-    coEvery { _queueRepository.isTableEmpty() } returns isTableEmpty
+    _queueDao.data.clear()
+    if (!isTableEmpty) _queueDao.data.add(_firstQueue)
+
     _viewModel =
         QueueViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _queueRepository = _queueRepository,
             _customerRepository = _customerRepository)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
-            queues = if (isTableEmpty) listOf() else listOf(_firstQueue),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        if (isTableEmpty) listOf() else listOf(QueuePaginatedInfo(_firstQueue))),
             isNoQueuesCreatedIllustrationVisible = isTableEmpty),
         _viewModel.uiState.safeValue,
         "Show illustration for no queues created")
@@ -168,22 +198,24 @@ class QueueViewModelTest(
 
   @Test
   fun `on initialize with unordered date`() {
-    coEvery { _queueRepository.selectAll() } returns listOf(_thirdQueue, _firstQueue, _secondQueue)
+    _queueDao.data.clear()
+    _queueDao.data.addAll(mutableListOf(_thirdQueue, _firstQueue, _secondQueue))
+
     _viewModel =
         QueueViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _queueRepository = _queueRepository,
             _customerRepository = _customerRepository)
     assertEquals(
-        listOf(_firstQueue, _secondQueue, _thirdQueue),
-        _viewModel.uiState.safeValue.queues,
+        listOf(_firstQueue, _secondQueue).map { QueuePaginatedInfo(it) },
+        _viewModel.uiState.safeValue.pagination.paginatedItems,
         "Sort queues based from the default sort method")
   }
 
   @Test
   fun `on cleared`() {
-    every { _queueRepository.removeModelChangedListener(any()) } just Runs
-    every { _customerRepository.removeModelChangedListener(any()) } just Runs
     _viewModel.onLifecycleOwnerDestroyed()
     assertDoesNotThrow("Remove attached listeners from the repository") {
       verify {
@@ -193,31 +225,26 @@ class QueueViewModelTest(
     }
   }
 
-  @Test
-  fun `on queues changed with unsorted list`() {
-    _viewModel.onQueuesChanged(listOf(_thirdQueue, _firstQueue, _secondQueue))
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(queues = listOf(_firstQueue, _secondQueue, _thirdQueue)),
-        _viewModel.uiState.safeValue,
-        "Update queues with the new sorted list")
-  }
-
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
-  fun `on queue menu dialog shown`(isShown: Boolean) {
-    _viewModel.onQueuesChanged(listOf(_firstQueue))
-    _viewModel.onExpandedQueueIndexChanged(-1)
+  fun `on queue menu dialog shown`(isShown: Boolean) = runTest {
+    _viewModel.onExpandedQueueIndexChanged(0)
+    advanceUntilIdle()
     _viewModel.onSortMethodChanged(QueueSortMethod(QueueSortMethod.SortBy.DATE, true))
     _viewModel.onSortMethodDialogClosed()
 
-    if (isShown) _viewModel.onQueueMenuDialogShown(_firstQueue)
+    if (isShown) _viewModel.onQueueMenuDialogShown(QueuePaginatedInfo(_firstQueue))
     else _viewModel.onQueueMenuDialogClosed()
     assertEquals(
         QueueState(
-            queues = listOf(_firstQueue),
-            expandedQueueIndex = -1,
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
+            expandedQueueIndex = 0,
+            expandedQueue = _firstQueue,
             isQueueMenuDialogShown = isShown,
-            selectedQueueMenu = if (isShown) _firstQueue else null,
+            selectedQueueMenu = if (isShown) QueuePaginatedInfo(_firstQueue) else null,
             isNoQueuesCreatedIllustrationVisible = false,
             sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true),
             isSortMethodDialogShown = false),
@@ -231,7 +258,11 @@ class QueueViewModelTest(
     _viewModel.onSortMethodChanged(sortMethod)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
-            queues = listOf(_thirdQueue, _secondQueue, _firstQueue), sortMethod = sortMethod),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
+            sortMethod = sortMethod),
         _viewModel.uiState.safeValue,
         "Sort queues based from the sorting method")
   }
@@ -241,7 +272,10 @@ class QueueViewModelTest(
     _viewModel.onSortMethodChanged(QueueSortMethod.SortBy.DATE)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
-            queues = listOf(_thirdQueue, _secondQueue, _firstQueue),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
             sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true)),
         _viewModel.uiState.safeValue,
         "Reverse sort order when selecting the same sort option")
@@ -252,7 +286,10 @@ class QueueViewModelTest(
     _viewModel.onSortMethodChanged(QueueSortMethod.SortBy.CUSTOMER_NAME)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
-            queues = listOf(_thirdQueue, _secondQueue, _firstQueue),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
             sortMethod = QueueSortMethod(QueueSortMethod.SortBy.CUSTOMER_NAME, false)),
         _viewModel.uiState.safeValue,
         "Sort queues based from the sorting method")
@@ -260,17 +297,21 @@ class QueueViewModelTest(
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
-  fun `on sort method dialog shown`(isShown: Boolean) {
-    _viewModel.onQueuesChanged(listOf(_firstQueue))
+  fun `on sort method dialog shown`(isShown: Boolean) = runTest {
     _viewModel.onExpandedQueueIndexChanged(0)
+    advanceUntilIdle()
     _viewModel.onQueueMenuDialogClosed()
     _viewModel.onSortMethodChanged(QueueSortMethod(QueueSortMethod.SortBy.DATE, true))
 
     if (isShown) _viewModel.onSortMethodDialogShown() else _viewModel.onSortMethodDialogClosed()
     assertEquals(
         QueueState(
-            queues = listOf(_firstQueue),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
             expandedQueueIndex = 0,
+            expandedQueue = _firstQueue,
             isQueueMenuDialogShown = false,
             selectedQueueMenu = null,
             isNoQueuesCreatedIllustrationVisible = false,
@@ -294,10 +335,12 @@ class QueueViewModelTest(
       newIndex: Int,
       updatedIndexes: List<Int>,
       expandedIndex: Int
-  ) {
+  ) = runTest {
     _viewModel.onExpandedQueueIndexChanged(oldIndex)
+    advanceUntilIdle()
 
     _viewModel.onExpandedQueueIndexChanged(newIndex)
+    advanceUntilIdle()
     assertAll(
         {
           assertEquals(
@@ -314,57 +357,57 @@ class QueueViewModelTest(
   }
 
   @ParameterizedTest
-  @ValueSource(ints = [0, 1])
-  fun `on delete product`(effectedRows: Int) {
-    coEvery { _queueRepository.delete(any()) } returns effectedRows
-    _viewModel.onDeleteQueue(_firstQueue)
+  @ValueSource(longs = [0L, 111L])
+  fun `on delete queue`(idToDelete: Long) {
+    _viewModel.onDeleteQueue(idToDelete)
     assertNotNull(
         _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the delete result via snackbar")
   }
 
   @Test
-  fun `on sync queue from database`() {
-    val updatedQueues: List<QueueModel> =
-        listOf(_firstQueue.copy(status = QueueModel.Status.COMPLETED), _secondQueue, _thirdQueue)
-    _queueChangedListenerCaptor.captured.onModelUpdated(updatedQueues)
+  fun `on sync queue from database`() = runTest {
+    val updatedQueue: QueueModel = _firstQueue.copy(status = QueueModel.Status.COMPLETED)
+    _queueRepository.update(updatedQueue)
     assertEquals(
-        updatedQueues,
-        _viewModel.uiState.safeValue.queues,
+        listOf(updatedQueue, _secondQueue).map { QueuePaginatedInfo(it) },
+        _viewModel.uiState.safeValue.pagination.paginatedItems,
         "Sync queues when any are updated in the database")
   }
 
   @Test
-  fun `on sync queue from database result empty data`() {
-    coEvery { _queueRepository.isTableEmpty() } returns true
-
-    _queueChangedListenerCaptor.captured.onModelDeleted(
-        listOf(_firstQueue, _secondQueue, _thirdQueue))
+  fun `on sync queue from database result empty data`() = runTest {
+    _queueRepository.delete(_firstQueue.id)
+    _queueRepository.delete(_secondQueue.id)
+    _queueRepository.delete(_thirdQueue.id)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
-            queues = listOf(), isNoQueuesCreatedIllustrationVisible = true),
+            pagination = _viewModel.uiState.safeValue.pagination.copy(paginatedItems = listOf()),
+            isNoQueuesCreatedIllustrationVisible = true),
         _viewModel.uiState.safeValue,
         "Show illustration for no queues created")
   }
 
   @Test
-  fun `on sync customer from database`() {
+  fun `on sync customer from database`() = runTest {
     val updatedCustomer: CustomerModel? =
         _firstQueue.customer?.let { it.copy(balance = it.balance + 100L) }
-    _customerChangedListenerCaptor.captured.onModelUpdated(listOfNotNull(updatedCustomer))
+    updatedCustomer?.let { _customerRepository.update(it) }
     assertEquals(
-        listOf(_firstQueue.copy(customer = updatedCustomer), _secondQueue, _thirdQueue),
-        _viewModel.uiState.safeValue.queues,
+        listOf(_firstQueue.copy(customer = updatedCustomer), _secondQueue).map {
+          QueuePaginatedInfo(it)
+        },
+        _viewModel.uiState.safeValue.pagination.paginatedItems,
         "Sync queues when any customer is updated in the database")
   }
 
   @Test
-  fun `on state changed result notify recycler adapter dataset changes`() {
+  fun `on state changed result notify recycler adapter dataset changes`() = runTest {
     clearMocks(_uiEventObserver)
-    _queueChangedListenerCaptor.captured.onModelAdded(listOf(_firstQueue))
-    _viewModel.onQueuesChanged(_viewModel.uiState.safeValue.queues)
+    _queueRepository.add(_firstQueue.copy(id = null))
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod)
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod.sortBy)
     assertDoesNotThrow("Notify recycler adapter of dataset changes") {
+      // The extra one is from notified customer during `_queueRepository.add()`.
       verify(exactly = 4) {
         _uiEventObserver.onChanged(
             match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })

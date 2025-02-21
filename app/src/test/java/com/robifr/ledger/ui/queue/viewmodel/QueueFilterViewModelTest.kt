@@ -17,6 +17,8 @@
 package com.robifr.ledger.ui.queue.viewmodel
 
 import android.os.Environment
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import com.robifr.ledger.InstantTaskExecutorExtension
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.display.QueueDate
@@ -24,15 +26,18 @@ import com.robifr.ledger.data.display.QueueSortMethod
 import com.robifr.ledger.data.model.CustomerModel
 import com.robifr.ledger.data.model.ProductOrderModel
 import com.robifr.ledger.data.model.QueueModel
+import com.robifr.ledger.data.model.QueuePaginatedInfo
+import com.robifr.ledger.local.access.FakeCustomerDao
+import com.robifr.ledger.local.access.FakeProductOrderDao
+import com.robifr.ledger.local.access.FakeQueueDao
 import com.robifr.ledger.repository.CustomerRepository
+import com.robifr.ledger.repository.ProductOrderRepository
 import com.robifr.ledger.repository.QueueRepository
-import io.mockk.Runs
 import io.mockk.clearAllMocks
-import io.mockk.coEvery
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
+import io.mockk.spyk
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -52,7 +57,11 @@ import org.junit.jupiter.params.provider.ValueSource
 @ExtendWith(InstantTaskExecutorExtension::class, MainCoroutineExtension::class)
 class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   private lateinit var _queueRepository: QueueRepository
+  private lateinit var _queueDao: FakeQueueDao
+  private lateinit var _productOrderRepository: ProductOrderRepository
+  private lateinit var _productOrderDao: FakeProductOrderDao
   private lateinit var _customerRepository: CustomerRepository
+  private lateinit var _customerDao: FakeCustomerDao
   private lateinit var _queueViewModel: QueueViewModel
   private lateinit var _viewModel: QueueFilterViewModel
 
@@ -111,16 +120,27 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   fun beforeEach() {
     clearAllMocks()
     mockkStatic(Environment::class)
-    _queueRepository = mockk()
-    _customerRepository = mockk()
+    _queueDao = FakeQueueDao(data = mutableListOf(_firstQueue, _secondQueue, _thirdQueue))
+    _productOrderDao =
+        FakeProductOrderDao(
+            data = _queueDao.data.flatMap { it.productOrders }.toMutableList(),
+            queueData = _queueDao.data)
+    _customerDao =
+        FakeCustomerDao(
+            data = _queueDao.data.mapNotNull { it.customer }.toMutableList(),
+            queueData = _queueDao.data,
+            productOrderData = _productOrderDao.data)
+    _customerRepository = spyk(CustomerRepository(_customerDao))
+    _productOrderRepository = spyk(ProductOrderRepository(_productOrderDao))
+    _queueRepository =
+        spyk(QueueRepository(_queueDao, mockk(), _customerRepository, _productOrderRepository))
+    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-US"))
 
-    every { _queueRepository.addModelChangedListener(any()) } just Runs
-    every { _customerRepository.addModelChangedListener(any()) } just Runs
     every { Environment.isExternalStorageManager() } returns true
-    coEvery { _queueRepository.selectAll() } returns listOf(_firstQueue, _secondQueue, _thirdQueue)
-    coEvery { _queueRepository.isTableEmpty() } returns false
     _queueViewModel =
         QueueViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _queueRepository = _queueRepository,
             _customerRepository = _customerRepository)
@@ -181,15 +201,15 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
     _viewModel.onDialogClosed()
     assertEquals(
-        listOf(_secondQueue, _firstQueue),
-        _queueViewModel.uiState.safeValue.queues,
+        listOf(_secondQueue, _firstQueue).map { QueuePaginatedInfo(it) },
+        _queueViewModel.uiState.safeValue.pagination.paginatedItems,
         "Apply filter to the queues while retaining the sorted list")
   }
 
   private fun `_on dialog closed with unbounded grand total price range cases`():
       Array<Array<Any>> =
       arrayOf(
-          arrayOf("$0", "$0", "", "", listOf(_firstQueue, _secondQueue, _thirdQueue)),
+          arrayOf("$0", "$0", "", "", listOf(_firstQueue, _secondQueue)),
           arrayOf("$0", "$0", "$2.00", "", listOf(_secondQueue, _thirdQueue)),
           arrayOf("$0", "$0", "", "$2.00", listOf(_firstQueue, _secondQueue)))
 
@@ -211,8 +231,8 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
     _viewModel.onDialogClosed()
     assertEquals(
-        filteredQueues,
-        _queueViewModel.uiState.safeValue.queues,
+        filteredQueues.map { QueuePaginatedInfo(it) },
+        _queueViewModel.uiState.safeValue.pagination.paginatedItems,
         "Include any queue whose grand total price falls within the unbounded range")
   }
 
@@ -220,9 +240,9 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
       Array<Array<Any>> =
       arrayOf(
           // `_firstQueue` was previously excluded.
-          arrayOf("$2.00", "", "", "", listOf(_firstQueue, _secondQueue, _thirdQueue)),
+          arrayOf("$2.00", "", "", "", listOf(_firstQueue, _secondQueue)),
           // `_firstQueue` was previously excluded, but then exclude `_thirdQueue`.
-          arrayOf("$2.00", "", "", "$2.00", listOf(_firstQueue, _secondQueue)))
+          arrayOf("$2.00", "", "", "$1.00", listOf(_firstQueue)))
 
   @ParameterizedTest
   @MethodSource("_on dialog closed with queue excluded from previous filter cases")
@@ -242,8 +262,8 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
 
     _viewModel.onDialogClosed()
     assertEquals(
-        filteredQueue,
-        _queueViewModel.uiState.safeValue.queues,
+        filteredQueue.map { QueuePaginatedInfo(it) },
+        _queueViewModel.uiState.safeValue.pagination.paginatedItems,
         "Include queue from the database that match the filter")
   }
 }

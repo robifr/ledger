@@ -47,10 +47,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @HiltViewModel
-class QueueViewModel
-@Inject
-constructor(
-    @IoDispatcher private val _dispatcher: CoroutineDispatcher,
+class QueueViewModel(
+    maxPaginatedItemPerPage: Int = 20,
+    maxPaginatedItemInMemory: Int = maxPaginatedItemPerPage * 3,
+    private val _dispatcher: CoroutineDispatcher,
     private val _queueRepository: QueueRepository,
     private val _customerRepository: CustomerRepository
 ) : ViewModel() {
@@ -59,6 +59,8 @@ constructor(
       PaginationManager(
           state = { _uiState.safeValue.pagination },
           onStateChanged = { _uiState.setValue(_uiState.safeValue.copy(pagination = it)) },
+          maxItemPerPage = maxPaginatedItemPerPage,
+          maxItemInMemory = maxPaginatedItemInMemory,
           _coroutineScope = viewModelScope,
           _dispatcher = _dispatcher,
           _onNotifyRecyclerState = {
@@ -136,6 +138,16 @@ constructor(
     get() = _uiState
 
   val filterView: QueueFilterViewModel = QueueFilterViewModel { _onReloadPage(1, 1) }
+
+  @Inject
+  constructor(
+      @IoDispatcher dispatcher: CoroutineDispatcher,
+      queueRepository: QueueRepository,
+      customerRepository: CustomerRepository
+  ) : this(
+      _dispatcher = dispatcher,
+      _queueRepository = queueRepository,
+      _customerRepository = customerRepository)
 
   init {
     _queueRepository.addModelChangedListener(_queueChangedListener)
