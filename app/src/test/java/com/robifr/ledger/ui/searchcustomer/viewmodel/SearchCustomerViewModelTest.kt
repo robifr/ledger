@@ -23,21 +23,17 @@ import com.robifr.ledger.LifecycleOwnerExtension
 import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.CustomerModel
+import com.robifr.ledger.local.access.FakeCustomerDao
 import com.robifr.ledger.onLifecycleOwnerDestroyed
 import com.robifr.ledger.repository.CustomerRepository
-import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.search.viewmodel.SearchState
 import com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment
-import io.mockk.CapturingSlot
-import io.mockk.Runs
 import io.mockk.clearAllMocks
-import io.mockk.coEvery
+import io.mockk.clearMocks
 import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
@@ -66,20 +62,23 @@ class SearchCustomerViewModelTest(
     private val _lifecycleOwner: LifecycleTestOwner
 ) {
   private lateinit var _customerRepository: CustomerRepository
-  private val _customerChangedListenerCaptor: CapturingSlot<ModelSyncListener<CustomerModel>> =
-      slot()
+  private lateinit var _customerDao: FakeCustomerDao
   private lateinit var _viewModel: SearchCustomerViewModel
   private lateinit var _uiEventObserver: Observer<SearchCustomerEvent>
+
+  private val _customer: CustomerModel = CustomerModel(id = 111L, name = "Amy")
 
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    _customerRepository = mockk()
+    _customerDao =
+        FakeCustomerDao(
+            data = mutableListOf(_customer),
+            queueData = mutableListOf(),
+            productOrderData = mutableListOf())
+    _customerRepository = spyk(CustomerRepository(_customerDao))
     _uiEventObserver = mockk(relaxed = true)
 
-    every {
-      _customerRepository.addModelChangedListener(capture(_customerChangedListenerCaptor))
-    } just Runs
     _viewModel = SearchCustomerViewModel(SavedStateHandle(), _dispatcher, _customerRepository)
     _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
@@ -132,7 +131,6 @@ class SearchCustomerViewModelTest(
 
   @Test
   fun `on cleared`() {
-    every { _customerRepository.removeModelChangedListener(any()) } just Runs
     _viewModel.onLifecycleOwnerDestroyed()
     assertDoesNotThrow("Remove attached listener from the repository") {
       verify { _customerRepository.removeModelChangedListener(any()) }
@@ -141,7 +139,6 @@ class SearchCustomerViewModelTest(
 
   @Test
   fun `on search with fast input`() = runTest {
-    coEvery { _customerRepository.search(any()) } returns listOf()
     _viewModel.onSearch("A")
     _viewModel.onSearch("B")
     _viewModel.onSearch("C")
@@ -153,12 +150,10 @@ class SearchCustomerViewModelTest(
 
   @Test
   fun `on search with complete query`() = runTest {
-    val customer: CustomerModel = CustomerModel(id = 111L, name = "Amy")
-    coEvery { _customerRepository.search(any()) } returns listOf(customer)
     _viewModel.onSearch("A")
     advanceUntilIdle()
     assertEquals(
-        _viewModel.uiState.safeValue.copy(query = "A", customers = listOf(customer)),
+        _viewModel.uiState.safeValue.copy(query = "A", customers = listOf(_customer)),
         _viewModel.uiState.safeValue,
         "Update customers based from the queried search result")
   }
@@ -177,10 +172,12 @@ class SearchCustomerViewModelTest(
       newIndex: Int,
       updatedIndexes: List<Int>,
       expandedIndex: Int
-  ) {
+  ) = runTest {
     _viewModel.onExpandedCustomerIndexChanged(oldIndex)
+    advanceUntilIdle()
 
     _viewModel.onExpandedCustomerIndexChanged(newIndex)
+    advanceUntilIdle()
     assertAll(
         {
           assertEquals(
@@ -199,8 +196,7 @@ class SearchCustomerViewModelTest(
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on customer selected`(isCustomerNull: Boolean) {
-    val customer: CustomerModel? =
-        if (!isCustomerNull) CustomerModel(id = 111L, name = "Amy") else null
+    val customer: CustomerModel? = if (!isCustomerNull) _customer else null
     _viewModel.onCustomerSelected(customer)
     assertEquals(
         SearchCustomerResultState(customer?.id),
@@ -208,17 +204,17 @@ class SearchCustomerViewModelTest(
         "Update result state based from the selected customer")
   }
 
-  @Test
-  fun `on delete customer`() {
-    coEvery { _customerRepository.delete(any()) } returns 1
-    _viewModel.onDeleteCustomer(CustomerModel(id = 111L, name = "Amy"))
+  @ParameterizedTest
+  @ValueSource(longs = [0L, 111L])
+  fun `on delete customer`(idToDelete: Long) {
+    _viewModel.onDeleteCustomer(idToDelete)
     assertNotNull(
         _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the delete result via snackbar")
   }
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
-  fun `on customer menu dialog shown`(isShown: Boolean) {
+  fun `on customer menu dialog shown`(isShown: Boolean) = runTest {
     _viewModel =
         SearchCustomerViewModel(
             SavedStateHandle().apply {
@@ -232,9 +228,9 @@ class SearchCustomerViewModelTest(
             _dispatcher,
             _customerRepository)
     _viewModel.onExpandedCustomerIndexChanged(0)
+    advanceUntilIdle()
 
-    val selectedCustomer: CustomerModel = CustomerModel(id = 111L, name = "Amy")
-    if (isShown) _viewModel.onCustomerMenuDialogShown(selectedCustomer)
+    if (isShown) _viewModel.onCustomerMenuDialogShown(_customer)
     else _viewModel.onCustomerMenuDialogClosed()
     assertEquals(
         SearchCustomerState(
@@ -246,7 +242,7 @@ class SearchCustomerViewModelTest(
             customers = listOf(),
             expandedCustomerIndex = 0,
             isCustomerMenuDialogShown = isShown,
-            selectedCustomerMenu = if (isShown) selectedCustomer else null),
+            selectedCustomerMenu = if (isShown) _customer else null),
         _viewModel.uiState.safeValue,
         "Preserve other fields when the dialog shown or closed")
   }
@@ -254,8 +250,7 @@ class SearchCustomerViewModelTest(
   @Test
   fun `on search ui state changed`() {
     val searchState: SearchState =
-        SearchState(
-            customers = listOf(CustomerModel(name = "Amy")), products = listOf(), query = "A")
+        SearchState(customers = listOf(_customer), products = listOf(), query = "A")
     _viewModel.onSearchUiStateChanged(searchState)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
@@ -266,13 +261,11 @@ class SearchCustomerViewModelTest(
 
   @Test
   fun `on sync customer from database`() = runTest {
-    val customer: CustomerModel = CustomerModel(id = 111L, name = "Amy", balance = 100L)
-    coEvery { _customerRepository.search(any()) } returns listOf(customer)
     _viewModel.onSearch("Amy")
     advanceUntilIdle()
 
-    val updatedCustomer: CustomerModel = customer.copy(balance = customer.balance + 100L)
-    _customerChangedListenerCaptor.captured.onModelUpdated(listOf(updatedCustomer))
+    val updatedCustomer: CustomerModel = _customer.copy(balance = _customer.balance + 100L)
+    _customerRepository.update(updatedCustomer)
     assertEquals(
         listOf(updatedCustomer),
         _viewModel.uiState.safeValue.customers,
@@ -281,9 +274,8 @@ class SearchCustomerViewModelTest(
 
   @Test
   fun `on state changed result notify recycler adapter dataset changes`() = runTest {
-    _customerChangedListenerCaptor.captured.onModelAdded(
-        listOf(CustomerModel(id = 111L, name = "Amy")))
-    coEvery { _customerRepository.search(any()) } returns listOf()
+    clearMocks(_uiEventObserver)
+    _customerRepository.add(_customer.copy(id = null))
     _viewModel.onSearch(_viewModel.uiState.safeValue.query)
     advanceUntilIdle()
     _viewModel.onSearchUiStateChanged(SearchState(listOf(), listOf(), ""))
