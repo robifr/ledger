@@ -41,11 +41,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @HiltViewModel
-class SelectProductViewModel
-@Inject
-constructor(
+class SelectProductViewModel(
+    maxPaginatedItemPerPage: Int = 20,
+    maxPaginatedItemInMemory: Int = maxPaginatedItemPerPage * 3,
     savedStateHandle: SavedStateHandle,
-    @IoDispatcher private val _dispatcher: CoroutineDispatcher,
+    private val _dispatcher: CoroutineDispatcher,
     private val _productRepository: ProductRepository
 ) : ViewModel() {
   private var _expandedProductJob: Job? = null
@@ -53,6 +53,8 @@ constructor(
       PaginationManager(
           state = { _uiState.safeValue.pagination },
           onStateChanged = { _uiState.setValue(_uiState.safeValue.copy(pagination = it)) },
+          maxItemPerPage = maxPaginatedItemPerPage,
+          maxItemInMemory = maxPaginatedItemInMemory,
           _coroutineScope = viewModelScope,
           _dispatcher = _dispatcher,
           _onNotifyRecyclerState = {
@@ -112,6 +114,16 @@ constructor(
               isSelectedProductPreviewExpanded = false))
   val uiState: SafeLiveData<SelectProductState>
     get() = _uiState
+
+  @Inject
+  constructor(
+      savedStateHandle: SavedStateHandle,
+      @IoDispatcher dispatcher: CoroutineDispatcher,
+      productRepository: ProductRepository
+  ) : this(
+      savedStateHandle = savedStateHandle,
+      _dispatcher = dispatcher,
+      _productRepository = productRepository)
 
   init {
     _productRepository.addModelChangedListener(_productChangedListener)

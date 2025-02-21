@@ -23,23 +23,21 @@ import com.robifr.ledger.LifecycleOwnerExtension
 import com.robifr.ledger.LifecycleTestOwner
 import com.robifr.ledger.MainCoroutineExtension
 import com.robifr.ledger.data.model.ProductModel
+import com.robifr.ledger.data.model.ProductPaginatedInfo
+import com.robifr.ledger.local.access.FakeProductDao
 import com.robifr.ledger.onLifecycleOwnerDestroyed
-import com.robifr.ledger.repository.ModelSyncListener
 import com.robifr.ledger.repository.ProductRepository
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
 import com.robifr.ledger.ui.selectproduct.SelectProductFragment
-import io.mockk.CapturingSlot
-import io.mockk.Runs
 import io.mockk.clearAllMocks
 import io.mockk.clearMocks
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.slot
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -62,7 +60,7 @@ class SelectProductViewModelTest(
     private val _lifecycleOwner: LifecycleTestOwner
 ) {
   private lateinit var _productRepository: ProductRepository
-  private val _productChangedListenerCaptor: CapturingSlot<ModelSyncListener<ProductModel>> = slot()
+  private lateinit var _productDao: FakeProductDao
   private lateinit var _viewModel: SelectProductViewModel
   private lateinit var _uiEventObserver: Observer<SelectProductEvent>
 
@@ -73,16 +71,16 @@ class SelectProductViewModelTest(
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    _productRepository = mockk()
+    _productDao = FakeProductDao(mutableListOf(_firstProduct, _secondProduct, _thirdProduct))
+    _productRepository = spyk(ProductRepository(_productDao))
     _uiEventObserver = mockk(relaxed = true)
-
-    every {
-      _productRepository.addModelChangedListener(capture(_productChangedListenerCaptor))
-    } just Runs
-    coEvery { _productRepository.selectAll() } returns
-        listOf(_firstProduct, _secondProduct, _thirdProduct)
-    coEvery { _productRepository.selectById(any<Long>()) } returns _firstProduct
-    _viewModel = SelectProductViewModel(SavedStateHandle(), _dispatcher, _productRepository)
+    _viewModel =
+        SelectProductViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            savedStateHandle = SavedStateHandle(),
+            _dispatcher = _dispatcher,
+            _productRepository = _productRepository)
     _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
 
@@ -90,18 +88,24 @@ class SelectProductViewModelTest(
   fun `on initialize with arguments`() {
     _viewModel =
         SelectProductViewModel(
-            SavedStateHandle().apply {
-              set(
-                  SelectProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_PARCELABLE.key(),
-                  _firstProduct)
-            },
-            _dispatcher,
-            _productRepository)
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            savedStateHandle =
+                SavedStateHandle().apply {
+                  set(
+                      SelectProductFragment.Arguments.INITIAL_SELECTED_PRODUCT_PARCELABLE.key(),
+                      _firstProduct)
+                },
+            _dispatcher = _dispatcher,
+            _productRepository = _productRepository)
     assertEquals(
         SelectProductState(
             initialSelectedProduct = _firstProduct,
             selectedProductOnDatabase = _firstProduct,
-            products = listOf(_firstProduct, _secondProduct, _thirdProduct),
+            pagination =
+                _viewModel.uiState.safeValue.pagination.copy(
+                    paginatedItems =
+                        listOf(_firstProduct, _secondProduct).map { ProductPaginatedInfo(it) }),
             expandedProductIndex = -1,
             isSelectedProductPreviewExpanded = false),
         _viewModel.uiState.safeValue,
@@ -110,15 +114,19 @@ class SelectProductViewModelTest(
 
   @Test
   fun `on initialize with unordered name`() {
-    val firstProduct: ProductModel = _firstProduct.copy(name = "Cherry")
-    val secondProduct: ProductModel = _secondProduct.copy(name = "Apple")
-    val thirdProduct: ProductModel = _thirdProduct.copy(name = "Banana")
-    coEvery { _productRepository.selectAll() } returns
-        listOf(firstProduct, secondProduct, thirdProduct)
-    _viewModel = SelectProductViewModel(SavedStateHandle(), _dispatcher, _productRepository)
+    _productDao.data.clear()
+    _productDao.data.addAll(mutableListOf(_thirdProduct, _firstProduct, _secondProduct))
+
+    _viewModel =
+        SelectProductViewModel(
+            maxPaginatedItemPerPage = 2,
+            maxPaginatedItemInMemory = 2,
+            savedStateHandle = SavedStateHandle(),
+            _dispatcher = _dispatcher,
+            _productRepository = _productRepository)
     assertEquals(
-        listOf(secondProduct, thirdProduct, firstProduct),
-        _viewModel.uiState.safeValue.products,
+        listOf(_firstProduct, _secondProduct).map { ProductPaginatedInfo(it) },
+        _viewModel.uiState.safeValue.pagination.paginatedItems,
         "Sort products based from its name")
   }
 
@@ -132,7 +140,6 @@ class SelectProductViewModelTest(
 
   @Test
   fun `on cleared`() {
-    every { _productRepository.removeModelChangedListener(any()) } just Runs
     _viewModel.onLifecycleOwnerDestroyed()
     assertDoesNotThrow("Remove attached listener from the repository") {
       verify { _productRepository.removeModelChangedListener(any()) }
@@ -172,10 +179,12 @@ class SelectProductViewModelTest(
       newIndex: Int,
       updatedIndexes: List<Int>,
       expandedIndex: Int
-  ) {
+  ) = runTest {
     _viewModel.onExpandedProductIndexChanged(oldIndex)
+    advanceUntilIdle()
 
     _viewModel.onExpandedProductIndexChanged(newIndex)
+    advanceUntilIdle()
     assertAll(
         {
           assertEquals(
@@ -194,7 +203,8 @@ class SelectProductViewModelTest(
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on product selected`(isProductNull: Boolean) {
-    val product: ProductModel? = if (!isProductNull) _secondProduct else null
+    val product: ProductPaginatedInfo? =
+        if (!isProductNull) ProductPaginatedInfo(_secondProduct) else null
     _viewModel.onProductSelected(product)
     assertEquals(
         SelectProductResultState(product?.id),
@@ -203,21 +213,19 @@ class SelectProductViewModelTest(
   }
 
   @Test
-  fun `on sync product from database`() {
-    val updatedProducts: List<ProductModel> =
-        listOf(
-            _firstProduct.copy(price = _firstProduct.price + 100L), _secondProduct, _thirdProduct)
-    _productChangedListenerCaptor.captured.onModelUpdated(updatedProducts)
+  fun `on sync product from database`() = runTest {
+    val updatedProduct: ProductModel = _firstProduct.copy(price = _firstProduct.price + 100L)
+    _productRepository.update(updatedProduct)
     assertEquals(
-        updatedProducts,
-        _viewModel.uiState.safeValue.products,
+        listOf(updatedProduct, _secondProduct).map { ProductPaginatedInfo(it) },
+        _viewModel.uiState.safeValue.pagination.paginatedItems,
         "Sync products when any are updated in the database")
   }
 
   @Test
-  fun `on state changed result notify recycler adapter dataset changes`() {
+  fun `on state changed result notify recycler adapter dataset changes`() = runTest {
     clearMocks(_uiEventObserver)
-    _productChangedListenerCaptor.captured.onModelAdded(listOf(_firstProduct))
+    _productRepository.add(_firstProduct.copy(id = null))
     assertDoesNotThrow("Notify recycler adapter of dataset changes") {
       verify(exactly = 1) {
         _uiEventObserver.onChanged(
