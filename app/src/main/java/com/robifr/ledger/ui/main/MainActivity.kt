@@ -37,8 +37,9 @@ import androidx.core.view.updatePadding
 import androidx.lifecycle.coroutineScope
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination
-import androidx.navigation.NavOptions
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.findNavController
+import androidx.navigation.navOptions
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
@@ -72,9 +73,14 @@ open class MainActivity :
 
   override fun onNavigationItemSelected(item: MenuItem): Boolean {
     findNavController(R.id.fragmentContainer).apply {
-      currentDestination?.id?.let {
-        navigate(item.itemId, null, NavOptions.Builder().setPopUpTo(it, true).build())
-      }
+      navigate(
+          item.itemId,
+          null,
+          navOptions {
+            launchSingleTop = true
+            restoreState = true
+            popUpTo(graph.findStartDestination().id) { saveState = true }
+          })
     }
     return true
   }
