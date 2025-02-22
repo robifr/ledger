@@ -18,16 +18,29 @@ package com.robifr.ledger.network
 
 import android.content.Context
 import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
+import java.net.HttpURLConnection
+import java.net.URL
+import okio.IOException
 
 object NetworkState {
-  fun isInternetAvailable(context: Context): Boolean {
+  suspend fun isInternetAvailable(context: Context): Boolean {
     val connectivity: ConnectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val capabilities: NetworkCapabilities? =
-        connectivity.getNetworkCapabilities(connectivity.activeNetwork)
-    return capabilities != null &&
-        (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
-            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR))
+    connectivity.activeNetwork?.let {
+      val url: URL = URL("https://www.google.com/")
+      try {
+        val urlConnection: HttpURLConnection =
+            (it.openConnection(url) as HttpURLConnection).apply {
+              setRequestProperty("User-Agent", "test")
+              setRequestProperty("Connection", "close")
+              connectTimeout = 1000
+            }
+        urlConnection.connect()
+        return urlConnection.responseCode == 200
+      } catch (_: IOException) {
+        return false
+      }
+    }
+    return false
   }
 }

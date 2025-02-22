@@ -96,13 +96,13 @@ constructor(
   }
 
   fun onCheckForAppUpdate(context: Context, shouldSnackbarShown: Boolean = true) {
-    if (!NetworkState.isInternetAvailable(context)) {
-      if (shouldSnackbarShown) {
-        _onSnackbarShown(StringResource(R.string.settings_noInternetConnectionForAppUpdates))
-      }
-      return
-    }
     viewModelScope.launch(_dispatcher) {
+      if (!NetworkState.isInternetAvailable(context)) {
+        if (shouldSnackbarShown) {
+          _onSnackbarShown(StringResource(R.string.settings_noInternetConnectionForAppUpdates))
+        }
+        return@launch
+      }
       _settingsRepository.obtainLatestAppRelease()?.let {
         if (VersionComparator.isNewVersionNewer(
             BuildConfig.VERSION_NAME, it.tagName.removePrefix("v"))) {

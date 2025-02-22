@@ -175,7 +175,7 @@ class SettingsViewModelTest(
   @ValueSource(booleans = [true, false])
   fun `on check for app update with internet not available`(shouldSnackbarShown: Boolean) {
     mockkObject(NetworkState)
-    every { NetworkState.isInternetAvailable(any()) } returns false
+    coEvery { NetworkState.isInternetAvailable(any()) } returns false
     _viewModel.onCheckForAppUpdate(mockk(), shouldSnackbarShown)
     assertAll(
         {
@@ -195,7 +195,7 @@ class SettingsViewModelTest(
   @Test
   fun `on check for app update with latest release not available`() {
     mockkObject(NetworkState)
-    every { NetworkState.isInternetAvailable(any()) } returns true
+    coEvery { NetworkState.isInternetAvailable(any()) } returns true
     val oldUiState: SettingsState = _viewModel.uiState.safeValue
 
     coEvery { _settingsRepository.obtainLatestAppRelease() } returns null
@@ -224,7 +224,7 @@ class SettingsViewModelTest(
       githubRelease: GithubReleaseModel
   ) {
     mockkObject(NetworkState)
-    every { NetworkState.isInternetAvailable(any()) } returns true
+    coEvery { NetworkState.isInternetAvailable(any()) } returns true
     coEvery { _settingsRepository.obtainLatestAppRelease() } returns githubRelease
     val oldUiState: SettingsState = _viewModel.uiState.safeValue
 
@@ -260,7 +260,7 @@ class SettingsViewModelTest(
   @ValueSource(booleans = [true, false])
   fun `on update app with fetched data`(isInstallationPermissionGranted: Boolean) {
     mockkObject(NetworkState)
-    every { NetworkState.isInternetAvailable(any()) } returns true
+    coEvery { NetworkState.isInternetAvailable(any()) } returns true
     mockkObject(VersionComparator)
     every { VersionComparator.isNewVersionNewer(any(), any()) } returns true
     coEvery { _settingsRepository.obtainLatestAppRelease() } returns _githubRelease
@@ -291,7 +291,7 @@ class SettingsViewModelTest(
   @Test
   fun `on activity result for unknown source installation with fetched data`() {
     mockkObject(NetworkState)
-    every { NetworkState.isInternetAvailable(any()) } returns true
+    coEvery { NetworkState.isInternetAvailable(any()) } returns true
     mockkObject(VersionComparator)
     every { VersionComparator.isNewVersionNewer(any(), any()) } returns true
     coEvery { _settingsRepository.obtainLatestAppRelease() } returns _githubRelease
