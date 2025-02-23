@@ -131,10 +131,8 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
   @Query(
       """
       SELECT * FROM product
-      /**
-       * Use where-in clause because we don't want the data get override from the FTS field,
-       * since the string field is spaced.
-       */
+      -- Use where-in clause because we don't want the data get override from the FTS field,
+      -- since the string field is spaced.
       WHERE product.rowid IN (
         SELECT product_fts.rowid FROM product_fts
         WHERE product_fts MATCH :query

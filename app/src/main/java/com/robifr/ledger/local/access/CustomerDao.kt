@@ -149,10 +149,8 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   @Query(
       """
       SELECT * FROM customer
-      /**
-       * Use where-in clause because we don't want the data get overriden
-       * from the FTS field, since the string field is spaced.
-       */
+      -- Use where-in clause because we don't want the data get overriden
+      -- from the FTS field, since the string field is spaced.
       WHERE customer.rowid IN (
         SELECT customer_fts.rowid FROM customer_fts
         WHERE customer_fts MATCH :query
