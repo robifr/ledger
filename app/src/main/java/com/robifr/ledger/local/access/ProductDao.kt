@@ -96,11 +96,12 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
               THEN filtered_products_cte.price END ASC,
           CASE WHEN :sortBy = 'PRICE' AND :isAscending IS FALSE
               THEN filtered_products_cte.price END DESC
-      LIMIT :limit OFFSET (:pageNumber - 1) * :limit
+      LIMIT :limit OFFSET (:pageNumber - 1) * :itemPerPage
       """)
   @TypeConverters(BigDecimalConverter::class)
   abstract fun selectPaginatedInfoByOffset(
       pageNumber: Int,
+      itemPerPage: Int,
       limit: Int,
       // Sort options from `ProductSortMethod`.
       sortBy: ProductSortMethod.SortBy,

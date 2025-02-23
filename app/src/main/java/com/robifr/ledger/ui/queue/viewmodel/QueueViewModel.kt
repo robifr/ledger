@@ -85,10 +85,11 @@ class QueueViewModel(
             // It's essential to ensure that all necessary permissions are granted.
             if (Environment.isExternalStorageManager()) {
               _queueRepository.selectPaginatedInfoByOffset(
-                  pageNumber,
-                  limit,
-                  _uiState.safeValue.sortMethod,
-                  filterView._parseInputtedFilters())
+                  pageNumber = pageNumber,
+                  itemPerPage = _paginationManager.maxItemPerPage,
+                  limit = limit,
+                  sortMethod = _uiState.safeValue.sortMethod,
+                  filters = filterView._parseInputtedFilters())
             } else {
               listOf()
             }

@@ -97,6 +97,7 @@ data class FakeQueueDao(
 
   override fun selectPaginatedInfoByOffset(
       pageNumber: Int,
+      itemPerPage: Int,
       limit: Int,
       shouldCalculateGrandTotalPrice: Boolean,
       sortBy: QueueSortMethod.SortBy,

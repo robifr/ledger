@@ -76,10 +76,11 @@ class SelectProductViewModel(
           },
           _selectItemsByPageOffset = { pageNumber, limit ->
             _productRepository.selectPaginatedInfoByOffset(
-                pageNumber,
-                limit,
-                ProductSortMethod(ProductSortMethod.SortBy.NAME, true),
-                ProductFilters(null to null))
+                pageNumber = pageNumber,
+                itemPerPage = _paginationManager.maxItemPerPage,
+                limit = limit,
+                sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, true),
+                filters = ProductFilters(null to null))
           })
   private val _productChangedListener: ModelSyncListener<ProductModel, Unit> =
       ModelSyncListener(

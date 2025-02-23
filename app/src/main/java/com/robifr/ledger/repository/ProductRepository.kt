@@ -67,12 +67,14 @@ class ProductRepository(private val _localDao: ProductDao) : Queryable<ProductMo
 
   suspend fun selectPaginatedInfoByOffset(
       pageNumber: Int,
+      itemPerPage: Int,
       limit: Int,
       sortMethod: ProductSortMethod,
       filters: ProductFilters
   ): List<ProductPaginatedInfo> =
       _localDao.selectPaginatedInfoByOffset(
           pageNumber = pageNumber,
+          itemPerPage = itemPerPage,
           limit = limit,
           sortBy = sortMethod.sortBy,
           isAscending = sortMethod.isAscending,

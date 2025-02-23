@@ -74,10 +74,11 @@ class FilterCustomerViewModel(
           },
           _selectItemsByPageOffset = { pageNumber, limit ->
             _customerRepository.selectPaginatedInfoByOffset(
-                pageNumber,
-                limit,
-                CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
-                CustomerFilters(null to null, null to null))
+                pageNumber = pageNumber,
+                itemPerPage = _paginationManager.maxItemPerPage,
+                limit = limit,
+                sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
+                filters = CustomerFilters(null to null, null to null))
           })
 
   private val _uiEvent: SafeMutableLiveData<FilterCustomerEvent> =

@@ -65,6 +65,7 @@ data class FakeProductDao(
 
   override fun selectPaginatedInfoByOffset(
       pageNumber: Int,
+      itemPerPage: Int,
       limit: Int,
       sortBy: ProductSortMethod.SortBy,
       isAscending: Boolean,

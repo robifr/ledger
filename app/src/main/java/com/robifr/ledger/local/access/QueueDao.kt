@@ -116,11 +116,12 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
               THEN filtered_queues_cte.grand_total_price END ASC,
           CASE WHEN :sortBy = 'TOTAL_PRICE' AND :isAscending IS FALSE
               THEN filtered_queues_cte.grand_total_price END DESC
-      LIMIT :limit OFFSET (:pageNumber - 1) * :limit
+      LIMIT :limit OFFSET (:pageNumber - 1) * :itemPerPage
       """)
   @TypeConverters(BigDecimalConverter::class, InstantConverter::class)
   abstract fun selectPaginatedInfoByOffset(
       pageNumber: Int,
+      itemPerPage: Int,
       limit: Int,
       shouldCalculateGrandTotalPrice: Boolean,
       // Sort options from `QueueSortMethod`.

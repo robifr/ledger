@@ -99,11 +99,12 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
               THEN filtered_customers_cte.balance END ASC,
           CASE WHEN :sortBy = 'BALANCE' AND :isAscending IS FALSE
               THEN filtered_customers_cte.balance END DESC
-      LIMIT :limit OFFSET (:pageNumber - 1) * :limit
+      LIMIT :limit OFFSET (:pageNumber - 1) * :itemPerPage
       """)
   @TypeConverters(BigDecimalConverter::class)
   abstract fun selectPaginatedInfoByOffset(
       pageNumber: Int,
+      itemPerPage: Int,
       limit: Int,
       // Sort options from `CustomerSortMethod`.
       sortBy: CustomerSortMethod.SortBy,

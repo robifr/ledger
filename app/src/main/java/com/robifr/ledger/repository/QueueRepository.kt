@@ -158,6 +158,7 @@ class QueueRepository(
 
   suspend fun selectPaginatedInfoByOffset(
       pageNumber: Int,
+      itemPerPage: Int,
       limit: Int,
       sortMethod: QueueSortMethod,
       filters: QueueFilters,
@@ -165,6 +166,7 @@ class QueueRepository(
   ): List<QueuePaginatedInfo> =
       _localDao.selectPaginatedInfoByOffset(
           pageNumber = pageNumber,
+          itemPerPage = itemPerPage,
           limit = limit,
           shouldCalculateGrandTotalPrice = shouldCalculateGrandTotalPrice,
           sortBy = sortMethod.sortBy,

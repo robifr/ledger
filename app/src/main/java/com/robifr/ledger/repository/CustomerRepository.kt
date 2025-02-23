@@ -73,12 +73,14 @@ class CustomerRepository(private val _localDao: CustomerDao) : Queryable<Custome
 
   suspend fun selectPaginatedInfoByOffset(
       pageNumber: Int,
+      itemPerPage: Int,
       limit: Int,
       sortMethod: CustomerSortMethod,
       filters: CustomerFilters
   ): List<CustomerPaginatedInfo> =
       _localDao.selectPaginatedInfoByOffset(
           pageNumber = pageNumber,
+          itemPerPage = itemPerPage,
           limit = limit,
           sortBy = sortMethod.sortBy,
           isAscending = sortMethod.isAscending,
