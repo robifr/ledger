@@ -5,17 +5,14 @@
 [![build](https://github.com/robifr/ledger/actions/workflows/build.yaml/badge.svg)](https://github.com/robifr/ledger/actions/workflows/build.yaml)
 [![codecov](https://codecov.io/github/robifr/ledger/graph/badge.svg)](https://codecov.io/github/robifr/ledger)
 
-Ledger is an Android app designed to streamline sales order management by handling orders, customer
-deposits, and debts automatically. This reduces manual work and errors, ensuring smooth and accurate
-bookkeeping.
+Ledger is an Android app that helps automate sales orders, customer deposits, and debt tracking.
+Originally developed to support local shops, it reduces manual work and errors while ensuring
+accurate bookkeeping. The app works offline with all data stored locally, requiring no internet
+connection or user logins.
 
-Originally developed to support local shops, Ledger provides business owners with an intuitive user
-interface to track orders and payments, manage products, and more, all while gaining valuable
-insights into business performance. The app works offline, with all data stored locally, ensuring
-reliable performance even without an internet connection.
-
+Direct download available below:<br>
 <a href="https://github.com/robifr/ledger/releases/latest">
-  <img src="./docs/icon_download_github.png" alt="Get it on GitHub" width="220"/>
+  <img src="./docs/icon_download_github.png" alt="Get it on GitHub" width="180"/>
 </a>
 
 ### Table of Contents
@@ -65,13 +62,12 @@ reliable performance even without an internet connection.
 
 ### Features
 - Automatically calculates customer deposits and debts with every update to orders.
-- Synchronized data, including customers, orders, and the dashboard, as changes happen.
-- Customizable orders, customers and products.
-- Sort and filter data based on various criteria.
-- Search functionality to find customer and product within the system.
+- Scales to thousands of entries with no issues.
+- Sort, filter, and search functionality.
 - Visualized charts and statistics.
 - Supports English (US) and Indonesian language.
-- Full offline capabilities.
+- Dark theme support.
+- Full offline.
 - Auto-updates with new releases from GitHub.
 
 ### Compatibility
@@ -179,9 +175,8 @@ This project includes unit tests that are run in a JVM environment (not on actua
 emulators). These tests focus on the critical sections of the code, such as the **ViewModel** and
 **Model** layers, as this project uses the MVVM architecture.
 
-Some tests use fake objects to
-simulate real dependencies, like when performing database transactions in the repository layer. This
-approach is simpler than mocking numerous components.
+Some tests use fake objects to simulate real dependencies, like when performing database
+transactions in the repository layer. This approach is simpler than mocking numerous components.
 
 Tests are located in the `app/src/test/` directory, and can be run using the following command:
 ```
@@ -194,11 +189,7 @@ For Kotlin code, we follow [Kotlin coding conventions](https://kotlinlang.org/do
 with these project-specific additions:
 - Use explicit types on the left-hand side (LHS) of variable, property, or method declarations.
 - Treat platform types as nullable and specify their type explicitly.
-- Use an underscore (`_`) prefix for private, protected, internal, or package-private properties and
-  methods to clearly differentiate them from public ones and make testing easier.
-  ```kt
-  val _packagePrivate: String = "Accessible within the package only"
-  ```
+- Use an underscore (`_`) prefix for private, protected or internal properties and methods.
 
 ### Code Formatting
 [Spotless](https://github.com/diffplug/spotless) is used to enforce the code style. To

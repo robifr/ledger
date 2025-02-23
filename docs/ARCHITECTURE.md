@@ -78,30 +78,24 @@ is rotated, and continue to manage UI-related data without being recreated.
 
 ### Managing UI State
 To effectively manage data observed by the UI, this project uses:
-- [`SafeLiveData`](../app/src/main/java/com/robifr/ledger/ui/common/state/SafeLiveData.kt): A null-safe wrapper
-  around `LiveData` for handling persistent and reactive UI data.
-- [`SingleLiveEvent`](../app/src/main/java/com/robifr/ledger/ui/SingleLiveEvent.kt): A
-  `MutableLiveData` implementation designed for one-time events, such as triggering a snackbar or
-  toast.
+- [`SafeLiveData`](../app/src/main/java/com/robifr/ledger/ui/common/state/SafeLiveData.kt): A
+  null-safe wrapper around `LiveData` for handling persistent and reactive UI data.
+- [`UiEvent`](../app/src/main/java/com/robifr/ledger/ui/common/state/UiEvent.kt): A generic state
+  wrapper for one-time operation like displaying a snackbar, toast, etc.
 
-Both `SafeLiveData` and `SingleLiveEvent` are used to represent the UI's `State`, reflecting its
-current status — such as text, colors, or other UI properties.
+Both `SafeLiveData` and `UiEvent` are used to represent the UI's `State`, reflecting its current
+status — such as text, colors, or other UI properties.
 
 ### Data Synchronization
 The [`ModelChangedListener`](../app/src/main/java/com/robifr/ledger/repository/ModelChangedListener.kt)
 is registered with the `Repository` to listen for changes in the `LocalDatabase`. Whenever data
 changes, the `Repository` notifies all registered listeners.
 
-There are two key types of listeners implementing `ModelChangedListener`:
-- `ModelSyncListener`: Synchronizes data using [`ModelSynchronizer`](../app/src/main/java/com/robifr/ledger/data/ModelSynchronizer.kt)
-  for objects implementing the [`Model`](../app/src/main/java/com/robifr/ledger/data/model/Model.kt)
-  interface.
-- `InfoSyncListener`: Synchronizes data using [`InfoSynchronizer`](../app/src/main/java/com/robifr/ledger/data/InfoSynchronizer.kt)
-  for objects implementing the [`Info`](../app/src/main/java/com/robifr/ledger/data/model/Info.kt)
-  interface.
-
-Both listeners handle data updates automatically, eliminating the need to manually override
-`ModelChangedListener` methods for each implementation.
+The [`ModelSyncListener`](../app/src/main/java/com/robifr/ledger/repository/ModelChangedListener.kt)
+is usually used alongside [`ModelSynchronizer`](../app/src/main/java/com/robifr/ledger/data/ModelSynchronizer.kt)
+or [`InfoSynchronizer`](../app/src/main/java/com/robifr/ledger/data/InfoSynchronizer.kt) to handle
+data updates automatically. This eliminates the need to manually override `ModelChangedListener`
+methods for each implementation.
 
 ## Model Layer
 The **Model Layer** serves as the foundation for managing business logic, data processing, and data
