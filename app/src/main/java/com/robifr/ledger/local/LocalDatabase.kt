@@ -33,7 +33,6 @@ import com.robifr.ledger.local.access.CustomerDao
 import com.robifr.ledger.local.access.ProductDao
 import com.robifr.ledger.local.access.ProductOrderDao
 import com.robifr.ledger.local.access.QueueDao
-import com.robifr.ledger.local.migration.MigrationProvider
 import java.io.File
 
 @Database(
@@ -64,7 +63,10 @@ abstract class LocalDatabase : RoomDatabase() {
             ?: Room.databaseBuilder(
                     context.applicationContext, LocalDatabase::class.java, dbFilePath())
                 .addCallback(Callback())
-                .addMigrations(*MigrationProvider(context).migrationList.toTypedArray())
+                .addMigrations(
+                    *MigrationProvider.instance(context.applicationContext)
+                        .migrations
+                        .toTypedArray())
                 .build()
                 .apply { _instance = this }
 
