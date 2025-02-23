@@ -81,7 +81,7 @@ class SelectProductViewModel(
                 ProductSortMethod(ProductSortMethod.SortBy.NAME, true),
                 ProductFilters(null to null))
           })
-  private val _productChangedListener: ModelSyncListener<ProductModel, ProductModel> =
+  private val _productChangedListener: ModelSyncListener<ProductModel, Unit> =
       ModelSyncListener(
           onSync = { _, _ ->
             _onReloadPage(

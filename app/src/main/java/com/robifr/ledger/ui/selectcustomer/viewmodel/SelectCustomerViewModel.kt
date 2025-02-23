@@ -81,7 +81,7 @@ class SelectCustomerViewModel(
                 CustomerSortMethod(CustomerSortMethod.SortBy.NAME, true),
                 CustomerFilters(null to null, null to null))
           })
-  private val _customerChangedListener: ModelSyncListener<CustomerModel, CustomerModel> =
+  private val _customerChangedListener: ModelSyncListener<CustomerModel, Unit> =
       ModelSyncListener(
           onSync = { _, _ ->
             _onReloadPage(

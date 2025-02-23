@@ -82,7 +82,7 @@ class CustomerViewModel(
                 _uiState.safeValue.sortMethod,
                 filterView._parseInputtedFilters())
           })
-  private val _customerChangedListener: ModelSyncListener<CustomerModel, CustomerModel> =
+  private val _customerChangedListener: ModelSyncListener<CustomerModel, Unit> =
       ModelSyncListener(
           onSync = { _, _ ->
             _onReloadPage(

@@ -82,7 +82,7 @@ class ProductViewModel(
                 _uiState.safeValue.sortMethod,
                 filterView._parseInputtedFilters())
           })
-  private val _productChangedListener: ModelSyncListener<ProductModel, ProductModel> =
+  private val _productChangedListener: ModelSyncListener<ProductModel, Unit> =
       ModelSyncListener(
           onSync = { _, _ ->
             _onReloadPage(
