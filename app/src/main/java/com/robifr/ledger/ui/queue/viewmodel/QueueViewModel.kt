@@ -78,7 +78,7 @@ class QueueViewModel(
                 })
           },
           _countTotalItem = {
-            _queueRepository.countFilteredQueues(filterView._parseInputtedFilters())
+            _queueRepository.countFilteredQueues(filterView.parseInputtedFilters())
           },
           _selectItemsByPageOffset = { pageNumber, limit ->
             // Queue fragment is the first fragment to be loaded during the initial app run.
@@ -89,7 +89,7 @@ class QueueViewModel(
                   itemPerPage = _paginationManager.maxItemPerPage,
                   limit = limit,
                   sortMethod = _uiState.safeValue.sortMethod,
-                  filters = filterView._parseInputtedFilters())
+                  filters = filterView.parseInputtedFilters())
             } else {
               listOf()
             }
@@ -100,7 +100,7 @@ class QueueViewModel(
             viewModelScope.launch(_dispatcher) {
               val expandedQueue: QueueModel? =
                   _queueRepository.selectById(_uiState.safeValue.expandedQueue?.id)
-              _onReloadPage(
+              onReloadPage(
                   _uiState.safeValue.pagination.firstLoadedPageNumber,
                   _uiState.safeValue.pagination.lastLoadedPageNumber) {
                     // Update current expanded queue in case they're updated.
@@ -144,7 +144,7 @@ class QueueViewModel(
   val uiState: SafeLiveData<QueueState>
     get() = _uiState
 
-  val filterView: QueueFilterViewModel = QueueFilterViewModel { _onReloadPage(1, 1) }
+  val filterView: QueueFilterViewModel by lazy { QueueFilterViewModel(this, _dispatcher) }
 
   @Inject
   constructor(
@@ -160,7 +160,7 @@ class QueueViewModel(
     _queueRepository.addModelChangedListener(_queueChangedListener)
     _customerRepository.addModelChangedListener(_customerChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    _onReloadPage(1, 1)
+    viewModelScope.launch(_dispatcher) { onReloadPage(1, 1) }
   }
 
   override fun onCleared() {
@@ -216,7 +216,7 @@ class QueueViewModel(
 
   fun onSortMethodChanged(sortMethod: QueueSortMethod) {
     _uiState.setValue(_uiState.safeValue.copy(sortMethod = sortMethod))
-    _onReloadPage(1, 1)
+    viewModelScope.launch(_dispatcher) { onReloadPage(1, 1) }
   }
 
   /**
@@ -255,6 +255,18 @@ class QueueViewModel(
               StringResource(R.string.queue_deleteQueueError)
             })
       }
+    }
+  }
+
+  suspend fun onReloadPage(
+      firstVisiblePageNumber: Int,
+      lastVisiblePageNumber: Int,
+      onLoad: (List<QueuePaginatedInfo>) -> Unit = {}
+  ) {
+    val isTableEmpty: Boolean = _queueRepository.isTableEmpty()
+    _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
+      _onNoQueuesCreatedIllustrationVisible(isTableEmpty)
+      onLoad(it)
     }
   }
 
@@ -302,20 +314,6 @@ class QueueViewModel(
           data = state,
           onSet = { this?.copy(recyclerAdapter = it) },
           onReset = { this?.copy(recyclerAdapter = null) })
-    }
-  }
-
-  private fun _onReloadPage(
-      firstVisiblePageNumber: Int,
-      lastVisiblePageNumber: Int,
-      onLoad: (List<QueuePaginatedInfo>) -> Unit = {}
-  ) {
-    viewModelScope.launch(_dispatcher) {
-      val isTableEmpty: Boolean = _queueRepository.isTableEmpty()
-      _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
-        _onNoQueuesCreatedIllustrationVisible(isTableEmpty)
-        onLoad(it)
-      }
     }
   }
 

@@ -31,11 +31,9 @@ import kotlinx.coroutines.withContext
 
 class DashboardBalanceViewModel(
     private val _viewModel: DashboardViewModel,
-    private val _dispatcher: CoroutineDispatcher,
-    private val _selectAllCustomersWithBalance: suspend () -> List<CustomerBalanceInfo>,
-    private val _selectAllCustomersWithDebt: suspend () -> List<CustomerDebtInfo>
+    private val _dispatcher: CoroutineDispatcher
 ) {
-  val _customerBalanceChangedListener: ModelSyncListener<CustomerModel, CustomerBalanceInfo> =
+  val customerBalanceChangedListener: ModelSyncListener<CustomerModel, CustomerBalanceInfo> =
       ModelSyncListener(
           onAdd = {
             InfoSynchronizer.addInfo(
@@ -53,7 +51,7 @@ class DashboardBalanceViewModel(
           onSync = { _, updatedModels ->
             _onCustomersWithBalanceChanged(updatedModels.filter { it.balance != 0L })
           })
-  val _customerDebtChangedListener: ModelSyncListener<CustomerModel, CustomerDebtInfo> =
+  val customerDebtChangedListener: ModelSyncListener<CustomerModel, CustomerDebtInfo> =
       ModelSyncListener(
           onAdd = {
             InfoSynchronizer.addInfo(_uiState.safeValue.customersWithDebt, it, ::CustomerDebtInfo)
@@ -78,17 +76,17 @@ class DashboardBalanceViewModel(
   val uiState: SafeLiveData<DashboardBalanceState>
     get() = _uiState
 
-  fun _loadAllCustomersWithBalance() {
+  fun loadAllCustomersWithBalance() {
     _viewModel.viewModelScope.launch(_dispatcher) {
-      _selectAllCustomersWithBalance().let {
+      _viewModel.selectAllCustomersWithBalance().let {
         withContext(Dispatchers.Main) { _onCustomersWithBalanceChanged(it) }
       }
     }
   }
 
-  fun _loadAllCustomersWithDebt() {
+  fun loadAllCustomersWithDebt() {
     _viewModel.viewModelScope.launch(_dispatcher) {
-      _selectAllCustomersWithDebt().let {
+      _viewModel.selectAllCustomersWithDebt().let {
         withContext(Dispatchers.Main) { _onCustomersWithDebtChanged(it) }
       }
     }

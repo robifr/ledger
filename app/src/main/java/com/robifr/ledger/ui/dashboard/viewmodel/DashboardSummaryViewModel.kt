@@ -20,6 +20,7 @@ import android.webkit.WebView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.webkit.WebViewClientCompat
 import com.robifr.ledger.assetbinding.chart.ChartData
 import com.robifr.ledger.assetbinding.chart.ChartUtil
 import com.robifr.ledger.data.InfoSynchronizer
@@ -47,14 +48,9 @@ import kotlinx.coroutines.withContext
 
 class DashboardSummaryViewModel(
     private val _viewModel: DashboardViewModel,
-    private val _dispatcher: CoroutineDispatcher,
-    private val _selectAllQueuesInRange:
-        suspend (startDate: ZonedDateTime, endDate: ZonedDateTime) -> List<QueuePaginatedInfo>,
-    private val _selectAllProductsSoldInRange:
-        suspend (startDate: ZonedDateTime, endDate: ZonedDateTime) -> List<ProductOrderProductInfo>,
-    private val _selectDateInfoById: suspend (queueIds: List<Long>) -> List<QueueDateInfo>
+    private val _dispatcher: CoroutineDispatcher
 ) {
-  val _queueChangedListener: ModelSyncListener<QueueModel, QueuePaginatedInfo> =
+  val queueChangedListener: ModelSyncListener<QueueModel, QueuePaginatedInfo> =
       ModelSyncListener(
           onAdd = { InfoSynchronizer.addInfo(_uiState.safeValue.queues, it, ::QueuePaginatedInfo) },
           onUpdate = {
@@ -75,7 +71,7 @@ class DashboardSummaryViewModel(
                       it.date.isAfter(_uiState.safeValue.date.dateEnd.toInstant())
                 })
           })
-  val _productOrderChangedListener: ModelSyncListener<ProductOrderModel, ProductOrderProductInfo> =
+  val productOrderChangedListener: ModelSyncListener<ProductOrderModel, ProductOrderProductInfo> =
       ModelSyncListener(
           onAdd = {
             InfoSynchronizer.addInfo(_uiState.safeValue.productsSold, it, ::ProductOrderProductInfo)
@@ -97,10 +93,12 @@ class DashboardSummaryViewModel(
             _viewModel.viewModelScope.launch(_dispatcher) {
               // Get list of notified queues whose date isn't in range of current selected date.
               val excludedQueueDateInfo: List<QueueDateInfo> =
-                  _selectDateInfoById(models.mapNotNull { it.queueId }.distinct()).filterNot {
-                    it.date.isBefore(_uiState.safeValue.date.dateStart.toInstant()) ||
-                        it.date.isAfter(_uiState.safeValue.date.dateEnd.toInstant())
-                  }
+                  _viewModel
+                      .selectDateInfoById(models.mapNotNull { it.queueId }.distinct())
+                      .filterNot {
+                        it.date.isBefore(_uiState.safeValue.date.dateStart.toInstant()) ||
+                            it.date.isAfter(_uiState.safeValue.date.dateEnd.toInstant())
+                      }
               // Then remove every referenced product orders with the same queue ID if they're in
               // the exclusion list.
               val filteredProductsSold: List<ProductOrderProductInfo> =
@@ -151,7 +149,7 @@ class DashboardSummaryViewModel(
 
   fun onDateChanged(date: QueueDate) {
     _uiState.setValue(_uiState.safeValue.copy(date = date))
-    _loadAllQueuesInRange(_uiState.safeValue.date)
+    loadAllQueuesInRange(_uiState.safeValue.date)
   }
 
   fun onDateDialogShown() {
@@ -162,25 +160,25 @@ class DashboardSummaryViewModel(
     _uiState.setValue(_uiState.safeValue.copy(isDateDialogShown = false))
   }
 
-  fun _onQueuesChanged(queueInfo: List<QueuePaginatedInfo>) {
-    _uiState.setValue(_uiState.safeValue.copy(queues = queueInfo))
-  }
-
-  fun _onProductsSoldChanged(productOrderInfo: List<ProductOrderProductInfo>) {
-    _uiState.setValue(_uiState.safeValue.copy(productsSold = productOrderInfo))
-  }
-
-  fun _loadAllQueuesInRange(date: QueueDate = _uiState.safeValue.date) {
+  fun loadAllQueuesInRange(date: QueueDate = _uiState.safeValue.date) {
     _viewModel.viewModelScope.launch(_dispatcher) {
       val queueInfo: List<QueuePaginatedInfo> =
-          _selectAllQueuesInRange(date.dateStart, date.dateEnd)
+          _viewModel.selectAllQueuesInRange(date.dateStart, date.dateEnd, false)
       val productOrderInfo: List<ProductOrderProductInfo> =
-          _selectAllProductsSoldInRange(date.dateStart, date.dateEnd)
+          _viewModel.selectAllProductsSoldInRange(date.dateStart, date.dateEnd)
       withContext(Dispatchers.Main) {
         _onQueuesChanged(queueInfo)
         _onProductsSoldChanged(productOrderInfo)
       }
     }
+  }
+
+  private fun _onQueuesChanged(queueInfo: List<QueuePaginatedInfo>) {
+    _uiState.setValue(_uiState.safeValue.copy(queues = queueInfo))
+  }
+
+  private fun _onProductsSoldChanged(productOrderInfo: List<ProductOrderProductInfo>) {
+    _uiState.setValue(_uiState.safeValue.copy(productsSold = productOrderInfo))
   }
 
   private fun _onDisplayTotalQueuesChart() {

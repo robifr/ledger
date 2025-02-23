@@ -73,7 +73,7 @@ class CustomerViewModel(
                 })
           },
           _countTotalItem = {
-            _customerRepository.countFilteredCustomers(filterView._parseInputtedFilters())
+            _customerRepository.countFilteredCustomers(filterView.parseInputtedFilters())
           },
           _selectItemsByPageOffset = { pageNumber, limit ->
             _customerRepository.selectPaginatedInfoByOffset(
@@ -81,12 +81,12 @@ class CustomerViewModel(
                 itemPerPage = _paginationManager.maxItemPerPage,
                 limit = limit,
                 sortMethod = _uiState.safeValue.sortMethod,
-                filters = filterView._parseInputtedFilters())
+                filters = filterView.parseInputtedFilters())
           })
   private val _customerChangedListener: ModelSyncListener<CustomerModel, Unit> =
       ModelSyncListener(
           onSync = { _, _ ->
-            _onReloadPage(
+            onReloadPage(
                 _uiState.safeValue.pagination.firstLoadedPageNumber,
                 _uiState.safeValue.pagination.lastLoadedPageNumber)
           })
@@ -116,7 +116,7 @@ class CustomerViewModel(
   val uiState: SafeLiveData<CustomerState>
     get() = _uiState
 
-  val filterView: CustomerFilterViewModel = CustomerFilterViewModel { _onReloadPage(1, 1) }
+  val filterView: CustomerFilterViewModel by lazy { CustomerFilterViewModel(this) }
 
   @Inject
   constructor(
@@ -127,7 +127,7 @@ class CustomerViewModel(
   init {
     _customerRepository.addModelChangedListener(_customerChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    _onReloadPage(1, 1)
+    onReloadPage(1, 1)
   }
 
   override fun onCleared() {
@@ -200,7 +200,7 @@ class CustomerViewModel(
 
   fun onSortMethodChanged(sortMethod: CustomerSortMethod) {
     _uiState.setValue(_uiState.safeValue.copy(sortMethod = sortMethod))
-    _onReloadPage(1, 1)
+    onReloadPage(1, 1)
   }
 
   /**
@@ -242,6 +242,15 @@ class CustomerViewModel(
     }
   }
 
+  fun onReloadPage(firstVisiblePageNumber: Int, lastVisiblePageNumber: Int) {
+    viewModelScope.launch(_dispatcher) {
+      val isTableEmpty: Boolean = _customerRepository.isTableEmpty()
+      _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
+        _onNoCustomersAddedIllustrationVisible(isTableEmpty)
+      }
+    }
+  }
+
   private fun _onNoCustomersAddedIllustrationVisible(isVisible: Boolean) {
     _uiState.setValue(_uiState.safeValue.copy(isNoCustomersAddedIllustrationVisible = isVisible))
   }
@@ -261,15 +270,6 @@ class CustomerViewModel(
           data = state,
           onSet = { this?.copy(recyclerAdapter = it) },
           onReset = { this?.copy(recyclerAdapter = null) })
-    }
-  }
-
-  private fun _onReloadPage(firstVisiblePageNumber: Int, lastVisiblePageNumber: Int) {
-    viewModelScope.launch(_dispatcher) {
-      val isTableEmpty: Boolean = _customerRepository.isTableEmpty()
-      _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
-        _onNoCustomersAddedIllustrationVisible(isTableEmpty)
-      }
     }
   }
 }

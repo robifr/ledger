@@ -17,6 +17,7 @@
 package com.robifr.ledger.ui.queue.viewmodel
 
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.data.display.QueueDate
 import com.robifr.ledger.data.display.QueueFilters
 import com.robifr.ledger.data.model.QueueModel
@@ -25,8 +26,13 @@ import com.robifr.ledger.ui.common.state.SafeMutableLiveData
 import com.robifr.ledger.util.CurrencyFormat
 import java.math.BigDecimal
 import java.text.ParseException
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.launch
 
-class QueueFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) {
+class QueueFilterViewModel(
+    private val _viewModel: QueueViewModel,
+    private val _dispatcher: CoroutineDispatcher
+) {
   private val _uiState: SafeMutableLiveData<QueueFilterState> =
       SafeMutableLiveData(
           QueueFilterState(
@@ -71,25 +77,10 @@ class QueueFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) {
   fun onDialogClosed() {
     _uiState.setValue(uiState.safeValue.copy(isDialogShown = false))
     _onFiltersChanged()
-    _onReloadFromInitialPage()
+    _viewModel.viewModelScope.launch(_dispatcher) { _viewModel.onReloadPage(1, 1) }
   }
 
-  private fun _onFiltersChanged(filters: QueueFilters = _parseInputtedFilters()) {
-    onNullCustomerShown(filters.isNullCustomerShown)
-    onCustomerIdsChanged(filters.filteredCustomerIds)
-    onStatusChanged(filters.filteredStatus)
-    onDateChanged(filters.filteredDate)
-    onMinTotalPriceTextChanged(
-        filters.filteredTotalPrice.first?.let {
-          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
-        } ?: "")
-    onMaxTotalPriceTextChanged(
-        filters.filteredTotalPrice.second?.let {
-          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
-        } ?: "")
-  }
-
-  fun _parseInputtedFilters(): QueueFilters {
+  fun parseInputtedFilters(): QueueFilters {
     // All these nullable value to represent unbounded range.
     var minTotalPrice: BigDecimal? = null
     try {
@@ -117,5 +108,20 @@ class QueueFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) {
         filteredStatus = _uiState.safeValue.status,
         filteredDate = _uiState.safeValue.date,
         filteredTotalPrice = minTotalPrice to maxTotalPrice)
+  }
+
+  private fun _onFiltersChanged(filters: QueueFilters = parseInputtedFilters()) {
+    onNullCustomerShown(filters.isNullCustomerShown)
+    onCustomerIdsChanged(filters.filteredCustomerIds)
+    onStatusChanged(filters.filteredStatus)
+    onDateChanged(filters.filteredDate)
+    onMinTotalPriceTextChanged(
+        filters.filteredTotalPrice.first?.let {
+          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        } ?: "")
+    onMaxTotalPriceTextChanged(
+        filters.filteredTotalPrice.second?.let {
+          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        } ?: "")
   }
 }

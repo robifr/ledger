@@ -73,7 +73,7 @@ class ProductViewModel(
                 })
           },
           _countTotalItem = {
-            _productRepository.countFilteredProducts(filterView._parseInputtedFilters())
+            _productRepository.countFilteredProducts(filterView.parseInputtedFilters())
           },
           _selectItemsByPageOffset = { pageNumber, limit ->
             _productRepository.selectPaginatedInfoByOffset(
@@ -81,12 +81,12 @@ class ProductViewModel(
                 itemPerPage = _paginationManager.maxItemPerPage,
                 limit = limit,
                 sortMethod = _uiState.safeValue.sortMethod,
-                filters = filterView._parseInputtedFilters())
+                filters = filterView.parseInputtedFilters())
           })
   private val _productChangedListener: ModelSyncListener<ProductModel, Unit> =
       ModelSyncListener(
           onSync = { _, _ ->
-            _onReloadPage(
+            onReloadPage(
                 _uiState.safeValue.pagination.firstLoadedPageNumber,
                 _uiState.safeValue.pagination.lastLoadedPageNumber)
           })
@@ -116,7 +116,7 @@ class ProductViewModel(
   val uiState: SafeLiveData<ProductState>
     get() = _uiState
 
-  val filterView: ProductFilterViewModel = ProductFilterViewModel { _onReloadPage(1, 1) }
+  val filterView: ProductFilterViewModel by lazy { ProductFilterViewModel(this) }
 
   @Inject
   constructor(
@@ -127,7 +127,7 @@ class ProductViewModel(
   init {
     _productRepository.addModelChangedListener(_productChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    _onReloadPage(1, 1)
+    onReloadPage(1, 1)
   }
 
   override fun onCleared() {
@@ -200,7 +200,7 @@ class ProductViewModel(
 
   fun onSortMethodChanged(sortMethod: ProductSortMethod) {
     _uiState.setValue(_uiState.safeValue.copy(sortMethod = sortMethod))
-    _onReloadPage(1, 1)
+    onReloadPage(1, 1)
   }
 
   /**
@@ -242,6 +242,15 @@ class ProductViewModel(
     }
   }
 
+  fun onReloadPage(firstVisiblePageNumber: Int, lastVisiblePageNumber: Int) {
+    viewModelScope.launch(_dispatcher) {
+      val isTableEmpty: Boolean = _productRepository.isTableEmpty()
+      _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
+        _setNoProductsAddedIllustrationVisible(isTableEmpty)
+      }
+    }
+  }
+
   private fun _setNoProductsAddedIllustrationVisible(isVisible: Boolean) {
     _uiState.setValue(_uiState.safeValue.copy(isNoProductsAddedIllustrationVisible = isVisible))
   }
@@ -261,15 +270,6 @@ class ProductViewModel(
           data = state,
           onSet = { this?.copy(recyclerAdapter = it) },
           onReset = { this?.copy(recyclerAdapter = null) })
-    }
-  }
-
-  private fun _onReloadPage(firstVisiblePageNumber: Int, lastVisiblePageNumber: Int) {
-    viewModelScope.launch(_dispatcher) {
-      val isTableEmpty: Boolean = _productRepository.isTableEmpty()
-      _paginationManager.onReloadPage(firstVisiblePageNumber, lastVisiblePageNumber) {
-        _setNoProductsAddedIllustrationVisible(isTableEmpty)
-      }
     }
   }
 }

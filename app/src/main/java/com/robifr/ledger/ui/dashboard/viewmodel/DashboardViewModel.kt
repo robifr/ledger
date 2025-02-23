@@ -44,51 +44,32 @@ constructor(
     private val _productOrderRepository: ProductOrderRepository,
     private val _customerRepository: CustomerRepository
 ) : ViewModel() {
-  val summaryView: DashboardSummaryViewModel =
-      DashboardSummaryViewModel(
-          _viewModel = this,
-          _dispatcher = _dispatcher,
-          _selectAllQueuesInRange = { startDate, endDate ->
-            _selectAllQueuesInRange(startDate, endDate, false)
-          },
-          _selectAllProductsSoldInRange = ::_selectAllProductsSoldInRange,
-          _selectDateInfoById = ::_selectDateInfoById)
-  val revenueView: DashboardRevenueViewModel =
-      DashboardRevenueViewModel(
-          _viewModel = this,
-          _dispatcher = _dispatcher,
-          _selectAllQueuesInRange = { startDate, endDate ->
-            _selectAllQueuesInRange(startDate, endDate, true)
-          })
-  val balanceView: DashboardBalanceViewModel =
-      DashboardBalanceViewModel(
-          _viewModel = this,
-          _dispatcher = _dispatcher,
-          _selectAllCustomersWithBalance = { _selectAllCustomersWithBalance() },
-          _selectAllCustomersWithDebt = { _selectAllCustomersWithDebt() })
+  val summaryView: DashboardSummaryViewModel = DashboardSummaryViewModel(this, _dispatcher)
+  val revenueView: DashboardRevenueViewModel = DashboardRevenueViewModel(this, _dispatcher)
+  val balanceView: DashboardBalanceViewModel = DashboardBalanceViewModel(this, _dispatcher)
 
   init {
-    _queueRepository.addModelChangedListener(summaryView._queueChangedListener)
-    _queueRepository.addModelChangedListener(revenueView._queueChangedListener)
-    _productOrderRepository.addModelChangedListener(summaryView._productOrderChangedListener)
-    _customerRepository.addModelChangedListener(balanceView._customerBalanceChangedListener)
-    _customerRepository.addModelChangedListener(balanceView._customerDebtChangedListener)
+    _queueRepository.addModelChangedListener(summaryView.queueChangedListener)
+    _queueRepository.addModelChangedListener(revenueView.queueChangedListener)
+    _productOrderRepository.addModelChangedListener(summaryView.productOrderChangedListener)
+    _customerRepository.addModelChangedListener(balanceView.customerBalanceChangedListener)
+    _customerRepository.addModelChangedListener(balanceView.customerDebtChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    summaryView._loadAllQueuesInRange()
-    revenueView._loadAllQueuesInRange()
-    balanceView._loadAllCustomersWithBalance()
-    balanceView._loadAllCustomersWithDebt()
+    summaryView.loadAllQueuesInRange()
+    revenueView.loadAllQueuesInRange()
+    balanceView.loadAllCustomersWithBalance()
+    balanceView.loadAllCustomersWithDebt()
   }
 
   override fun onCleared() {
-    _queueRepository.removeModelChangedListener(summaryView._queueChangedListener)
-    _queueRepository.removeModelChangedListener(revenueView._queueChangedListener)
-    _productOrderRepository.removeModelChangedListener(summaryView._productOrderChangedListener)
-    _customerRepository.removeModelChangedListener(balanceView._customerBalanceChangedListener)
-    _customerRepository.removeModelChangedListener(balanceView._customerDebtChangedListener)
+    _queueRepository.removeModelChangedListener(summaryView.queueChangedListener)
+    _queueRepository.removeModelChangedListener(revenueView.queueChangedListener)
+    _productOrderRepository.removeModelChangedListener(summaryView.productOrderChangedListener)
+    _customerRepository.removeModelChangedListener(balanceView.customerBalanceChangedListener)
+    _customerRepository.removeModelChangedListener(balanceView.customerDebtChangedListener)
   }
 
-  private suspend fun _selectAllQueuesInRange(
+  suspend fun selectAllQueuesInRange(
       startDate: ZonedDateTime,
       endDate: ZonedDateTime,
       shouldCalculateGrandTotalPrice: Boolean
@@ -104,18 +85,18 @@ constructor(
                   filteredTotalPrice = null to null),
           shouldCalculateGrandTotalPrice = shouldCalculateGrandTotalPrice)
 
-  private suspend fun _selectAllProductsSoldInRange(
+  suspend fun selectAllProductsSoldInRange(
       dateStart: ZonedDateTime,
       dateEnd: ZonedDateTime
   ): List<ProductOrderProductInfo> =
       _productOrderRepository.selectAllProductInfoInRange(dateStart, dateEnd)
 
-  private suspend fun _selectDateInfoById(queueIds: List<Long>): List<QueueDateInfo> =
+  suspend fun selectDateInfoById(queueIds: List<Long>): List<QueueDateInfo> =
       _queueRepository.selectDateInfoById(queueIds = queueIds)
 
-  private suspend fun _selectAllCustomersWithBalance(): List<CustomerBalanceInfo> =
+  suspend fun selectAllCustomersWithBalance(): List<CustomerBalanceInfo> =
       _customerRepository.selectAllBalanceInfoWithBalance()
 
-  private suspend fun _selectAllCustomersWithDebt(): List<CustomerDebtInfo> =
+  suspend fun selectAllCustomersWithDebt(): List<CustomerDebtInfo> =
       _customerRepository.selectAllDebtInfoWithDebt()
 }

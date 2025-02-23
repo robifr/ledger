@@ -23,7 +23,7 @@ import com.robifr.ledger.ui.common.state.SafeMutableLiveData
 import com.robifr.ledger.util.CurrencyFormat
 import java.text.ParseException
 
-class ProductFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) {
+class ProductFilterViewModel(private val _viewModel: ProductViewModel) {
   private val _uiState: SafeMutableLiveData<ProductFilterState> =
       SafeMutableLiveData(
           ProductFilterState(isDialogShown = false, formattedMinPrice = "", formattedMaxPrice = ""))
@@ -45,23 +45,10 @@ class ProductFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) {
   fun onDialogClosed() {
     _uiState.setValue(_uiState.safeValue.copy(isDialogShown = false))
     _onFiltersChanged()
-    _onReloadFromInitialPage()
+    _viewModel.onReloadPage(1, 1)
   }
 
-  private fun _onFiltersChanged(filters: ProductFilters = _parseInputtedFilters()) {
-    onMinPriceTextChanged(
-        filters.filteredPrice.first?.let {
-          CurrencyFormat.formatCents(
-              it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
-        } ?: "")
-    onMaxPriceTextChanged(
-        filters.filteredPrice.second?.let {
-          CurrencyFormat.formatCents(
-              it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
-        } ?: "")
-  }
-
-  fun _parseInputtedFilters(): ProductFilters {
+  fun parseInputtedFilters(): ProductFilters {
     // All these nullable value to represent unbounded range.
     var minPrice: Long? = null
     try {
@@ -86,5 +73,18 @@ class ProductFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) {
     } catch (_: ParseException) {}
 
     return ProductFilters(minPrice to maxPrice)
+  }
+
+  private fun _onFiltersChanged(filters: ProductFilters = parseInputtedFilters()) {
+    onMinPriceTextChanged(
+        filters.filteredPrice.first?.let {
+          CurrencyFormat.formatCents(
+              it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        } ?: "")
+    onMaxPriceTextChanged(
+        filters.filteredPrice.second?.let {
+          CurrencyFormat.formatCents(
+              it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        } ?: "")
   }
 }

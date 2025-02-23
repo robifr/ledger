@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.webkit.WebViewClientCompat
 import com.robifr.ledger.assetbinding.chart.ChartData
 import com.robifr.ledger.assetbinding.chart.ChartUtil
 import com.robifr.ledger.data.InfoSynchronizer
@@ -47,11 +48,9 @@ import kotlinx.coroutines.withContext
 
 class DashboardRevenueViewModel(
     private val _viewModel: DashboardViewModel,
-    private val _dispatcher: CoroutineDispatcher,
-    private val _selectAllQueuesInRange:
-        suspend (startDate: ZonedDateTime, endDate: ZonedDateTime) -> List<QueuePaginatedInfo>
+    private val _dispatcher: CoroutineDispatcher
 ) {
-  val _queueChangedListener: ModelSyncListener<QueueModel, QueuePaginatedInfo> =
+  val queueChangedListener: ModelSyncListener<QueueModel, QueuePaginatedInfo> =
       ModelSyncListener(
           onAdd = { InfoSynchronizer.addInfo(_uiState.safeValue.queues, it, ::QueuePaginatedInfo) },
           onUpdate = {
@@ -105,7 +104,7 @@ class DashboardRevenueViewModel(
 
   fun onDateChanged(date: QueueDate) {
     _uiState.setValue(_uiState.safeValue.copy(date = date))
-    _loadAllQueuesInRange(_uiState.safeValue.date)
+    loadAllQueuesInRange(_uiState.safeValue.date)
   }
 
   fun onDateDialogShown() {
@@ -116,16 +115,16 @@ class DashboardRevenueViewModel(
     _uiState.setValue(_uiState.safeValue.copy(isDateDialogShown = false))
   }
 
-  fun _onQueuesChanged(queues: List<QueuePaginatedInfo>) {
-    _uiState.setValue(_uiState.safeValue.copy(queues = queues))
-  }
-
-  fun _loadAllQueuesInRange(date: QueueDate = _uiState.safeValue.date) {
+  fun loadAllQueuesInRange(date: QueueDate = _uiState.safeValue.date) {
     _viewModel.viewModelScope.launch(_dispatcher) {
-      _selectAllQueuesInRange(date.dateStart, date.dateEnd).let {
+      _viewModel.selectAllQueuesInRange(date.dateStart, date.dateEnd, true).let {
         withContext(Dispatchers.Main) { _onQueuesChanged(it) }
       }
     }
+  }
+
+  private fun _onQueuesChanged(queues: List<QueuePaginatedInfo>) {
+    _uiState.setValue(_uiState.safeValue.copy(queues = queues))
   }
 
   private fun _onDisplayReceivedIncomeChart(context: Context) {

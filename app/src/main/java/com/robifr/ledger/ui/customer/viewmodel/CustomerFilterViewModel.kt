@@ -24,7 +24,7 @@ import com.robifr.ledger.util.CurrencyFormat
 import java.math.BigDecimal
 import java.text.ParseException
 
-class CustomerFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) {
+class CustomerFilterViewModel(private val _viewModel: CustomerViewModel) {
   private val _uiState: SafeMutableLiveData<CustomerFilterState> =
       SafeMutableLiveData(
           CustomerFilterState(
@@ -59,31 +59,10 @@ class CustomerFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) 
   fun onDialogClosed() {
     _uiState.setValue(_uiState.safeValue.copy(isDialogShown = false))
     _onFiltersChanged()
-    _onReloadFromInitialPage()
+    _viewModel.onReloadPage(1, 1)
   }
 
-  private fun _onFiltersChanged(filters: CustomerFilters = _parseInputtedFilters()) {
-    onMinBalanceTextChanged(
-        filters.filteredBalance.first?.let {
-          CurrencyFormat.formatCents(
-              it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
-        } ?: "")
-    onMaxBalanceTextChanged(
-        filters.filteredBalance.second?.let {
-          CurrencyFormat.formatCents(
-              it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
-        } ?: "")
-    onMinDebtTextChanged(
-        filters.filteredDebt.first?.let {
-          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
-        } ?: "")
-    onMaxDebtTextChanged(
-        filters.filteredDebt.second?.let {
-          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
-        } ?: "")
-  }
-
-  fun _parseInputtedFilters(): CustomerFilters {
+  fun parseInputtedFilters(): CustomerFilters {
     // All these nullable value to represent unbounded range.
     var minBalance: Long? = null
     try {
@@ -129,5 +108,26 @@ class CustomerFilterViewModel(private val _onReloadFromInitialPage: () -> Unit) 
 
     return CustomerFilters(
         filteredBalance = minBalance to maxBalance, filteredDebt = minDebt to maxDebt)
+  }
+
+  private fun _onFiltersChanged(filters: CustomerFilters = parseInputtedFilters()) {
+    onMinBalanceTextChanged(
+        filters.filteredBalance.first?.let {
+          CurrencyFormat.formatCents(
+              it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        } ?: "")
+    onMaxBalanceTextChanged(
+        filters.filteredBalance.second?.let {
+          CurrencyFormat.formatCents(
+              it.toBigDecimal(), AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        } ?: "")
+    onMinDebtTextChanged(
+        filters.filteredDebt.first?.let {
+          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        } ?: "")
+    onMaxDebtTextChanged(
+        filters.filteredDebt.second?.let {
+          CurrencyFormat.formatCents(it, AppCompatDelegate.getApplicationLocales().toLanguageTags())
+        } ?: "")
   }
 }
