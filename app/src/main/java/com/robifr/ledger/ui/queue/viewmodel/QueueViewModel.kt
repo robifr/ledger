@@ -97,11 +97,17 @@ class QueueViewModel(
   private val _queueChangedListener: ModelSyncListener<QueueModel, Unit> =
       ModelSyncListener(
           onSync = { _, _ ->
-            _onReloadPage(
-                _uiState.safeValue.pagination.firstLoadedPageNumber,
-                _uiState.safeValue.pagination.lastLoadedPageNumber) {
-                  _onPageLoadedReloadExpandedQueue()
-                }
+            viewModelScope.launch(_dispatcher) {
+              val expandedQueue: QueueModel? =
+                  _queueRepository.selectById(_uiState.safeValue.expandedQueue?.id)
+              _onReloadPage(
+                  _uiState.safeValue.pagination.firstLoadedPageNumber,
+                  _uiState.safeValue.pagination.lastLoadedPageNumber) {
+                    // Update current expanded queue in case they're updated.
+                    _uiState.setValue(_uiState.safeValue.copy(expandedQueue = expandedQueue))
+                    _onPageLoadedReloadExpandedQueue()
+                  }
+            }
           })
   private val _customerChangedListener: CustomerSyncListener =
       CustomerSyncListener(
