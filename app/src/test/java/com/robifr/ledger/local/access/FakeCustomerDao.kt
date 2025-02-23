@@ -148,9 +148,6 @@ data class FakeCustomerDao(
           .map { CustomerDebtInfo(it) }
           .toList()
 
-  override fun _selectAllDebtInfoWithDebt(customerId: Long?): List<CustomerDebtInfo> =
-      selectAllDebtInfoWithDebt()
-
   override fun _deleteFts(rowId: Long) {}
 
   override fun _insertFts(customerFts: CustomerFtsModel): Long = -1L

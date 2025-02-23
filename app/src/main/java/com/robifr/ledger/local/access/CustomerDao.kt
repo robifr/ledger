@@ -87,7 +87,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
 
   @Query(
       """
-      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      WITH filtered_customers_cte AS (${_CTE_SELECT_PAGINATED_WITH_FILTER})
       SELECT * FROM filtered_customers_cte
       -- Sorting based on the data from `CustomerSortMethod`.
       ORDER BY
@@ -117,7 +117,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
 
   @Query(
       """
-      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      WITH filtered_customers_cte AS (${_CTE_SELECT_PAGINATED_WITH_FILTER})
       SELECT COUNT(*) FROM filtered_customers_cte
       """)
   @TypeConverters(BigDecimalConverter::class)
@@ -132,18 +132,13 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   @Query("SELECT id, balance FROM customer WHERE balance > 0")
   abstract fun selectAllBalanceInfoWithBalance(): List<CustomerBalanceInfo>
 
-  @Transaction
-  open fun selectAllDebtInfoWithDebt(): List<CustomerDebtInfo> = _selectAllDebtInfoWithDebt()
-
   @Query(
       """
-      ${_CTE_COUNT_DEBT_BY_ID}
+      WITH total_debt_cte AS (${_CTE_COUNT_ALL_DEBT})
       SELECT id, debt FROM total_debt_cte WHERE debt < 0
       """)
   @TypeConverters(BigDecimalConverter::class)
-  protected abstract fun _selectAllDebtInfoWithDebt(
-      customerId: Long? = null
-  ): List<CustomerDebtInfo>
+  abstract fun selectAllDebtInfoWithDebt(): List<CustomerDebtInfo>
 
   @Transaction
   open fun search(query: String): List<CustomerModel> {
@@ -168,7 +163,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
 
   @Query(
       """
-      ${_CTE_COUNT_DEBT_BY_ID}
+      WITH total_debt_cte AS (${_CTE_COUNT_DEBT_BY_ID})
       SELECT debt FROM total_debt_cte
       """)
   @TypeConverters(BigDecimalConverter::class)
@@ -194,49 +189,50 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
     @Language("RoomSql")
     private const val _CTE_COUNT_DEBT_BY_ID: String =
         """
-        WITH total_debt_cte AS (
-          SELECT
-              queue.customer_id AS id,
-              -IFNULL(SUM(ABS(product_order.total_price)), 0) AS debt
-          FROM product_order
-          JOIN queue ON queue.id = product_order.queue_id
-          WHERE
-              (:customerId IS NULL OR queue.customer_id = :customerId)
-              AND queue.status = 'UNPAID'
-          GROUP BY queue.customer_id
-        )
+        SELECT
+            queue.customer_id AS id,
+            -IFNULL(SUM(ABS(product_order.total_price)), 0) AS debt
+        FROM product_order
+        JOIN queue ON queue.id = product_order.queue_id
+        WHERE
+            :customerId IS NOT NULL
+            AND queue.customer_id = :customerId
+            AND queue.status = 'UNPAID'
+        GROUP BY queue.customer_id
+        """
+
+    /** Current debt by counting all of product order's total price from all unpaid queues. */
+    @Language("RoomSql")
+    private const val _CTE_COUNT_ALL_DEBT: String =
+        """
+        SELECT
+            queue.customer_id AS id,
+            -IFNULL(SUM(ABS(product_order.total_price)), 0) AS debt
+        FROM product_order
+        JOIN queue ON queue.id = product_order.queue_id
+        WHERE queue.customer_id IS NOT NULL AND queue.status = 'UNPAID'
+        GROUP BY queue.customer_id
         """
 
     @Language("RoomSql")
     private const val _CTE_SELECT_PAGINATED_WITH_FILTER: String =
         """
-        WITH filtered_customers_cte AS (
-          SELECT
-              customer.id AS id,
-              customer.name AS name,
-              customer.balance AS balance,
-              IFNULL(debt, 0) AS debt
-          FROM customer
-          LEFT JOIN (
-            -- Count customer debt based from product order's total price with unpaid queue status.
-            SELECT
-                queue.customer_id,
-                -IFNULL(SUM(ABS(product_order.total_price)), 0) AS debt
-            FROM product_order
-            JOIN queue ON queue.id = product_order.queue_id
-            WHERE queue.customer_id IS NOT NULL AND queue.status = 'UNPAID'
-            GROUP BY queue.customer_id
-          ) ON customer_id = customer.id
-          -- Condition based on the data from `CustomerFilters`.
-          WHERE
-              -- Filter by balance range.
-              (:filteredMinBalance IS NULL OR balance >= :filteredMinBalance)
-              AND (:filteredMaxBalance IS NULL OR balance <= :filteredMaxBalance)
+        SELECT
+            customer.id AS id,
+            customer.name AS name,
+            customer.balance AS balance,
+            IFNULL(total_debt_cte.debt, 0) AS debt
+        FROM customer
+        LEFT JOIN (${_CTE_COUNT_ALL_DEBT}) AS total_debt_cte ON total_debt_cte.id = customer.id
+        -- Condition based on the data from `CustomerFilters`.
+        WHERE
+            -- Filter by balance range.
+            (:filteredMinBalance IS NULL OR balance >= :filteredMinBalance)
+            AND (:filteredMaxBalance IS NULL OR balance <= :filteredMaxBalance)
 
-              -- Filter by debt range.
-              AND (:filteredMinDebt IS NULL OR ABS(debt) >= ABS(CAST(:filteredMinDebt AS NUMERIC)))
-              AND (:filteredMaxDebt IS NULL OR ABS(debt) <= ABS(CAST(:filteredMaxDebt AS NUMERIC)))
-        )
+            -- Filter by debt range.
+            AND (:filteredMinDebt IS NULL OR ABS(debt) >= ABS(CAST(:filteredMinDebt AS NUMERIC)))
+            AND (:filteredMaxDebt IS NULL OR ABS(debt) <= ABS(CAST(:filteredMaxDebt AS NUMERIC)))
         """
   }
 }

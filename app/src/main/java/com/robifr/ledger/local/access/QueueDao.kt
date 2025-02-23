@@ -63,7 +63,7 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
 
   @Query(
       """
-      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      WITH filtered_queues_cte AS (${_CTE_SELECT_PAGINATED_WITH_FILTER})
       SELECT * FROM filtered_queues_cte
       -- Sorting based on the data from `QueueSortMethod`.
       ORDER BY
@@ -100,7 +100,7 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
 
   @Query(
       """
-      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      WITH filtered_queues_cte AS (${_CTE_SELECT_PAGINATED_WITH_FILTER})
       SELECT * FROM filtered_queues_cte
       -- Sorting based on the data from `QueueSortMethod`.
       ORDER BY
@@ -140,7 +140,7 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
 
   @Query(
       """
-      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      WITH filtered_queues_cte AS (${_CTE_SELECT_PAGINATED_WITH_FILTER})
       SELECT COUNT(*) FROM filtered_queues_cte
       """)
   @TypeConverters(BigDecimalConverter::class, InstantConverter::class)
@@ -166,44 +166,42 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
     @Language("RoomSql")
     private const val _CTE_SELECT_PAGINATED_WITH_FILTER: String =
         """
-        WITH filtered_queues_cte AS (
+        SELECT
+            queue.id AS id,
+            queue.customer_id AS customer_id,
+            customer.name AS customer_name,
+            queue.status AS status,
+            queue.date AS date,
+            IFNULL(grand_total_price, 0) AS grand_total_price
+        FROM queue
+        LEFT JOIN (
+          -- Calculate grand total price for the sorting and filter operation.
           SELECT
-              queue.id AS id,
-              queue.customer_id AS customer_id,
-              customer.name AS customer_name,
-              queue.status AS status,
-              queue.date AS date,
-              IFNULL(grand_total_price, 0) AS grand_total_price
-          FROM queue
-          LEFT JOIN (
-            -- Calculate grand total price for the sorting and filter operation.
-            SELECT
-                product_order.queue_id,
-                SUM(CAST(product_order.total_price AS NUMERIC)) AS grand_total_price
-            FROM product_order
-            GROUP BY product_order.queue_id
-          ) ON :shouldCalculateGrandTotalPrice IS TRUE AND queue_id = queue.id
-          LEFT JOIN customer ON customer.id = queue.customer_id
-          -- Condition based on the data from `QueueFilters`.
-          WHERE
-              -- Filter by customer ID.
-              -- When the list of filtered customer ID is empty or the customer ID within the list.
-              ((:isFilteredCustomerIdsEmpty IS TRUE OR queue.customer_id IN (:filteredCustomerIds))
-                  -- Or when null customer ID is being allowed.
-                  OR (queue.customer_id IS NULL AND :isNullCustomerShown IS TRUE))
+              product_order.queue_id,
+              SUM(CAST(product_order.total_price AS NUMERIC)) AS grand_total_price
+          FROM product_order
+          GROUP BY product_order.queue_id
+        ) ON :shouldCalculateGrandTotalPrice IS TRUE AND queue_id = queue.id
+        LEFT JOIN customer ON customer.id = queue.customer_id
+        -- Condition based on the data from `QueueFilters`.
+        WHERE
+            -- Filter by customer ID.
+            -- When the list of filtered customer ID is empty or the customer ID within the list.
+            ((:isFilteredCustomerIdsEmpty IS TRUE OR queue.customer_id IN (:filteredCustomerIds))
+                -- Or when null customer ID is being allowed.
+                OR (queue.customer_id IS NULL AND :isNullCustomerShown IS TRUE))
 
-              -- Filter by status.
-              AND (:isFilteredStatusEmpty IS TRUE OR queue.status IN (:filteredStatus))
+            -- Filter by status.
+            AND (:isFilteredStatusEmpty IS TRUE OR queue.status IN (:filteredStatus))
 
-              -- Filter by total price range.
-              AND (:filteredMinTotalPrice IS NULL
-                  OR grand_total_price >= CAST(:filteredMinTotalPrice AS NUMERIC))
-              AND (:filteredMaxTotalPrice IS NULL
-                  OR grand_total_price <= CAST(:filteredMaxTotalPrice AS NUMERIC))
+            -- Filter by total price range.
+            AND (:filteredMinTotalPrice IS NULL
+                OR grand_total_price >= CAST(:filteredMinTotalPrice AS NUMERIC))
+            AND (:filteredMaxTotalPrice IS NULL
+                OR grand_total_price <= CAST(:filteredMaxTotalPrice AS NUMERIC))
 
-              -- Filter by date range.
-              AND (queue.date BETWEEN :filteredDateStart AND :filteredDateEnd)
-        )
+            -- Filter by date range.
+            AND (queue.date BETWEEN :filteredDateStart AND :filteredDateEnd)
         """
   }
 }

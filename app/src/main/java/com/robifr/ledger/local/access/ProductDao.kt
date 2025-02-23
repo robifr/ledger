@@ -84,7 +84,7 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
 
   @Query(
       """
-      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      WITH filtered_products_cte AS (${_CTE_SELECT_PAGINATED_WITH_FILTER})
       SELECT * FROM filtered_products_cte
       -- Sorting based on the data from `ProductSortMethod`.
       ORDER BY
@@ -112,7 +112,7 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
 
   @Query(
       """
-      ${_CTE_SELECT_PAGINATED_WITH_FILTER}
+      WITH filtered_products_cte AS (${_CTE_SELECT_PAGINATED_WITH_FILTER})
       SELECT COUNT(*) FROM filtered_products_cte
       """)
   @TypeConverters(BigDecimalConverter::class)
@@ -162,18 +162,16 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
     @Language("RoomSql")
     private const val _CTE_SELECT_PAGINATED_WITH_FILTER: String =
         """
-        WITH filtered_products_cte AS (
-          SELECT
-              product.id AS id,
-              product.name AS name,
-              product.price AS price
-          FROM product
-          -- Condition based on the data from `ProductFilters`.
-          WHERE
-              -- Filter by price range.
-              (:filteredMinPrice IS NULL OR price >= :filteredMinPrice)
-              AND (:filteredMaxPrice IS NULL OR price <= :filteredMaxPrice)
-        )
+        SELECT
+            product.id AS id,
+            product.name AS name,
+            product.price AS price
+        FROM product
+        -- Condition based on the data from `ProductFilters`.
+        WHERE
+            -- Filter by price range.
+            (:filteredMinPrice IS NULL OR price >= :filteredMinPrice)
+            AND (:filteredMaxPrice IS NULL OR price <= :filteredMaxPrice)
         """
   }
 }
