@@ -162,7 +162,7 @@ abstract class CustomerDao : QueryAccessible<CustomerModel> {
   @Query(
       """
       WITH total_debt_cte AS (${_CTE_COUNT_DEBT_BY_ID})
-      SELECT debt FROM total_debt_cte
+      SELECT IFNULL((SELECT debt FROM total_debt_cte), 0)
       """)
   @TypeConverters(BigDecimalConverter::class)
   abstract fun totalDebtById(customerId: Long?): BigDecimal
