@@ -116,7 +116,7 @@ constructor(
     _expandedCustomerJob?.cancel()
     _expandedCustomerJob =
         viewModelScope.launch {
-          delay(200)
+          delay(150)
           // Update both previous and current expanded customer. +1 offset because header holder.
           _onRecyclerAdapterRefreshed(
               RecyclerAdapterState.ItemChanged(

@@ -179,7 +179,7 @@ class SelectProductViewModel(
     _expandedProductJob?.cancel()
     _expandedProductJob =
         viewModelScope.launch {
-          delay(200)
+          delay(150)
           val previousExpandedIndex: Int = _uiState.safeValue.expandedProductIndex
           val shouldExpand: Boolean = previousExpandedIndex != index
           // Unlike queue, there's no need to load for the product's

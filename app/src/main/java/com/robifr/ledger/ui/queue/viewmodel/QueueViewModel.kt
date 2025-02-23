@@ -184,7 +184,7 @@ class QueueViewModel(
     _expandedQueueJob?.cancel()
     _expandedQueueJob =
         viewModelScope.launch(_dispatcher) {
-          delay(200)
+          delay(150)
           val previousExpandedIndex: Int = _uiState.safeValue.expandedQueueIndex
           val shouldExpand: Boolean = previousExpandedIndex != index
           val queue: QueueModel? = if (shouldExpand) _selectQueueForIndex(index) else null

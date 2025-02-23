@@ -176,7 +176,7 @@ class FilterCustomerViewModel(
     _expandedCustomerJob?.cancel()
     _expandedCustomerJob =
         viewModelScope.launch {
-          delay(200)
+          delay(150)
           val previousExpandedIndex: Int = _uiState.safeValue.expandedCustomerIndex
           val shouldExpand: Boolean = previousExpandedIndex != index
           // Unlike queue, there's no need to load for the customer's
