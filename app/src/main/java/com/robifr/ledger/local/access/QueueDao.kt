@@ -91,7 +91,6 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
       isFilteredCustomerIdsEmpty: Boolean = filteredCustomerIds.isEmpty(),
       isNullCustomerShown: Boolean,
       filteredStatus: Set<QueueModel.Status>,
-      isFilteredStatusEmpty: Boolean = filteredStatus.isEmpty(),
       filteredMinTotalPrice: BigDecimal?,
       filteredMaxTotalPrice: BigDecimal?,
       filteredDateStart: Instant,
@@ -132,7 +131,6 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
       isFilteredCustomerIdsEmpty: Boolean = filteredCustomerIds.isEmpty(),
       isNullCustomerShown: Boolean,
       filteredStatus: Set<QueueModel.Status>,
-      isFilteredStatusEmpty: Boolean = filteredStatus.isEmpty(),
       filteredMinTotalPrice: BigDecimal?,
       filteredMaxTotalPrice: BigDecimal?,
       filteredDateStart: Instant,
@@ -152,7 +150,6 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
       isFilteredCustomerIdsEmpty: Boolean = filteredCustomerIds.isEmpty(),
       isNullCustomerShown: Boolean,
       filteredStatus: Set<QueueModel.Status>,
-      isFilteredStatusEmpty: Boolean = filteredStatus.isEmpty(),
       filteredMinTotalPrice: BigDecimal?,
       filteredMaxTotalPrice: BigDecimal?,
       filteredDateStart: Instant,
@@ -188,12 +185,12 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
         WHERE
             -- Filter by customer ID.
             -- When the list of filtered customer ID is empty or the customer ID within the list.
-            ((:isFilteredCustomerIdsEmpty IS TRUE OR queue.customer_id IN (:filteredCustomerIds))
-                -- Or when null customer ID is being allowed.
-                OR (queue.customer_id IS NULL AND :isNullCustomerShown IS TRUE))
+            (:isFilteredCustomerIdsEmpty IS TRUE OR queue.customer_id IN (:filteredCustomerIds))
+            -- Or when null customer ID is being allowed.
+            AND (queue.customer_id IS NOT NULL OR :isNullCustomerShown IS TRUE)
 
             -- Filter by status.
-            AND (:isFilteredStatusEmpty IS TRUE OR queue.status IN (:filteredStatus))
+            AND queue.status IN (:filteredStatus)
 
             -- Filter by total price range.
             AND (:filteredMinTotalPrice IS NULL
