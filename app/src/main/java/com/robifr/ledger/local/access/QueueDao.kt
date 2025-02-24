@@ -185,7 +185,9 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
         WHERE
             -- Filter by customer ID.
             -- When the list of filtered customer ID is empty or the customer ID within the list.
-            (:isFilteredCustomerIdsEmpty IS TRUE OR queue.customer_id IN (:filteredCustomerIds))
+            NOT (queue.customer_id IS NOT NULL
+                AND :isFilteredCustomerIdsEmpty IS FALSE
+                AND queue.customer_id NOT IN (:filteredCustomerIds))
             -- Or when null customer ID is being allowed.
             AND (queue.customer_id IS NOT NULL OR :isNullCustomerShown IS TRUE)
 
