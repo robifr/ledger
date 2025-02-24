@@ -18,9 +18,9 @@ package com.robifr.ledger.network
 
 import android.content.Context
 import android.net.ConnectivityManager
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
-import okio.IOException
 
 object NetworkState {
   suspend fun isInternetAvailable(context: Context): Boolean {
@@ -38,7 +38,7 @@ object NetworkState {
         urlConnection.connect()
         return urlConnection.responseCode == 200
       } catch (_: IOException) {
-        return false
+        return false // Happens when mobile data or Wi-Fi is on, but no internet.
       }
     }
     return false
