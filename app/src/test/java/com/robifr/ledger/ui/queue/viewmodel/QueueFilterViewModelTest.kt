@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.queue.viewmodel
 
-import android.os.Environment
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.robifr.ledger.InstantTaskExecutorExtension
@@ -33,10 +32,10 @@ import com.robifr.ledger.local.access.FakeQueueDao
 import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ProductOrderRepository
 import com.robifr.ledger.repository.QueueRepository
+import com.robifr.ledger.ui.main.RequiredPermission
 import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.spyk
 import java.time.Instant
 import java.time.LocalDate
@@ -62,6 +61,7 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   private lateinit var _productOrderDao: FakeProductOrderDao
   private lateinit var _customerRepository: CustomerRepository
   private lateinit var _customerDao: FakeCustomerDao
+  private lateinit var _permission: RequiredPermission
   private lateinit var _queueViewModel: QueueViewModel
   private lateinit var _viewModel: QueueFilterViewModel
 
@@ -119,7 +119,6 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    mockkStatic(Environment::class)
     _queueDao = FakeQueueDao(data = mutableListOf(_firstQueue, _secondQueue, _thirdQueue))
     _productOrderDao =
         FakeProductOrderDao(
@@ -134,16 +133,18 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _productOrderRepository = spyk(ProductOrderRepository(_productOrderDao))
     _queueRepository =
         spyk(QueueRepository(_queueDao, mockk(), _customerRepository, _productOrderRepository))
+    _permission = mockk()
     AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en-US"))
 
-    every { Environment.isExternalStorageManager() } returns true
+    every { _permission.isStorageAccessGranted() } returns true
     _queueViewModel =
         QueueViewModel(
             maxPaginatedItemPerPage = 2,
             maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _queueRepository = _queueRepository,
-            _customerRepository = _customerRepository)
+            _customerRepository = _customerRepository,
+            _permission = _permission)
     _viewModel = _queueViewModel.filterView
   }
 

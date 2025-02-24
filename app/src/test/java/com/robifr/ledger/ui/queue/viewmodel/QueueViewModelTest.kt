@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.queue.viewmodel
 
-import android.os.Environment
 import androidx.lifecycle.Observer
 import com.robifr.ledger.InstantTaskExecutorExtension
 import com.robifr.ledger.LifecycleOwnerExtension
@@ -36,13 +35,13 @@ import com.robifr.ledger.repository.CustomerRepository
 import com.robifr.ledger.repository.ProductOrderRepository
 import com.robifr.ledger.repository.QueueRepository
 import com.robifr.ledger.ui.common.state.RecyclerAdapterState
+import com.robifr.ledger.ui.main.RequiredPermission
 import io.mockk.CapturingSlot
 import io.mockk.clearAllMocks
 import io.mockk.clearMocks
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.verify
@@ -83,6 +82,7 @@ class QueueViewModelTest(
   private lateinit var _productOrderDao: FakeProductOrderDao
   private lateinit var _customerRepository: CustomerRepository
   private lateinit var _customerDao: FakeCustomerDao
+  private lateinit var _permission: RequiredPermission
   private lateinit var _viewModel: QueueViewModel
   private lateinit var _uiEventObserver: Observer<QueueEvent>
 
@@ -119,7 +119,6 @@ class QueueViewModelTest(
   @BeforeEach
   fun beforeEach() {
     clearAllMocks()
-    mockkStatic(Environment::class)
     _transactionProvider = mockk()
     _queueDao = FakeQueueDao(data = mutableListOf(_firstQueue, _secondQueue, _thirdQueue))
     _productOrderDao =
@@ -141,30 +140,33 @@ class QueueViewModelTest(
         spyk(
             QueueRepository(
                 _queueDao, _transactionProvider, _customerRepository, _productOrderRepository))
+    _permission = mockk()
     _uiEventObserver = mockk(relaxed = true)
 
-    every { Environment.isExternalStorageManager() } returns true
+    every { _permission.isStorageAccessGranted() } returns true
     _viewModel =
         QueueViewModel(
             maxPaginatedItemPerPage = 2,
             maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _queueRepository = _queueRepository,
-            _customerRepository = _customerRepository)
+            _customerRepository = _customerRepository,
+            _permission = _permission)
     _viewModel.uiEvent.observe(_lifecycleOwner, _uiEventObserver)
   }
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on initialize with requested storage permission`(isPermissionGranted: Boolean) {
-    every { Environment.isExternalStorageManager() } returns isPermissionGranted
+    every { _permission.isStorageAccessGranted() } returns isPermissionGranted
     _viewModel =
         QueueViewModel(
             maxPaginatedItemPerPage = 2,
             maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _queueRepository = _queueRepository,
-            _customerRepository = _customerRepository)
+            _customerRepository = _customerRepository,
+            _permission = _permission)
     assertEquals(
         if (isPermissionGranted) listOf(_firstQueue, _secondQueue).map { QueuePaginatedInfo(it) }
         else listOf(),
@@ -184,7 +186,8 @@ class QueueViewModelTest(
             maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _queueRepository = _queueRepository,
-            _customerRepository = _customerRepository)
+            _customerRepository = _customerRepository,
+            _permission = _permission)
     assertEquals(
         _viewModel.uiState.safeValue.copy(
             pagination =
@@ -207,7 +210,8 @@ class QueueViewModelTest(
             maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _queueRepository = _queueRepository,
-            _customerRepository = _customerRepository)
+            _customerRepository = _customerRepository,
+            _permission = _permission)
     assertEquals(
         listOf(_firstQueue, _secondQueue).map { QueuePaginatedInfo(it) },
         _viewModel.uiState.safeValue.pagination.paginatedItems,

@@ -16,7 +16,6 @@
 
 package com.robifr.ledger.ui.queue.viewmodel
 
-import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.robifr.ledger.R
@@ -37,6 +36,7 @@ import com.robifr.ledger.ui.common.state.SafeLiveData
 import com.robifr.ledger.ui.common.state.SafeMutableLiveData
 import com.robifr.ledger.ui.common.state.SnackbarState
 import com.robifr.ledger.ui.common.state.updateEvent
+import com.robifr.ledger.ui.main.RequiredPermission
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -52,7 +52,8 @@ class QueueViewModel(
     maxPaginatedItemInMemory: Int = maxPaginatedItemPerPage * 3,
     private val _dispatcher: CoroutineDispatcher,
     private val _queueRepository: QueueRepository,
-    private val _customerRepository: CustomerRepository
+    private val _customerRepository: CustomerRepository,
+    private val _permission: RequiredPermission
 ) : ViewModel() {
   private var _expandedQueueJob: Job? = null
   private val _paginationManager: PaginationManager<QueuePaginatedInfo> =
@@ -81,18 +82,12 @@ class QueueViewModel(
             _queueRepository.countFilteredQueues(filterView.parseInputtedFilters())
           },
           _selectItemsByPageOffset = { pageNumber, limit ->
-            // Queue fragment is the first fragment to be loaded during the initial app run.
-            // It's essential to ensure that all necessary permissions are granted.
-            if (Environment.isExternalStorageManager()) {
-              _queueRepository.selectPaginatedInfoByOffset(
-                  pageNumber = pageNumber,
-                  itemPerPage = _paginationManager.maxItemPerPage,
-                  limit = limit,
-                  sortMethod = _uiState.safeValue.sortMethod,
-                  filters = filterView.parseInputtedFilters())
-            } else {
-              listOf()
-            }
+            _queueRepository.selectPaginatedInfoByOffset(
+                pageNumber = pageNumber,
+                itemPerPage = _paginationManager.maxItemPerPage,
+                limit = limit,
+                sortMethod = _uiState.safeValue.sortMethod,
+                filters = filterView.parseInputtedFilters())
           })
   private val _queueChangedListener: ModelSyncListener<QueueModel, Unit> =
       ModelSyncListener(
@@ -150,17 +145,23 @@ class QueueViewModel(
   constructor(
       @IoDispatcher dispatcher: CoroutineDispatcher,
       queueRepository: QueueRepository,
-      customerRepository: CustomerRepository
+      customerRepository: CustomerRepository,
+      permission: RequiredPermission
   ) : this(
       _dispatcher = dispatcher,
       _queueRepository = queueRepository,
-      _customerRepository = customerRepository)
+      _customerRepository = customerRepository,
+      _permission = permission)
 
   init {
     _queueRepository.addModelChangedListener(_queueChangedListener)
     _customerRepository.addModelChangedListener(_customerChangedListener)
     // Setting up initial values inside a fragment is painful. See commit d5604599.
-    viewModelScope.launch(_dispatcher) { onReloadPage(1, 1) }
+    // Queue fragment is also the first fragment to be loaded during the initial app run.
+    // It's essential to ensure that all necessary permissions are granted.
+    if (_permission.isStorageAccessGranted()) {
+      viewModelScope.launch(_dispatcher) { onReloadPage(1, 1) }
+    }
   }
 
   override fun onCleared() {
