@@ -69,13 +69,14 @@ allprojects {
       licenseHeaderFile(file("${rootDir}/gradle/spotless/license_header.txt"), "^\\w+")
     }
 
-    javascript {
-      target("**/assets/**/*.js")
-      targetExclude("**/assets/libs/**/*.js", "${layout.buildDirectory}/**")
-      prettier().config(mapOf("tabWidth" to 2, "useTabs" to false, "printWidth" to 100))
-      licenseHeaderFile(
-          file("${rootDir}/gradle/spotless/license_header.txt"), "\"use strict\"|^\\w+")
-    }
+    // TODO: Uncomment once the bug is fixed, https://github.com/diffplug/spotless/issues/2410.
+    // javascript {
+    //  target("**/assets/**/*.js")
+    //  targetExclude("**/assets/libs/**/*.js", "${layout.buildDirectory}/**")
+    //  prettier().config(mapOf("tabWidth" to 2, "useTabs" to false, "printWidth" to 100))
+    //  licenseHeaderFile(
+    //      file("${rootDir}/gradle/spotless/license_header.txt"), "\"use strict\"|^\\w+")
+    // }
 
     python {
       target("scripts/**/*.py")
@@ -92,12 +93,13 @@ allprojects {
       licenseHeaderFile(file("${rootDir}/gradle/spotless/license_header_xml.txt"), "^(<\\w+|<!--)")
     }
 
-    format("html") {
-      target("**/src/main/assets/**/*.html")
-      targetExclude("${layout.buildDirectory}/**")
-      prettier()
-      licenseHeaderFile(file("${rootDir}/gradle/spotless/license_header_html.txt"), "<!DOCTYPE")
-    }
+    // TODO: Uncomment once the bug is fixed, https://github.com/diffplug/spotless/issues/2410.
+    // format("html") {
+    //  target("**/src/main/assets/**/*.html")
+    //  targetExclude("${layout.buildDirectory}/**")
+    //  prettier()
+    //  licenseHeaderFile(file("${rootDir}/gradle/spotless/license_header_html.txt"), "<!DOCTYPE")
+    // }
   }
 
   gradle.projectsEvaluated {
