@@ -6,6 +6,9 @@ androidxCore = "1.15.0"
 androidxCoreTesting = "2.2.0"
 androidxNavigation = "2.8.4"
 androidxRoom = "2.6.1"
+androidxTestEspresso = "3.6.1"
+androidxTestJUnit = "1.2.1"
+androidxTestRunner = "1.6.2"
 androidxViewPager2 = "1.1.0"
 androidxWebkit = "1.12.1"
 dataFaker = "2.4.2"
@@ -17,10 +20,10 @@ kotlinxKover = "0.9.1"
 kotlinxSerializationJson = "1.7.3"
 ksp = "2.0.20-1.0.24" # The initial version must correspond to the Kotlin version.
 leakcanary = "2.14"
+licensee = "1.12.0"
 materialComponents = "1.12.0"
 mockK = "1.13.13"
 okHttp = "4.12.0"
-licensee = "1.12.0"
 spotless = "7.0.2"
 # JavaScript assets.
 d3 = "7.9.0"
@@ -34,6 +37,9 @@ androidx-navigation-fragment = { module = "androidx.navigation:navigation-fragme
 androidx-navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "androidxNavigation" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidxRoom" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "androidxRoom" }
+androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxTestEspresso" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestJUnit" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTestRunner" }
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "androidxViewPager2" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "androidxWebkit" }
 app-cash-licensee-gradle-plugin = { module = "app.cash.licensee:licensee-gradle-plugin", version.ref = "licensee" }

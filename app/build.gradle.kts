@@ -40,6 +40,7 @@ android {
     versionCode = 1
     versionName = "2.0.2"
     multiDexEnabled = true
+    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     setProperty("archivesBaseName", "ledger-v${versionName}")
 
     ksp {
@@ -140,6 +141,10 @@ dependencies {
   testImplementation(libs.jetbrains.kotlinx.coroutines.test)
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.mockk)
+
+  androidTestImplementation(libs.androidx.test.espresso.core)
+  androidTestImplementation(libs.androidx.test.ext.junit)
+  androidTestImplementation(libs.androidx.test.runner)
 
   debugImplementation(libs.squareup.leakcanary.android)
 
