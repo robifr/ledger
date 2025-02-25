@@ -43,8 +43,8 @@ class ProductFiltererTest {
   ) {
     val products: List<ProductModel> =
         prices.mapIndexed { i, price -> _product.copy(id = (i + 1) * 111L, price = price) }
-    val filterer: ProductFilterer =
-        ProductFilterer().apply {
+    val filterer: FakeProductFilterer =
+        FakeProductFilterer().apply {
           filters = filters.copy(filteredPrice = filteredMinPrice to filteredMaxPrice)
         }
     assertEquals(

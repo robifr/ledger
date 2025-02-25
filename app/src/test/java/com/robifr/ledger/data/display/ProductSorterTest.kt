@@ -31,8 +31,8 @@ class ProductSorterTest {
         listOf("Apple", "Banana", "Cherry").mapIndexed { i, name ->
           _product.copy(id = (i + 1) * 111L, name = name)
         }
-    val sorter: ProductSorter =
-        ProductSorter().apply {
+    val sorter: FakeProductSorter =
+        FakeProductSorter().apply {
           sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, isAscending)
         }
     assertEquals(
@@ -49,8 +49,8 @@ class ProductSorterTest {
         listOf(100L, 200L, 300L).mapIndexed { i, price ->
           _product.copy(id = (i + 1) * 111L, price = price)
         }
-    val sorter: ProductSorter =
-        ProductSorter().apply {
+    val sorter: FakeProductSorter =
+        FakeProductSorter().apply {
           sortMethod = ProductSortMethod(ProductSortMethod.SortBy.PRICE, isAscending)
         }
     assertEquals(

@@ -19,7 +19,9 @@ package com.robifr.ledger.data.display
 import com.robifr.ledger.data.model.CustomerModel
 import java.math.BigDecimal
 
-class CustomerFilterer(var filters: CustomerFilters = CustomerFilters(null to null, null to null)) {
+class FakeCustomerFilterer(
+    var filters: CustomerFilters = CustomerFilters(null to null, null to null)
+) {
   fun filter(customers: List<CustomerModel>): List<CustomerModel> =
       customers.filter { !_shouldFilteredOutByBalance(it) && !_shouldFilteredOutByDebt(it) }
 

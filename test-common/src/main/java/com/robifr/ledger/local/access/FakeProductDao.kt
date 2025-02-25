@@ -16,9 +16,9 @@
 
 package com.robifr.ledger.local.access
 
-import com.robifr.ledger.data.display.ProductFilterer
+import com.robifr.ledger.data.display.FakeProductFilterer
+import com.robifr.ledger.data.display.FakeProductSorter
 import com.robifr.ledger.data.display.ProductSortMethod
-import com.robifr.ledger.data.display.ProductSorter
 import com.robifr.ledger.data.model.ProductFtsModel
 import com.robifr.ledger.data.model.ProductModel
 import com.robifr.ledger.data.model.ProductPaginatedInfo
@@ -72,12 +72,12 @@ data class FakeProductDao(
       filteredMinPrice: Long?,
       filteredMaxPrice: Long?
   ): List<ProductPaginatedInfo> {
-    val filterer: ProductFilterer =
-        ProductFilterer().apply {
+    val filterer: FakeProductFilterer =
+        FakeProductFilterer().apply {
           filters = filters.copy(filteredPrice = filteredMinPrice to filteredMaxPrice)
         }
-    val sorter: ProductSorter =
-        ProductSorter().apply {
+    val sorter: FakeProductSorter =
+        FakeProductSorter().apply {
           sortMethod = sortMethod.copy(sortBy = sortBy, isAscending = isAscending)
         }
     return sorter
@@ -90,8 +90,8 @@ data class FakeProductDao(
   }
 
   override fun countFilteredProducts(filteredMinPrice: Long?, filteredMaxPrice: Long?): Long {
-    val filterer: ProductFilterer =
-        ProductFilterer().apply {
+    val filterer: FakeProductFilterer =
+        FakeProductFilterer().apply {
           filters = filters.copy(filteredPrice = filteredMinPrice to filteredMaxPrice)
         }
     return filterer.filter(data).size.toLong()

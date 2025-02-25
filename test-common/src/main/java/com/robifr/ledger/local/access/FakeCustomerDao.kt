@@ -16,9 +16,9 @@
 
 package com.robifr.ledger.local.access
 
-import com.robifr.ledger.data.display.CustomerFilterer
 import com.robifr.ledger.data.display.CustomerSortMethod
-import com.robifr.ledger.data.display.CustomerSorter
+import com.robifr.ledger.data.display.FakeCustomerFilterer
+import com.robifr.ledger.data.display.FakeCustomerSorter
 import com.robifr.ledger.data.model.CustomerBalanceInfo
 import com.robifr.ledger.data.model.CustomerDebtInfo
 import com.robifr.ledger.data.model.CustomerFtsModel
@@ -81,15 +81,15 @@ data class FakeCustomerDao(
       filteredMinDebt: BigDecimal?,
       filteredMaxDebt: BigDecimal?
   ): List<CustomerPaginatedInfo> {
-    val filterer: CustomerFilterer =
-        CustomerFilterer().apply {
+    val filterer: FakeCustomerFilterer =
+        FakeCustomerFilterer().apply {
           filters =
               filters.copy(
                   filteredBalance = filteredMinBalance to filteredMaxBalance,
                   filteredDebt = filteredMinDebt to filteredMaxDebt)
         }
-    val sorter: CustomerSorter =
-        CustomerSorter().apply {
+    val sorter: FakeCustomerSorter =
+        FakeCustomerSorter().apply {
           sortMethod = sortMethod.copy(sortBy = sortBy, isAscending = isAscending)
         }
     return sorter
@@ -107,8 +107,8 @@ data class FakeCustomerDao(
       filteredMinDebt: BigDecimal?,
       filteredMaxDebt: BigDecimal?
   ): Long {
-    val filterer: CustomerFilterer =
-        CustomerFilterer().apply {
+    val filterer: FakeCustomerFilterer =
+        FakeCustomerFilterer().apply {
           filters =
               filters.copy(
                   filteredBalance = filteredMinBalance to filteredMaxBalance,

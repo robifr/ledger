@@ -20,7 +20,7 @@ import com.robifr.ledger.data.model.QueueModel
 import java.math.BigDecimal
 import java.time.LocalDate
 
-class QueueFilterer(
+class FakeQueueFilterer(
     var filters: QueueFilters =
         QueueFilters(
             filteredCustomerIds = listOf(),

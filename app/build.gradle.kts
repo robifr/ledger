@@ -29,14 +29,14 @@ plugins {
 }
 
 android {
-  compileSdk = 35
+  compileSdk = libs.versions.compileSdk.get().toInt()
   namespace = "com.robifr.ledger"
   buildToolsVersion = "34.0.0"
 
   defaultConfig {
     applicationId = "com.robifr.ledger"
-    minSdk = 30
-    targetSdk = 35
+    minSdk = libs.versions.minSdk.get().toInt()
+    targetSdk = libs.versions.targetSdk.get().toInt()
     versionCode = 1
     versionName = "2.0.2"
     multiDexEnabled = true
@@ -87,6 +87,7 @@ android {
       applicationIdSuffix = ".qa"
       manifestPlaceholders["appLabel"] = "@string/appName_qa"
       manifestPlaceholders["activityLauncherName"] = ".ui.main.QaMainActivity"
+      matchingFallbacks.addAll(listOf("debug", "release"))
       buildConfigField("String", "DATABASE_FILE_NAME", "\"qa/data.db\"")
     }
   }
@@ -137,11 +138,13 @@ dependencies {
   implementation(libs.jetbrains.kotlinx.coroutines.core)
   implementation(libs.jetbrains.kotlinx.serialization.json)
 
+  testImplementation(project(":test-common"))
   testImplementation(libs.androidx.arch.core.testing)
   testImplementation(libs.jetbrains.kotlinx.coroutines.test)
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.mockk)
 
+  androidTestImplementation(project(":test-common"))
   androidTestImplementation(libs.androidx.test.espresso.core)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)

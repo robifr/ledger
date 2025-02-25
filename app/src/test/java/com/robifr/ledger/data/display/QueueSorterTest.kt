@@ -47,8 +47,8 @@ class QueueSorterTest {
               id = (i + 1) * 111L,
               customer = customerName?.let { _customer.copy(id = (i + 1) * 111L, name = it) })
         }
-    val sorter: QueueSorter =
-        QueueSorter().apply {
+    val sorter: FakeQueueSorter =
+        FakeQueueSorter().apply {
           sortMethod = QueueSortMethod(QueueSortMethod.SortBy.CUSTOMER_NAME, isAscending)
         }
     assertEquals(
@@ -67,8 +67,8 @@ class QueueSorterTest {
         listOf(dec2023, jan2024, feb2024).mapIndexed { i, date ->
           _queue.copy(id = (i + 1) * 111L, date = date)
         }
-    val sorter: QueueSorter =
-        QueueSorter().apply {
+    val sorter: FakeQueueSorter =
+        FakeQueueSorter().apply {
           sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, isAscending)
         }
     assertEquals(
@@ -92,8 +92,8 @@ class QueueSorterTest {
                           quantity = 1.0,
                           totalPrice = totalPrice.toBigDecimal())))
         }
-    val sorter: QueueSorter =
-        QueueSorter().apply {
+    val sorter: FakeQueueSorter =
+        FakeQueueSorter().apply {
           sortMethod = QueueSortMethod(QueueSortMethod.SortBy.TOTAL_PRICE, isAscending)
         }
     assertEquals(

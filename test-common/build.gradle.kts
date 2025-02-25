@@ -1,5 +1,5 @@
 /**
- * Copyright 2024 Robi
+ * Copyright 2025 Robi
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-pluginManagement.repositories {
-  gradlePluginPortal()
-  google()
-  mavenCentral()
+plugins {
+  id(libs.plugins.android.library.get().pluginId)
+  id(libs.plugins.jetbrains.kotlin.android.get().pluginId)
 }
 
-dependencyResolutionManagement {
-  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-  repositories {
-    google()
-    mavenCentral()
+android {
+  namespace = "com.robifr.ledger"
+  compileSdk = libs.versions.compileSdk.get().toInt()
+
+  defaultConfig { minSdk = libs.versions.minSdk.get().toInt() }
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
+
+  kotlin { jvmToolchain(17) }
 }
 
-rootProject.name = "Ledger"
-
-include(":app")
-
-include(":test-common")
+dependencies { compileOnly(project(":app")) }

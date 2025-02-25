@@ -43,8 +43,8 @@ class CustomerFiltererTest {
   ) {
     val customers: List<CustomerModel> =
         balances.mapIndexed { i, balance -> _customer.copy(id = (i + 1) * 111L, balance = balance) }
-    val filterer: CustomerFilterer =
-        CustomerFilterer().apply {
+    val filterer: FakeCustomerFilterer =
+        FakeCustomerFilterer().apply {
           filters = filters.copy(filteredBalance = filteredMinBalance to filteredMaxBalance)
         }
     assertEquals(
@@ -75,8 +75,8 @@ class CustomerFiltererTest {
         debts.mapIndexed { i, debt ->
           _customer.copy(id = (i + 1) * 111L, debt = debt.toBigDecimal())
         }
-    val filterer: CustomerFilterer =
-        CustomerFilterer().apply {
+    val filterer: FakeCustomerFilterer =
+        FakeCustomerFilterer().apply {
           filters =
               filters.copy(
                   filteredDebt = filteredMinDebt?.toBigDecimal() to filteredMaxDebt?.toBigDecimal())

@@ -16,10 +16,10 @@
 
 package com.robifr.ledger.local.access
 
+import com.robifr.ledger.data.display.FakeQueueFilterer
+import com.robifr.ledger.data.display.FakeQueueSorter
 import com.robifr.ledger.data.display.QueueDate
-import com.robifr.ledger.data.display.QueueFilterer
 import com.robifr.ledger.data.display.QueueSortMethod
-import com.robifr.ledger.data.display.QueueSorter
 import com.robifr.ledger.data.model.QueueDateInfo
 import com.robifr.ledger.data.model.QueueModel
 import com.robifr.ledger.data.model.QueuePaginatedInfo
@@ -74,8 +74,8 @@ data class FakeQueueDao(
       filteredDateStart: Instant,
       filteredDateEnd: Instant
   ): List<QueuePaginatedInfo> {
-    val filterer: QueueFilterer =
-        QueueFilterer().apply {
+    val filterer: FakeQueueFilterer =
+        FakeQueueFilterer().apply {
           filters =
               filters.copy(
                   filteredCustomerIds = filteredCustomerIds,
@@ -87,8 +87,8 @@ data class FakeQueueDao(
                           filteredDateStart.atZone(ZoneId.systemDefault()),
                           filteredDateEnd.atZone(ZoneId.systemDefault())))
         }
-    val sorter: QueueSorter =
-        QueueSorter().apply {
+    val sorter: FakeQueueSorter =
+        FakeQueueSorter().apply {
           sortMethod = sortMethod.copy(sortBy = sortBy, isAscending = isAscending)
         }
     return sorter.sort(filterer.filter(data)).map { QueuePaginatedInfo(it) }
@@ -110,8 +110,8 @@ data class FakeQueueDao(
       filteredDateStart: Instant,
       filteredDateEnd: Instant
   ): List<QueuePaginatedInfo> {
-    val filterer: QueueFilterer =
-        QueueFilterer().apply {
+    val filterer: FakeQueueFilterer =
+        FakeQueueFilterer().apply {
           filters =
               filters.copy(
                   filteredCustomerIds = filteredCustomerIds,
@@ -123,8 +123,8 @@ data class FakeQueueDao(
                           filteredDateStart.atZone(ZoneId.systemDefault()),
                           filteredDateEnd.atZone(ZoneId.systemDefault())))
         }
-    val sorter: QueueSorter =
-        QueueSorter().apply {
+    val sorter: FakeQueueSorter =
+        FakeQueueSorter().apply {
           sortMethod = sortMethod.copy(sortBy = sortBy, isAscending = isAscending)
         }
     return sorter
@@ -147,8 +147,8 @@ data class FakeQueueDao(
       filteredDateStart: Instant,
       filteredDateEnd: Instant
   ): Long {
-    val filterer: QueueFilterer =
-        QueueFilterer().apply {
+    val filterer: FakeQueueFilterer =
+        FakeQueueFilterer().apply {
           filters =
               filters.copy(
                   filteredCustomerIds = filteredCustomerIds,

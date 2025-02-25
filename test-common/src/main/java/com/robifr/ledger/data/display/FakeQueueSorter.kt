@@ -16,12 +16,11 @@
 
 package com.robifr.ledger.data.display
 
-import androidx.appcompat.app.AppCompatDelegate
 import com.robifr.ledger.data.model.QueueModel
 import java.text.Collator
 import java.util.Locale
 
-class QueueSorter(
+class FakeQueueSorter(
     var sortMethod: QueueSortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, false)
 ) {
   fun sort(queues: List<QueueModel>): List<QueueModel> =
@@ -32,10 +31,7 @@ class QueueSorter(
       }
 
   private fun _sortByCustomerName(queues: List<QueueModel>): List<QueueModel> {
-    val collator: Collator =
-        Collator.getInstance(
-                Locale.forLanguageTag(AppCompatDelegate.getApplicationLocales().toLanguageTags()))
-            .apply { strength = Collator.SECONDARY }
+    val collator: Collator = Collator.getInstance(Locale.US).apply { strength = Collator.SECONDARY }
     val comparator: Comparator<QueueModel> =
         Comparator.comparing<QueueModel, String?>(
             { it.customer?.name }, Comparator.nullsLast(collator))

@@ -71,8 +71,8 @@ class QueueFiltererTest {
               customerId = customerId,
               customer = _customer.copy(id = customerId))
         }
-    val filterer: QueueFilterer =
-        QueueFilterer().apply {
+    val filterer: FakeQueueFilterer =
+        FakeQueueFilterer().apply {
           filters =
               filters.copy(
                   isNullCustomerShown = isNullCustomerShown,
@@ -91,8 +91,8 @@ class QueueFiltererTest {
         QueueModel.Status.entries.mapIndexed { i, status ->
           _queue.copy(id = (i + 1) * 111L, status = status)
         }
-    val filterer: QueueFilterer =
-        QueueFilterer().apply { filters = filters.copy(filteredStatus = setOf(filteredStatus)) }
+    val filterer: FakeQueueFilterer =
+        FakeQueueFilterer().apply { filters = filters.copy(filteredStatus = setOf(filteredStatus)) }
     assertEquals(
         setOf(filteredStatus),
         filterer.filter(queues).map { it.status }.toSet(),
@@ -141,8 +141,8 @@ class QueueFiltererTest {
                       .atStartOfDay(ZoneId.of("UTC"))
                       .toInstant())
         }
-    val filterer: QueueFilterer =
-        QueueFilterer().apply {
+    val filterer: FakeQueueFilterer =
+        FakeQueueFilterer().apply {
           filters =
               filters.copy(
                   filteredDate =
@@ -168,8 +168,8 @@ class QueueFiltererTest {
         listOf(dec2023, jan2024, feb2024).mapIndexed { i, date ->
           _queue.copy(id = (i + 1) * 111L, date = date)
         }
-    val filterer: QueueFilterer =
-        QueueFilterer().apply {
+    val filterer: FakeQueueFilterer =
+        FakeQueueFilterer().apply {
           filters =
               filters.copy(
                   filteredDate =
@@ -208,8 +208,8 @@ class QueueFiltererTest {
                           quantity = 1.0,
                           totalPrice = totalPrice.toBigDecimal())))
         }
-    val filterer: QueueFilterer =
-        QueueFilterer().apply {
+    val filterer: FakeQueueFilterer =
+        FakeQueueFilterer().apply {
           filters =
               filters.copy(
                   filteredTotalPrice =

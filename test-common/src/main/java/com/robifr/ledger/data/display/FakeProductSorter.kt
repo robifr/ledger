@@ -16,12 +16,11 @@
 
 package com.robifr.ledger.data.display
 
-import androidx.appcompat.app.AppCompatDelegate
 import com.robifr.ledger.data.model.ProductModel
 import java.text.Collator
 import java.util.Locale
 
-class ProductSorter(
+class FakeProductSorter(
     var sortMethod: ProductSortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, true)
 ) {
   fun sort(products: List<ProductModel>): List<ProductModel> =
@@ -31,10 +30,7 @@ class ProductSorter(
       }
 
   private fun _sortByName(products: List<ProductModel>): List<ProductModel> {
-    val collator: Collator =
-        Collator.getInstance(
-                Locale.forLanguageTag(AppCompatDelegate.getApplicationLocales().toLanguageTags()))
-            .apply { strength = Collator.SECONDARY }
+    val collator: Collator = Collator.getInstance(Locale.US).apply { strength = Collator.SECONDARY }
     val comparator: Comparator<ProductModel> = Comparator.comparing(ProductModel::name, collator)
     return products.sortedWith(if (sortMethod.isAscending) comparator else comparator.reversed())
   }

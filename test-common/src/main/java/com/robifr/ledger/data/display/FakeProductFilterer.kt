@@ -18,7 +18,7 @@ package com.robifr.ledger.data.display
 
 import com.robifr.ledger.data.model.ProductModel
 
-class ProductFilterer(var filters: ProductFilters = ProductFilters(null to null)) {
+class FakeProductFilterer(var filters: ProductFilters = ProductFilters(null to null)) {
   fun filter(products: List<ProductModel>): List<ProductModel> =
       products.filter { !_shouldFilteredOutByPrice(it) }
 
