@@ -28,7 +28,7 @@ import com.robifr.ledger.repository.CustomerRepository
 import io.mockk.clearAllMocks
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -79,15 +79,15 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxBalanceTextChanged("$1.00")
     _viewModel.onMinDebtTextChanged("$0")
     _viewModel.onMaxDebtTextChanged("-$1.00")
-    assertEquals(
-        CustomerFilterState(
-            isDialogShown = true,
-            formattedMinBalance = "$0",
-            formattedMaxBalance = "$1.00",
-            formattedMinDebt = "$0",
-            formattedMaxDebt = "-$1.00"),
-        _viewModel.uiState.safeValue,
-        "Preserve all values except for the changed field")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve all values except for the changed field")
+        .isEqualTo(
+            CustomerFilterState(
+                isDialogShown = true,
+                formattedMinBalance = "$0",
+                formattedMaxBalance = "$1.00",
+                formattedMinDebt = "$0",
+                formattedMaxDebt = "-$1.00"))
   }
 
   @ParameterizedTest
@@ -99,15 +99,15 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxDebtTextChanged("-$1")
 
     if (isShown) _viewModel.onDialogShown() else _viewModel.onDialogClosed()
-    assertEquals(
-        CustomerFilterState(
-            isDialogShown = isShown,
-            formattedMinBalance = "$0",
-            formattedMaxBalance = "$1",
-            formattedMinDebt = "$0",
-            formattedMaxDebt = "-$1"),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            CustomerFilterState(
+                isDialogShown = isShown,
+                formattedMinBalance = "$0",
+                formattedMaxBalance = "$1",
+                formattedMinDebt = "$0",
+                formattedMaxDebt = "-$1"))
   }
 
   @Test
@@ -118,10 +118,9 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxBalanceTextChanged("$2.00")
 
     _viewModel.onDialogClosed()
-    assertEquals(
-        listOf(_thirdCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
-        _customerViewModel.uiState.safeValue.pagination.paginatedItems,
-        "Apply filter to the customers while retaining the sorted list")
+    assertThat(_customerViewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Apply filter to the customers while retaining the sorted list")
+        .isEqualTo(listOf(_thirdCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) })
   }
 
   private fun `_on dialog closed with unbounded balance range cases`(): Array<Array<Any>> =
@@ -147,10 +146,9 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxBalanceTextChanged(newFormattedMaxBalance)
 
     _viewModel.onDialogClosed()
-    assertEquals(
-        filteredCustomers.map { CustomerPaginatedInfo(it) },
-        _customerViewModel.uiState.safeValue.pagination.paginatedItems,
-        "Include any customer whose balance falls within the unbounded range")
+    assertThat(_customerViewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Include any customer whose balance falls within the unbounded range")
+        .isEqualTo(filteredCustomers.map { CustomerPaginatedInfo(it) })
   }
 
   private fun `_on dialog closed with unbounded debt range cases`(): Array<Array<Any>> =
@@ -178,10 +176,9 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxDebtTextChanged(newFormattedMaxDebt)
 
     _viewModel.onDialogClosed()
-    assertEquals(
-        filteredCustomers.map { CustomerPaginatedInfo(it) },
-        _customerViewModel.uiState.safeValue.pagination.paginatedItems,
-        "Include any customer whose debt falls within the unbounded range")
+    assertThat(_customerViewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Include any customer whose debt falls within the unbounded range")
+        .isEqualTo(filteredCustomers.map { CustomerPaginatedInfo(it) })
   }
 
   private fun `_on dialog closed with customer excluded from previous filter cases`():
@@ -209,9 +206,8 @@ class CustomerFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxBalanceTextChanged(newFormattedMaxBalance)
 
     _viewModel.onDialogClosed()
-    assertEquals(
-        filteredCustomers.map { CustomerPaginatedInfo(it) },
-        _customerViewModel.uiState.safeValue.pagination.paginatedItems,
-        "Include customer from the database that match the filter")
+    assertThat(_customerViewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Include customer from the database that match the filter")
+        .isEqualTo(filteredCustomers.map { CustomerPaginatedInfo(it) })
   }
 }

@@ -19,9 +19,8 @@ package com.robifr.ledger.data.display
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 
@@ -43,27 +42,24 @@ class QueueDateTest {
   @MethodSource("_date range cases")
   fun `date range`(range: QueueDate.Range, dateStart: String, dateEnd: String) {
     val fixedClock: Clock = Clock.fixed(Instant.parse("2024-01-01T00:00:00Z"), ZoneId.of("UTC"))
-    assertAll(
-        {
-          assertEquals(
-              Instant.parse(dateStart),
+    assertSoftly {
+      it.assertThat(
               when (range) {
                 QueueDate.Range.ALL_TIME,
                 QueueDate.Range.CUSTOM ->
                     range.dateStart(fixedClock).withZoneSameInstant(ZoneId.of("UTC")).toInstant()
                 else -> range.dateStart(fixedClock).withZoneSameLocal(ZoneId.of("UTC")).toInstant()
-              },
-              "Generate date start based on the given range")
-        },
-        {
-          assertEquals(
-              Instant.parse(dateEnd),
+              })
+          .describedAs("Generate date start based on the given range")
+          .isEqualTo(Instant.parse(dateStart))
+      it.assertThat(
               when (range) {
                 QueueDate.Range.CUSTOM ->
                     range.dateEnd(fixedClock).withZoneSameInstant(ZoneId.of("UTC")).toInstant()
                 else -> range.dateEnd(fixedClock).withZoneSameLocal(ZoneId.of("UTC")).toInstant()
-              },
-              "Generate date end based on the given range")
-        })
+              })
+          .describedAs("Generate date end based on the given range")
+          .isEqualTo(Instant.parse(dateEnd))
+    }
   }
 }

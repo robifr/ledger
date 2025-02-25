@@ -29,13 +29,10 @@ import io.mockk.mockk
 import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -66,10 +63,11 @@ class CreateProductViewModelTest(
   fun `on state changed`() {
     _viewModel.onNameTextChanged("Apple")
     _viewModel.onPriceTextChanged("$1.00")
-    assertEquals(
-        CreateProductState(name = "Apple", nameErrorMessageRes = null, formattedPrice = "$1.00"),
-        _viewModel.uiState.safeValue,
-        "Preserve all values except for the one changed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve all values except for the one changed")
+        .isEqualTo(
+            CreateProductState(
+                name = "Apple", nameErrorMessageRes = null, formattedPrice = "$1.00"))
   }
 
   @ParameterizedTest
@@ -77,22 +75,22 @@ class CreateProductViewModelTest(
   fun `on name changed`(name: String) {
     _viewModel.onNameTextChanged(name)
     if (name.isNotBlank()) {
-      assertNull(_viewModel.uiState.safeValue.nameErrorMessageRes, "Remove error for a filled name")
+      assertThat(_viewModel.uiState.safeValue.nameErrorMessageRes)
+          .describedAs("Remove error for a filled name")
+          .isNull()
     } else {
-      assertAll(
-          {
-            assertNull(
-                _viewModel.uiState.safeValue.nameErrorMessageRes,
-                "Remove error when there's no error beforehand")
-          },
-          {
-            // Simulate error when editing with a blank name.
-            _viewModel.onSave()
-            _viewModel.onNameTextChanged(name)
-            assertNotNull(
-                _viewModel.uiState.safeValue.nameErrorMessageRes,
-                "Keep error when there's an error beforehand")
-          })
+      assertSoftly {
+        it.assertThat(_viewModel.uiState.safeValue.nameErrorMessageRes)
+            .describedAs("Remove error when there's no error beforehand")
+            .isNull()
+
+        // Simulate error when editing with a blank name.
+        _viewModel.onSave()
+        _viewModel.onNameTextChanged(name)
+        it.assertThat(_viewModel.uiState.safeValue.nameErrorMessageRes)
+            .describedAs("Keep error when there's an error beforehand")
+            .isNotNull()
+      }
     }
   }
 
@@ -102,16 +100,14 @@ class CreateProductViewModelTest(
 
     coEvery { _productRepository.add(any()) } returns 0L
     _viewModel.onSave()
-    assertAll(
-        {
-          assertNotNull(
-              _viewModel.uiState.safeValue.nameErrorMessageRes, "Show error for a blank name")
-        },
-        {
-          assertDoesNotThrow("Prevent save for a blank name") {
-            coVerify(exactly = 0) { _productRepository.add(any()) }
-          }
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.nameErrorMessageRes)
+          .describedAs("Show error for a blank name")
+          .isNotNull()
+      it.assertThatCode { coVerify(exactly = 0) { _productRepository.add(any()) } }
+          .describedAs("Prevent save for a blank name")
+          .doesNotThrowAnyException()
+    }
   }
 
   @ParameterizedTest
@@ -122,19 +118,15 @@ class CreateProductViewModelTest(
 
     coEvery { _productRepository.add(any()) } returns createdProductId
     _viewModel.onSave()
-    assertAll(
-        {
-          assertNotNull(
-              _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the result via snackbar")
-        },
-        {
-          assertEquals(
-              if (createdProductId != 0L) CreateProductResultState(createdProductId) else null,
-              _viewModel.uiEvent.safeValue.createResult?.data,
-              "Return result with the correct ID after success save")
-        },
-        {
-          assertDoesNotThrow("Update result event last to finish the fragment") {
+    assertSoftly {
+      it.assertThat(_viewModel.uiEvent.safeValue.snackbar?.data)
+          .describedAs("Notify the result via snackbar")
+          .isNotNull()
+      it.assertThat(_viewModel.uiEvent.safeValue.createResult?.data)
+          .describedAs("Return result with the correct ID after success save")
+          .isEqualTo(
+              if (createdProductId != 0L) CreateProductResultState(createdProductId) else null)
+      it.assertThatCode {
             verifyOrder {
               _uiEventObserver.onChanged(match { it.snackbar != null && it.createResult == null })
               if (createdProductId != 0L) {
@@ -142,7 +134,9 @@ class CreateProductViewModelTest(
               }
             }
           }
-        })
+          .describedAs("Update result event last to finish the fragment")
+          .doesNotThrowAnyException()
+    }
   }
 
   @ParameterizedTest
@@ -151,18 +145,13 @@ class CreateProductViewModelTest(
     if (isProductChanged) _viewModel.onNameTextChanged("Apple")
 
     _viewModel.onBackPressed()
-    assertAll(
-        {
-          assertEquals(
-              if (isProductChanged) true else null,
-              _viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data,
-              "Show unsaved changes dialog when there's a change")
-        },
-        {
-          assertEquals(
-              if (!isProductChanged) true else null,
-              _viewModel.uiEvent.safeValue.isFragmentFinished?.data,
-              "Finish fragment when there's no change")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data)
+          .describedAs("Show unsaved changes dialog when there's a change")
+          .isEqualTo(if (isProductChanged) true else null)
+      it.assertThat(_viewModel.uiEvent.safeValue.isFragmentFinished?.data)
+          .describedAs("Finish fragment when there's no change")
+          .isEqualTo(if (!isProductChanged) true else null)
+    }
   }
 }

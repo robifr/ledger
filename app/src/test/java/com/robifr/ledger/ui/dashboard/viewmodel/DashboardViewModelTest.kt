@@ -31,9 +31,9 @@ import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
+import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExperimentalCoroutinesApi
@@ -69,10 +69,12 @@ class DashboardViewModelTest(private val _dispatcher: TestDispatcher) {
   @Test
   fun `on cleared`() {
     _viewModel.onLifecycleOwnerDestroyed()
-    assertDoesNotThrow("Remove attached listener from the repository") {
-      verify(exactly = 2) { _queueRepository.removeModelChangedListener(any()) }
-      verify(exactly = 1) { _productOrderRepository.removeModelChangedListener(any()) }
-      verify(exactly = 2) { _customerRepository.removeModelChangedListener(any()) }
-    }
+    assertThatCode {
+          verify(exactly = 2) { _queueRepository.removeModelChangedListener(any()) }
+          verify(exactly = 1) { _productOrderRepository.removeModelChangedListener(any()) }
+          verify(exactly = 2) { _customerRepository.removeModelChangedListener(any()) }
+        }
+        .describedAs("Remove attached listener from the repository")
+        .doesNotThrowAnyException()
   }
 }

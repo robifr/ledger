@@ -24,7 +24,7 @@ import io.mockk.clearAllMocks
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -61,10 +61,9 @@ class SelectProductOrderViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onProductOrderCheckedChanged(0)
 
     _viewModel.onProductOrderCheckedChanged(if (isSameProductOrderIndexChecked) 0 else 1)
-    assertEquals(
-        if (isSameProductOrderIndexChecked) setOf() else setOf(0, 1),
-        _viewModel.uiState.safeValue.selectedIndexes,
-        "Add checked index to the selected indexes and remove it when double checked")
+    assertThat(_viewModel.uiState.safeValue.selectedIndexes)
+        .describedAs("Add checked index to the selected indexes and remove it when double checked")
+        .isEqualTo(if (isSameProductOrderIndexChecked) setOf() else setOf(0, 1))
   }
 
   @Test
@@ -84,18 +83,16 @@ class SelectProductOrderViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onProductOrderCheckedChanged(1)
 
     _viewModel.onDeleteSelectedProductOrder()
-    assertEquals(
-        listOf(unselectedProductOrder),
-        _createQueueViewModel.uiState.safeValue.productOrders,
-        "Remove selected product order from the queue view model's state")
+    assertThat(_createQueueViewModel.uiState.safeValue.productOrders)
+        .describedAs("Remove selected product order from the queue view model's state")
+        .isEqualTo(listOf(unselectedProductOrder))
   }
 
   @Test
   fun `on disable contextual mode`() {
     _viewModel.onDisableContextualMode()
-    assertEquals(
-        SelectProductOrderState(setOf()),
-        _viewModel.uiState.safeValue,
-        "Reset entire state when the contextual mode disabled")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Reset entire state when the contextual mode disabled")
+        .isEqualTo(SelectProductOrderState(setOf()))
   }
 }

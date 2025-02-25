@@ -29,7 +29,7 @@ import io.mockk.clearAllMocks
 import io.mockk.spyk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -72,11 +72,11 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onDialogShown()
     _viewModel.onMinPriceTextChanged("$0")
     _viewModel.onMaxPriceTextChanged("$1.00")
-    assertEquals(
-        ProductFilterState(
-            isDialogShown = true, formattedMinPrice = "$0", formattedMaxPrice = "$1.00"),
-        _viewModel.uiState.safeValue,
-        "Preserve all values except for the changed field")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve all values except for the changed field")
+        .isEqualTo(
+            ProductFilterState(
+                isDialogShown = true, formattedMinPrice = "$0", formattedMaxPrice = "$1.00"))
   }
 
   @ParameterizedTest
@@ -86,11 +86,11 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxPriceTextChanged("$1")
 
     if (isShown) _viewModel.onDialogShown() else _viewModel.onDialogClosed()
-    assertEquals(
-        ProductFilterState(
-            isDialogShown = isShown, formattedMinPrice = "$0", formattedMaxPrice = "$1"),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            ProductFilterState(
+                isDialogShown = isShown, formattedMinPrice = "$0", formattedMaxPrice = "$1"))
   }
 
   @Test
@@ -100,10 +100,9 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxPriceTextChanged("$3.00")
 
     _viewModel.onDialogClosed()
-    assertEquals(
-        listOf(_thirdProduct, _secondProduct).map { ProductPaginatedInfo(it) },
-        _productViewModel.uiState.safeValue.pagination.paginatedItems,
-        "Apply filter to the products while retaining the sorted list")
+    assertThat(_productViewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Apply filter to the products while retaining the sorted list")
+        .isEqualTo(listOf(_thirdProduct, _secondProduct).map { ProductPaginatedInfo(it) })
   }
 
   private fun `_on dialog closed with unbounded price range cases`(): Array<Array<Any>> =
@@ -129,10 +128,9 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxPriceTextChanged(newFormattedMaxPrice)
 
     _viewModel.onDialogClosed()
-    assertEquals(
-        filteredProducts.map { ProductPaginatedInfo(it) },
-        _productViewModel.uiState.safeValue.pagination.paginatedItems,
-        "Include any product whose price falls within the unbounded range")
+    assertThat(_productViewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Include any product whose price falls within the unbounded range")
+        .isEqualTo(filteredProducts.map { ProductPaginatedInfo(it) })
   }
 
   private fun `_on dialog closed with product excluded from previous filter cases`():
@@ -160,9 +158,8 @@ class ProductFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxPriceTextChanged(newFormattedMaxPrice)
 
     _viewModel.onDialogClosed()
-    assertEquals(
-        filteredProduct.map { ProductPaginatedInfo(it) },
-        _productViewModel.uiState.safeValue.pagination.paginatedItems,
-        "Include product from the database that match the filter")
+    assertThat(_productViewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Include product from the database that match the filter")
+        .isEqualTo(filteredProduct.map { ProductPaginatedInfo(it) })
   }
 }

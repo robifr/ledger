@@ -26,7 +26,7 @@ import io.mockk.clearAllMocks
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -64,53 +64,55 @@ class MakeProductOrderViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onProductChanged(_product)
     _viewModel.onQuantityTextChanged(_productOrder.quantity.toString())
     _viewModel.onDiscountTextChanged("$${_productOrder.discount / 100L}")
-    assertEquals(
-        MakeProductOrderState(
-            isDialogShown = true,
-            product = _product,
-            formattedQuantity = _productOrder.quantity.toString(),
-            formattedDiscount = "$${_productOrder.discount / 100L}",
-            totalPrice = _productOrder.totalPrice,
-            productOrderToEdit = null),
-        _viewModel.uiState.safeValue,
-        "Preserve all values except for the changed field")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve all values except for the changed field")
+        .isEqualTo(
+            MakeProductOrderState(
+                isDialogShown = true,
+                product = _product,
+                formattedQuantity = _productOrder.quantity.toString(),
+                formattedDiscount = "$${_productOrder.discount / 100L}",
+                totalPrice = _productOrder.totalPrice,
+                productOrderToEdit = null))
   }
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on dialog shown`(isProductOrderNull: Boolean) {
     _viewModel.onDialogShown(if (!isProductOrderNull) _productOrder else null)
-    assertEquals(
-        MakeProductOrderState(
-            isDialogShown = true,
-            product = if (!isProductOrderNull) _productOrder.referencedProduct() else null,
-            formattedQuantity =
-                if (!isProductOrderNull) {
-                  _productOrder.quantity.toBigDecimal().stripTrailingZeros().toPlainString()
-                } else {
-                  ""
-                },
-            formattedDiscount =
-                if (!isProductOrderNull) "$${_productOrder.discount / 100L}" else "",
-            totalPrice = if (!isProductOrderNull) _productOrder.totalPrice else 0.toBigDecimal(),
-            productOrderToEdit = if (!isProductOrderNull) _productOrder else null),
-        _viewModel.uiState.safeValue,
-        "Correctly update state based on the provided product order when the dialog opens")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs(
+            "Correctly update state based on the provided product order when the dialog opens")
+        .isEqualTo(
+            MakeProductOrderState(
+                isDialogShown = true,
+                product = if (!isProductOrderNull) _productOrder.referencedProduct() else null,
+                formattedQuantity =
+                    if (!isProductOrderNull) {
+                      _productOrder.quantity.toBigDecimal().stripTrailingZeros().toPlainString()
+                    } else {
+                      ""
+                    },
+                formattedDiscount =
+                    if (!isProductOrderNull) "$${_productOrder.discount / 100L}" else "",
+                totalPrice =
+                    if (!isProductOrderNull) _productOrder.totalPrice else 0.toBigDecimal(),
+                productOrderToEdit = if (!isProductOrderNull) _productOrder else null))
   }
 
   @Test
   fun `on dialog closed result all fields reset`() {
     _viewModel.onDialogClosed()
-    assertEquals(
-        MakeProductOrderState(
-            isDialogShown = false,
-            product = null,
-            formattedQuantity = "",
-            formattedDiscount = "",
-            totalPrice = 0.toBigDecimal(),
-            productOrderToEdit = null),
-        _viewModel.uiState.safeValue,
-        "Reset entire state when the dialog closes")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Reset entire state when the dialog closes")
+        .isEqualTo(
+            MakeProductOrderState(
+                isDialogShown = false,
+                product = null,
+                formattedQuantity = "",
+                formattedDiscount = "",
+                totalPrice = 0.toBigDecimal(),
+                productOrderToEdit = null))
   }
 
   @ParameterizedTest
@@ -122,12 +124,12 @@ class MakeProductOrderViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onDiscountTextChanged("$${(_productOrder.discount + 100L) / 100L}") // Add 100 cents.
 
     _viewModel.onSave()
-    assertEquals(
-        listOf(
-            _productOrder.copy(
-                discount = _productOrder.discount + 100L,
-                totalPrice = _productOrder.totalPrice - 100.toBigDecimal())),
-        _createQueueViewModel.uiState.safeValue.productOrders,
-        "Add saved product order to the queue view model's state")
+    assertThat(_createQueueViewModel.uiState.safeValue.productOrders)
+        .describedAs("Add saved product order to the queue view model's state")
+        .isEqualTo(
+            listOf(
+                _productOrder.copy(
+                    discount = _productOrder.discount + 100L,
+                    totalPrice = _productOrder.totalPrice - 100.toBigDecimal())))
   }
 }

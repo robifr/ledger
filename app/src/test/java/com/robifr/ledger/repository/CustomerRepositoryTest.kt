@@ -27,12 +27,11 @@ import io.mockk.verify
 import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -82,17 +81,23 @@ class CustomerRepositoryTest {
   fun `select query result mapped customer`() {
     // Simulate current customer in the database with unmapped property.
     _localDao.data[0] = _customer.copy(debt = 0.toBigDecimal())
-    assertAll(
-        "Map every customer property that doesn't belong to the database table",
-        { runTest { assertEquals(listOf(_customer), _customerRepository.selectAll()) } },
-        { runTest { assertEquals(_customer, _customerRepository.selectById(_customer.id)) } },
-        {
-          runTest {
-            assertEquals(
-                listOf(_customer), _customerRepository.selectById(listOfNotNull(_customer.id)))
-          }
-        },
-        { runTest { assertEquals(listOf(_customer), _customerRepository.search(_customer.name)) } })
+    assertSoftly {
+      val message: String = "Map every customer property that doesn't belong to the database table"
+      runTest {
+        it.assertThat(_customerRepository.selectAll())
+            .describedAs(message)
+            .isEqualTo(listOf(_customer))
+        it.assertThat(_customerRepository.selectById(_customer.id))
+            .describedAs(message)
+            .isEqualTo(_customer)
+        it.assertThat(_customerRepository.selectById(listOfNotNull(_customer.id)))
+            .describedAs(message)
+            .isEqualTo(listOf(_customer))
+        it.assertThat(_customerRepository.search(_customer.name))
+            .describedAs(message)
+            .isEqualTo(listOf(_customer))
+      }
+    }
   }
 
   private fun `_add customer cases`(): Array<Array<Any?>> =
@@ -109,25 +114,24 @@ class CustomerRepositoryTest {
       insertedCustomer: CustomerModel?,
       notifyCount: Int
   ) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                insertedId,
+    assertSoftly {
+      runTest {
+        it.assertThat(
                 // A new customer doesn't have any debt.
-                _customerRepository.add(_customer.copy(id = initialId, debt = 0.toBigDecimal())),
-                "Return the inserted customer ID")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify added customer to the `ModelChangedListener`") {
+                _customerRepository.add(_customer.copy(id = initialId, debt = 0.toBigDecimal())))
+            .describedAs("Return the inserted customer ID")
+            .isEqualTo(insertedId)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelAdded(
                   listOfNotNull(insertedCustomer?.copy(id = insertedId, debt = 0.toBigDecimal()))
                       .ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify added customer to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   private fun `_update customer cases`(): Array<Array<Any?>> =
@@ -140,22 +144,20 @@ class CustomerRepositoryTest {
   @ParameterizedTest
   @MethodSource("_update customer cases")
   fun `update customer`(initialId: Long?, updatedCustomer: CustomerModel?, notifyCount: Int) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                listOfNotNull(updatedCustomer).size,
-                _customerRepository.update(_customer.copy(id = initialId)),
-                "Return the number of effected rows")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify updated customer to the `ModelChangedListener`") {
+    assertSoftly {
+      runTest {
+        it.assertThat(_customerRepository.update(_customer.copy(id = initialId)))
+            .describedAs("Return the number of effected rows")
+            .isEqualTo(listOfNotNull(updatedCustomer).size)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelUpdated(listOfNotNull(updatedCustomer).ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify updated customer to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   private fun `_delete customer cases`(): Array<Array<Any?>> =
@@ -168,22 +170,20 @@ class CustomerRepositoryTest {
   @ParameterizedTest
   @MethodSource("_delete customer cases")
   fun `delete customer`(initialId: Long?, deletedCustomer: CustomerModel?, notifyCount: Int) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                listOfNotNull(deletedCustomer).size,
-                _customerRepository.delete(initialId),
-                "Return the number of effected rows")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify deleted customer to the `ModelChangedListener`") {
+    assertSoftly {
+      runTest {
+        it.assertThat(_customerRepository.delete(initialId))
+            .describedAs("Return the number of effected rows")
+            .isEqualTo(listOfNotNull(deletedCustomer).size)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelDeleted(listOfNotNull(deletedCustomer).ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify deleted customer to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   private fun `_search customer cases`(): Array<Array<Any?>> =
@@ -205,9 +205,8 @@ class CustomerRepositoryTest {
     _localDao.idGenerator.lastIncrement = 0
     customerNamesInDb.map { _localDao.data.add(_customer.copy(name = it)) }
 
-    assertEquals(
-        customerNamesFound,
-        _customerRepository.search(query).map { it.name },
-        "Search for customers whose names contain the query")
+    assertThat(_customerRepository.search(query).map { it.name })
+        .describedAs("Search for customers whose names contain the query")
+        .isEqualTo(customerNamesFound)
   }
 }

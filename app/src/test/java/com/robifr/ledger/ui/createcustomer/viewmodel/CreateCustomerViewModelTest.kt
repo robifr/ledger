@@ -29,13 +29,10 @@ import io.mockk.mockk
 import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -67,11 +64,14 @@ class CreateCustomerViewModelTest(
     _viewModel.onNameTextChanged("Amy")
     _viewModel.onBalanceChanged(100L)
     _viewModel.onDebtChanged((-100).toBigDecimal())
-    assertEquals(
-        CreateCustomerState(
-            name = "Amy", nameErrorMessageRes = null, balance = 100L, debt = (-100).toBigDecimal()),
-        _viewModel.uiState.safeValue,
-        "Preserve all values except for the changed field")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve all values except for the changed field")
+        .isEqualTo(
+            CreateCustomerState(
+                name = "Amy",
+                nameErrorMessageRes = null,
+                balance = 100L,
+                debt = (-100).toBigDecimal()))
   }
 
   @ParameterizedTest
@@ -79,22 +79,22 @@ class CreateCustomerViewModelTest(
   fun `on name changed`(name: String) {
     _viewModel.onNameTextChanged(name)
     if (name.isNotBlank()) {
-      assertNull(_viewModel.uiState.safeValue.nameErrorMessageRes, "Remove error for a filled name")
+      assertThat(_viewModel.uiState.safeValue.nameErrorMessageRes)
+          .describedAs("Remove error for a filled name")
+          .isNull()
     } else {
-      assertAll(
-          {
-            assertNull(
-                _viewModel.uiState.safeValue.nameErrorMessageRes,
-                "Remove error when there's no error beforehand")
-          },
-          {
-            // Simulate error when editing with a blank name.
-            _viewModel.onSave()
-            _viewModel.onNameTextChanged(name)
-            assertNotNull(
-                _viewModel.uiState.safeValue.nameErrorMessageRes,
-                "Keep error when there's an error beforehand")
-          })
+      assertSoftly {
+        it.assertThat(_viewModel.uiState.safeValue.nameErrorMessageRes)
+            .describedAs("Remove error when there's no error beforehand")
+            .isNull()
+
+        // Simulate error when editing with a blank name.
+        _viewModel.onSave()
+        _viewModel.onNameTextChanged(name)
+        it.assertThat(_viewModel.uiState.safeValue.nameErrorMessageRes)
+            .describedAs("Keep error when there's an error beforehand")
+            .isNotNull()
+      }
     }
   }
 
@@ -104,16 +104,14 @@ class CreateCustomerViewModelTest(
 
     coEvery { _customerRepository.add(any()) } returns 0L
     _viewModel.onSave()
-    assertAll(
-        {
-          assertNotNull(
-              _viewModel.uiState.safeValue.nameErrorMessageRes, "Show error for a blank name")
-        },
-        {
-          assertDoesNotThrow("Prevent save for a blank name") {
-            coVerify(exactly = 0) { _customerRepository.add(any()) }
-          }
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.nameErrorMessageRes)
+          .describedAs("Show error for a blank name")
+          .isNotNull()
+      it.assertThatCode { coVerify(exactly = 0) { _customerRepository.add(any()) } }
+          .describedAs("Prevent save for a blank name")
+          .doesNotThrowAnyException()
+    }
   }
 
   @ParameterizedTest
@@ -125,19 +123,15 @@ class CreateCustomerViewModelTest(
 
     coEvery { _customerRepository.add(any()) } returns createdCustomerId
     _viewModel.onSave()
-    assertAll(
-        {
-          assertNotNull(
-              _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the result via snackbar")
-        },
-        {
-          assertEquals(
-              if (createdCustomerId != 0L) CreateCustomerResultState(createdCustomerId) else null,
-              _viewModel.uiEvent.safeValue.createResult?.data,
-              "Return result with the correct ID after success save")
-        },
-        {
-          assertDoesNotThrow("Update result event last to finish the fragment") {
+    assertSoftly {
+      it.assertThat(_viewModel.uiEvent.safeValue.snackbar?.data)
+          .describedAs("Notify the result via snackbar")
+          .isNotNull()
+      it.assertThat(_viewModel.uiEvent.safeValue.createResult?.data)
+          .describedAs("Return result with the correct ID after success save")
+          .isEqualTo(
+              if (createdCustomerId != 0L) CreateCustomerResultState(createdCustomerId) else null)
+      it.assertThatCode {
             verifyOrder {
               _uiEventObserver.onChanged(match { it.snackbar != null && it.createResult == null })
               if (createdCustomerId != 0L) {
@@ -145,7 +139,9 @@ class CreateCustomerViewModelTest(
               }
             }
           }
-        })
+          .describedAs("Update result event last to finish the fragment")
+          .doesNotThrowAnyException()
+    }
   }
 
   @ParameterizedTest
@@ -154,18 +150,13 @@ class CreateCustomerViewModelTest(
     if (isCustomerChanged) _viewModel.onNameTextChanged("Amy")
 
     _viewModel.onBackPressed()
-    assertAll(
-        {
-          assertEquals(
-              if (isCustomerChanged) true else null,
-              _viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data,
-              "Show unsaved changes dialog when there's a change")
-        },
-        {
-          assertEquals(
-              if (!isCustomerChanged) true else null,
-              _viewModel.uiEvent.safeValue.isFragmentFinished?.data,
-              "Finish fragment when there's no change")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data)
+          .describedAs("Show unsaved changes dialog when there's a change")
+          .isEqualTo(if (isCustomerChanged) true else null)
+      it.assertThat(_viewModel.uiEvent.safeValue.isFragmentFinished?.data)
+          .describedAs("Finish fragment when there's no change")
+          .isEqualTo(if (!isCustomerChanged) true else null)
+    }
   }
 }

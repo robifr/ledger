@@ -43,15 +43,12 @@ import java.time.Instant
 import java.time.ZoneId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import org.hamcrest.CoreMatchers.notNullValue
-import org.hamcrest.CoreMatchers.nullValue
-import org.hamcrest.MatcherAssert.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -100,17 +97,19 @@ class SettingsViewModelTest(
     mockkStatic(AppCompatDelegate::class)
     coEvery { _settingsRepository.saveAppTheme(any()) } returns true
     _viewModel.onAppThemeChanged(AppTheme.DARK)
-    assertAll(
-        {
-          assertEquals(
-              AppTheme.DARK, _viewModel.uiState.safeValue.appTheme, "Update current app theme")
-        },
-        {
-          assertDoesNotThrow("Immediately apply and save the current app theme") {
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.appTheme)
+          .describedAs("Update current app theme")
+          .isEqualTo(
+              AppTheme.DARK,
+          )
+      it.assertThatCode {
             verify { AppCompatDelegate.setDefaultNightMode(any()) }
             coVerify { _settingsRepository.saveAppTheme(any()) }
           }
-        })
+          .describedAs("Immediately apply and save the current app theme")
+          .doesNotThrowAnyException()
+    }
   }
 
   @ParameterizedTest
@@ -123,13 +122,13 @@ class SettingsViewModelTest(
     _viewModel.onLanguageChanged(LanguageOption.INDONESIA)
 
     if (isShown) _viewModel.onAppThemeDialogShown() else _viewModel.onAppThemeDialogClosed()
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            appTheme = AppTheme.DARK,
-            isAppThemeDialogShown = isShown,
-            languageUsed = LanguageOption.INDONESIA),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                appTheme = AppTheme.DARK,
+                isAppThemeDialogShown = isShown,
+                languageUsed = LanguageOption.INDONESIA))
   }
 
   @Test
@@ -137,19 +136,17 @@ class SettingsViewModelTest(
     mockkStatic(AppCompatDelegate::class)
     coEvery { _settingsRepository.saveLanguageUsed(any()) } returns true
     _viewModel.onLanguageChanged(LanguageOption.INDONESIA)
-    assertAll(
-        {
-          assertEquals(
-              LanguageOption.INDONESIA,
-              _viewModel.uiState.safeValue.languageUsed,
-              "Update current used language")
-        },
-        {
-          assertDoesNotThrow("Immediately apply and save the current used language") {
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.languageUsed)
+          .describedAs("Update current used language")
+          .isEqualTo(LanguageOption.INDONESIA)
+      it.assertThatCode {
             verify { AppCompatDelegate.setApplicationLocales(any()) }
             coVerify { _settingsRepository.saveLanguageUsed(any()) }
           }
-        })
+          .describedAs("Immediately apply and save the current used language")
+          .doesNotThrowAnyException()
+    }
   }
 
   @ParameterizedTest
@@ -162,13 +159,13 @@ class SettingsViewModelTest(
     _viewModel.onLanguageChanged(LanguageOption.INDONESIA)
 
     if (isShown) _viewModel.onLanguageDialogShown() else _viewModel.onLanguageDialogClosed()
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            appTheme = AppTheme.DARK,
-            languageUsed = LanguageOption.INDONESIA,
-            isLanguageDialogShown = isShown),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                appTheme = AppTheme.DARK,
+                languageUsed = LanguageOption.INDONESIA,
+                isLanguageDialogShown = isShown))
   }
 
   @ParameterizedTest
@@ -177,19 +174,14 @@ class SettingsViewModelTest(
     mockkObject(NetworkState)
     coEvery { NetworkState.isInternetAvailable(any()) } returns false
     _viewModel.onCheckForAppUpdate(mockk(), shouldSnackbarShown)
-    assertAll(
-        {
-          assertThat(
-              "Notify unavailable internet via snackbar",
-              _viewModel.uiEvent.safeValue.snackbar?.data,
-              if (shouldSnackbarShown) notNullValue() else nullValue(),
-          )
-        },
-        {
-          assertDoesNotThrow("Prevent fetching updates when the internet is unavailable") {
-            coVerify(exactly = 0) { _settingsRepository.obtainLatestAppRelease() }
-          }
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiEvent.safeValue.snackbar?.data)
+          .describedAs("Notify unavailable internet via snackbar")
+          .apply { if (shouldSnackbarShown) isNotNull() else isNull() }
+      it.assertThatCode { coVerify(exactly = 0) { _settingsRepository.obtainLatestAppRelease() } }
+          .describedAs("Prevent fetching updates when the internet is unavailable")
+          .doesNotThrowAnyException()
+    }
   }
 
   @Test
@@ -200,10 +192,9 @@ class SettingsViewModelTest(
 
     coEvery { _settingsRepository.obtainLatestAppRelease() } returns null
     _viewModel.onCheckForAppUpdate(mockk())
-    assertEquals(
-        oldUiState,
-        _viewModel.uiState.safeValue,
-        "Preserve all values when the latest release is null")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve all values when the latest release is null")
+        .isEqualTo(oldUiState)
   }
 
   private fun `_on check for app update with internet and latest release available cases`():
@@ -232,28 +223,22 @@ class SettingsViewModelTest(
     every { VersionComparator.isNewVersionNewer(any(), any()) } returns isNewVersionNewer
     coEvery { _settingsRepository.lastCheckedTimeForAppUpdate() } returns lastCheckedTime
     _viewModel.onCheckForAppUpdate(mockk(), shouldSnackbarShown)
-    assertAll(
-        {
-          assertEquals(
+    assertSoftly {
+      it.assertThat(_viewModel.uiEvent.safeValue.dialog?.data)
+          .describedAs("Show available app update via alert dialog")
+          .isEqualTo(
               if (isUpdateAvailableDialogShown) SettingsDialogState.UpdateAvailable(githubRelease)
-              else null,
-              _viewModel.uiEvent.safeValue.dialog?.data,
-              "Show available app update via alert dialog")
-        },
-        {
-          assertThat(
-              "Notify unavailable app update via snackbar",
-              _viewModel.uiEvent.safeValue.snackbar?.data,
-              if (isNoUpdateAvailableSnackbarShown) notNullValue() else nullValue())
-        },
-        {
-          assertEquals(
+              else null)
+      it.assertThat(_viewModel.uiEvent.safeValue.snackbar?.data)
+          .describedAs("Notify unavailable app update via snackbar")
+          .apply { if (isNoUpdateAvailableSnackbarShown) isNotNull() else isNull() }
+      it.assertThat(_viewModel.uiState.safeValue)
+          .describedAs("Update last checked time and GitHub release model")
+          .isEqualTo(
               oldUiState.copy(
                   lastCheckedTimeForAppUpdate = lastCheckedTime.atZone(ZoneId.systemDefault()),
-                  githubRelease = githubRelease),
-              _viewModel.uiState.safeValue,
-              "Update last checked time and GitHub release model")
-        })
+                  githubRelease = githubRelease))
+    }
   }
 
   @ParameterizedTest
@@ -271,21 +256,20 @@ class SettingsViewModelTest(
         isInstallationPermissionGranted
     coEvery { _settingsRepository.downloadAndInstallApp(any()) } just Runs
     _viewModel.onUpdateApp()
-    assertAll(
-        {
-          assertEquals(
+    assertSoftly {
+      it.assertThat(_viewModel.uiEvent.safeValue.dialog?.data)
+          .describedAs("Show unknown source installation permission dialog if not granted")
+          .isEqualTo(
               if (!isInstallationPermissionGranted) SettingsDialogState.UnknownSourceInstallation
-              else null,
-              _viewModel.uiEvent.safeValue.dialog?.data,
-              "Show unknown source installation permission dialog if not granted")
-        },
-        {
-          assertDoesNotThrow("Update app using the fetched GitHub release data") {
+              else null)
+      it.assertThatCode {
             coVerify(exactly = if (isInstallationPermissionGranted) 1 else 0) {
               _settingsRepository.downloadAndInstallApp(eq(_githubRelease))
             }
           }
-        })
+          .describedAs("Update app using the fetched GitHub release data")
+          .doesNotThrowAnyException()
+    }
   }
 
   @Test
@@ -298,11 +282,13 @@ class SettingsViewModelTest(
     _viewModel.onCheckForAppUpdate(mockk())
 
     _viewModel.onActivityResultForUnknownSourceInstallation()
-    assertDoesNotThrow("Re-show app update dialog after returning from settings activity") {
-      verify(exactly = 2) {
-        _uiEventObserver.onChanged(
-            match { it.dialog?.data == SettingsDialogState.UpdateAvailable(_githubRelease) })
-      }
-    }
+    assertThatCode {
+          verify(exactly = 2) {
+            _uiEventObserver.onChanged(
+                match { it.dialog?.data == SettingsDialogState.UpdateAvailable(_githubRelease) })
+          }
+        }
+        .describedAs("Re-show app update dialog after returning from settings activity")
+        .doesNotThrowAnyException()
   }
 }

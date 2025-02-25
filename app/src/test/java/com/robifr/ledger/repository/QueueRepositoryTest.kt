@@ -34,12 +34,11 @@ import io.mockk.verify
 import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -110,15 +109,16 @@ class QueueRepositoryTest {
   fun `select query result mapped queue`() {
     // Simulate current queue in the database with unmapped property.
     _localDao.data[0] = _queue.copy(customer = null, productOrders = listOf())
-    assertAll(
-        "Map every queue property that doesn't belong to the database table",
-        { runTest { assertEquals(listOf(_queue), _queueRepository.selectAll()) } },
-        { runTest { assertEquals(_queue, _queueRepository.selectById(_queue.id)) } },
-        {
-          runTest {
-            assertEquals(listOf(_queue), _queueRepository.selectById(listOfNotNull(_queue.id)))
-          }
-        })
+    assertSoftly {
+      val message: String = "Map every queue property that doesn't belong to the database table"
+      runTest {
+        it.assertThat(_queueRepository.selectAll()).describedAs(message).isEqualTo(listOf(_queue))
+        it.assertThat(_queueRepository.selectById(_queue.id)).describedAs(message).isEqualTo(_queue)
+        it.assertThat(_queueRepository.selectById(listOfNotNull(_queue.id)))
+            .describedAs(message)
+            .isEqualTo(listOf(_queue))
+      }
+    }
   }
 
   private fun `_add queue cases`(): Array<Array<Any?>> =
@@ -135,23 +135,20 @@ class QueueRepositoryTest {
       insertedQueue: QueueModel?,
       notifyCount: Int
   ) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                insertedId,
+    assertSoftly {
+      runTest {
+        it.assertThat(
                 _queueRepository.add(
                     _queue.copy(
                         id = initialId,
                         // Ignore foreign columns, they're tested in different test method.
                         customerId = null,
                         customer = null,
-                        productOrders = listOf())),
-                "Return the inserted queue ID")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify added queue to the `ModelChangedListener`") {
+                        productOrders = listOf())))
+            .describedAs("Return the inserted queue ID")
+            .isEqualTo(insertedId)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelAdded(
                   listOfNotNull(
@@ -163,7 +160,9 @@ class QueueRepositoryTest {
                       .ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify added queue to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   private fun `_add queue result product orders added cases`(): Array<Array<Any?>> =
@@ -184,10 +183,9 @@ class QueueRepositoryTest {
         _queue.copy(
             id = initialId,
             productOrders = listOf(_productOrder.copy(id = initialId, queueId = initialId))))
-    assertEquals(
-        addedProductOrder?.copy(id = insertedId, queueId = insertedId),
-        _productOrderDao.data.getOrNull(addedProductOrderIndex),
-        "Add product orders mapped with the queue ID to the database")
+    assertThat(_productOrderDao.data.getOrNull(addedProductOrderIndex))
+        .describedAs("Add product orders mapped with the queue ID to the database")
+        .isEqualTo(addedProductOrder?.copy(id = insertedId, queueId = insertedId))
   }
 
   private fun `_add queue result customer updated cases`(): Array<Array<Any?>> =
@@ -210,11 +208,11 @@ class QueueRepositoryTest {
             id = initialId,
             // Customer should pay by the amount of the product orders.
             productOrders = listOf(productOrderToInsert)))
-    assertEquals(
-        updatedCustomer?.copy(
-            balance = updatedCustomer.balance - productOrderToInsert.totalPrice.toLong()),
-        _customerDao.data.getOrNull(updatedCustomerIndex),
-        "Deduct customer balance via `CustomerModel.balanceOnMadePayment()`")
+    assertThat(_customerDao.data.getOrNull(updatedCustomerIndex))
+        .describedAs("Deduct customer balance via `CustomerModel.balanceOnMadePayment()`")
+        .isEqualTo(
+            updatedCustomer?.copy(
+                balance = updatedCustomer.balance - productOrderToInsert.totalPrice.toLong()))
   }
 
   private fun `_update queue cases`(): Array<Array<Any?>> =
@@ -227,23 +225,21 @@ class QueueRepositoryTest {
   @ParameterizedTest
   @MethodSource("_update queue cases")
   fun `update queue`(initialId: Long?, updatedQueue: QueueModel?, notifyCount: Int) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                listOfNotNull(updatedQueue).size,
-                _queueRepository.update(_queue.copy(id = initialId)),
-                "Return the number of effected rows")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify updated queue to the `ModelChangedListener`") {
+    assertSoftly {
+      runTest {
+        it.assertThat(_queueRepository.update(_queue.copy(id = initialId)))
+            .describedAs("Return the number of effected rows")
+            .isEqualTo(listOfNotNull(updatedQueue).size)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelUpdated(
                   listOfNotNull(updatedQueue?.copy(id = initialId)).ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify updated queue to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   private fun `_update queue result product orders updated cases`(): Array<Array<Any?>> =
@@ -270,10 +266,9 @@ class QueueRepositoryTest {
         _queue.copy(
             id = initialId,
             productOrders = referencedProductOrderIds.map { _productOrder.copy(id = it) }))
-    assertEquals(
-        updatedProductOrderIdsInDb.map { _productOrder.copy(id = it) },
-        _productOrderDao.data,
-        "Upsert the new or existing product orders and delete the ones removed")
+    assertThat(_productOrderDao.data)
+        .describedAs("Upsert the new or existing product orders and delete the ones removed")
+        .isEqualTo(updatedProductOrderIdsInDb.map { _productOrder.copy(id = it) })
   }
 
   private fun `_update queue result customer updated cases`(): Array<Array<Any?>> =
@@ -312,11 +307,14 @@ class QueueRepositoryTest {
             id = initialId,
             customerId = newReferencedCustomerId,
             customer = _customer.copy(id = newReferencedCustomerId)))
-    assertEquals(
-        updatedCustomerIdAndBalanceInDb.map { _customer.copy(id = it.first, balance = it.second) },
-        _customerDao.data,
-        "Update old customer balance via `CustomerBalance.balanceOnUpdatedPayment()` and " +
-            "current referenced customer balance via `CustomerBalance.balanceOnRevertedPayment()`")
+    assertThat(_customerDao.data)
+        .describedAs(
+            "Update old customer balance via `CustomerBalance.balanceOnUpdatedPayment()` and " +
+                "current referenced customer balance via `CustomerBalance.balanceOnRevertedPayment()`")
+        .isEqualTo(
+            updatedCustomerIdAndBalanceInDb.map {
+              _customer.copy(id = it.first, balance = it.second)
+            })
   }
 
   fun `_delete queue cases`(): Array<Array<Any?>> =
@@ -329,22 +327,20 @@ class QueueRepositoryTest {
   @ParameterizedTest
   @MethodSource("_delete queue cases")
   fun `delete queue`(initialId: Long?, deletedQueue: QueueModel?, notifyCount: Int) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                listOfNotNull(deletedQueue).size,
-                _queueRepository.delete(initialId),
-                "Return the number of effected rows")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify deleted queue to the `ModelChangedListener`") {
+    assertSoftly {
+      runTest {
+        it.assertThat(_queueRepository.delete(initialId))
+            .describedAs("Return the number of effected rows")
+            .isEqualTo(listOfNotNull(deletedQueue).size)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelDeleted(listOfNotNull(deletedQueue).ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify deleted queue to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   fun `_delete queue result customer updated cases`(): Array<Array<Any?>> =
@@ -361,10 +357,10 @@ class QueueRepositoryTest {
       updatedCustomerIndex: Int
   ) = runTest {
     _queueRepository.delete(initialId)
-    assertEquals(
-        updatedCustomer?.copy(
-            balance = updatedCustomer.balance + _productOrder.totalPrice.toLong()),
-        _customerDao.data.getOrNull(updatedCustomerIndex),
-        "Revert customer balance via `CustomerModel.balanceOnRevertedPayment()`")
+    assertThat(_customerDao.data.getOrNull(updatedCustomerIndex))
+        .describedAs("Revert customer balance via `CustomerModel.balanceOnRevertedPayment()`")
+        .isEqualTo(
+            updatedCustomer?.copy(
+                balance = updatedCustomer.balance + _productOrder.totalPrice.toLong()))
   }
 }

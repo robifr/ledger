@@ -30,10 +30,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 
 @ExperimentalCoroutinesApi
@@ -59,9 +59,9 @@ class SearchViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onSearch("B")
     _viewModel.onSearch("C")
     advanceUntilIdle()
-    assertDoesNotThrow("Prevent search from triggering multiple times when typing quickly") {
-      coVerify(atMost = 1) { _customerRepository.search(any()) }
-    }
+    assertThatCode { coVerify(atMost = 1) { _customerRepository.search(any()) } }
+        .describedAs("Prevent search from triggering multiple times when typing quickly")
+        .doesNotThrowAnyException()
   }
 
   @Test
@@ -72,10 +72,10 @@ class SearchViewModelTest(private val _dispatcher: TestDispatcher) {
     coEvery { _productRepository.search(any()) } returns listOf(product)
     _viewModel.onSearch("A")
     advanceUntilIdle()
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            query = "A", customers = listOf(customer), products = listOf(product)),
-        _viewModel.uiState.safeValue,
-        "Update customers and products based from the queried search result")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Update customers and products based from the queried search result")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                query = "A", customers = listOf(customer), products = listOf(product)))
   }
 }

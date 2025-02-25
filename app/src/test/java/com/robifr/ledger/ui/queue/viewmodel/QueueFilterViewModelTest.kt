@@ -42,7 +42,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -157,17 +157,17 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onStatusChanged(setOf(QueueModel.Status.UNPAID))
     _viewModel.onMinTotalPriceTextChanged("$0")
     _viewModel.onMaxTotalPriceTextChanged("$1.00")
-    assertEquals(
-        QueueFilterState(
-            isDialogShown = true,
-            isNullCustomerShown = false,
-            customerIds = listOf(111L),
-            date = QueueDate(QueueDate.Range.TODAY),
-            status = setOf(QueueModel.Status.UNPAID),
-            formattedMinTotalPrice = "$0",
-            formattedMaxTotalPrice = "$1.00"),
-        _viewModel.uiState.safeValue,
-        "Preserve all values except for the changed field")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve all values except for the changed field")
+        .isEqualTo(
+            QueueFilterState(
+                isDialogShown = true,
+                isNullCustomerShown = false,
+                customerIds = listOf(111L),
+                date = QueueDate(QueueDate.Range.TODAY),
+                status = setOf(QueueModel.Status.UNPAID),
+                formattedMinTotalPrice = "$0",
+                formattedMaxTotalPrice = "$1.00"))
   }
 
   @ParameterizedTest
@@ -181,17 +181,17 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxTotalPriceTextChanged("$1")
 
     if (isShown) _viewModel.onDialogShown() else _viewModel.onDialogClosed()
-    assertEquals(
-        QueueFilterState(
-            isDialogShown = isShown,
-            isNullCustomerShown = false,
-            customerIds = listOf(111L),
-            date = QueueDate(QueueDate.Range.TODAY),
-            status = setOf(QueueModel.Status.UNPAID),
-            formattedMinTotalPrice = "$0",
-            formattedMaxTotalPrice = "$1"),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            QueueFilterState(
+                isDialogShown = isShown,
+                isNullCustomerShown = false,
+                customerIds = listOf(111L),
+                date = QueueDate(QueueDate.Range.TODAY),
+                status = setOf(QueueModel.Status.UNPAID),
+                formattedMinTotalPrice = "$0",
+                formattedMaxTotalPrice = "$1"))
   }
 
   @Test
@@ -201,10 +201,9 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onNullCustomerShown(false)
 
     _viewModel.onDialogClosed()
-    assertEquals(
-        listOf(_secondQueue, _firstQueue).map { QueuePaginatedInfo(it) },
-        _queueViewModel.uiState.safeValue.pagination.paginatedItems,
-        "Apply filter to the queues while retaining the sorted list")
+    assertThat(_queueViewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Apply filter to the queues while retaining the sorted list")
+        .isEqualTo(listOf(_secondQueue, _firstQueue).map { QueuePaginatedInfo(it) })
   }
 
   private fun `_on dialog closed with unbounded grand total price range cases`():
@@ -231,10 +230,9 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxTotalPriceTextChanged(newFormattedMaxTotalPrice)
 
     _viewModel.onDialogClosed()
-    assertEquals(
-        filteredQueues.map { QueuePaginatedInfo(it) },
-        _queueViewModel.uiState.safeValue.pagination.paginatedItems,
-        "Include any queue whose grand total price falls within the unbounded range")
+    assertThat(_queueViewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Include any queue whose grand total price falls within the unbounded range")
+        .isEqualTo(filteredQueues.map { QueuePaginatedInfo(it) })
   }
 
   private fun `_on dialog closed with queue excluded from previous filter cases`():
@@ -262,9 +260,8 @@ class QueueFilterViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onMaxTotalPriceTextChanged(newFormattedMaxTotalPrice)
 
     _viewModel.onDialogClosed()
-    assertEquals(
-        filteredQueue.map { QueuePaginatedInfo(it) },
-        _queueViewModel.uiState.safeValue.pagination.paginatedItems,
-        "Include queue from the database that match the filter")
+    assertThat(_queueViewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Include queue from the database that match the filter")
+        .isEqualTo(filteredQueue.map { QueuePaginatedInfo(it) })
   }
 }

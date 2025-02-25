@@ -140,6 +140,7 @@ dependencies {
 
   testImplementation(project(":test-common"))
   testImplementation(libs.androidx.arch.core.testing)
+  testImplementation(libs.assertj.core)
   testImplementation(libs.jetbrains.kotlinx.coroutines.test)
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.mockk)
@@ -148,6 +149,7 @@ dependencies {
   androidTestImplementation(libs.androidx.test.espresso.core)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(libs.assertj.core)
 
   debugImplementation(libs.squareup.leakcanary.android)
 

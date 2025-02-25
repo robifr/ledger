@@ -38,13 +38,12 @@ import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -90,29 +89,30 @@ class EditProductViewModelTest(
 
   @Test
   fun `on initialize with arguments`() {
-    assertEquals(
-        CreateProductState(
-            name = _productToEdit.name,
-            nameErrorMessageRes = null,
-            formattedPrice = "$${_productToEdit.price / 100L}"),
-        _viewModel.uiState.safeValue,
-        "Match state with the retrieved data from the fragment arguments")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Match state with the retrieved data from the fragment arguments")
+        .isEqualTo(
+            CreateProductState(
+                name = _productToEdit.name,
+                nameErrorMessageRes = null,
+                formattedPrice = "$${_productToEdit.price / 100L}"))
   }
 
   @Test
   fun `on initialize with empty initial product`() {
     coEvery { _productRepository.selectById(null) } returns null
-    assertThrows<NullPointerException>("Can't edit product if there's no product ID provided") {
-      runTest {
-        _viewModel =
-            EditProductViewModel(
-                _dispatcher,
-                _productRepository,
-                SavedStateHandle().apply {
-                  set(EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key(), null)
-                })
-      }
-    }
+    assertThatThrownBy {
+          runTest {
+            _viewModel =
+                EditProductViewModel(
+                    _dispatcher,
+                    _productRepository,
+                    SavedStateHandle().apply {
+                      set(EditProductFragment.Arguments.INITIAL_PRODUCT_ID_TO_EDIT_LONG.key(), null)
+                    })
+          }
+        }
+        .describedAs("Can't edit product if there's no product ID provided")
   }
 
   @Test
@@ -121,16 +121,14 @@ class EditProductViewModelTest(
 
     coEvery { _productRepository.update(any()) } returns 0
     _viewModel.onSave()
-    assertAll(
-        {
-          assertNotNull(
-              _viewModel.uiState.safeValue.nameErrorMessageRes, "Show error for a blank name")
-        },
-        {
-          assertDoesNotThrow("Prevent save for a blank name") {
-            coVerify(exactly = 0) { _productRepository.update(any()) }
-          }
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.nameErrorMessageRes)
+          .describedAs("Show error for a blank name")
+          .isNotNull()
+      it.assertThatCode { coVerify(exactly = 0) { _productRepository.update(any()) } }
+          .describedAs("Prevent save for a blank name")
+          .doesNotThrowAnyException()
+    }
   }
 
   @Test
@@ -138,10 +136,12 @@ class EditProductViewModelTest(
     // Prevent save with add operation (parent class behavior) instead of update operation.
     coEvery { _productRepository.update(any()) } returns 0
     _viewModel.onSave()
-    assertDoesNotThrow("Editing a product shouldn't result in adding new data") {
-      coVerify(exactly = 0) { _productRepository.add(any()) }
-      coVerify(exactly = 1) { _productRepository.update(any()) }
-    }
+    assertThatCode {
+          coVerify(exactly = 0) { _productRepository.add(any()) }
+          coVerify(exactly = 1) { _productRepository.update(any()) }
+        }
+        .describedAs("Editing a product shouldn't result in adding new data")
+        .doesNotThrowAnyException()
   }
 
   @ParameterizedTest
@@ -149,25 +149,22 @@ class EditProductViewModelTest(
   fun `on save with edited product`(effectedRows: Int) {
     coEvery { _productRepository.update(any()) } returns effectedRows
     _viewModel.onSave()
-    assertAll(
-        {
-          assertNotNull(
-              _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the result via snackbar")
-        },
-        {
-          assertEquals(
-              if (effectedRows != 0) EditProductResultState(_productToEdit.id) else null,
-              _viewModel.editResultEvent.value?.data,
-              "Return result with the correct ID after success update")
-        },
-        {
-          assertDoesNotThrow("Update result event last to finish the fragment") {
+    assertSoftly {
+      it.assertThat(_viewModel.uiEvent.safeValue.snackbar?.data)
+          .describedAs("Notify the result via snackbar")
+          .isNotNull()
+      it.assertThat(_viewModel.editResultEvent.value?.data)
+          .describedAs("Return result with the correct ID after success update")
+          .isEqualTo(if (effectedRows != 0) EditProductResultState(_productToEdit.id) else null)
+      it.assertThatCode {
             verifyOrder {
               _uiEventObserver.onChanged(match { it.snackbar != null })
               if (effectedRows != 0) _editResultEventObserver.onChanged(any())
             }
           }
-        })
+          .describedAs("Update result event last to finish the fragment")
+          .doesNotThrowAnyException()
+    }
   }
 
   @ParameterizedTest
@@ -176,18 +173,13 @@ class EditProductViewModelTest(
     if (isProductChanged) _viewModel.onNameTextChanged("Banana")
 
     _viewModel.onBackPressed()
-    assertAll(
-        {
-          assertEquals(
-              if (isProductChanged) true else null,
-              _viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data,
-              "Show unsaved changes dialog when there's a change")
-        },
-        {
-          assertEquals(
-              if (!isProductChanged) true else null,
-              _viewModel.uiEvent.safeValue.isFragmentFinished?.data,
-              "Finish fragment when there's no change")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data)
+          .describedAs("Show unsaved changes dialog when there's a change")
+          .isEqualTo(if (isProductChanged) true else null)
+      it.assertThat(_viewModel.uiEvent.safeValue.isFragmentFinished?.data)
+          .describedAs("Finish fragment when there's no change")
+          .isEqualTo(if (!isProductChanged) true else null)
+    }
   }
 }

@@ -38,13 +38,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -79,19 +78,19 @@ class SearchProductViewModelTest(
 
   @Test
   fun `on initialize with no arguments`() {
-    assertEquals(
-        SearchProductState(
-            isSelectionEnabled = false,
-            isToolbarVisible = true,
-            initialQuery = "",
-            query = "",
-            initialSelectedProductIds = listOf(),
-            products = listOf(),
-            expandedProductIndex = -1,
-            isProductMenuDialogShown = false,
-            selectedProductMenu = null),
-        _viewModel.uiState.safeValue,
-        "Apply the default state if no fragment arguments are provided")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Apply the default state if no fragment arguments are provided")
+        .isEqualTo(
+            SearchProductState(
+                isSelectionEnabled = false,
+                isToolbarVisible = true,
+                initialQuery = "",
+                query = "",
+                initialSelectedProductIds = listOf(),
+                products = listOf(),
+                expandedProductIndex = -1,
+                isProductMenuDialogShown = false,
+                selectedProductMenu = null))
   }
 
   @Test
@@ -108,27 +107,27 @@ class SearchProductViewModelTest(
             },
             _dispatcher,
             _productRepository)
-    assertEquals(
-        SearchProductState(
-            isSelectionEnabled = true,
-            isToolbarVisible = false,
-            initialQuery = "Apple",
-            query = "",
-            initialSelectedProductIds = listOf(111L),
-            products = listOf(),
-            expandedProductIndex = -1,
-            isProductMenuDialogShown = false,
-            selectedProductMenu = null),
-        _viewModel.uiState.safeValue,
-        "Match state with the retrieved data from the fragment arguments")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Match state with the retrieved data from the fragment arguments")
+        .isEqualTo(
+            SearchProductState(
+                isSelectionEnabled = true,
+                isToolbarVisible = false,
+                initialQuery = "Apple",
+                query = "",
+                initialSelectedProductIds = listOf(111L),
+                products = listOf(),
+                expandedProductIndex = -1,
+                isProductMenuDialogShown = false,
+                selectedProductMenu = null))
   }
 
   @Test
   fun `on cleared`() {
     _viewModel.onLifecycleOwnerDestroyed()
-    assertDoesNotThrow("Remove attached listener from the repository") {
-      verify { _productRepository.removeModelChangedListener(any()) }
-    }
+    assertThatCode { verify { _productRepository.removeModelChangedListener(any()) } }
+        .describedAs("Remove attached listener from the repository")
+        .doesNotThrowAnyException()
   }
 
   @Test
@@ -137,19 +136,18 @@ class SearchProductViewModelTest(
     _viewModel.onSearch("B")
     _viewModel.onSearch("C")
     advanceUntilIdle()
-    assertDoesNotThrow("Prevent search from triggering multiple times when typing quickly") {
-      coVerify(atMost = 1) { _productRepository.search(any()) }
-    }
+    assertThatCode { coVerify(atMost = 1) { _productRepository.search(any()) } }
+        .describedAs("Prevent search from triggering multiple times when typing quickly")
+        .doesNotThrowAnyException()
   }
 
   @Test
   fun `on search with complete query`() = runTest {
     _viewModel.onSearch("A")
     advanceUntilIdle()
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(query = "A", products = listOf(_product)),
-        _viewModel.uiState.safeValue,
-        "Update products based from the queried search result")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Update products based from the queried search result")
+        .isEqualTo(_viewModel.uiState.safeValue.copy(query = "A", products = listOf(_product)))
   }
 
   private fun `_on expanded product index changed cases`(): Array<Array<Any>> =
@@ -172,19 +170,14 @@ class SearchProductViewModelTest(
 
     _viewModel.onExpandedProductIndexChanged(newIndex)
     advanceUntilIdle()
-    assertAll(
-        {
-          assertEquals(
-              expandedIndex,
-              _viewModel.uiState.safeValue.expandedProductIndex,
-              "Update expanded product index and reset when selecting the same one")
-        },
-        {
-          assertEquals(
-              RecyclerAdapterState.ItemChanged(updatedIndexes),
-              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-              "Notify recycler adapter of item changes")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.expandedProductIndex)
+          .describedAs("Update expanded product index and reset when selecting the same one")
+          .isEqualTo(expandedIndex)
+      it.assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+          .describedAs("Notify recycler adapter of item changes")
+          .isEqualTo(RecyclerAdapterState.ItemChanged(updatedIndexes))
+    }
   }
 
   @ParameterizedTest
@@ -207,19 +200,19 @@ class SearchProductViewModelTest(
 
     if (isShown) _viewModel.onProductMenuDialogShown(_product)
     else _viewModel.onProductMenuDialogClosed()
-    assertEquals(
-        SearchProductState(
-            isSelectionEnabled = true,
-            isToolbarVisible = false,
-            initialQuery = "Apple",
-            query = "",
-            initialSelectedProductIds = listOf(111L),
-            products = listOf(),
-            expandedProductIndex = 0,
-            isProductMenuDialogShown = isShown,
-            selectedProductMenu = if (isShown) _product else null),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            SearchProductState(
+                isSelectionEnabled = true,
+                isToolbarVisible = false,
+                initialQuery = "Apple",
+                query = "",
+                initialSelectedProductIds = listOf(111L),
+                products = listOf(),
+                expandedProductIndex = 0,
+                isProductMenuDialogShown = isShown,
+                selectedProductMenu = if (isShown) _product else null))
   }
 
   @ParameterizedTest
@@ -227,18 +220,18 @@ class SearchProductViewModelTest(
   fun `on product selected`(isProductNull: Boolean) {
     val product: ProductModel? = if (!isProductNull) _product else null
     _viewModel.onProductSelected(product)
-    assertEquals(
-        SearchProductResultState(product?.id),
-        _viewModel.uiEvent.safeValue.searchResult?.data,
-        "Update result state based from the selected product")
+    assertThat(_viewModel.uiEvent.safeValue.searchResult?.data)
+        .describedAs("Update result state based from the selected product")
+        .isEqualTo(SearchProductResultState(product?.id))
   }
 
   @ParameterizedTest
   @ValueSource(longs = [0L, 111L])
   fun `on delete product`(idToDelete: Long) {
     _viewModel.onDeleteProduct(idToDelete)
-    assertNotNull(
-        _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the delete result via snackbar")
+    assertThat(_viewModel.uiEvent.safeValue.snackbar?.data)
+        .describedAs("Notify the delete result via snackbar")
+        .isNotNull()
   }
 
   @Test
@@ -246,11 +239,11 @@ class SearchProductViewModelTest(
     val searchState: SearchState =
         SearchState(products = listOf(_product), customers = listOf(), query = "A")
     _viewModel.onSearchUiStateChanged(searchState)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            products = searchState.products, query = searchState.query),
-        _viewModel.uiState.safeValue,
-        "Immediately update current state based from the search's UI state")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Immediately update current state based from the search's UI state")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                products = searchState.products, query = searchState.query))
   }
 
   @Test
@@ -260,10 +253,9 @@ class SearchProductViewModelTest(
 
     val updatedProduct: ProductModel = _product.copy(price = _product.price + 100L)
     _productRepository.update(updatedProduct)
-    assertEquals(
-        listOf(updatedProduct),
-        _viewModel.uiState.safeValue.products,
-        "Sync products when any are updated in the database")
+    assertThat(_viewModel.uiState.safeValue.products)
+        .describedAs("Sync products when any are updated in the database")
+        .isEqualTo(listOf(updatedProduct))
   }
 
   @Test
@@ -272,11 +264,13 @@ class SearchProductViewModelTest(
     _viewModel.onSearch(_viewModel.uiState.safeValue.query)
     advanceUntilIdle()
     _viewModel.onSearchUiStateChanged(SearchState(listOf(), listOf(), ""))
-    assertDoesNotThrow("Notify recycler adapter of dataset changes") {
-      verify(exactly = 3) {
-        _uiEventObserver.onChanged(
-            match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
-      }
-    }
+    assertThatCode {
+          verify(exactly = 3) {
+            _uiEventObserver.onChanged(
+                match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
+          }
+        }
+        .describedAs("Notify recycler adapter of dataset changes")
+        .doesNotThrowAnyException()
   }
 }

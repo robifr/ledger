@@ -38,12 +38,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -98,18 +98,18 @@ class SelectProductViewModelTest(
                 },
             _dispatcher = _dispatcher,
             _productRepository = _productRepository)
-    assertEquals(
-        SelectProductState(
-            initialSelectedProduct = _firstProduct,
-            selectedProductOnDatabase = _firstProduct,
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_firstProduct, _secondProduct).map { ProductPaginatedInfo(it) }),
-            expandedProductIndex = -1,
-            isSelectedProductPreviewExpanded = false),
-        _viewModel.uiState.safeValue,
-        "Match state with the retrieved data from the fragment argument")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Match state with the retrieved data from the fragment argument")
+        .isEqualTo(
+            SelectProductState(
+                initialSelectedProduct = _firstProduct,
+                selectedProductOnDatabase = _firstProduct,
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_firstProduct, _secondProduct).map { ProductPaginatedInfo(it) }),
+                expandedProductIndex = -1,
+                isSelectedProductPreviewExpanded = false))
   }
 
   @Test
@@ -124,45 +124,38 @@ class SelectProductViewModelTest(
             savedStateHandle = SavedStateHandle(),
             _dispatcher = _dispatcher,
             _productRepository = _productRepository)
-    assertEquals(
-        listOf(_firstProduct, _secondProduct).map { ProductPaginatedInfo(it) },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sort products based from its name")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sort products based from its name")
+        .isEqualTo(listOf(_firstProduct, _secondProduct).map { ProductPaginatedInfo(it) })
   }
 
   @Test
   fun `on initialize result notify recycler adapter item changes`() {
-    assertEquals(
-        RecyclerAdapterState.ItemChanged(0),
-        _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-        "Notify recycler adapter of header holder changes")
+    assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+        .describedAs("Notify recycler adapter of header holder changes")
+        .isEqualTo(RecyclerAdapterState.ItemChanged(0))
   }
 
   @Test
   fun `on cleared`() {
     _viewModel.onLifecycleOwnerDestroyed()
-    assertDoesNotThrow("Remove attached listener from the repository") {
-      verify { _productRepository.removeModelChangedListener(any()) }
-    }
+    assertThatCode { verify { _productRepository.removeModelChangedListener(any()) } }
+        .describedAs("Remove attached listener from the repository")
+        .doesNotThrowAnyException()
   }
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on selected product preview expanded`(isExpanded: Boolean) {
     _viewModel.onSelectedProductPreviewExpanded(isExpanded)
-    assertAll(
-        {
-          assertEquals(
-              isExpanded,
-              _viewModel.uiState.safeValue.isSelectedProductPreviewExpanded,
-              "Update whether selected product preview is expanded")
-        },
-        {
-          assertEquals(
-              RecyclerAdapterState.ItemChanged(0),
-              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-              "Notify recycler adapter of header holder changes")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.isSelectedProductPreviewExpanded)
+          .describedAs("Update whether selected product preview is expanded")
+          .isEqualTo(isExpanded)
+      it.assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+          .describedAs("Notify recycler adapter of header holder changes")
+          .isEqualTo(RecyclerAdapterState.ItemChanged(0))
+    }
   }
 
   private fun `_on expanded product index changed cases`(): Array<Array<Any>> =
@@ -185,19 +178,14 @@ class SelectProductViewModelTest(
 
     _viewModel.onExpandedProductIndexChanged(newIndex)
     advanceUntilIdle()
-    assertAll(
-        {
-          assertEquals(
-              expandedIndex,
-              _viewModel.uiState.safeValue.expandedProductIndex,
-              "Update expanded product index and reset when selecting the same one")
-        },
-        {
-          assertEquals(
-              RecyclerAdapterState.ItemChanged(updatedIndexes),
-              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-              "Notify recycler adapter of item changes")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.expandedProductIndex)
+          .describedAs("Update expanded product index and reset when selecting the same one")
+          .isEqualTo(expandedIndex)
+      it.assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+          .describedAs("Notify recycler adapter of item changes")
+          .isEqualTo(RecyclerAdapterState.ItemChanged(updatedIndexes))
+    }
   }
 
   @ParameterizedTest
@@ -206,31 +194,31 @@ class SelectProductViewModelTest(
     val product: ProductPaginatedInfo? =
         if (!isProductNull) ProductPaginatedInfo(_secondProduct) else null
     _viewModel.onProductSelected(product)
-    assertEquals(
-        SelectProductResultState(product?.id),
-        _viewModel.uiEvent.safeValue.selectResult?.data,
-        "Update result state based from the selected product")
+    assertThat(_viewModel.uiEvent.safeValue.selectResult?.data)
+        .describedAs("Update result state based from the selected product")
+        .isEqualTo(SelectProductResultState(product?.id))
   }
 
   @Test
   fun `on sync product from database`() = runTest {
     val updatedProduct: ProductModel = _firstProduct.copy(price = _firstProduct.price + 100L)
     _productRepository.update(updatedProduct)
-    assertEquals(
-        listOf(updatedProduct, _secondProduct).map { ProductPaginatedInfo(it) },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sync products when any are updated in the database")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sync products when any are updated in the database")
+        .isEqualTo(listOf(updatedProduct, _secondProduct).map { ProductPaginatedInfo(it) })
   }
 
   @Test
   fun `on state changed result notify recycler adapter dataset changes`() = runTest {
     clearMocks(_uiEventObserver)
     _productRepository.add(_firstProduct.copy(id = null))
-    assertDoesNotThrow("Notify recycler adapter of dataset changes") {
-      verify(exactly = 1) {
-        _uiEventObserver.onChanged(
-            match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
-      }
-    }
+    assertThatCode {
+          verify(exactly = 1) {
+            _uiEventObserver.onChanged(
+                match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
+          }
+        }
+        .describedAs("Notify recycler adapter of dataset changes")
+        .doesNotThrowAnyException()
   }
 }

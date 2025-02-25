@@ -17,12 +17,10 @@
 package com.robifr.ledger.data.model
 
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.junit.jupiter.params.provider.MethodSource
@@ -65,22 +63,17 @@ class CustomerModelTest {
   fun `is balance sufficient with different customer in queue`() {
     // Before payment is made, ensure the actual shown
     // balance — the one visible by user — is sufficient.
-    assertAll(
-        {
-          assertTrue(
-              _customer.isBalanceSufficient(_queue, _queue),
-              "Balance is sufficient when both customer equals")
-        },
-        {
-          assertTrue(
-              _customer.isBalanceSufficient(null, _queue),
-              "Balance is sufficient when the customer in the old queue is null")
-        },
-        {
-          assertFalse(
-              _customer.copy(id = 222L).isBalanceSufficient(null, _queue),
-              "Balance is insufficient when both customer differs")
-        })
+    assertSoftly {
+      it.assertThat(_customer.isBalanceSufficient(_queue, _queue))
+          .describedAs("Balance is sufficient when both customer equals")
+          .isTrue()
+      it.assertThat(_customer.isBalanceSufficient(null, _queue))
+          .describedAs("Balance is sufficient when the customer in the old queue is null")
+          .isTrue()
+      it.assertThat(_customer.copy(id = 222L).isBalanceSufficient(null, _queue))
+          .describedAs("Balance is insufficient when both customer differs")
+          .isFalse()
+    }
   }
 
   private fun `_is balance sufficient with less balance customer cases`(): Array<Array<Any>> =
@@ -124,10 +117,10 @@ class CustomerModelTest {
     // After payment is made. Ensure the balance — from both current and deducted balance —
     // is sufficient. This is a case where all the customer balance has already been used,
     // making it appear to be less than the queue's grand total price.
-    assertEquals(
-        isSufficient,
-        lessBalanceCustomer.isBalanceSufficient(oldQueue, newQueue),
-        "Balance is sufficient when the new queue's grand total price is lesser or equal to the old")
+    assertThat(lessBalanceCustomer.isBalanceSufficient(oldQueue, newQueue))
+        .describedAs(
+            "Balance is sufficient when the new queue's total price is lesser or equal to the old")
+        .isEqualTo(isSufficient)
   }
 
   private fun `_balance on made payment with valid status and payment methods cases`():
@@ -144,26 +137,24 @@ class CustomerModelTest {
       queue: QueueModel,
       calculatedBalance: Long
   ) {
-    assertEquals(
-        calculatedBalance,
-        _customer.balanceOnMadePayment(queue),
-        "Correctly calculate balance by deducting or keeping it")
+    assertThat(_customer.balanceOnMadePayment(queue))
+        .describedAs("Correctly calculate balance by deducting or keeping it")
+        .isEqualTo(calculatedBalance)
   }
 
   @Test
   fun `balance on made payment with low balance`() {
-    assertEquals(
-        50L,
-        _customer.copy(balance = 50L).balanceOnMadePayment(_completedQueueWithAccountBalance),
-        "Keep balance when the balance is low")
+    assertThat(
+            _customer.copy(balance = 50L).balanceOnMadePayment(_completedQueueWithAccountBalance))
+        .describedAs("Keep balance when the balance is low")
+        .isEqualTo(50L)
   }
 
   @Test
   fun `balance on made payment with different customer`() {
-    assertEquals(
-        500L,
-        _customer.copy(id = 222L).balanceOnMadePayment(_completedQueueWithAccountBalance),
-        "Keep balance when the customer differs with the one in queue")
+    assertThat(_customer.copy(id = 222L).balanceOnMadePayment(_completedQueueWithAccountBalance))
+        .describedAs("Keep balance when the customer differs with the one in queue")
+        .isEqualTo(500L)
   }
 
   private fun `_balance on reverted payment with valid status and payment methods cases`():
@@ -180,18 +171,17 @@ class CustomerModelTest {
       queue: QueueModel,
       calculatedBalance: Long
   ) {
-    assertEquals(
-        calculatedBalance,
-        _customer.balanceOnRevertedPayment(queue),
-        "Correctly calculate balance by reverting or keeping it")
+    assertThat(_customer.balanceOnRevertedPayment(queue))
+        .describedAs("Correctly calculate balance by reverting or keeping it")
+        .isEqualTo(calculatedBalance)
   }
 
   @Test
   fun `balance on reverted payment with different customer`() {
-    assertEquals(
-        500L,
-        _customer.copy(id = 222L).balanceOnRevertedPayment(_completedQueueWithAccountBalance),
-        "Keep balance when the customer differs with the one in queue")
+    assertThat(
+            _customer.copy(id = 222L).balanceOnRevertedPayment(_completedQueueWithAccountBalance))
+        .describedAs("Keep balance when the customer differs with the one in queue")
+        .isEqualTo(500L)
   }
 
   private fun `_balance on updated payment with valid status and payment methods cases`():
@@ -221,10 +211,9 @@ class CustomerModelTest {
       newQueue: QueueModel,
       calculatedBalance: Long
   ) {
-    assertEquals(
-        calculatedBalance,
-        _customer.balanceOnUpdatedPayment(oldQueue, newQueue),
-        "Correctly calculate balance when payment is updated")
+    assertThat(_customer.balanceOnUpdatedPayment(oldQueue, newQueue))
+        .describedAs("Correctly calculate balance when payment is updated")
+        .isEqualTo(calculatedBalance)
   }
 
   /**
@@ -256,16 +245,16 @@ class CustomerModelTest {
       calculatedBalance: Long
   ) {
     val secondCustomer: CustomerModel = _customer.copy(id = 222L)
-    assertEquals(
-        calculatedBalance,
-        secondCustomer.balanceOnUpdatedPayment(
-            oldQueue,
-            if (isCustomerInNewQueueEquals) {
-              newQueue.copy(customerId = secondCustomer.id, customer = secondCustomer)
-            } else {
-              newQueue
-            }),
-        "Correctly calculate balance based on customer differences between queues")
+    assertThat(
+            secondCustomer.balanceOnUpdatedPayment(
+                oldQueue,
+                if (isCustomerInNewQueueEquals) {
+                  newQueue.copy(customerId = secondCustomer.id, customer = secondCustomer)
+                } else {
+                  newQueue
+                }))
+        .describedAs("Correctly calculate balance based on customer differences between queues")
+        .isEqualTo(calculatedBalance)
   }
 
   private fun `_balance on updated payment with old queue has account balance payment and no customer cases`():
@@ -285,11 +274,12 @@ class CustomerModelTest {
   ) {
     // When the old queue doesn't have customer beforehand. Though, it should be impossible
     // in first place to have a completed queue with account balance and no customer.
-    assertEquals(
-        calculatedBalance,
-        _customer.balanceOnUpdatedPayment(
-            _completedQueueWithAccountBalance.copy(customerId = null, customer = null), newQueue),
-        "Correctly calculate balance even when it seems impossible")
+    assertThat(
+            _customer.balanceOnUpdatedPayment(
+                _completedQueueWithAccountBalance.copy(customerId = null, customer = null),
+                newQueue))
+        .describedAs("Correctly calculate balance even when it seems impossible")
+        .isEqualTo(calculatedBalance)
   }
 
   private fun `_balance on updated payment with different grand total price cases`():
@@ -313,50 +303,47 @@ class CustomerModelTest {
       newQueueGrandTotalPrice: Int,
       calculatedBalance: Long
   ) {
-    assertEquals(
-        calculatedBalance,
-        _customer.balanceOnUpdatedPayment(
-            oldQueue,
-            _completedQueueWithAccountBalance.copy(
-                productOrders =
-                    _completedQueueWithAccountBalance.productOrders.map {
-                      it.copy(totalPrice = newQueueGrandTotalPrice.toBigDecimal())
-                    })),
-        "Correctly calculate balance when grand total price differs")
+    assertThat(
+            _customer.balanceOnUpdatedPayment(
+                oldQueue,
+                _completedQueueWithAccountBalance.copy(
+                    productOrders =
+                        _completedQueueWithAccountBalance.productOrders.map {
+                          it.copy(totalPrice = newQueueGrandTotalPrice.toBigDecimal())
+                        })))
+        .describedAs("Correctly calculate balance when grand total price differs")
+        .isEqualTo(calculatedBalance)
   }
 
   @ParameterizedTest
   @EnumSource(QueueModel.Status::class)
   fun `debt on made payment with valid status`(status: QueueModel.Status) {
-    assertEquals(
-        if (status == QueueModel.Status.UNPAID) (-100).toBigDecimal() else 0.toBigDecimal(),
-        _customer.debtOnMadePayment(_queue.copy(status = status)),
-        "Correctly calculate debt by adding or keeping it")
+    assertThat(_customer.debtOnMadePayment(_queue.copy(status = status)))
+        .describedAs("Correctly calculate debt by adding or keeping it")
+        .isEqualTo(
+            if (status == QueueModel.Status.UNPAID) (-100).toBigDecimal() else 0.toBigDecimal())
   }
 
   @Test
   fun `debt on made payment with different customer`() {
-    assertEquals(
-        0.toBigDecimal(),
-        _customer.copy(id = 222L).debtOnMadePayment(_unpaidQueue),
-        "Keep debt when customer differs with the one in queue")
+    assertThat(_customer.copy(id = 222L).debtOnMadePayment(_unpaidQueue))
+        .describedAs("Keep debt when customer differs with the one in queue")
+        .isEqualTo(0.toBigDecimal())
   }
 
   @ParameterizedTest
   @EnumSource(QueueModel.Status::class)
   fun `debt on reverted payment with valid status`(status: QueueModel.Status) {
-    assertEquals(
-        if (status == QueueModel.Status.UNPAID) 100.toBigDecimal() else 0.toBigDecimal(),
-        _customer.debtOnRevertedPayment(_queue.copy(status = status)),
-        "Correctly calculate debt by reverting or keeping it")
+    assertThat(_customer.debtOnRevertedPayment(_queue.copy(status = status)))
+        .describedAs("Correctly calculate debt by reverting or keeping it")
+        .isEqualTo(if (status == QueueModel.Status.UNPAID) 100.toBigDecimal() else 0.toBigDecimal())
   }
 
   @Test
   fun `debt on reverted payment with different customer`() {
-    assertEquals(
-        0.toBigDecimal(),
-        _customer.copy(id = 222L).debtOnRevertedPayment(_unpaidQueue),
-        "Keep debt when customer differs with the one in queue")
+    assertThat(_customer.copy(id = 222L).debtOnRevertedPayment(_unpaidQueue))
+        .describedAs("Keep debt when customer differs with the one in queue")
+        .isEqualTo(0.toBigDecimal())
   }
 
   private fun `_debt on updated payment with valid status cases`(): Array<Array<Any>> =
@@ -373,10 +360,9 @@ class CustomerModelTest {
       newQueue: QueueModel,
       calculatedDebt: Int
   ) {
-    assertEquals(
-        calculatedDebt.toBigDecimal(),
-        _customer.debtOnUpdatedPayment(oldQueue, newQueue),
-        "Correctly calculate debt when payment is updated")
+    assertThat(_customer.debtOnUpdatedPayment(oldQueue, newQueue))
+        .describedAs("Correctly calculate debt when payment is updated")
+        .isEqualTo(calculatedDebt.toBigDecimal())
   }
 
   private fun `_debt on updated payment with different customer cases`(): Array<Array<Any>> =
@@ -401,16 +387,16 @@ class CustomerModelTest {
       calculatedDebt: Int
   ) {
     val secondCustomer: CustomerModel = _customer.copy(id = 222L)
-    assertEquals(
-        calculatedDebt.toBigDecimal(),
-        secondCustomer.debtOnUpdatedPayment(
-            oldQueue,
-            if (isCustomerInNewQueueEquals) {
-              newQueue.copy(customerId = secondCustomer.id, customer = secondCustomer)
-            } else {
-              newQueue
-            }),
-        "Correctly calculate debt based on customer differences between queues")
+    assertThat(
+            secondCustomer.debtOnUpdatedPayment(
+                oldQueue,
+                if (isCustomerInNewQueueEquals) {
+                  newQueue.copy(customerId = secondCustomer.id, customer = secondCustomer)
+                } else {
+                  newQueue
+                }))
+        .describedAs("Correctly calculate debt based on customer differences between queues")
+        .isEqualTo(calculatedDebt.toBigDecimal())
   }
 
   private fun `_debt on updated payment with old queue has unpaid status and no customer cases`():
@@ -422,11 +408,12 @@ class CustomerModelTest {
       newQueue: QueueModel,
       calculatedBalance: Long
   ) {
-    assertEquals(
-        calculatedBalance.toBigDecimal(),
-        _customer.debtOnUpdatedPayment(
-            _unpaidQueue.copy(customerId = null, customer = null), newQueue),
-        "Correctly calculate debt when the old queue has unpaid status and no customer")
+    assertThat(
+            _customer.debtOnUpdatedPayment(
+                _unpaidQueue.copy(customerId = null, customer = null), newQueue))
+        .describedAs(
+            "Correctly calculate debt when the old queue has unpaid status and no customer")
+        .isEqualTo(calculatedBalance.toBigDecimal())
   }
 
   private fun `_debt on updated payment with different grand total price cases`():
@@ -451,15 +438,15 @@ class CustomerModelTest {
       newQueueGrandTotalPrice: Int,
       calculatedDebt: Int
   ) {
-    assertEquals(
-        calculatedDebt.toBigDecimal(),
-        _customer.debtOnUpdatedPayment(
-            oldQueue,
-            newQueue.copy(
-                productOrders =
-                    newQueue.productOrders.map {
-                      it.copy(totalPrice = newQueueGrandTotalPrice.toBigDecimal())
-                    })),
-        "Correctly calculate debt when grand total price differs")
+    assertThat(
+            _customer.debtOnUpdatedPayment(
+                oldQueue,
+                newQueue.copy(
+                    productOrders =
+                        newQueue.productOrders.map {
+                          it.copy(totalPrice = newQueueGrandTotalPrice.toBigDecimal())
+                        })))
+        .describedAs("Correctly calculate debt when grand total price differs")
+        .isEqualTo(calculatedDebt.toBigDecimal())
   }
 }

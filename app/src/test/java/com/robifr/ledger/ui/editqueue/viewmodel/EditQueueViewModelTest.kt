@@ -40,13 +40,12 @@ import java.time.ZoneId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -112,39 +111,40 @@ class EditQueueViewModelTest(
 
   @Test
   fun `on initialize with arguments`() {
-    assertEquals(
-        CreateQueueState(
-            customer = _queueToEdit.customer,
-            temporalCustomer = _queueToEdit.customer,
-            date = _queueToEdit.date.atZone(ZoneId.systemDefault()),
-            status = _queueToEdit.status,
-            isStatusDialogShown = false,
-            paymentMethod = _queueToEdit.paymentMethod,
-            allowedPaymentMethods =
-                setOf(QueueModel.PaymentMethod.CASH, _queueToEdit.paymentMethod),
-            productOrders = _queueToEdit.productOrders,
-            note = _queueToEdit.note),
-        _viewModel.uiState.safeValue,
-        "Match state with the retrieved data from the fragment arguments")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Match state with the retrieved data from the fragment arguments")
+        .isEqualTo(
+            CreateQueueState(
+                customer = _queueToEdit.customer,
+                temporalCustomer = _queueToEdit.customer,
+                date = _queueToEdit.date.atZone(ZoneId.systemDefault()),
+                status = _queueToEdit.status,
+                isStatusDialogShown = false,
+                paymentMethod = _queueToEdit.paymentMethod,
+                allowedPaymentMethods =
+                    setOf(QueueModel.PaymentMethod.CASH, _queueToEdit.paymentMethod),
+                productOrders = _queueToEdit.productOrders,
+                note = _queueToEdit.note))
   }
 
   @Test
   fun `on initialize with empty initial queue`() {
     coEvery { _queueRepository.selectById(null) } returns null
-    assertThrows<NullPointerException>("Can't edit queue if there's no queue ID is provided") {
-      runTest {
-        _viewModel =
-            EditQueueViewModel(
-                dispatcher = _dispatcher,
-                queueRepository = _queueRepository,
-                customerRepository = mockk(),
-                productRepository = mockk(),
-                _savedStateHandle =
-                    SavedStateHandle().apply {
-                      set(EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key(), null)
-                    })
-      }
-    }
+    assertThatThrownBy {
+          runTest {
+            _viewModel =
+                EditQueueViewModel(
+                    dispatcher = _dispatcher,
+                    queueRepository = _queueRepository,
+                    customerRepository = mockk(),
+                    productRepository = mockk(),
+                    _savedStateHandle =
+                        SavedStateHandle().apply {
+                          set(EditQueueFragment.Arguments.INITIAL_QUEUE_ID_TO_EDIT_LONG.key(), null)
+                        })
+          }
+        }
+        .describedAs("Can't edit queue if there's no queue ID is provided")
   }
 
   @ParameterizedTest
@@ -174,14 +174,15 @@ class EditQueueViewModelTest(
         initialCustomer.balanceOnUpdatedPayment(
             initialQueue,
             initialQueue.copy(paymentMethod = QueueModel.PaymentMethod.ACCOUNT_BALANCE))
-    assertEquals(
-        if (futureTemporalCustomerBalance >= 0L) {
-          setOf(QueueModel.PaymentMethod.CASH, QueueModel.PaymentMethod.ACCOUNT_BALANCE)
-        } else {
-          setOf(QueueModel.PaymentMethod.CASH)
-        },
-        _viewModel.uiState.safeValue.allowedPaymentMethods,
-        "Remove account balance payment option when the temporal balance will be negative")
+    assertThat(_viewModel.uiState.safeValue.allowedPaymentMethods)
+        .describedAs(
+            "Remove account balance payment option when the temporal balance will be negative")
+        .isEqualTo(
+            if (futureTemporalCustomerBalance >= 0L) {
+              setOf(QueueModel.PaymentMethod.CASH, QueueModel.PaymentMethod.ACCOUNT_BALANCE)
+            } else {
+              setOf(QueueModel.PaymentMethod.CASH)
+            })
   }
 
   @Test
@@ -196,10 +197,10 @@ class EditQueueViewModelTest(
                   it.copy(totalPrice = it.totalPrice + 100.toBigDecimal())
                 })
     _viewModel.onProductOrdersChanged(editedQueue.productOrders)
-    assertEquals(
-        _customer.balanceOnUpdatedPayment(_queueToEdit, editedQueue),
-        _viewModel.uiState.safeValue.temporalCustomer?.balance,
-        "Update temporal customer's balance via `CustomerModel.balanceOnUpdatedPayment()`")
+    assertThat(_viewModel.uiState.safeValue.temporalCustomer?.balance)
+        .describedAs(
+            "Update temporal customer's balance via `CustomerModel.balanceOnUpdatedPayment()`")
+        .isEqualTo(_customer.balanceOnUpdatedPayment(_queueToEdit, editedQueue))
   }
 
   @Test
@@ -216,10 +217,9 @@ class EditQueueViewModelTest(
                 })
     _viewModel.onStatusChanged(editedQueue.status)
     _viewModel.onProductOrdersChanged(editedQueue.productOrders)
-    assertEquals(
-        _customer.debtOnUpdatedPayment(_queueToEdit, editedQueue),
-        _viewModel.uiState.safeValue.temporalCustomer?.debt,
-        "Update temporal customer's debt via `CustomerModel.debtOnUpdatedPayment()`")
+    assertThat(_viewModel.uiState.safeValue.temporalCustomer?.debt)
+        .describedAs("Update temporal customer's debt via `CustomerModel.debtOnUpdatedPayment()`")
+        .isEqualTo(_customer.debtOnUpdatedPayment(_queueToEdit, editedQueue))
   }
 
   @Test
@@ -228,9 +228,9 @@ class EditQueueViewModelTest(
 
     coEvery { _queueRepository.update(any()) } returns 0
     _viewModel.onSave()
-    assertDoesNotThrow("Prevent save for an empty product orders") {
-      coVerify(exactly = 0) { _queueRepository.update(any()) }
-    }
+    assertThatCode { coVerify(exactly = 0) { _queueRepository.update(any()) } }
+        .describedAs("Prevent save for an empty product orders")
+        .doesNotThrowAnyException()
   }
 
   @Test
@@ -238,10 +238,12 @@ class EditQueueViewModelTest(
     // Prevent save with add operation (parent class behavior) instead of update operation.
     coEvery { _queueRepository.update(any()) } returns 0
     _viewModel.onSave()
-    assertDoesNotThrow("Editing a queue shouldn't result in adding new data") {
-      coVerify(exactly = 0) { _queueRepository.add(any()) }
-      coVerify(exactly = 1) { _queueRepository.update(any()) }
-    }
+    assertThatCode {
+          coVerify(exactly = 0) { _queueRepository.add(any()) }
+          coVerify(exactly = 1) { _queueRepository.update(any()) }
+        }
+        .describedAs("Editing a queue shouldn't result in adding new data")
+        .doesNotThrowAnyException()
   }
 
   @ParameterizedTest
@@ -249,25 +251,22 @@ class EditQueueViewModelTest(
   fun `on save with edited queue`(effectedRows: Int) {
     coEvery { _queueRepository.update(any()) } returns effectedRows
     _viewModel.onSave()
-    assertAll(
-        {
-          assertNotNull(
-              _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the result via snackbar")
-        },
-        {
-          assertEquals(
-              if (effectedRows != 0) EditQueueResultState(_queueToEdit.id) else null,
-              _viewModel.editResultEvent.value?.data,
-              "Return result with the correct ID after success update")
-        },
-        {
-          assertDoesNotThrow("Update result event last to finish the fragment") {
+    assertSoftly {
+      it.assertThat(_viewModel.uiEvent.safeValue.snackbar?.data)
+          .describedAs("Notify the result via snackbar")
+          .isNotNull()
+      it.assertThat(_viewModel.editResultEvent.value?.data)
+          .describedAs("Return result with the correct ID after success update")
+          .isEqualTo(if (effectedRows != 0) EditQueueResultState(_queueToEdit.id) else null)
+      it.assertThatCode {
             verifyOrder {
               _uiEventObserver.onChanged(match { it.snackbar != null })
               if (effectedRows != 0) _editResultEventObserver.onChanged(any())
             }
           }
-        })
+          .describedAs("Update result event last to finish the fragment")
+          .doesNotThrowAnyException()
+    }
   }
 
   @ParameterizedTest
@@ -276,18 +275,13 @@ class EditQueueViewModelTest(
     if (isQueueChanged) _viewModel.onStatusChanged(QueueModel.Status.UNPAID)
 
     _viewModel.onBackPressed()
-    assertAll(
-        {
-          assertEquals(
-              if (isQueueChanged) true else null,
-              _viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data,
-              "Show unsaved changes dialog when there's a change")
-        },
-        {
-          assertEquals(
-              if (!isQueueChanged) true else null,
-              _viewModel.uiEvent.safeValue.isFragmentFinished?.data,
-              "Finish fragment when there's no change")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiEvent.safeValue.isUnsavedChangesDialogShown?.data)
+          .describedAs("Show unsaved changes dialog when there's a change")
+          .isEqualTo(if (isQueueChanged) true else null)
+      it.assertThat(_viewModel.uiEvent.safeValue.isFragmentFinished?.data)
+          .describedAs("Finish fragment when there's no change")
+          .isEqualTo(if (!isQueueChanged) true else null)
+    }
   }
 }

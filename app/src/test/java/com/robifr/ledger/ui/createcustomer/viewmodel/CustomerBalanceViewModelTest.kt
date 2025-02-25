@@ -26,7 +26,7 @@ import io.mockk.mockk
 import java.math.BigDecimal
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -57,25 +57,24 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
     val amountToAdd: Long = 100L
     val formattedAmountToAdd: String = "$1.00"
     _viewModel.onAddBalanceAmountTextChanged(formattedAmountToAdd)
-    assertEquals(
-        if ((currentBalance.toBigDecimal() + amountToAdd.toBigDecimal()).compareTo(
-            Long.MAX_VALUE.toBigDecimal()) > 0) {
-          currentFormattedAmount
-        } else {
-          formattedAmountToAdd
-        },
-        _viewModel.addBalanceState.safeValue.formattedAmount,
-        "Revert the state if the added balance exceeds the maximum allowed")
+    assertThat(_viewModel.addBalanceState.safeValue.formattedAmount)
+        .describedAs("Revert the state if the added balance exceeds the maximum allowed")
+        .isEqualTo(
+            if ((currentBalance.toBigDecimal() + amountToAdd.toBigDecimal()).compareTo(
+                Long.MAX_VALUE.toBigDecimal()) > 0) {
+              currentFormattedAmount
+            } else {
+              formattedAmountToAdd
+            })
   }
 
   @ParameterizedTest
   @ValueSource(longs = [0L, 500L])
   fun `on add balance amount text changed result add button enabled`(amount: Long) {
     _viewModel.onAddBalanceAmountTextChanged(CurrencyFormat.format(amount.toBigDecimal(), "en-US"))
-    assertEquals(
-        amount > 0,
-        _viewModel.addBalanceState.safeValue.isAddButtonEnabled,
-        "Enable add button when the amount is more than zero")
+    assertThat(_viewModel.addBalanceState.safeValue.isAddButtonEnabled)
+        .describedAs("Enable add button when the amount is more than zero")
+        .isEqualTo(amount > 0)
   }
 
   @ParameterizedTest
@@ -84,25 +83,24 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onAddBalanceAmountTextChanged("$1")
 
     if (isShown) _viewModel.onAddBalanceDialogShown() else _viewModel.onAddBalanceDialogClosed()
-    assertEquals(
-        if (isShown) {
-          _viewModel.addBalanceState.safeValue.copy(isDialogShown = true)
-        } else {
-          CustomerBalanceAddState(
-              isDialogShown = false, formattedAmount = "", isAddButtonEnabled = false)
-        },
-        _viewModel.addBalanceState.safeValue,
-        "Preserve other fields when the dialog shown and reset when closed")
+    assertThat(_viewModel.addBalanceState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown and reset when closed")
+        .isEqualTo(
+            if (isShown) {
+              _viewModel.addBalanceState.safeValue.copy(isDialogShown = true)
+            } else {
+              CustomerBalanceAddState(
+                  isDialogShown = false, formattedAmount = "", isAddButtonEnabled = false)
+            })
   }
 
   @Test
   fun `on add balance submitted`() {
     _viewModel.onAddBalanceAmountTextChanged("$1.00")
     _viewModel.onAddBalanceSubmitted()
-    assertEquals(
-        _createCustomerViewModel.uiState.safeValue.copy(balance = 100L),
-        _createCustomerViewModel.uiState.safeValue,
-        "Add balance to state by submitted amount after submission")
+    assertThat(_createCustomerViewModel.uiState.safeValue)
+        .describedAs("Add balance to state by submitted amount after submission")
+        .isEqualTo(_createCustomerViewModel.uiState.safeValue.copy(balance = 100L))
   }
 
   @ParameterizedTest
@@ -117,24 +115,23 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
     val balanceAfter: BigDecimal = (currentBalance - withdrawAmount).toBigDecimal()
     val isBalanceSufficient: Boolean = balanceAfter.compareTo(0.toBigDecimal()) >= 0
     _viewModel.onWithdrawAmountTextChanged(formattedAmountToReduce)
-    assertEquals(
-        _viewModel.withdrawBalanceState.safeValue.copy(
-            formattedAmount =
-                if (isBalanceSufficient) formattedAmountToReduce else currentFormattedAmount,
-            availableAmountToWithdraw =
-                if (isBalanceSufficient) balanceAfter.toLong() else currentBalance),
-        _viewModel.withdrawBalanceState.safeValue,
-        "Revert the state if the balance to withdraw is insufficient")
+    assertThat(_viewModel.withdrawBalanceState.safeValue)
+        .describedAs("Revert the state if the balance to withdraw is insufficient")
+        .isEqualTo(
+            _viewModel.withdrawBalanceState.safeValue.copy(
+                formattedAmount =
+                    if (isBalanceSufficient) formattedAmountToReduce else currentFormattedAmount,
+                availableAmountToWithdraw =
+                    if (isBalanceSufficient) balanceAfter.toLong() else currentBalance))
   }
 
   @ParameterizedTest
   @ValueSource(longs = [0L, 500L])
   fun `on withdraw balance amount text changed result withdraw button enabled`(amount: Long) {
     _viewModel.onWithdrawAmountTextChanged(CurrencyFormat.format(amount.toBigDecimal(), "en-US"))
-    assertEquals(
-        amount > 0,
-        _viewModel.withdrawBalanceState.safeValue.isWithdrawButtonEnabled,
-        "Enable withdraw button when the amount is more than zero")
+    assertThat(_viewModel.withdrawBalanceState.safeValue.isWithdrawButtonEnabled)
+        .describedAs("Enable withdraw button when the amount is more than zero")
+        .isEqualTo(amount > 0)
   }
 
   @ParameterizedTest
@@ -145,18 +142,18 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
 
     if (isShown) _viewModel.onWithdrawBalanceDialogShown()
     else _viewModel.onWithdrawBalanceDialogClosed()
-    assertEquals(
-        if (isShown) {
-          _viewModel.withdrawBalanceState.safeValue.copy(isDialogShown = true)
-        } else {
-          CustomerBalanceWithdrawState(
-              isDialogShown = false,
-              formattedAmount = "",
-              availableAmountToWithdraw = 100L,
-              isWithdrawButtonEnabled = false)
-        },
-        _viewModel.withdrawBalanceState.safeValue,
-        "Preserve other fields when the dialog shown and reset when closed")
+    assertThat(_viewModel.withdrawBalanceState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown and reset when closed")
+        .isEqualTo(
+            if (isShown) {
+              _viewModel.withdrawBalanceState.safeValue.copy(isDialogShown = true)
+            } else {
+              CustomerBalanceWithdrawState(
+                  isDialogShown = false,
+                  formattedAmount = "",
+                  availableAmountToWithdraw = 100L,
+                  isWithdrawButtonEnabled = false)
+            })
   }
 
   @Test
@@ -165,9 +162,8 @@ class CustomerBalanceViewModelTest(private val _dispatcher: TestDispatcher) {
     _viewModel.onWithdrawAmountTextChanged("$1.00")
 
     _viewModel.onWithdrawBalanceSubmitted()
-    assertEquals(
-        _createCustomerViewModel.uiState.safeValue.copy(balance = 0L),
-        _createCustomerViewModel.uiState.safeValue,
-        "Reduce balance in state by submitted amount after submission")
+    assertThat(_createCustomerViewModel.uiState.safeValue)
+        .describedAs("Reduce balance in state by submitted amount after submission")
+        .isEqualTo(_createCustomerViewModel.uiState.safeValue.copy(balance = 0L))
   }
 }

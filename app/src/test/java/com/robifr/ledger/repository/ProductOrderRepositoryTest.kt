@@ -26,11 +26,9 @@ import io.mockk.verify
 import java.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -89,27 +87,26 @@ class ProductOrderRepositoryTest {
       isUsingList: Boolean,
       notifyCount: Int
   ) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                if (isUsingList) listOfNotNull(insertedId) else insertedId,
+    assertSoftly {
+      runTest {
+        it.assertThat(
                 if (isUsingList) {
                   _productOrderRepository.add(listOf(_productOrder.copy(id = initialId)))
                 } else {
                   _productOrderRepository.add(_productOrder.copy(id = initialId))
-                },
-                "Return the inserted product order ID")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify added product order to the `ModelChangedListener`") {
+                })
+            .describedAs("Return the inserted product order ID")
+            .isEqualTo(if (isUsingList) listOfNotNull(insertedId) else insertedId)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelAdded(
                   listOfNotNull(insertedProductOrder?.copy(id = insertedId)).ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify added product order to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   private fun `_update product order cases`(): Array<Array<Any?>> =
@@ -130,27 +127,26 @@ class ProductOrderRepositoryTest {
       isUsingList: Boolean,
       notifyCount: Int
   ) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                listOfNotNull(updatedProductOrder).size,
+    assertSoftly {
+      runTest {
+        it.assertThat(
                 if (isUsingList) {
                   _productOrderRepository.update(listOf(_productOrder.copy(id = initialId)))
                 } else {
                   _productOrderRepository.update(_productOrder.copy(id = initialId))
-                },
-                "Return the number of effected rows")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify updated product order to the `ModelChangedListener`") {
+                })
+            .describedAs("Return the number of effected rows")
+            .isEqualTo(listOfNotNull(updatedProductOrder).size)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelUpdated(
                   listOfNotNull(updatedProductOrder).ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify updated product order to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   private fun `_delete product order cases`(): Array<Array<Any?>> =
@@ -171,27 +167,26 @@ class ProductOrderRepositoryTest {
       isUsingList: Boolean,
       notifyCount: Int
   ) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                listOfNotNull(deletedProductOrder).size,
+    assertSoftly {
+      runTest {
+        it.assertThat(
                 if (isUsingList) {
                   _productOrderRepository.delete(listOf(_productOrder.copy(id = initialId)))
                 } else {
                   _productOrderRepository.delete(initialId)
-                },
-                "Return the number of effected rows")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify deleted product order to the `ModelChangedListener`") {
+                })
+            .describedAs("Return the number of effected rows")
+            .isEqualTo(listOfNotNull(deletedProductOrder).size)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelDeleted(
                   listOfNotNull(deletedProductOrder).ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify deleted product order to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   private fun `_upsert product order cases`(): Array<Array<Any?>> =
@@ -213,26 +208,25 @@ class ProductOrderRepositoryTest {
       isUsingList: Boolean,
       notifyCount: Int
   ) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                if (isUsingList) listOfNotNull(upsertedId) else upsertedId,
+    assertSoftly {
+      runTest {
+        it.assertThat(
                 if (isUsingList) {
                   _productOrderRepository.upsert(listOf(_productOrder.copy(id = initialId)))
                 } else {
                   _productOrderRepository.upsert(_productOrder.copy(id = initialId))
-                },
-                "Return the upserted product order ID")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify upserted product order to the `ModelChangedListener`") {
+                })
+            .describedAs("Return the upserted product order ID")
+            .isEqualTo(if (isUsingList) listOfNotNull(upsertedId) else upsertedId)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelUpserted(
                   listOfNotNull(upsertedProductOrder.copy(id = upsertedId)).ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify upserted product order to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 }

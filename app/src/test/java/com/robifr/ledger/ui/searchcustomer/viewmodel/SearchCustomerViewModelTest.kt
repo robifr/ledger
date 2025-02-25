@@ -39,13 +39,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -85,19 +84,19 @@ class SearchCustomerViewModelTest(
 
   @Test
   fun `on initialize with no arguments`() {
-    assertEquals(
-        SearchCustomerState(
-            isSelectionEnabled = false,
-            isToolbarVisible = true,
-            initialQuery = "",
-            query = "",
-            initialSelectedCustomerIds = listOf(),
-            customers = listOf(),
-            expandedCustomerIndex = -1,
-            isCustomerMenuDialogShown = false,
-            selectedCustomerMenu = null),
-        _viewModel.uiState.safeValue,
-        "Apply the default state if no fragment arguments are provided")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Apply the default state if no fragment arguments are provided")
+        .isEqualTo(
+            SearchCustomerState(
+                isSelectionEnabled = false,
+                isToolbarVisible = true,
+                initialQuery = "",
+                query = "",
+                initialSelectedCustomerIds = listOf(),
+                customers = listOf(),
+                expandedCustomerIndex = -1,
+                isCustomerMenuDialogShown = false,
+                selectedCustomerMenu = null))
   }
 
   @Test
@@ -114,27 +113,27 @@ class SearchCustomerViewModelTest(
             },
             _dispatcher,
             _customerRepository)
-    assertEquals(
-        SearchCustomerState(
-            isSelectionEnabled = true,
-            isToolbarVisible = false,
-            initialQuery = "Amy",
-            query = "",
-            initialSelectedCustomerIds = listOf(111L),
-            customers = listOf(),
-            expandedCustomerIndex = -1,
-            isCustomerMenuDialogShown = false,
-            selectedCustomerMenu = null),
-        _viewModel.uiState.safeValue,
-        "Match state with the retrieved data from the fragment arguments")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Match state with the retrieved data from the fragment arguments")
+        .isEqualTo(
+            SearchCustomerState(
+                isSelectionEnabled = true,
+                isToolbarVisible = false,
+                initialQuery = "Amy",
+                query = "",
+                initialSelectedCustomerIds = listOf(111L),
+                customers = listOf(),
+                expandedCustomerIndex = -1,
+                isCustomerMenuDialogShown = false,
+                selectedCustomerMenu = null))
   }
 
   @Test
   fun `on cleared`() {
     _viewModel.onLifecycleOwnerDestroyed()
-    assertDoesNotThrow("Remove attached listener from the repository") {
-      verify { _customerRepository.removeModelChangedListener(any()) }
-    }
+    assertThatCode { verify { _customerRepository.removeModelChangedListener(any()) } }
+        .describedAs("Remove attached listener from the repository")
+        .doesNotThrowAnyException()
   }
 
   @Test
@@ -143,19 +142,18 @@ class SearchCustomerViewModelTest(
     _viewModel.onSearch("B")
     _viewModel.onSearch("C")
     advanceUntilIdle()
-    assertDoesNotThrow("Prevent search from triggering multiple times when typing quickly") {
-      coVerify(atMost = 1) { _customerRepository.search(any()) }
-    }
+    assertThatCode { coVerify(atMost = 1) { _customerRepository.search(any()) } }
+        .describedAs("Prevent search from triggering multiple times when typing quickly")
+        .doesNotThrowAnyException()
   }
 
   @Test
   fun `on search with complete query`() = runTest {
     _viewModel.onSearch("A")
     advanceUntilIdle()
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(query = "A", customers = listOf(_customer)),
-        _viewModel.uiState.safeValue,
-        "Update customers based from the queried search result")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Update customers based from the queried search result")
+        .isEqualTo(_viewModel.uiState.safeValue.copy(query = "A", customers = listOf(_customer)))
   }
 
   private fun `_on expanded customer index changed cases`(): Array<Array<Any>> =
@@ -178,19 +176,14 @@ class SearchCustomerViewModelTest(
 
     _viewModel.onExpandedCustomerIndexChanged(newIndex)
     advanceUntilIdle()
-    assertAll(
-        {
-          assertEquals(
-              expandedIndex,
-              _viewModel.uiState.safeValue.expandedCustomerIndex,
-              "Update expanded customer index and reset when selecting the same one")
-        },
-        {
-          assertEquals(
-              RecyclerAdapterState.ItemChanged(updatedIndexes),
-              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-              "Notify recycler adapter of item changes")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.expandedCustomerIndex)
+          .describedAs("Update expanded customer index and reset when selecting the same one")
+          .isEqualTo(expandedIndex)
+      it.assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+          .describedAs("Notify recycler adapter of item changes")
+          .isEqualTo(RecyclerAdapterState.ItemChanged(updatedIndexes))
+    }
   }
 
   @ParameterizedTest
@@ -198,18 +191,18 @@ class SearchCustomerViewModelTest(
   fun `on customer selected`(isCustomerNull: Boolean) {
     val customer: CustomerModel? = if (!isCustomerNull) _customer else null
     _viewModel.onCustomerSelected(customer)
-    assertEquals(
-        SearchCustomerResultState(customer?.id),
-        _viewModel.uiEvent.safeValue.searchResult?.data,
-        "Update result state based from the selected customer")
+    assertThat(_viewModel.uiEvent.safeValue.searchResult?.data)
+        .describedAs("Update result state based from the selected customer")
+        .isEqualTo(SearchCustomerResultState(customer?.id))
   }
 
   @ParameterizedTest
   @ValueSource(longs = [0L, 111L])
   fun `on delete customer`(idToDelete: Long) {
     _viewModel.onDeleteCustomer(idToDelete)
-    assertNotNull(
-        _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the delete result via snackbar")
+    assertThat(_viewModel.uiEvent.safeValue.snackbar?.data)
+        .describedAs("Notify the delete result via snackbar")
+        .isNotNull()
   }
 
   @ParameterizedTest
@@ -232,19 +225,19 @@ class SearchCustomerViewModelTest(
 
     if (isShown) _viewModel.onCustomerMenuDialogShown(_customer)
     else _viewModel.onCustomerMenuDialogClosed()
-    assertEquals(
-        SearchCustomerState(
-            isSelectionEnabled = true,
-            isToolbarVisible = false,
-            initialQuery = "Amy",
-            query = "",
-            initialSelectedCustomerIds = listOf(111L),
-            customers = listOf(),
-            expandedCustomerIndex = 0,
-            isCustomerMenuDialogShown = isShown,
-            selectedCustomerMenu = if (isShown) _customer else null),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            SearchCustomerState(
+                isSelectionEnabled = true,
+                isToolbarVisible = false,
+                initialQuery = "Amy",
+                query = "",
+                initialSelectedCustomerIds = listOf(111L),
+                customers = listOf(),
+                expandedCustomerIndex = 0,
+                isCustomerMenuDialogShown = isShown,
+                selectedCustomerMenu = if (isShown) _customer else null))
   }
 
   @Test
@@ -252,11 +245,11 @@ class SearchCustomerViewModelTest(
     val searchState: SearchState =
         SearchState(customers = listOf(_customer), products = listOf(), query = "A")
     _viewModel.onSearchUiStateChanged(searchState)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            customers = searchState.customers, query = searchState.query),
-        _viewModel.uiState.safeValue,
-        "Immediately update current state based from the search's UI state")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Immediately update current state based from the search's UI state")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                customers = searchState.customers, query = searchState.query))
   }
 
   @Test
@@ -266,10 +259,9 @@ class SearchCustomerViewModelTest(
 
     val updatedCustomer: CustomerModel = _customer.copy(balance = _customer.balance + 100L)
     _customerRepository.update(updatedCustomer)
-    assertEquals(
-        listOf(updatedCustomer),
-        _viewModel.uiState.safeValue.customers,
-        "Sync customers when any are updated in the database")
+    assertThat(_viewModel.uiState.safeValue.customers)
+        .describedAs("Sync customers when any are updated in the database")
+        .isEqualTo(listOf(updatedCustomer))
   }
 
   @Test
@@ -279,11 +271,13 @@ class SearchCustomerViewModelTest(
     _viewModel.onSearch(_viewModel.uiState.safeValue.query)
     advanceUntilIdle()
     _viewModel.onSearchUiStateChanged(SearchState(listOf(), listOf(), ""))
-    assertDoesNotThrow("Notify recycler adapter of dataset changes") {
-      verify(exactly = 3) {
-        _uiEventObserver.onChanged(
-            match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
-      }
-    }
+    assertThatCode {
+          verify(exactly = 3) {
+            _uiEventObserver.onChanged(
+                match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
+          }
+        }
+        .describedAs("Notify recycler adapter of dataset changes")
+        .doesNotThrowAnyException()
   }
 }

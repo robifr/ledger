@@ -11,6 +11,7 @@ androidxTestJUnit = "1.2.1"
 androidxTestRunner = "1.6.2"
 androidxViewPager2 = "1.1.0"
 androidxWebkit = "1.12.1"
+assertJ = "3.27.2"
 dataFaker = "2.4.2"
 hilt = "2.51.1"
 jUnit = "5.11.3"
@@ -47,6 +48,7 @@ androidx-test-runner = { module = "androidx.test:runner", version.ref = "android
 androidx-viewpager2 = { module = "androidx.viewpager2:viewpager2", version.ref = "androidxViewPager2" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "androidxWebkit" }
 app-cash-licensee-gradle-plugin = { module = "app.cash.licensee:licensee-gradle-plugin", version.ref = "licensee" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertJ" }
 datafaker = { module = "net.datafaker:datafaker", version.ref = "dataFaker" }
 google-android-material = { module = "com.google.android.material:material", version.ref = "materialComponents" }
 google-dagger-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }

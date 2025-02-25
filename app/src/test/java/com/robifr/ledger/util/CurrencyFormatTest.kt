@@ -21,7 +21,7 @@ import com.robifr.ledger.R
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -48,10 +48,9 @@ class CurrencyFormatTest {
   @ParameterizedTest
   @MethodSource("_format currency cases")
   fun `format currency`(languageTag: String, amount: BigDecimal, formattedAmount: String) {
-    assertEquals(
-        formattedAmount,
-        CurrencyFormat.format(amount, languageTag),
-        "Correctly format amount with locale ${languageTag}")
+    assertThat(CurrencyFormat.format(amount, languageTag))
+        .describedAs("Correctly format amount with locale ${languageTag}")
+        .isEqualTo(formattedAmount)
   }
 
   private fun `_format cents currency cases`(): Array<Array<Any>> =
@@ -66,10 +65,9 @@ class CurrencyFormatTest {
   @ParameterizedTest
   @MethodSource("_format cents currency cases")
   fun `format cents currency`(languageTag: String, amount: Int, formattedAmount: String) {
-    assertEquals(
-        formattedAmount,
-        CurrencyFormat.formatCents(amount.toBigDecimal(), languageTag),
-        "Correctly format cents amount with locale ${languageTag}")
+    assertThat(CurrencyFormat.formatCents(amount.toBigDecimal(), languageTag))
+        .describedAs("Correctly format cents amount with locale ${languageTag}")
+        .isEqualTo(formattedAmount)
   }
 
   private fun `_format currency unit with different digits cases`(): Array<Array<Any>> =
@@ -114,10 +112,9 @@ class CurrencyFormatTest {
     every { context.getString(R.string.symbol_million) } returns "M"
     every { context.getString(R.string.symbol_billion) } returns "B"
     every { context.getString(R.string.symbol_trillion) } returns "T"
-    assertEquals(
-        formattedAmount,
-        CurrencyFormat.formatWithUnit(context, amount, _us),
-        "Correctly format amount with different digits")
+    assertThat(CurrencyFormat.formatWithUnit(context, amount, _us))
+        .describedAs("Correctly format amount with different digits")
+        .isEqualTo(formattedAmount)
   }
 
   private fun `_parse currency with formatted amount cases`(): Array<Array<Any>> =
@@ -136,10 +133,9 @@ class CurrencyFormatTest {
       formattedAmount: String,
       parsedAmount: BigDecimal
   ) {
-    assertEquals(
-        parsedAmount.stripTrailingZeros(),
-        CurrencyFormat.parse(formattedAmount, languageTag),
-        "Correctly parse amount with locale ${languageTag}")
+    assertThat(CurrencyFormat.parse(formattedAmount, languageTag))
+        .describedAs("Correctly parse amount with locale ${languageTag}")
+        .isEqualTo(parsedAmount.stripTrailingZeros())
   }
 
   private fun `_parse currency cases`(): Array<Array<Any>> =
@@ -154,10 +150,9 @@ class CurrencyFormatTest {
   @ParameterizedTest
   @MethodSource("_parse currency cases")
   fun `parse currency`(languageTag: String, amount: String, parsedAmount: BigDecimal) {
-    assertEquals(
-        parsedAmount,
-        CurrencyFormat.parse(amount, languageTag),
-        "Fallback to zero for anything that can't be parsed")
+    assertThat(CurrencyFormat.parse(amount, languageTag))
+        .describedAs("Fallback to zero for anything that can't be parsed")
+        .isEqualTo(parsedAmount)
   }
 
   private fun `_parse currency to cents cases`(): Array<Array<Any>> =
@@ -176,10 +171,9 @@ class CurrencyFormatTest {
       formattedAmount: String,
       parsedAmount: BigDecimal
   ) {
-    assertEquals(
-        parsedAmount.stripTrailingZeros(),
-        CurrencyFormat.parseToCents(formattedAmount, languageTag),
-        "Correctly parse amount to cents with locale ${languageTag}")
+    assertThat(CurrencyFormat.parseToCents(formattedAmount, languageTag))
+        .describedAs("Correctly parse amount to cents with locale ${languageTag}")
+        .isEqualTo(parsedAmount.stripTrailingZeros())
   }
 
   private fun `_is valid to parse and format cases`(): Array<Array<Any>> =
@@ -200,10 +194,9 @@ class CurrencyFormatTest {
   @ParameterizedTest
   @MethodSource("_is valid to parse and format cases")
   fun `is valid to parse and format`(languageTag: String, amount: String, isValid: Boolean) {
-    assertEquals(
-        isValid,
-        CurrencyFormat.isValidToParseAndFormat(amount, languageTag),
-        "Returns true for the amount that can be both parsed and formatted")
+    assertThat(CurrencyFormat.isValidToParseAndFormat(amount, languageTag))
+        .describedAs("Returns true for the amount that can be both parsed and formatted")
+        .isEqualTo(isValid)
   }
 
   private fun `_is symbol position at start cases`(): Array<Array<Any>> =
@@ -218,10 +211,10 @@ class CurrencyFormatTest {
   @ParameterizedTest
   @MethodSource("_is symbol position at start cases")
   fun `is symbol position at start`(languageTag: String, isSymbolAtStart: Boolean) {
-    assertEquals(
-        isSymbolAtStart,
-        CurrencyFormat.isSymbolAtStart(languageTag),
-        if (isSymbolAtStart) "Locale ${languageTag} symbol is at the start of the string"
-        else "Locale ${languageTag} symbol is at the end of the string")
+    assertThat(CurrencyFormat.isSymbolAtStart(languageTag))
+        .describedAs(
+            if (isSymbolAtStart) "Locale ${languageTag} symbol is at the start of the string"
+            else "Locale ${languageTag} symbol is at the end of the string")
+        .isEqualTo(isSymbolAtStart)
   }
 }

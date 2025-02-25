@@ -52,13 +52,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -167,11 +166,14 @@ class QueueViewModelTest(
             _queueRepository = _queueRepository,
             _customerRepository = _customerRepository,
             _permission = _permission)
-    assertEquals(
-        if (isPermissionGranted) listOf(_firstQueue, _secondQueue).map { QueuePaginatedInfo(it) }
-        else listOf(),
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Prevent to load all queues when storage permission is denied")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Prevent to load all queues when storage permission is denied")
+        .isEqualTo(
+            if (isPermissionGranted) {
+              listOf(_firstQueue, _secondQueue).map { QueuePaginatedInfo(it) }
+            } else {
+              listOf()
+            })
   }
 
   @ParameterizedTest
@@ -188,15 +190,16 @@ class QueueViewModelTest(
             _queueRepository = _queueRepository,
             _customerRepository = _customerRepository,
             _permission = _permission)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        if (isTableEmpty) listOf() else listOf(QueuePaginatedInfo(_firstQueue))),
-            isNoQueuesCreatedIllustrationVisible = isTableEmpty),
-        _viewModel.uiState.safeValue,
-        "Show illustration for no queues created")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Show illustration for no queues created")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            if (isTableEmpty) listOf()
+                            else listOf(QueuePaginatedInfo(_firstQueue))),
+                isNoQueuesCreatedIllustrationVisible = isTableEmpty))
   }
 
   @Test
@@ -212,21 +215,22 @@ class QueueViewModelTest(
             _queueRepository = _queueRepository,
             _customerRepository = _customerRepository,
             _permission = _permission)
-    assertEquals(
-        listOf(_firstQueue, _secondQueue).map { QueuePaginatedInfo(it) },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sort queues based from the default sort method")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sort queues based from the default sort method")
+        .isEqualTo(listOf(_firstQueue, _secondQueue).map { QueuePaginatedInfo(it) })
   }
 
   @Test
   fun `on cleared`() {
     _viewModel.onLifecycleOwnerDestroyed()
-    assertDoesNotThrow("Remove attached listeners from the repository") {
-      verify {
-        _queueRepository.removeModelChangedListener(any())
-        _customerRepository.removeModelChangedListener(any())
-      }
-    }
+    assertThatCode {
+          verify {
+            _queueRepository.removeModelChangedListener(any())
+            _customerRepository.removeModelChangedListener(any())
+          }
+        }
+        .describedAs("Remove attached listeners from the repository")
+        .doesNotThrowAnyException()
   }
 
   @ParameterizedTest
@@ -239,64 +243,64 @@ class QueueViewModelTest(
 
     if (isShown) _viewModel.onQueueMenuDialogShown(QueuePaginatedInfo(_firstQueue))
     else _viewModel.onQueueMenuDialogClosed()
-    assertEquals(
-        QueueState(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
-            expandedQueueIndex = 0,
-            expandedQueue = _firstQueue,
-            isQueueMenuDialogShown = isShown,
-            selectedQueueMenu = if (isShown) QueuePaginatedInfo(_firstQueue) else null,
-            isNoQueuesCreatedIllustrationVisible = false,
-            sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true),
-            isSortMethodDialogShown = false),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            QueueState(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
+                expandedQueueIndex = 0,
+                expandedQueue = _firstQueue,
+                isQueueMenuDialogShown = isShown,
+                selectedQueueMenu = if (isShown) QueuePaginatedInfo(_firstQueue) else null,
+                isNoQueuesCreatedIllustrationVisible = false,
+                sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true),
+                isSortMethodDialogShown = false))
   }
 
   @Test
   fun `on sort method changed with different sort method`() {
     val sortMethod: QueueSortMethod = QueueSortMethod(QueueSortMethod.SortBy.CUSTOMER_NAME, false)
     _viewModel.onSortMethodChanged(sortMethod)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
-            sortMethod = sortMethod),
-        _viewModel.uiState.safeValue,
-        "Sort queues based from the sorting method")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Sort queues based from the sorting method")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
+                sortMethod = sortMethod))
   }
 
   @Test
   fun `on sort method changed with same sort`() {
     _viewModel.onSortMethodChanged(QueueSortMethod.SortBy.DATE)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
-            sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true)),
-        _viewModel.uiState.safeValue,
-        "Reverse sort order when selecting the same sort option")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Reverse sort order when selecting the same sort option")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
+                sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true)))
   }
 
   @Test
   fun `on sort method changed with different sort`() {
     _viewModel.onSortMethodChanged(QueueSortMethod.SortBy.CUSTOMER_NAME)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
-            sortMethod = QueueSortMethod(QueueSortMethod.SortBy.CUSTOMER_NAME, false)),
-        _viewModel.uiState.safeValue,
-        "Sort queues based from the sorting method")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Sort queues based from the sorting method")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
+                sortMethod = QueueSortMethod(QueueSortMethod.SortBy.CUSTOMER_NAME, false)))
   }
 
   @ParameterizedTest
@@ -308,21 +312,21 @@ class QueueViewModelTest(
     _viewModel.onSortMethodChanged(QueueSortMethod(QueueSortMethod.SortBy.DATE, true))
 
     if (isShown) _viewModel.onSortMethodDialogShown() else _viewModel.onSortMethodDialogClosed()
-    assertEquals(
-        QueueState(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
-            expandedQueueIndex = 0,
-            expandedQueue = _firstQueue,
-            isQueueMenuDialogShown = false,
-            selectedQueueMenu = null,
-            isNoQueuesCreatedIllustrationVisible = false,
-            sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true),
-            isSortMethodDialogShown = isShown),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            QueueState(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdQueue, _secondQueue).map { QueuePaginatedInfo(it) }),
+                expandedQueueIndex = 0,
+                expandedQueue = _firstQueue,
+                isQueueMenuDialogShown = false,
+                selectedQueueMenu = null,
+                isNoQueuesCreatedIllustrationVisible = false,
+                sortMethod = QueueSortMethod(QueueSortMethod.SortBy.DATE, true),
+                isSortMethodDialogShown = isShown))
   }
 
   private fun `_on expanded queue index changed cases`(): Array<Array<Any>> =
@@ -345,37 +349,32 @@ class QueueViewModelTest(
 
     _viewModel.onExpandedQueueIndexChanged(newIndex)
     advanceUntilIdle()
-    assertAll(
-        {
-          assertEquals(
-              expandedIndex,
-              _viewModel.uiState.safeValue.expandedQueueIndex,
-              "Update expanded queue index and reset when selecting the same one")
-        },
-        {
-          assertEquals(
-              RecyclerAdapterState.ItemChanged(updatedIndexes),
-              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-              "Notify recycler adapter of item changes")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.expandedQueueIndex)
+          .describedAs("Update expanded queue index and reset when selecting the same one")
+          .isEqualTo(expandedIndex)
+      it.assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+          .describedAs("Notify recycler adapter of item changes")
+          .isEqualTo(RecyclerAdapterState.ItemChanged(updatedIndexes))
+    }
   }
 
   @ParameterizedTest
   @ValueSource(longs = [0L, 111L])
   fun `on delete queue`(idToDelete: Long) {
     _viewModel.onDeleteQueue(idToDelete)
-    assertNotNull(
-        _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the delete result via snackbar")
+    assertThat(_viewModel.uiEvent.safeValue.snackbar?.data)
+        .describedAs("Notify the delete result via snackbar")
+        .isNotNull()
   }
 
   @Test
   fun `on sync queue from database`() = runTest {
     val updatedQueue: QueueModel = _firstQueue.copy(status = QueueModel.Status.COMPLETED)
     _queueRepository.update(updatedQueue)
-    assertEquals(
-        listOf(updatedQueue, _secondQueue).map { QueuePaginatedInfo(it) },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sync queues when any are updated in the database")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sync queues when any are updated in the database")
+        .isEqualTo(listOf(updatedQueue, _secondQueue).map { QueuePaginatedInfo(it) })
   }
 
   @Test
@@ -383,12 +382,13 @@ class QueueViewModelTest(
     _queueRepository.delete(_firstQueue.id)
     _queueRepository.delete(_secondQueue.id)
     _queueRepository.delete(_thirdQueue.id)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination = _viewModel.uiState.safeValue.pagination.copy(paginatedItems = listOf()),
-            isNoQueuesCreatedIllustrationVisible = true),
-        _viewModel.uiState.safeValue,
-        "Show illustration for no queues created")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Show illustration for no queues created")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(paginatedItems = listOf()),
+                isNoQueuesCreatedIllustrationVisible = true))
   }
 
   @Test
@@ -396,12 +396,12 @@ class QueueViewModelTest(
     val updatedCustomer: CustomerModel? =
         _firstQueue.customer?.let { it.copy(balance = it.balance + 100L) }
     updatedCustomer?.let { _customerRepository.update(it) }
-    assertEquals(
-        listOf(_firstQueue.copy(customer = updatedCustomer), _secondQueue).map {
-          QueuePaginatedInfo(it)
-        },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sync queues when any customer is updated in the database")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sync queues when any customer is updated in the database")
+        .isEqualTo(
+            listOf(_firstQueue.copy(customer = updatedCustomer), _secondQueue).map {
+              QueuePaginatedInfo(it)
+            })
   }
 
   @Test
@@ -410,12 +410,14 @@ class QueueViewModelTest(
     _queueRepository.add(_firstQueue.copy(id = null))
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod)
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod.sortBy)
-    assertDoesNotThrow("Notify recycler adapter of dataset changes") {
-      // The extra one is from notified customer during `_queueRepository.add()`.
-      verify(exactly = 4) {
-        _uiEventObserver.onChanged(
-            match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
-      }
-    }
+    assertThatCode {
+          // The extra one is from notified customer during `_queueRepository.add()`.
+          verify(exactly = 4) {
+            _uiEventObserver.onChanged(
+                match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
+          }
+        }
+        .describedAs("Notify recycler adapter of dataset changes")
+        .doesNotThrowAnyException()
   }
 }

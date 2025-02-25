@@ -35,11 +35,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -99,16 +99,18 @@ class FilterCustomerViewModelTest(
                           .key(),
                       listOfNotNull(_firstCustomer.id).toLongArray())
                 })
-    assertEquals(
-        FilterCustomerState(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) }),
-            expandedCustomerIndex = -1,
-            filteredCustomers = listOf(CustomerPaginatedInfo(_firstCustomer))),
-        _viewModel.uiState.safeValue,
-        "Match state with the retrieved data from the fragment argument")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Match state with the retrieved data from the fragment argument")
+        .isEqualTo(
+            FilterCustomerState(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_firstCustomer, _secondCustomer).map {
+                              CustomerPaginatedInfo(it)
+                            }),
+                expandedCustomerIndex = -1,
+                filteredCustomers = listOf(CustomerPaginatedInfo(_firstCustomer))))
   }
 
   @Test
@@ -123,10 +125,9 @@ class FilterCustomerViewModelTest(
             _dispatcher = _dispatcher,
             _customerRepository = _customerRepository,
             _savedStateHandle = SavedStateHandle())
-    assertEquals(
-        listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sort customers based on their name")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sort customers based on their name")
+        .isEqualTo(listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) })
   }
 
   private fun `_on customer checked changed cases`(): Array<Array<Any>> =
@@ -149,19 +150,15 @@ class FilterCustomerViewModelTest(
     _viewModel.onCustomerCheckedChanged(CustomerPaginatedInfo(oldCheckedCustomer))
 
     _viewModel.onCustomerCheckedChanged(CustomerPaginatedInfo(newCheckedCustomer))
-    assertAll(
-        {
-          assertEquals(
-              checkedCustomers.map { CustomerPaginatedInfo(it) },
-              _viewModel.uiState.safeValue.filteredCustomers,
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.filteredCustomers)
+          .describedAs(
               "Add checked customer to the filtered customers and remove it when double checked")
-        },
-        {
-          assertEquals(
-              RecyclerAdapterState.ItemChanged(recyclerItemIndexToUpdate),
-              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-              "Notify recycler adapter of item changes")
-        })
+          .isEqualTo(checkedCustomers.map { CustomerPaginatedInfo(it) })
+      it.assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+          .describedAs("Notify recycler adapter of item changes")
+          .isEqualTo(RecyclerAdapterState.ItemChanged(recyclerItemIndexToUpdate))
+    }
   }
 
   private fun `_on expanded customer index changed cases`(): Array<Array<Any>> =
@@ -184,19 +181,14 @@ class FilterCustomerViewModelTest(
 
     _viewModel.onExpandedCustomerIndexChanged(newIndex)
     advanceUntilIdle()
-    assertAll(
-        {
-          assertEquals(
-              expandedIndex,
-              _viewModel.uiState.safeValue.expandedCustomerIndex,
-              "Update expanded customer index and reset when selecting the same one")
-        },
-        {
-          assertEquals(
-              RecyclerAdapterState.ItemChanged(updatedIndexes),
-              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-              "Notify recycler adapter of item changes")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.expandedCustomerIndex)
+          .describedAs("Update expanded customer index and reset when selecting the same one")
+          .isEqualTo(expandedIndex)
+      it.assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+          .describedAs("Notify recycler adapter of item changes")
+          .isEqualTo(RecyclerAdapterState.ItemChanged(updatedIndexes))
+    }
   }
 
   @ParameterizedTest
@@ -207,10 +199,10 @@ class FilterCustomerViewModelTest(
     }
 
     _viewModel.onSave()
-    assertEquals(
-        FilterCustomerResultState(
-            if (isAnyCustomerFiltered) listOfNotNull(_firstCustomer.id) else listOf()),
-        _viewModel.uiEvent.safeValue.filterResult?.data,
-        "Update result state based on the selected customer")
+    assertThat(_viewModel.uiEvent.safeValue.filterResult?.data)
+        .describedAs("Update result state based on the selected customer")
+        .isEqualTo(
+            FilterCustomerResultState(
+                if (isAnyCustomerFiltered) listOfNotNull(_firstCustomer.id) else listOf()))
   }
 }

@@ -37,13 +37,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -95,16 +94,16 @@ class ProductViewModelTest(
             maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _productRepository = _productRepository)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        if (isTableEmpty) listOf()
-                        else listOf(ProductPaginatedInfo(_firstProduct))),
-            isNoProductsAddedIllustrationVisible = isTableEmpty),
-        _viewModel.uiState.safeValue,
-        "Show illustration for no products added")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Show illustration for no products added")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            if (isTableEmpty) listOf()
+                            else listOf(ProductPaginatedInfo(_firstProduct))),
+                isNoProductsAddedIllustrationVisible = isTableEmpty))
   }
 
   @Test
@@ -118,18 +117,17 @@ class ProductViewModelTest(
             maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _productRepository = _productRepository)
-    assertEquals(
-        listOf(_firstProduct, _secondProduct).map { ProductPaginatedInfo(it) },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sort products based from the default sort method")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sort products based from the default sort method")
+        .isEqualTo(listOf(_firstProduct, _secondProduct).map { ProductPaginatedInfo(it) })
   }
 
   @Test
   fun `on cleared`() {
     _viewModel.onLifecycleOwnerDestroyed()
-    assertDoesNotThrow("Remove attached listener from the repository") {
-      verify { _productRepository.removeModelChangedListener(any()) }
-    }
+    assertThatCode { verify { _productRepository.removeModelChangedListener(any()) } }
+        .describedAs("Remove attached listener from the repository")
+        .doesNotThrowAnyException()
   }
 
   @ParameterizedTest
@@ -142,63 +140,63 @@ class ProductViewModelTest(
 
     if (isShown) _viewModel.onProductMenuDialogShown(ProductPaginatedInfo(_firstProduct))
     else _viewModel.onProductMenuDialogClosed()
-    assertEquals(
-        ProductState(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdProduct, _secondProduct).map { ProductPaginatedInfo(it) }),
-            expandedProductIndex = 0,
-            isProductMenuDialogShown = isShown,
-            selectedProductMenu = if (isShown) ProductPaginatedInfo(_firstProduct) else null,
-            isNoProductsAddedIllustrationVisible = false,
-            sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, false),
-            isSortMethodDialogShown = false),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            ProductState(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdProduct, _secondProduct).map { ProductPaginatedInfo(it) }),
+                expandedProductIndex = 0,
+                isProductMenuDialogShown = isShown,
+                selectedProductMenu = if (isShown) ProductPaginatedInfo(_firstProduct) else null,
+                isNoProductsAddedIllustrationVisible = false,
+                sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, false),
+                isSortMethodDialogShown = false))
   }
 
   @Test
   fun `on sort method changed with different sort method`() {
     val sortMethod: ProductSortMethod = ProductSortMethod(ProductSortMethod.SortBy.PRICE, true)
     _viewModel.onSortMethodChanged(sortMethod)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdProduct, _firstProduct).map { ProductPaginatedInfo(it) }),
-            sortMethod = sortMethod),
-        _viewModel.uiState.safeValue,
-        "Sort products based from the sorting method")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Sort products based from the sorting method")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdProduct, _firstProduct).map { ProductPaginatedInfo(it) }),
+                sortMethod = sortMethod))
   }
 
   @Test
   fun `on sort method changed with same sort`() {
     _viewModel.onSortMethodChanged(ProductSortMethod.SortBy.NAME)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdProduct, _secondProduct).map { ProductPaginatedInfo(it) }),
-            sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, false)),
-        _viewModel.uiState.safeValue,
-        "Reverse sort order when selecting the same sort option")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Reverse sort order when selecting the same sort option")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdProduct, _secondProduct).map { ProductPaginatedInfo(it) }),
+                sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, false)))
   }
 
   @Test
   fun `on sort method changed with different sort`() {
     _viewModel.onSortMethodChanged(ProductSortMethod.SortBy.PRICE)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdProduct, _firstProduct).map { ProductPaginatedInfo(it) }),
-            sortMethod = ProductSortMethod(ProductSortMethod.SortBy.PRICE, true)),
-        _viewModel.uiState.safeValue,
-        "Sort products based from the sorting method")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Sort products based from the sorting method")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdProduct, _firstProduct).map { ProductPaginatedInfo(it) }),
+                sortMethod = ProductSortMethod(ProductSortMethod.SortBy.PRICE, true)))
   }
 
   @ParameterizedTest
@@ -210,20 +208,20 @@ class ProductViewModelTest(
     _viewModel.onSortMethodChanged(ProductSortMethod(ProductSortMethod.SortBy.NAME, false))
 
     if (isShown) _viewModel.onSortMethodDialogShown() else _viewModel.onSortMethodDialogClosed()
-    assertEquals(
-        ProductState(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdProduct, _secondProduct).map { ProductPaginatedInfo(it) }),
-            expandedProductIndex = 0,
-            isProductMenuDialogShown = false,
-            selectedProductMenu = null,
-            isNoProductsAddedIllustrationVisible = false,
-            sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, false),
-            isSortMethodDialogShown = isShown),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            ProductState(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdProduct, _secondProduct).map { ProductPaginatedInfo(it) }),
+                expandedProductIndex = 0,
+                isProductMenuDialogShown = false,
+                selectedProductMenu = null,
+                isNoProductsAddedIllustrationVisible = false,
+                sortMethod = ProductSortMethod(ProductSortMethod.SortBy.NAME, false),
+                isSortMethodDialogShown = isShown))
   }
 
   private fun `_on expanded product index changed cases`(): Array<Array<Any>> =
@@ -246,37 +244,32 @@ class ProductViewModelTest(
 
     _viewModel.onExpandedProductIndexChanged(newIndex)
     advanceUntilIdle()
-    assertAll(
-        {
-          assertEquals(
-              expandedIndex,
-              _viewModel.uiState.safeValue.expandedProductIndex,
-              "Update expanded product index and reset when selecting the same one")
-        },
-        {
-          assertEquals(
-              RecyclerAdapterState.ItemChanged(updatedIndexes),
-              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-              "Notify recycler adapter of item changes")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.expandedProductIndex)
+          .describedAs("Update expanded product index and reset when selecting the same one")
+          .isEqualTo(expandedIndex)
+      it.assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+          .describedAs("Notify recycler adapter of item changes")
+          .isEqualTo(RecyclerAdapterState.ItemChanged(updatedIndexes))
+    }
   }
 
   @ParameterizedTest
   @ValueSource(longs = [0L, 111L])
   fun `on delete product`(idToDelete: Long) {
     _viewModel.onDeleteProduct(idToDelete)
-    assertNotNull(
-        _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the delete result via snackbar")
+    assertThat(_viewModel.uiEvent.safeValue.snackbar?.data)
+        .describedAs("Notify the delete result via snackbar")
+        .isNotNull()
   }
 
   @Test
   fun `on sync product from database`() = runTest {
     val updatedProduct: ProductModel = _firstProduct.copy(price = _firstProduct.price + 100L)
     _productRepository.update(updatedProduct)
-    assertEquals(
-        listOf(updatedProduct, _secondProduct).map { ProductPaginatedInfo(it) },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sync products when any are updated in the database")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sync products when any are updated in the database")
+        .isEqualTo(listOf(updatedProduct, _secondProduct).map { ProductPaginatedInfo(it) })
   }
 
   @Test
@@ -284,12 +277,13 @@ class ProductViewModelTest(
     _productRepository.delete(_firstProduct.id)
     _productRepository.delete(_secondProduct.id)
     _productRepository.delete(_thirdProduct.id)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination = _viewModel.uiState.safeValue.pagination.copy(paginatedItems = listOf()),
-            isNoProductsAddedIllustrationVisible = true),
-        _viewModel.uiState.safeValue,
-        "Show illustration for no products created")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Show illustration for no products created")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(paginatedItems = listOf()),
+                isNoProductsAddedIllustrationVisible = true))
   }
 
   @Test
@@ -298,11 +292,13 @@ class ProductViewModelTest(
     _productRepository.add(_firstProduct.copy(id = null))
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod)
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod.sortBy)
-    assertDoesNotThrow("Notify recycler adapter of dataset changes") {
-      verify(exactly = 3) {
-        _uiEventObserver.onChanged(
-            match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
-      }
-    }
+    assertThatCode {
+          verify(exactly = 3) {
+            _uiEventObserver.onChanged(
+                match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
+          }
+        }
+        .describedAs("Notify recycler adapter of dataset changes")
+        .doesNotThrowAnyException()
   }
 }

@@ -38,12 +38,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -102,18 +102,20 @@ class SelectCustomerViewModelTest(
                 },
             _dispatcher = _dispatcher,
             _customerRepository = _customerRepository)
-    assertEquals(
-        SelectCustomerState(
-            initialSelectedCustomer = _firstCustomer,
-            selectedCustomerOnDatabase = _firstCustomer,
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) }),
-            expandedCustomerIndex = -1,
-            isSelectedCustomerPreviewExpanded = false),
-        _viewModel.uiState.safeValue,
-        "Match state with the retrieved data from the fragment argument")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Match state with the retrieved data from the fragment argument")
+        .isEqualTo(
+            SelectCustomerState(
+                initialSelectedCustomer = _firstCustomer,
+                selectedCustomerOnDatabase = _firstCustomer,
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_firstCustomer, _secondCustomer).map {
+                              CustomerPaginatedInfo(it)
+                            }),
+                expandedCustomerIndex = -1,
+                isSelectedCustomerPreviewExpanded = false))
   }
 
   @Test
@@ -128,45 +130,38 @@ class SelectCustomerViewModelTest(
             savedStateHandle = SavedStateHandle(),
             _dispatcher = _dispatcher,
             _customerRepository = _customerRepository)
-    assertEquals(
-        listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sort customers based from its name")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sort customers based from its name")
+        .isEqualTo(listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) })
   }
 
   @Test
   fun `on initialize result notify recycler adapter item changes`() {
-    assertEquals(
-        RecyclerAdapterState.ItemChanged(0),
-        _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-        "Notify recycler adapter of header holder changes")
+    assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+        .describedAs("Notify recycler adapter of header holder changes")
+        .isEqualTo(RecyclerAdapterState.ItemChanged(0))
   }
 
   @Test
   fun `on cleared`() {
     _viewModel.onLifecycleOwnerDestroyed()
-    assertDoesNotThrow("Remove attached listener from the repository") {
-      verify { _customerRepository.removeModelChangedListener(any()) }
-    }
+    assertThatCode { verify { _customerRepository.removeModelChangedListener(any()) } }
+        .describedAs("Remove attached listener from the repository")
+        .doesNotThrowAnyException()
   }
 
   @ParameterizedTest
   @ValueSource(booleans = [true, false])
   fun `on selected customer preview expanded`(isExpanded: Boolean) {
     _viewModel.onSelectedCustomerPreviewExpanded(isExpanded)
-    assertAll(
-        {
-          assertEquals(
-              isExpanded,
-              _viewModel.uiState.safeValue.isSelectedCustomerPreviewExpanded,
-              "Update whether selected customer preview is expanded")
-        },
-        {
-          assertEquals(
-              RecyclerAdapterState.ItemChanged(0),
-              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-              "Notify recycler adapter of header holder changes")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.isSelectedCustomerPreviewExpanded)
+          .describedAs("Update whether selected customer preview is expanded")
+          .isEqualTo(isExpanded)
+      it.assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+          .describedAs("Notify recycler adapter of header holder changes")
+          .isEqualTo(RecyclerAdapterState.ItemChanged(0))
+    }
   }
 
   private fun `_on expanded customer index changed cases`(): Array<Array<Any>> =
@@ -189,19 +184,14 @@ class SelectCustomerViewModelTest(
 
     _viewModel.onExpandedCustomerIndexChanged(newIndex)
     advanceUntilIdle()
-    assertAll(
-        {
-          assertEquals(
-              expandedIndex,
-              _viewModel.uiState.safeValue.expandedCustomerIndex,
-              "Update expanded customer index and reset when selecting the same one")
-        },
-        {
-          assertEquals(
-              RecyclerAdapterState.ItemChanged(updatedIndexes),
-              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-              "Notify recycler adapter of item changes")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.expandedCustomerIndex)
+          .describedAs("Update expanded customer index and reset when selecting the same one")
+          .isEqualTo(expandedIndex)
+      it.assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+          .describedAs("Notify recycler adapter of item changes")
+          .isEqualTo(RecyclerAdapterState.ItemChanged(updatedIndexes))
+    }
   }
 
   @ParameterizedTest
@@ -210,10 +200,9 @@ class SelectCustomerViewModelTest(
     val customer: CustomerPaginatedInfo? =
         if (!isCustomerNull) CustomerPaginatedInfo(_secondCustomer) else null
     _viewModel.onCustomerSelected(customer)
-    assertEquals(
-        SelectCustomerResultState(customer?.id),
-        _viewModel.uiEvent.safeValue.selectResult?.data,
-        "Update result state based from the selected customer")
+    assertThat(_viewModel.uiEvent.safeValue.selectResult?.data)
+        .describedAs("Update result state based from the selected customer")
+        .isEqualTo(SelectCustomerResultState(customer?.id))
   }
 
   @Test
@@ -221,21 +210,22 @@ class SelectCustomerViewModelTest(
     val updatedCustomer: CustomerModel =
         _firstCustomer.copy(balance = _firstCustomer.balance + 100L)
     _customerRepository.update(updatedCustomer)
-    assertEquals(
-        listOf(updatedCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sync customers when any are updated in the database")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sync customers when any are updated in the database")
+        .isEqualTo(listOf(updatedCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) })
   }
 
   @Test
   fun `on state changed result notify recycler adapter dataset changes`() = runTest {
     clearMocks(_uiEventObserver)
     _customerRepository.add(_firstCustomer.copy(id = null))
-    assertDoesNotThrow("Notify recycler adapter of dataset changes") {
-      verify(exactly = 1) {
-        _uiEventObserver.onChanged(
-            match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
-      }
-    }
+    assertThatCode {
+          verify(exactly = 1) {
+            _uiEventObserver.onChanged(
+                match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
+          }
+        }
+        .describedAs("Notify recycler adapter of dataset changes")
+        .doesNotThrowAnyException()
   }
 }

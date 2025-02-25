@@ -24,11 +24,10 @@ import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -66,23 +65,21 @@ class ProductRepositoryTest {
       insertedProduct: ProductModel?,
       notifyCount: Int
   ) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                insertedId,
-                _productRepository.add(_product.copy(id = initialId)),
-                "Return the inserted product ID")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify added product to the `ModelChangedListener`") {
+    assertSoftly {
+      runTest {
+        it.assertThat(_productRepository.add(_product.copy(id = initialId)))
+            .describedAs("Return the inserted product ID")
+            .isEqualTo(insertedId)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelAdded(
                   listOfNotNull(insertedProduct?.copy(id = insertedId)).ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify added product to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   private fun `_update product cases`(): Array<Array<Any?>> =
@@ -95,22 +92,20 @@ class ProductRepositoryTest {
   @ParameterizedTest
   @MethodSource("_update product cases")
   fun `update product`(initialId: Long?, updatedProduct: ProductModel?, notifyCount: Int) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                listOfNotNull(updatedProduct).size,
-                _productRepository.update(_product.copy(id = initialId)),
-                "Return the number of effected rows")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify updated product to the `ModelChangedListener`") {
+    assertSoftly {
+      runTest {
+        it.assertThat(_productRepository.update(_product.copy(id = initialId)))
+            .describedAs("Return the number of effected rows")
+            .isEqualTo(listOfNotNull(updatedProduct).size)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelUpdated(listOfNotNull(updatedProduct).ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify updated product to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   private fun `_delete product cases`(): Array<Array<Any?>> =
@@ -123,22 +118,20 @@ class ProductRepositoryTest {
   @ParameterizedTest
   @MethodSource("_delete product cases")
   fun `delete product`(initialId: Long?, deletedProduct: ProductModel?, notifyCount: Int) {
-    assertAll(
-        {
-          runTest {
-            assertEquals(
-                listOfNotNull(deletedProduct).size,
-                _productRepository.delete(initialId),
-                "Return the number of effected rows")
-          }
-        },
-        {
-          assertDoesNotThrow("Notify deleted product to the `ModelChangedListener`") {
+    assertSoftly {
+      runTest {
+        it.assertThat(_productRepository.delete(initialId))
+            .describedAs("Return the number of effected rows")
+            .isEqualTo(listOfNotNull(deletedProduct).size)
+      }
+      it.assertThatCode {
             verify(exactly = notifyCount) {
               _modelChangedListener.onModelDeleted(listOfNotNull(deletedProduct).ifEmpty { any() })
             }
           }
-        })
+          .describedAs("Notify deleted product to the `ModelChangedListener`")
+          .doesNotThrowAnyException()
+    }
   }
 
   private fun `_search product cases`(): Array<Array<Any?>> =
@@ -160,9 +153,8 @@ class ProductRepositoryTest {
     _localDao.idGenerator.lastIncrement = 0
     productNamesInDb.map { _localDao.data.add(_product.copy(name = it)) }
 
-    assertEquals(
-        productNamesFound,
-        _productRepository.search(query).map { it.name },
-        "Search for products whose names contain the query")
+    assertThat(_productRepository.search(query).map { it.name })
+        .describedAs("Search for products whose names contain the query")
+        .isEqualTo(productNamesFound)
   }
 }

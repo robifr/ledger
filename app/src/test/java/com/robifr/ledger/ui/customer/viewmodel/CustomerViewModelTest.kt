@@ -37,13 +37,12 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatCode
+import org.assertj.core.api.SoftAssertions.assertSoftly
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertAll
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -100,16 +99,16 @@ class CustomerViewModelTest(
             maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _customerRepository = _customerRepository)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        if (isTableEmpty) listOf()
-                        else listOf(CustomerPaginatedInfo(_firstCustomer))),
-            isNoCustomersAddedIllustrationVisible = isTableEmpty),
-        _viewModel.uiState.safeValue,
-        "Show illustration for no customers added")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Show illustration for no customers added")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            if (isTableEmpty) listOf()
+                            else listOf(CustomerPaginatedInfo(_firstCustomer))),
+                isNoCustomersAddedIllustrationVisible = isTableEmpty))
   }
 
   @Test
@@ -123,18 +122,17 @@ class CustomerViewModelTest(
             maxPaginatedItemInMemory = 2,
             _dispatcher = _dispatcher,
             _customerRepository = _customerRepository)
-    assertEquals(
-        listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sort customers based from the default sort method")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sort customers based from the default sort method")
+        .isEqualTo(listOf(_firstCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) })
   }
 
   @Test
   fun `on cleared`() {
     _viewModel.onLifecycleOwnerDestroyed()
-    assertDoesNotThrow("Remove attached listener from the repository") {
-      verify { _customerRepository.removeModelChangedListener(any()) }
-    }
+    assertThatCode { verify { _customerRepository.removeModelChangedListener(any()) } }
+        .describedAs("Remove attached listener from the repository")
+        .doesNotThrowAnyException()
   }
 
   @ParameterizedTest
@@ -147,63 +145,71 @@ class CustomerViewModelTest(
 
     if (isShown) _viewModel.onCustomerMenuDialogShown(CustomerPaginatedInfo(_thirdCustomer))
     else _viewModel.onCustomerMenuDialogClosed()
-    assertEquals(
-        CustomerState(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) }),
-            expandedCustomerIndex = 0,
-            isCustomerMenuDialogShown = isShown,
-            selectedCustomerMenu = if (isShown) CustomerPaginatedInfo(_thirdCustomer) else null,
-            isNoCustomersAddedIllustrationVisible = false,
-            sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false),
-            isSortMethodDialogShown = false),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            CustomerState(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdCustomer, _secondCustomer).map {
+                              CustomerPaginatedInfo(it)
+                            }),
+                expandedCustomerIndex = 0,
+                isCustomerMenuDialogShown = isShown,
+                selectedCustomerMenu = if (isShown) CustomerPaginatedInfo(_thirdCustomer) else null,
+                isNoCustomersAddedIllustrationVisible = false,
+                sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false),
+                isSortMethodDialogShown = false))
   }
 
   @Test
   fun `on sort method changed with different sort method`() {
     val sortMethod: CustomerSortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.BALANCE, true)
     _viewModel.onSortMethodChanged(sortMethod)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdCustomer, _firstCustomer).map { CustomerPaginatedInfo(it) }),
-            sortMethod = sortMethod),
-        _viewModel.uiState.safeValue,
-        "Sort customers based from the sorting method")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Sort customers based from the sorting method")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdCustomer, _firstCustomer).map {
+                              CustomerPaginatedInfo(it)
+                            }),
+                sortMethod = sortMethod))
   }
 
   @Test
   fun `on sort method changed with same sort`() {
     _viewModel.onSortMethodChanged(CustomerSortMethod.SortBy.NAME)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) }),
-            sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false)),
-        _viewModel.uiState.safeValue,
-        "Reverse sort order when selecting the same sort option")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Reverse sort order when selecting the same sort option")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdCustomer, _secondCustomer).map {
+                              CustomerPaginatedInfo(it)
+                            }),
+                sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false)))
   }
 
   @Test
   fun `on sort method changed with different sort`() {
     _viewModel.onSortMethodChanged(CustomerSortMethod.SortBy.BALANCE)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdCustomer, _firstCustomer).map { CustomerPaginatedInfo(it) }),
-            sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.BALANCE, true)),
-        _viewModel.uiState.safeValue,
-        "Sort customers based from the sorting method")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Sort customers based from the sorting method")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdCustomer, _firstCustomer).map {
+                              CustomerPaginatedInfo(it)
+                            }),
+                sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.BALANCE, true)))
   }
 
   @ParameterizedTest
@@ -215,20 +221,22 @@ class CustomerViewModelTest(
     _viewModel.onSortMethodChanged(CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false))
 
     if (isShown) _viewModel.onSortMethodDialogShown() else _viewModel.onSortMethodDialogClosed()
-    assertEquals(
-        CustomerState(
-            pagination =
-                _viewModel.uiState.safeValue.pagination.copy(
-                    paginatedItems =
-                        listOf(_thirdCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) }),
-            expandedCustomerIndex = 0,
-            isCustomerMenuDialogShown = false,
-            selectedCustomerMenu = null,
-            isNoCustomersAddedIllustrationVisible = false,
-            sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false),
-            isSortMethodDialogShown = isShown),
-        _viewModel.uiState.safeValue,
-        "Preserve other fields when the dialog shown or closed")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Preserve other fields when the dialog shown or closed")
+        .isEqualTo(
+            CustomerState(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(
+                        paginatedItems =
+                            listOf(_thirdCustomer, _secondCustomer).map {
+                              CustomerPaginatedInfo(it)
+                            }),
+                expandedCustomerIndex = 0,
+                isCustomerMenuDialogShown = false,
+                selectedCustomerMenu = null,
+                isNoCustomersAddedIllustrationVisible = false,
+                sortMethod = CustomerSortMethod(CustomerSortMethod.SortBy.NAME, false),
+                isSortMethodDialogShown = isShown))
   }
 
   private fun `_on expanded customer index changed cases`(): Array<Array<Any>> =
@@ -251,27 +259,23 @@ class CustomerViewModelTest(
 
     _viewModel.onExpandedCustomerIndexChanged(newIndex)
     advanceUntilIdle()
-    assertAll(
-        {
-          assertEquals(
-              expandedIndex,
-              _viewModel.uiState.safeValue.expandedCustomerIndex,
-              "Update expanded customer index and reset when selecting the same one")
-        },
-        {
-          assertEquals(
-              RecyclerAdapterState.ItemChanged(updatedIndexes),
-              _viewModel.uiEvent.safeValue.recyclerAdapter?.data,
-              "Notify recycler adapter of item changes")
-        })
+    assertSoftly {
+      it.assertThat(_viewModel.uiState.safeValue.expandedCustomerIndex)
+          .describedAs("Update expanded customer index and reset when selecting the same one")
+          .isEqualTo(expandedIndex)
+      it.assertThat(_viewModel.uiEvent.safeValue.recyclerAdapter?.data)
+          .describedAs("Notify recycler adapter of item changes")
+          .isEqualTo(RecyclerAdapterState.ItemChanged(updatedIndexes))
+    }
   }
 
   @ParameterizedTest
   @ValueSource(longs = [0L, 111L])
   fun `on delete customer`(idToDelete: Long) {
     _viewModel.onDeleteCustomer(idToDelete)
-    assertNotNull(
-        _viewModel.uiEvent.safeValue.snackbar?.data, "Notify the delete result via snackbar")
+    assertThat(_viewModel.uiEvent.safeValue.snackbar?.data)
+        .describedAs("Notify the delete result via snackbar")
+        .isNotNull()
   }
 
   @Test
@@ -279,10 +283,9 @@ class CustomerViewModelTest(
     val updatedCustomer: CustomerModel =
         _firstCustomer.copy(balance = _firstCustomer.balance + 100L)
     _customerRepository.update(updatedCustomer)
-    assertEquals(
-        listOf(updatedCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) },
-        _viewModel.uiState.safeValue.pagination.paginatedItems,
-        "Sync customers when any are updated in the database")
+    assertThat(_viewModel.uiState.safeValue.pagination.paginatedItems)
+        .describedAs("Sync customers when any are updated in the database")
+        .isEqualTo(listOf(updatedCustomer, _secondCustomer).map { CustomerPaginatedInfo(it) })
   }
 
   @Test
@@ -290,12 +293,13 @@ class CustomerViewModelTest(
     _customerRepository.delete(_firstCustomer.id)
     _customerRepository.delete(_secondCustomer.id)
     _customerRepository.delete(_thirdCustomer.id)
-    assertEquals(
-        _viewModel.uiState.safeValue.copy(
-            pagination = _viewModel.uiState.safeValue.pagination.copy(paginatedItems = listOf()),
-            isNoCustomersAddedIllustrationVisible = true),
-        _viewModel.uiState.safeValue,
-        "Show illustration for no customers created")
+    assertThat(_viewModel.uiState.safeValue)
+        .describedAs("Show illustration for no customers created")
+        .isEqualTo(
+            _viewModel.uiState.safeValue.copy(
+                pagination =
+                    _viewModel.uiState.safeValue.pagination.copy(paginatedItems = listOf()),
+                isNoCustomersAddedIllustrationVisible = true))
   }
 
   @Test
@@ -304,11 +308,13 @@ class CustomerViewModelTest(
     _customerRepository.add(_firstCustomer.copy(id = null))
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod)
     _viewModel.onSortMethodChanged(_viewModel.uiState.safeValue.sortMethod.sortBy)
-    assertDoesNotThrow("Notify recycler adapter of dataset changes") {
-      verify(exactly = 3) {
-        _uiEventObserver.onChanged(
-            match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
-      }
-    }
+    assertThatCode {
+          verify(exactly = 3) {
+            _uiEventObserver.onChanged(
+                match { it.recyclerAdapter?.data == RecyclerAdapterState.DataSetChanged })
+          }
+        }
+        .describedAs("Notify recycler adapter of dataset changes")
+        .doesNotThrowAnyException()
   }
 }
