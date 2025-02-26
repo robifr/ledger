@@ -68,9 +68,19 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
       -- Sorting based on the data from `QueueSortMethod`.
       ORDER BY
           CASE WHEN :sortBy = 'CUSTOMER_NAME' AND :isAscending IS TRUE
+              -- Sort null to the last.
+              THEN CASE WHEN filtered_queues_cte.customer_name IS NULL THEN 1 ELSE 0 END
+              END ASC,
+          CASE WHEN :sortBy = 'CUSTOMER_NAME' AND :isAscending IS TRUE
               THEN filtered_queues_cte.customer_name END COLLATE NOCASE ASC,
+
+          CASE WHEN :sortBy = 'CUSTOMER_NAME' AND :isAscending IS FALSE
+              -- Sort null to the first.
+              THEN CASE WHEN filtered_queues_cte.customer_name IS NULL THEN 0 ELSE 1 END
+              END ASC,
           CASE WHEN :sortBy = 'CUSTOMER_NAME' AND :isAscending IS FALSE
               THEN filtered_queues_cte.customer_name END COLLATE NOCASE DESC,
+
           CASE WHEN :sortBy = 'DATE' AND :isAscending IS TRUE
               THEN filtered_queues_cte.date END ASC,
           CASE WHEN :sortBy = 'DATE' AND :isAscending IS FALSE
@@ -104,9 +114,19 @@ abstract class QueueDao : QueryAccessible<QueueModel> {
       -- Sorting based on the data from `QueueSortMethod`.
       ORDER BY
           CASE WHEN :sortBy = 'CUSTOMER_NAME' AND :isAscending IS TRUE
+              -- Sort null to the last.
+              THEN CASE WHEN filtered_queues_cte.customer_name IS NULL THEN 1 ELSE 0 END
+              END ASC,
+          CASE WHEN :sortBy = 'CUSTOMER_NAME' AND :isAscending IS TRUE
               THEN filtered_queues_cte.customer_name END COLLATE NOCASE ASC,
+
+          CASE WHEN :sortBy = 'CUSTOMER_NAME' AND :isAscending IS FALSE
+              -- Sort null to the first.
+              THEN CASE WHEN filtered_queues_cte.customer_name IS NULL THEN 0 ELSE 1 END
+              END ASC,
           CASE WHEN :sortBy = 'CUSTOMER_NAME' AND :isAscending IS FALSE
               THEN filtered_queues_cte.customer_name END COLLATE NOCASE DESC,
+
           CASE WHEN :sortBy = 'DATE' AND :isAscending IS TRUE
               THEN filtered_queues_cte.date END ASC,
           CASE WHEN :sortBy = 'DATE' AND :isAscending IS FALSE

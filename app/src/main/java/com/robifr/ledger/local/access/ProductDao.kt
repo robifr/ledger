@@ -89,9 +89,19 @@ abstract class ProductDao : QueryAccessible<ProductModel> {
       -- Sorting based on the data from `ProductSortMethod`.
       ORDER BY
           CASE WHEN :sortBy = 'NAME' AND :isAscending IS TRUE
+              -- Sort null to the last.
+              THEN CASE WHEN filtered_products_cte.name IS NULL THEN 1 ELSE 0 END
+              END ASC,
+          CASE WHEN :sortBy = 'NAME' AND :isAscending IS TRUE
               THEN filtered_products_cte.name END COLLATE NOCASE ASC,
+
+          CASE WHEN :sortBy = 'NAME' AND :isAscending IS FALSE
+              -- Sort null to the first.
+              THEN CASE WHEN filtered_products_cte.name IS NULL THEN 0 ELSE 1 END
+              END ASC,
           CASE WHEN :sortBy = 'NAME' AND :isAscending IS FALSE
               THEN filtered_products_cte.name END COLLATE NOCASE DESC,
+
           CASE WHEN :sortBy = 'PRICE' AND :isAscending IS TRUE
               THEN filtered_products_cte.price END ASC,
           CASE WHEN :sortBy = 'PRICE' AND :isAscending IS FALSE
