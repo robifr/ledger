@@ -15,9 +15,9 @@ assertJ = "3.27.2"
 dataFaker = "2.4.2"
 hilt = "2.51.1"
 jUnit = "5.11.3"
+jacoco = "0.8.12"
 kotlin = "2.0.20"
 kotlinxCoroutines = "1.9.0"
-kotlinxKover = "0.9.1"
 kotlinxSerializationJson = "1.7.3"
 ksp = "2.0.20-1.0.24" # The initial version must correspond to the Kotlin version.
 leakcanary = "2.14"
@@ -73,4 +73,3 @@ google-devtools-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 jetbrains-kotlin-plugin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 jetbrains-kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-jetbrains-kotlinx-kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kotlinxKover" }

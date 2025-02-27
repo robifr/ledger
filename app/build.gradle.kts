@@ -25,7 +25,7 @@ plugins {
   id(libs.plugins.jetbrains.kotlin.android.get().pluginId)
   id(libs.plugins.jetbrains.kotlin.plugin.parcelize.get().pluginId)
   id(libs.plugins.jetbrains.kotlin.plugin.serialization.get().pluginId)
-  id(libs.plugins.jetbrains.kotlinx.kover.get().pluginId)
+  jacoco
 }
 
 android {
@@ -76,6 +76,8 @@ android {
 
     debug {
       applicationIdSuffix = ".debug"
+      enableAndroidTestCoverage = true
+      enableUnitTestCoverage = true
       isDebuggable = true
       manifestPlaceholders["appLabel"] = "@string/appName_debug"
       manifestPlaceholders["activityLauncherName"] = ".ui.main.MainActivity"
@@ -156,21 +158,16 @@ dependencies {
   "qaImplementation"(libs.datafaker)
 }
 
-licensee { allow("Apache-2.0") }
-
-kover {
-  currentProject.createVariant("main") { add("debug") }
-
-  reports {
-    filters.excludes {
-      packages("**.databinding", "dagger.hilt.*", "hilt_aggregated_deps")
-      classes("**.R.class", "**.R\$*.class", "**.BuildConfig", "**.*_*")
-    }
-  }
+licensee {
+  allow("Apache-2.0")
+  allow("EPL-2.0")
 }
+
+jacoco { toolVersion = libs.versions.jacoco.get() }
 
 tasks.withType<Test> {
   useJUnitPlatform()
+
   testLogging {
     showStandardStreams = true
     showExceptions = true
@@ -178,6 +175,86 @@ tasks.withType<Test> {
     showStackTraces = true
     exceptionFormat = TestExceptionFormat.FULL
   }
+
+  configure<JacocoTaskExtension> {
+    isIncludeNoLocationClasses = true
+    // See https://github.com/gradle/gradle/issues/5184#issuecomment-457865951.
+    excludes = listOf("jdk.internal.*")
+  }
+}
+
+val includedModules: List<String> = listOf("app", "test-common")
+val excludedClasses: List<String> =
+    listOf(
+        // Android.
+        "**/databinding/*",
+        "**/BuildConfig.*",
+        "**/R.class",
+        "**/R\$*.class",
+        // Hilt.
+        "**/dagger/hilt/*",
+        "**/hilt_aggregated_deps/*",
+        "**/Hilt_*.*",
+        "**/*_Hilt*.*",
+        "**/*_Factory.*",
+        "**/*_Generated*.*",
+        "**/*_Provide*.*",
+        // Room. Don't exclude, abstract classes like DAO aren't handled well by Jacoco.
+        // "**/*_Impl.*"
+    )
+val sourceDirs: List<String> = includedModules.map { "${rootDir}/${it}/src/main/java" }
+val classDirs: List<ConfigurableFileTree> =
+    includedModules.flatMap {
+      val moduleBuildDir: DirectoryProperty = project(":${it}").layout.buildDirectory
+      // Include both compiled Java and Kotlin classes in each modules.
+      listOf(
+          fileTree(moduleBuildDir.dir("intermediates/javac/debug")) {
+            exclude(excludedClasses)
+            include("**/classes/**")
+          },
+          fileTree(moduleBuildDir.dir("tmp/kotlin-classes/debug")) { exclude(excludedClasses) })
+    }
+val unitTestExecutionData: ConfigurableFileTree =
+    fileTree(layout.buildDirectory.dir("outputs/unit_test_code_coverage/debugUnitTest")) {
+      include("**/*.exec")
+    }
+val androidTestExecutionData: ConfigurableFileTree =
+    fileTree(layout.buildDirectory.dir("outputs/code_coverage/debugAndroidTest")) {
+      include("**/*.ec")
+    }
+
+// Mostly from this StackOverflow answer, https://stackoverflow.com/a/61274781
+tasks.register<JacocoReport>("jacocoMergeDebugReport") {
+  reports {
+    xml.required = true
+    html.required = true
+  }
+
+  sourceDirectories.setFrom(sourceDirs)
+  classDirectories.setFrom(files(classDirs))
+  executionData.setFrom(files(unitTestExecutionData, androidTestExecutionData))
+}
+
+tasks.register<JacocoReport>("jacocoDebugUnitTestReport") {
+  reports {
+    xml.required = true
+    html.required = true
+  }
+
+  sourceDirectories.setFrom(sourceDirs)
+  classDirectories.setFrom(files(classDirs))
+  executionData.setFrom(files(unitTestExecutionData))
+}
+
+tasks.register<JacocoReport>("jacocoDebugAndroidTestReport") {
+  reports {
+    xml.required = true
+    html.required = true
+  }
+
+  sourceDirectories.setFrom(sourceDirs)
+  classDirectories.setFrom(files(classDirs))
+  executionData.setFrom(files(androidTestExecutionData))
 }
 
 tasks.register<Exec>("downloadD3Js") {
