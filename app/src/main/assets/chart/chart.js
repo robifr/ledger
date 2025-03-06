@@ -80,7 +80,7 @@ export class ChartLayout {
  */
 export function renderBarChart(layout, xScale, yScale, data, color) {
   d3.select("#container").select("svg").remove();
-  const svg = d3.create("svg").attr("width", layout.width).attr("height", layout.height);
+  const svg = d3.create("svg").style("width", layout.width).style("height", layout.height);
   d3.select("#container").append(() => svg.node());
   d3.select("body").style("background-color", layout.backgroundColor);
 
@@ -93,12 +93,12 @@ export function renderBarChart(layout, xScale, yScale, data, color) {
   // Draw y-axis.
   svg
     .append("g")
-    .attr("transform", `translate(${layout.marginLeft}, 0)`)
     .style("font-size", `${layout.fontSize}`)
+    .attr("transform", `translate(${layout.marginLeft}, 0)`)
     .call(yScale.axis)
     .call((g) => {
       g.select(".domain").remove(); // Remove y-axis line.
-      g.selectAll("line").style("stroke", Android.colorHex("stroke")).attr("stroke-width", 0.5);
+      g.selectAll("line").style("stroke", Android.colorHex("stroke")).style("stroke-width", 0.5);
       g.selectAll("text").style("fill", Android.colorHex("android:textColor"));
     });
 
@@ -107,8 +107,8 @@ export function renderBarChart(layout, xScale, yScale, data, color) {
   // Draw x-axis. Ensure that the x-axis is rendered after the bars to prevent overlapping.
   svg
     .append("g")
-    .attr("transform", `translate(0, ${layout.height - layout.marginBottom})`)
     .style("font-size", `${layout.fontSize}`)
+    .attr("transform", `translate(0, ${layout.height - layout.marginBottom})`)
     .call(xScale.axis)
     .call((g) => {
       g.select(".domain").style("stroke", Android.colorHex("stroke"));
@@ -131,7 +131,7 @@ export function renderStackedBarChart(layout, xScale, yScale, data, colors, grou
     throw new RangeError(`The sizes of 'colors' and 'groupInOrder' have to be equals`);
   }
   d3.select("#container").select("svg").remove();
-  const svg = d3.create("svg").attr("width", layout.width).attr("height", layout.height);
+  const svg = d3.create("svg").style("width", layout.width).style("height", layout.height);
   d3.select("#container").append(() => svg.node());
   d3.select("body").style("background-color", layout.backgroundColor);
 
@@ -144,12 +144,12 @@ export function renderStackedBarChart(layout, xScale, yScale, data, colors, grou
   // Draw y-axis.
   svg
     .append("g")
-    .attr("transform", `translate(${layout.marginLeft}, 0)`)
     .style("font-size", `${layout.fontSize}`)
+    .attr("transform", `translate(${layout.marginLeft}, 0)`)
     .call(yScale.axis)
     .call((g) => {
       g.select(".domain").remove(); // Remove y-axis line.
-      g.selectAll("line").style("stroke", Android.colorHex("stroke")).attr("stroke-width", 0.5);
+      g.selectAll("line").style("stroke", Android.colorHex("stroke")).style("stroke-width", 0.5);
       g.selectAll("text").style("fill", Android.colorHex("android:textColor"));
     });
 
@@ -170,8 +170,8 @@ export function renderStackedBarChart(layout, xScale, yScale, data, colors, grou
   // Draw x-axis. Ensure that the x-axis is rendered after the bars to prevent overlapping.
   svg
     .append("g")
-    .attr("transform", `translate(0, ${layout.height - layout.marginBottom})`)
     .style("font-size", `${layout.fontSize}`)
+    .attr("transform", `translate(0, ${layout.height - layout.marginBottom})`)
     .call(xScale.axis)
     .call((g) => {
       g.select(".domain").style("stroke", Android.colorHex("stroke"));
@@ -188,7 +188,7 @@ export function renderStackedBarChart(layout, xScale, yScale, data, colors, grou
  */
 export function renderDonutChart(layout, data, colors, svgTextInCenter = "") {
   d3.select("#container").select("svg").remove();
-  const svg = d3.create("svg").attr("width", layout.width).attr("height", layout.height);
+  const svg = d3.create("svg").style("width", layout.width).style("height", layout.height);
   d3.select("#container").append(() => svg.node());
   d3.select("body").style("background-color", layout.backgroundColor);
   _drawDonutChart(svg, layout, data, colors, svgTextInCenter);
@@ -227,10 +227,10 @@ function _drawBarChart(svg, layout, xScale, yScale, data, color) {
     .enter()
     .append("path")
     .style("fill", color)
+    .style("width", xScale.scale.bandwidth())
+    .style("height", (d) => layout.height - layout.marginBottom - yScale.scale(d.value))
     .attr("x", (d) => xScale.scale(d.key) ?? null)
     .attr("y", (d) => yScale.scale(d.value))
-    .attr("width", xScale.scale.bandwidth())
-    .attr("height", (d) => layout.height - layout.marginBottom - yScale.scale(d.value))
     .attr("d", (d) => {
       if (d.value === 0) {
         // Draw flat rectangle for zero values to avoid unintended corners below the X-axis.
@@ -292,20 +292,20 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
       g.selectAll(".slice")
         .data(pie(data))
         .join("path")
+        .style("fill", (d, i) => colors[i])
+        .style("stroke", layout.backgroundColor)
+        .style("stroke-width", (d) => (d.data.value === 0 ? "0px" : "1px"))
         .attr(
           "d",
           d3
             .arc()
             .innerRadius(radius * 0.7)
             .outerRadius(radius)
-        )
-        .attr("fill", (d, i) => colors[i])
-        .attr("stroke", layout.backgroundColor)
-        .style("stroke-width", (d) => (d.data.value === 0 ? "0px" : "1px"));
+        );
       g.append("g")
         .style("fill", Android.colorHex("android:textColor"))
-        .attr("text-anchor", "middle")
-        .attr("dominant-baseline", "middle")
+        .style("text-anchor", "middle")
+        .style("dominant-baseline", "middle")
         .html(svgTextInCenter);
     });
 
@@ -318,11 +318,11 @@ function _drawDonutChart(svg, layout, data, colors, svgTextInCenter = "") {
     .append("g")
     .call((g) => {
       g.append("rect")
-        .attr("width", legendRectSize)
-        .attr("height", legendRectSize)
+        .style("width", legendRectSize)
+        .style("height", legendRectSize)
+        .style("fill", (d, i) => (d.data.key !== NO_DATA_KEY ? colors[i] : "none"))
         .attr("rx", 5)
-        .attr("ry", 5)
-        .attr("fill", (d, i) => (d.data.key !== NO_DATA_KEY ? colors[i] : "none"));
+        .attr("ry", 5);
       g.append("text")
         .text((d) => (d.data.key !== NO_DATA_KEY ? d.data.key : ""))
         .style("fill", Android.colorHex("android:textColor"))
