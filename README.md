@@ -38,7 +38,12 @@ Direct download available below:<br>
         </ul>
       </li>
       <li><a href="#architecture">3. Architecture</a></li>
-      <li><a href="#tests">4. Tests</a></li>
+      <li>
+        <a href="#tests">4. Tests</a>
+        <ul>
+          <li><a href="#code-coverage">4.1. Code Coverage</a></li>
+        </ul>
+      </li>
       <li>
         <a href="#code-style">5. Code Style</a>
         <ul>
@@ -130,13 +135,13 @@ Optional:
 > Keep the `keystore.p12`, `keystore.properties` file, and its credentials private. Don't commit
   them to version control.
 
-7. Sync dependencies and run tests:
+ 7. Sync dependencies:
     ```
     ./gradlew build
-    ./gradlew test
     ```
 
-8. If everything is successful, build the app:
+8. It's recommended to run the [automated tests](#tests) before building the app. If everything is
+    successful, build the app:
     ```
     ./gradlew assembleRelease
     ```
@@ -171,18 +176,34 @@ This project follows the **MVVM (Model-View-ViewModel)** architecture pattern. D
 about the architecture is covered in the [ARCHITECTURE.md](./docs/ARCHITECTURE.md) file.
 
 ## Tests
-This project includes unit tests that are run in a JVM environment (not on actual devices or
-emulators). These tests focus on the critical sections of the code, such as the **ViewModel** and
-**Model** layers, as this project uses the MVVM architecture.
+This project includes both unit tests and Android instrumentation tests. These tests focus on the
+critical sections of the code, such as the **ViewModel** and **Model** layers, as this project uses
+the MVVM architecture.
 
-Some tests use fake objects to simulate real dependencies, like when performing database
-transactions in the repository layer. This approach is simpler than mocking numerous components.
+- **Unit tests** are located in [`app/src/test/`](app/src/test). Some tests use fake objects to
+  simulate real dependencies, like when performing database transactions in the repository layer.
+  This approach is simpler than mocking numerous components. Run them with:
+  ```
+  ./gradlew testDebugUnitTest --rerun-tasks
+  ```
+  The `--rerun-tasks` flag forces Gradle to re-run the tests and avoid using cached results.
 
-Tests are located in the `app/src/test/` directory, and can be run using the following command:
+- **Android instrumentation tests** are located in [`app/src/androidTest/`](app/src/androidTest) and
+  require a [compatible physical device or emulator](#compatibility). Run them with:
+  ```
+  ./gradlew connectedDebugAndroidTest
+  ```
+
+### Code Coverage
+Code coverage reports can also be generated using [JaCoCo](https://github.com/jacoco/jacoco). Always
+run `./gradlew clean` before generating the reports to remove any stale data. Then run:
 ```
-./gradlew test --rerun-tasks
+./gradlew testDebugUnitTest --rerun-tasks jacocoDebugUnitTestReport
+./gradlew connectedDebugAndroidTest jacocoDebugAndroidTestReport
+./gradlew jacocoMergeDebugReport
 ```
-The `--rerun-tasks` flag forces Gradle to re-run the tests and avoid using cached results.
+The merged HTML and XML reports, which combine both the unit test and Android test reports, will be
+generated in `app/build/reports/jacoco/jacocoMergeDebugReport/`.
 
 ## Code Style
 For Kotlin code, we follow [Kotlin coding conventions](https://kotlinlang.org/docs/coding-conventions.html)
