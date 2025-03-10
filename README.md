@@ -7,8 +7,8 @@
 
 Ledger is an Android app that helps automate sales orders, customer deposits, and debt tracking.
 Originally developed to support local shops, it reduces manual work and errors while ensuring
-accurate bookkeeping. The app works offline with all data stored locally, requiring no internet
-connection or user logins.
+accurate bookkeeping. The app scales to thousands of entries with no performance loss and works
+offline by storing all data locally, requiring no internet connection or user logins.
 
 Direct download available below:<br>
 <a href="https://github.com/robifr/ledger/releases/latest">
@@ -66,8 +66,6 @@ Direct download available below:<br>
 </div>
 
 ### Features
-- Automatically calculates customer deposits and debts with every update to orders.
-- Scales to thousands of entries with no issues.
 - Sort, filter, and search functionality.
 - Visualized charts and statistics.
 - Supports English (US) and Indonesian language.
