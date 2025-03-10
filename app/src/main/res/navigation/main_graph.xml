@@ -26,97 +26,97 @@
 
     <fragment
         android:id="@+id/dashboardFragment"
-        android:name="com.robifr.ledger.ui.dashboard.DashboardFragment"
+        android:name="io.github.robifr.ledger.ui.dashboard.DashboardFragment"
         tools:layout="@layout/dashboard_fragment" />
 
     <fragment
         android:id="@+id/queueFragment"
-        android:name="com.robifr.ledger.ui.queue.QueueFragment"
+        android:name="io.github.robifr.ledger.ui.queue.QueueFragment"
         tools:layout="@layout/listable_fragment" />
 
     <fragment
         android:id="@+id/customerFragment"
-        android:name="com.robifr.ledger.ui.customer.CustomerFragment"
+        android:name="io.github.robifr.ledger.ui.customer.CustomerFragment"
         tools:layout="@layout/listable_fragment" />
 
     <fragment
         android:id="@+id/productFragment"
-        android:name="com.robifr.ledger.ui.product.ProductFragment"
+        android:name="io.github.robifr.ledger.ui.product.ProductFragment"
         tools:layout="@layout/listable_fragment" />
   </navigation>
 
   <fragment
       android:id="@+id/settingsFragment"
-      android:name="com.robifr.ledger.ui.settings.SettingsFragment"
+      android:name="io.github.robifr.ledger.ui.settings.SettingsFragment"
       tools:layout="@layout/settings_fragment" />
 
   <fragment
       android:id="@+id/searchFragment"
-      android:name="com.robifr.ledger.ui.search.SearchFragment"
+      android:name="io.github.robifr.ledger.ui.search.SearchFragment"
       tools:layout="@layout/searchable_fragment" />
 
   <fragment
       android:id="@+id/searchCustomerFragment"
-      android:name="com.robifr.ledger.ui.searchcustomer.SearchCustomerFragment"
+      android:name="io.github.robifr.ledger.ui.searchcustomer.SearchCustomerFragment"
       tools:layout="@layout/searchable_fragment" />
 
   <fragment
       android:id="@+id/searchProductFragment"
-      android:name="com.robifr.ledger.ui.searchproduct.SearchProductFragment"
+      android:name="io.github.robifr.ledger.ui.searchproduct.SearchProductFragment"
       tools:layout="@layout/searchable_fragment" />
 
   <fragment
       android:id="@+id/createCustomerFragment"
-      android:name="com.robifr.ledger.ui.createcustomer.CreateCustomerFragment"
+      android:name="io.github.robifr.ledger.ui.createcustomer.CreateCustomerFragment"
       tools:layout="@layout/create_customer_fragment" />
 
   <fragment
       android:id="@+id/editCustomerFragment"
-      android:name="com.robifr.ledger.ui.editcustomer.EditCustomerFragment"
+      android:name="io.github.robifr.ledger.ui.editcustomer.EditCustomerFragment"
       tools:layout="@layout/create_customer_fragment" />
 
   <fragment
       android:id="@+id/createProductFragment"
-      android:name="com.robifr.ledger.ui.createproduct.CreateProductFragment"
+      android:name="io.github.robifr.ledger.ui.createproduct.CreateProductFragment"
       tools:layout="@layout/create_product_fragment" />
 
   <fragment
       android:id="@+id/editProductFragment"
-      android:name="com.robifr.ledger.ui.editproduct.EditProductFragment"
+      android:name="io.github.robifr.ledger.ui.editproduct.EditProductFragment"
       tools:layout="@layout/create_product_fragment" />
 
   <fragment
       android:id="@+id/createQueueFragment"
-      android:name="com.robifr.ledger.ui.createqueue.CreateQueueFragment"
+      android:name="io.github.robifr.ledger.ui.createqueue.CreateQueueFragment"
       tools:layout="@layout/create_queue_fragment" />
 
   <fragment
       android:id="@+id/editQueueFragment"
-      android:name="com.robifr.ledger.ui.editqueue.EditQueueFragment"
+      android:name="io.github.robifr.ledger.ui.editqueue.EditQueueFragment"
       tools:layout="@layout/create_queue_fragment" />
 
   <fragment
       android:id="@+id/selectCustomerFragment"
-      android:name="com.robifr.ledger.ui.selectcustomer.SelectCustomerFragment"
+      android:name="io.github.robifr.ledger.ui.selectcustomer.SelectCustomerFragment"
       tools:layout="@layout/listable_fragment" />
 
   <fragment
       android:id="@+id/selectProductFragment"
-      android:name="com.robifr.ledger.ui.selectproduct.SelectProductFragment"
+      android:name="io.github.robifr.ledger.ui.selectproduct.SelectProductFragment"
       tools:layout="@layout/listable_fragment" />
 
   <fragment
       android:id="@+id/filterCustomerFragment"
-      android:name="com.robifr.ledger.ui.filtercustomer.FilterCustomerFragment"
+      android:name="io.github.robifr.ledger.ui.filtercustomer.FilterCustomerFragment"
       tools:layout="@layout/listable_fragment" />
 
   <fragment
       android:id="@+id/aboutFragment"
-      android:name="com.robifr.ledger.ui.about.AboutFragment"
+      android:name="io.github.robifr.ledger.ui.about.AboutFragment"
       tools:layout="@layout/about_fragment" />
 
   <fragment
       android:id="@+id/thirdPartyLicensesFragment"
-      android:name="com.robifr.ledger.ui.thirdpartylicenses.ThirdPartyLicensesFragment"
+      android:name="io.github.robifr.ledger.ui.thirdpartylicenses.ThirdPartyLicensesFragment"
       tools:layout="@layout/third_party_licenses_fragment" />
 </navigation>

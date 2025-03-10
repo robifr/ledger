@@ -61,7 +61,7 @@
       app:layout_constraintStart_toStartOf="@id/title"
       app:layout_constraintTop_toBottomOf="@id/title" />
 
-  <com.robifr.ledger.components.AutoScrollTextView
+  <io.github.robifr.ledger.components.AutoScrollTextView
       android:id="@+id/amount"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"

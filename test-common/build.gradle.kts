@@ -20,7 +20,7 @@ plugins {
 }
 
 android {
-  namespace = "com.robifr.ledger"
+  namespace = "io.github.robifr.ledger"
   compileSdk = libs.versions.compileSdk.get().toInt()
 
   defaultConfig { minSdk = libs.versions.minSdk.get().toInt() }

@@ -30,15 +30,15 @@ plugins {
 
 android {
   compileSdk = libs.versions.compileSdk.get().toInt()
-  namespace = "com.robifr.ledger"
+  namespace = "io.github.robifr.ledger"
   buildToolsVersion = "34.0.0"
 
   defaultConfig {
-    applicationId = "com.robifr.ledger"
+    applicationId = "io.github.robifr.ledger"
     minSdk = libs.versions.minSdk.get().toInt()
     targetSdk = libs.versions.targetSdk.get().toInt()
     versionCode = 1
-    versionName = "2.0.2"
+    versionName = "2.1.0"
     multiDexEnabled = true
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     setProperty("archivesBaseName", "ledger-v${versionName}")

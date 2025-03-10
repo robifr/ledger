@@ -154,7 +154,7 @@
       app:layout_constraintTop_toTopOf="@id/uniqueIdTitle"
       app:layout_constraintWidth_percent="0.375" />
 
-  <com.robifr.ledger.components.AutoScrollTextView
+  <io.github.robifr.ledger.components.AutoScrollTextView
       android:id="@+id/grandTotalPrice"
       android:layout_width="0dp"
       android:layout_height="wrap_content"

@@ -44,7 +44,7 @@
       app:layout_constraintStart_toStartOf="@id/productName"
       app:layout_constraintTop_toBottomOf="@id/productName" />
 
-  <com.robifr.ledger.components.AutoScrollTextView
+  <io.github.robifr.ledger.components.AutoScrollTextView
       android:id="@+id/quantity"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
@@ -58,7 +58,7 @@
       app:layout_constraintTop_toTopOf="parent"
       app:layout_constraintVertical_bias="0" />
 
-  <com.robifr.ledger.components.AutoScrollTextView
+  <io.github.robifr.ledger.components.AutoScrollTextView
       android:id="@+id/totalPrice"
       android:layout_width="0dp"
       android:layout_height="wrap_content"

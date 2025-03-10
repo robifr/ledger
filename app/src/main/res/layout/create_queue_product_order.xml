@@ -69,7 +69,7 @@
       app:layout_constraintTop_toBottomOf="@id/listLayout"
       app:layout_constraintWidth_percent="0.45" />
 
-  <com.robifr.ledger.components.AutoScrollTextView
+  <io.github.robifr.ledger.components.AutoScrollTextView
       android:id="@+id/grandTotalPrice"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
@@ -95,7 +95,7 @@
       app:layout_constraintTop_toBottomOf="@id/grandTotalPrice"
       app:layout_constraintWidth_percent="0.45" />
 
-  <com.robifr.ledger.components.AutoScrollTextView
+  <io.github.robifr.ledger.components.AutoScrollTextView
       android:id="@+id/totalDiscount"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
@@ -121,7 +121,7 @@
       app:layout_constraintTop_toBottomOf="@id/totalDiscount"
       app:layout_constraintWidth_percent="0.45" />
 
-  <com.robifr.ledger.components.AutoScrollTextView
+  <io.github.robifr.ledger.components.AutoScrollTextView
       android:id="@+id/customerBalance"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
@@ -147,7 +147,7 @@
       app:layout_constraintTop_toBottomOf="@id/customerBalance"
       app:layout_constraintWidth_percent="0.45" />
 
-  <com.robifr.ledger.components.AutoScrollTextView
+  <io.github.robifr.ledger.components.AutoScrollTextView
       android:id="@+id/customerDebt"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
