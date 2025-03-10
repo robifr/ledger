@@ -1,4 +1,4 @@
-<img src="./docs/icon_app_raw.svg" alt="App icon" width="50"/>
+<img src="./docs/icon_app_raw.svg" alt="App icon" width="40"/>
 
 # Ledger for Android
 
