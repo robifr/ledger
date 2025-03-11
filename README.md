@@ -133,7 +133,7 @@ Optional:
 > Keep the `keystore.p12`, `keystore.properties` file, and its credentials private. Don't commit
   them to version control.
 
- 7. Sync dependencies:
+7. Sync dependencies:
     ```
     ./gradlew build
     ```
@@ -178,7 +178,7 @@ This project includes both unit tests and Android instrumentation tests. These t
 critical sections of the code, such as the **ViewModel** and **Model** layers, as this project uses
 the MVVM architecture.
 
-- **Unit tests** are located in [`app/src/test/`](app/src/test). Some tests use fake objects to
+- **Unit tests** are located in [`app/src/test/`](./app/src/test). Some tests use fake objects to
   simulate real dependencies, like when performing database transactions in the repository layer.
   This approach is simpler than mocking numerous components. Run them with:
   ```
@@ -186,8 +186,8 @@ the MVVM architecture.
   ```
   The `--rerun-tasks` flag forces Gradle to re-run the tests and avoid using cached results.
 
-- **Android instrumentation tests** are located in [`app/src/androidTest/`](app/src/androidTest) and
-  require a [compatible physical device or emulator](#compatibility). Run them with:
+- **Android instrumentation tests** are located in [`app/src/androidTest/`](./app/src/androidTest)
+  and require a [compatible physical device or emulator](#compatibility). Run them with:
   ```
   ./gradlew connectedDebugAndroidTest
   ```

@@ -45,7 +45,7 @@ in `LiveData`. The `Fragment` observes the `LiveData` to update the UI based on 
 `State`.
 
 ### Data Exchange Between Fragments
-Each `Fragment` uses [`FragmentResultKey`](../app/src/main/java/com/robifr/ledger/ui/common/navigation/FragmentResultKey.kt),
+Each `Fragment` uses [`FragmentResultKey`](../app/src/main/java/io/github/robifr/ledger/ui/common/navigation/FragmentResultKey.kt),
 an interface primarily implemented by enums, to ensure unique keys for communication. It provides a
 `key()` method, which is used in various ways to manage data exchange between fragments:
 - In `Bundle.putString()`, `Bundle.putInt()`, and similar methods to pass fragment results or
@@ -65,9 +65,9 @@ JavaScript files, located in [`assets/chart/`](../app/src/main/assets/chart), ha
 and visualization.  
 
 To enable interaction between Kotlin and JavaScript, we implement a binding layer in 
-[`assetbinding/chart/`](../app/src/main/java/com/robifr/ledger/assetbinding/chart). Each binding
-maps a JavaScript function to its Kotlin counterpart. JavaScript interacts with Kotlin via the
-[`JsInterface`](../app/src/main/java/com/robifr/ledger/assetbinding/JsInterface.kt) class,
+[`assetbinding/chart/`](../app/src/main/java/io/github/robifr/ledger/assetbinding/chart). Each
+binding maps a JavaScript function to its Kotlin counterpart. JavaScript interacts with Kotlin via
+the [`JsInterface`](../app/src/main/java/io/github/robifr/ledger/assetbinding/JsInterface.kt) class,
 registered using `WebView.addJavascriptInterface()` for secure communication.
 
 ## ViewModel Layer
@@ -78,24 +78,24 @@ is rotated, and continue to manage UI-related data without being recreated.
 
 ### Managing UI State
 To effectively manage data observed by the UI, this project uses:
-- [`SafeLiveData`](../app/src/main/java/com/robifr/ledger/ui/common/state/SafeLiveData.kt): A
+- [`SafeLiveData`](../app/src/main/java/io/github/robifr/ledger/ui/common/state/SafeLiveData.kt): A
   null-safe wrapper around `LiveData` for handling persistent and reactive UI data.
-- [`UiEvent`](../app/src/main/java/com/robifr/ledger/ui/common/state/UiEvent.kt): A generic state
-  wrapper for one-time operation like displaying a snackbar, toast, etc.
+- [`UiEvent`](../app/src/main/java/io/github/robifr/ledger/ui/common/state/UiEvent.kt): A generic
+  state wrapper for one-time operation like displaying a snackbar, toast, etc.
 
 Both `SafeLiveData` and `UiEvent` are used to represent the UI's `State`, reflecting its current
 status — such as text, colors, or other UI properties.
 
 ### Data Synchronization
-The [`ModelChangedListener`](../app/src/main/java/com/robifr/ledger/repository/ModelChangedListener.kt)
+The [`ModelChangedListener`](../app/src/main/java/io/github/robifr/ledger/repository/ModelChangedListener.kt)
 is registered with the `Repository` to listen for changes in the `LocalDatabase`. Whenever data
 changes, the `Repository` notifies all registered listeners.
 
-The [`ModelSyncListener`](../app/src/main/java/com/robifr/ledger/repository/ModelChangedListener.kt)
-is usually used alongside [`ModelSynchronizer`](../app/src/main/java/com/robifr/ledger/data/ModelSynchronizer.kt)
-or [`InfoSynchronizer`](../app/src/main/java/com/robifr/ledger/data/InfoSynchronizer.kt) to handle
-data updates automatically. This eliminates the need to manually override `ModelChangedListener`
-methods for each implementation.
+The [`ModelSyncListener`](../app/src/main/java/io/github/robifr/ledger/repository/ModelChangedListener.kt)
+is usually used alongside [`ModelSynchronizer`](../app/src/main/java/io/github/robifr/ledger/data/ModelSynchronizer.kt)
+or [`InfoSynchronizer`](../app/src/main/java/io/github/robifr/ledger/data/InfoSynchronizer.kt) to
+handle data updates automatically. This eliminates the need to manually override
+`ModelChangedListener` methods for each implementation.
 
 ## Model Layer
 The **Model Layer** serves as the foundation for managing business logic, data processing, and data
@@ -103,15 +103,15 @@ persistence. It handles interactions between the application and the underlying 
 as local databases, remote APIs, or in-memory data structures.
 
 ### Entities
-- [`Model`](../app/src/main/java/com/robifr/ledger/data/model/Model.kt): The base interface for all
-  data stored in the [`LocalDatabase`](../app/src/main/java/com/robifr/ledger/local/LocalDatabase.kt),
+- [`Model`](../app/src/main/java/io/github/robifr/ledger/data/model/Model.kt): The base interface
+  for all data stored in the [`LocalDatabase`](../app/src/main/java/io/github/robifr/ledger/local/LocalDatabase.kt),
   excluding Full-Text Search (FTS) related models. It represents the complete structure of an entity
   and is used for operations requiring full data access.
-- [`Info`](../app/src/main/java/com/robifr/ledger/data/model/Info.kt): A lightweight version of a
-  `Model` that includes only the necessary fields. It's designed to optimize SQL `SELECT` queries by
-  reducing overhead when full model details aren't needed.
-- [`GithubReleaseModel`](../app/src/main/java/com/robifr/ledger/network/GithubReleaseModel.kt): A
-  class that contains information about app updates retrieved from GitHub.
+- [`Info`](../app/src/main/java/io/github/robifr/ledger/data/model/Info.kt): A lightweight version
+  of a `Model` that includes only the necessary fields. It's designed to optimize SQL `SELECT`
+  queries by reducing overhead when full model details aren't needed.
+- [`GithubReleaseModel`](../app/src/main/java/io/github/robifr/ledger/network/GithubReleaseModel.kt):
+  A class that contains information about app updates retrieved from GitHub.
 - Data Stored in `SharedPreferences`: User configurations, such as the user's language preference,
   are stored in `SharedPreferences`. The data is accessed using specific keys, which are typically
-  defined as constants, like those in the [`SettingsPreferences`](../app/src/main/java/com/robifr/ledger/preferences/SettingsPreferences.kt).
+  defined as constants, like those in the [`SettingsPreferences`](../app/src/main/java/io/github/robifr/ledger/preferences/SettingsPreferences.kt).
