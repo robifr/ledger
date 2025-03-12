@@ -76,7 +76,7 @@ class CurrencyFormatTest {
           arrayOf(0.toBigDecimal(), "$0"),
           arrayOf((-100).toBigDecimal(), "-$100"),
           arrayOf(100.toBigDecimal(), "$100"),
-          // Hundreds.
+          // Thousands.
           arrayOf((-1000).toBigDecimal(), "-$1K"),
           arrayOf(1000.toBigDecimal(), "$1K"),
           arrayOf(1500.toBigDecimal(), "$1.5K"),
