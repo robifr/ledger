@@ -219,38 +219,47 @@ function _measureSpaceForTicksLabel(svg, axis) {
  * @param {string} color
  */
 function _drawBarChart(svg, layout, xScale, yScale, data, color) {
-  // Set the corner radius to 20% of the bar width.
-  const barCornerRadius = Math.min(5, Math.max(2, xScale.scale.bandwidth() * 0.2));
   svg
     .selectAll(".bar")
     .data(data)
     .enter()
     .append("path")
     .style("fill", color)
-    .style("width", xScale.scale.bandwidth())
-    .style("height", (d) => layout.height - layout.marginBottom - yScale.scale(d.value))
-    .attr("x", (d) => xScale.scale(d.key) ?? null)
-    .attr("y", (d) => yScale.scale(d.value))
     .attr("d", (d) => {
-      if (d.value === 0) {
-        // Draw flat rectangle for zero values to avoid unintended corners below the X-axis.
-        return `
-          M${xScale.scale(d.key)},${yScale.scale(d.value)}
-          h${xScale.scale.bandwidth()}
-          v0
-          h${-xScale.scale.bandwidth()}Z
-        `;
-      } else {
-        // Draw rounded rectangle.
-        return `
-          M${xScale.scale(d.key)},${yScale.scale(d.value) + barCornerRadius}
-          a${barCornerRadius},${barCornerRadius} 0 0 1 ${barCornerRadius},${-barCornerRadius}
-          h${xScale.scale.bandwidth() - 2 * barCornerRadius}
-          a${barCornerRadius},${barCornerRadius} 0 0 1 ${barCornerRadius},${barCornerRadius}
-          v${layout.height - layout.marginBottom - yScale.scale(d.value) - barCornerRadius}
-          h${-xScale.scale.bandwidth()}Z
-        `;
-      }
+      const barHeight = layout.height - layout.marginBottom - yScale.scale(d.value);
+      const barCornerRadius = Math.min(
+        5,
+        // Set the corner radius to 20% of the bar width.
+        Math.max(2, xScale.scale.bandwidth() * 0.2),
+        // Or use bar height if it way too small, to avoid unintended corners below the x-axis.
+        barHeight
+      );
+      // M: Starting point (x, y).
+      // a: Top-left corner.
+      // h: Horizontal line from the top-left to the top-right.
+      // a: Top-right corner.
+      // v: Vertical line on the right, from the top-right to the bottom-right.
+      // h: Horizontal line on the bottom, from the bottom-right to the bottom-left.
+      // Z: Back to starting point.
+      //
+      // If it's hard to understand, use any SVG visualizer site and paste the SVG path below:
+      // ```svg
+      // M0,10
+      // a10,10 0 0 1 10,-10
+      // h80
+      // a10,10 0 0 1 10,10
+      // v90
+      // h-100Z
+      // ```
+      // Where x = 0, y = 0, width = 100, height = 100, radius = 10.
+      return `
+        M${xScale.scale(d.key)},${yScale.scale(d.value) + barCornerRadius}
+        a${barCornerRadius},${barCornerRadius} 0 0 1 ${barCornerRadius},${-barCornerRadius}
+        h${xScale.scale.bandwidth() - 2 * barCornerRadius}
+        a${barCornerRadius},${barCornerRadius} 0 0 1 ${barCornerRadius},${barCornerRadius}
+        v${barHeight - barCornerRadius}
+        h${-xScale.scale.bandwidth()}Z
+      `;
     });
 }
 
